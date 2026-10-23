@@ -17,7 +17,30 @@ export type Ville = [string, number, number, number, string]
 export type Mode = 'qcm' | 'libre'
 export type Difficulte = 0 | 1 | 2 | 3 | 4 // 0 = auto
 
-export type SousThemeId = 'drapeaux' | 'drapeaux-inverse' | 'capitales' | 'capitales-inverse' | 'villes-fr' | 'villes-monde' | 'pays-carte'
+export type SousThemeId = 'drapeaux' | 'drapeaux-inverse' | 'capitales' | 'capitales-inverse' | 'villes-fr' | 'villes-monde' | 'pays-carte' | CultureId
+
+// Thèmes générés depuis Wikidata (scripts/build-culture.mjs)
+type Texte = Record<Lang, string>
+export type ItemCulture = { id: string; n: Texte; d?: Texte; img?: string; r?: string | Texte; g?: string; f?: [Texte, string | Texte | undefined][] }
+type TypeCulture = 'image' | 'attribut' | 'annee'
+const CULTURE = {
+  films: { type: 'attribut', q: { fr: (n) => `Qui a réalisé « ${n} » ?`, en: (n) => `Who directed “${n}”?` } },
+  series: { type: 'annee', q: { fr: (n) => `En quelle année a débuté la série « ${n} » ?`, en: (n) => `In what year did “${n}” first air?` } },
+  acteurs: { type: 'image', q: { fr: (_, g) => (g === 'f' ? 'Qui est cette actrice ?' : 'Qui est cet acteur ?'), en: () => 'Who is this actor?' } },
+  artistes: { type: 'image', q: { fr: (_, g) => (g === 'f' ? 'Qui est cette artiste ?' : 'Qui est cet artiste ?'), en: () => 'Who is this artist?' } },
+  albums: { type: 'attribut', q: { fr: (n) => `Quel artiste a sorti l’album « ${n} » ?`, en: (n) => `Which artist released the album “${n}”?` } },
+  animaux: { type: 'image', q: { fr: () => 'Quel est cet animal ?', en: () => 'What is this animal?' } },
+  insectes: { type: 'image', q: { fr: () => 'Quel est cet insecte ?', en: () => 'What is this insect?' } },
+  plantes: { type: 'image', q: { fr: () => 'Quelle est cette plante ?', en: () => 'What is this plant?' } },
+  corps: { type: 'image', q: { fr: () => 'Quelle est cette partie du corps ?', en: () => 'What is this body part?' } },
+  elements: { type: 'attribut', q: { fr: (n) => `Quel est le symbole chimique de cet élément : ${n} ?`, en: (n) => `What is the chemical symbol of ${n}?` } },
+  personnalites: { type: 'image', q: { fr: () => 'Qui est cette personnalité ?', en: () => 'Who is this famous person?' } },
+  histoire: { type: 'annee', q: { fr: (n) => `En quelle année a commencé : ${n} ?`, en: (n) => `In what year did this begin: ${n}?` } },
+  logos: { type: 'image', q: { fr: () => 'À quelle marque appartient ce logo ?', en: () => 'Which brand does this logo belong to?' } },
+  marques: { type: 'attribut', q: { fr: (n) => `De quel pays vient ${n} ?`, en: (n) => `Which country is ${n} from?` } },
+} satisfies Record<string, { type: TypeCulture; q: Record<Lang, (nom: string, genre?: string) => string> }>
+export type CultureId = keyof typeof CULTURE
+export const estCulture = (s: string): s is CultureId => s in CULTURE
 
 export type Option = { label: string; image?: string }
 export type Fiche = { image?: string; faits: { l: string; v: string }[]; saviez: string; wiki: string }
@@ -126,8 +149,10 @@ let rand = Math.random
 export async function genererPartie(o: Opts): Promise<Question[]> {
   const tous = await chargerPays()
   await (o.sousTheme === 'villes-fr' ? pack('villes-fr.json') : o.sousTheme === 'villes-monde' ? pack('villes-monde.json') : null)
+  if (estCulture(o.sousTheme)) await pack(`culture/${o.sousTheme}.json`)
   // Packs chargés avant de fixer la graine : la génération qui suit est synchrone, donc reproductible
   rand = o.seed ? mulberry32(o.seed) : Math.random
+  if (estCulture(o.sousTheme)) return culture(o, await pack<ItemCulture[]>(`culture/${o.sousTheme}.json`))
   if (o.sousTheme === 'villes-fr') return villesFrance(o)
   if (o.sousTheme === 'villes-monde') return villesMonde(o, tous)
   return questionsPays(o, tous)
@@ -206,6 +231,62 @@ async function villesMonde({ difficulte, nombre, lang, ids }: Opts, tous: Pays[]
         saviez: lang === 'fr'
           ? (rangPays === 1 ? `${nom} est la ville la plus peuplée du pays.` : `${nom} est la ${rangPays}e ville la plus peuplée du pays.`)
           : (rangPays === 1 ? `${nom} is the country's most populous city.` : `${nom} is the country's ${ordinal(rangPays, lang)} most populous city.`),
+        wiki: wiki(nom, lang),
+      },
+    }
+  })
+}
+
+// Les éléments sont triés du plus connu au moins connu (nombre d'articles Wikipédia)
+const POOL_CULTURE = { 1: 60, 2: 150, 3: 300, 4: Infinity } as const
+const texte = (v: string | Texte | undefined, lang: Lang) => (v === undefined ? '' : typeof v === 'string' ? v : v[lang])
+
+function culture({ sousTheme, difficulte, nombre, mode, lang, ids }: Opts, items: ItemCulture[]): Question[] {
+  const cfg = CULTURE[sousTheme as CultureId]
+  const pool = items.slice(0, POOL_CULTURE[difficulte])
+  const cibles = ids ? items.filter((it) => ids.includes(it.id)) : melanger(pool).slice(0, nombre)
+  const ecart = { 1: 25, 2: 12, 3: 6, 4: 3 }[difficulte] // années proposées autour de la bonne
+
+  return cibles.map((it): Question => {
+    const nom = it.n[lang]
+    const reponse = cfg.type === 'image' ? nom : texte(it.r, lang)
+    const acceptees = cfg.type === 'image' ? [it.n.fr, it.n.en] : typeof it.r === 'string' ? [it.r] : [it.r!.fr, it.r!.en]
+
+    let options: Option[] = []
+    if (mode === 'qcm') {
+      const vus = new Set([reponse])
+      const autres: string[] = []
+      if (cfg.type === 'annee') {
+        while (autres.length < 3) {
+          const y = String(Number(reponse) + Math.round((rand() * 2 - 1) * ecart) || 1)
+          if (!vus.has(y)) { vus.add(y); autres.push(y) }
+        }
+      } else {
+        // Distracteurs du même groupe d'abord (même genre, même classe d'animaux…)
+        const cand = [...melanger(pool.filter((x) => x.g && x.g === it.g)), ...melanger(pool.length >= 4 ? pool : items)]
+        for (const x of cand) {
+          const v = cfg.type === 'image' ? x.n[lang] : texte(x.r, lang)
+          if (v && !vus.has(v)) { vus.add(v); autres.push(v) }
+          if (autres.length === 3) break
+        }
+      }
+      options = melanger([reponse, ...autres]).map((label) => ({ label }))
+    }
+
+    const faits = (it.f ?? []).filter(([, v]) => v).map(([l, v]) => ({ l: l[lang], v: texte(v, lang) }))
+    const desc = it.d?.[lang]
+    return {
+      id: it.id,
+      enonce: cfg.q[lang](nom, it.g),
+      image: cfg.type === 'image' ? it.img : undefined,
+      reponse,
+      acceptees,
+      options,
+      imagesOnly: false,
+      fiche: {
+        image: it.img,
+        faits: cfg.type === 'image' ? faits : [{ l: lang === 'fr' ? 'Réponse' : 'Answer', v: reponse }, ...faits],
+        saviez: desc ? `${nom} : ${desc}.` : nom,
         wiki: wiki(nom, lang),
       },
     }

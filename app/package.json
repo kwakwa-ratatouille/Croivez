@@ -2,7 +2,7 @@
   "name": "croivez",
   "productName": "Croivez",
   "private": true,
-  "version": "0.2.0",
+  "version": "0.3.0",
   "type": "module",
   "main": "electron/main.cjs",
   "scripts": {
@@ -11,6 +11,7 @@
     "app": "npm run build && electron .",
     "data": "node scripts/build-pays.mjs",
     "data:villes": "node scripts/build-villes.mjs",
+    "data:culture": "node scripts/build-culture.mjs",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"

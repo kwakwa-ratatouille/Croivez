@@ -57,7 +57,7 @@ export default function Revision() {
                   <div style={{ width: 52, height: 52, borderRadius: 16, background: `var(--${k}-t)`, color: `var(--${k}-i)`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon d={t?.famille.icon ?? ''} size={26} /></div>
                   <div><h2 className="t" style={{ fontSize: 20, fontWeight: 800 }}>{t?.sous.nom[lang] ?? s}</h2><span style={{ color: 'var(--muted)', fontSize: 14 }}>{cartes!.length} {lang === 'fr' ? 'à revoir' : 'to review'}</span></div>
                 </div>
-                <p style={{ fontSize: 14, color: 'var(--muted)' }}>{lot.slice(0, 5).map((c) => (c.id.length === 2 ? c.id.toUpperCase() : c.id.split('|')[0])).join(' · ')}{cartes!.length > 5 ? ' …' : ''}</p>
+                <p style={{ fontSize: 14, color: 'var(--muted)' }}>{/^Q\d+$/.test(lot[0].id) ? '' : lot.slice(0, 5).map((c) => (c.id.length === 2 ? c.id.toUpperCase() : c.id.split('|')[0])).join(' · ') + (cartes!.length > 5 ? ' …' : '')}</p>
                 <Link className="btn btn-p" to={url} style={{ alignSelf: 'flex-start' }}>{lang === 'fr' ? 'Réviser' : 'Review'}<Icon d={ICONS.arrowR} /></Link>
               </article>
             )

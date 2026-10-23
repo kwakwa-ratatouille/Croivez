@@ -25,16 +25,16 @@ export default function Layout() {
   return (
     <div className="shell">
       <nav className="side" aria-label="Navigation principale">
-        <NavLink to="/" aria-label="Croivez" style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '4px 12px 28px', textDecoration: 'none' }}>
+        <NavLink to="/" aria-label="Croivez" className="side-logo" style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '4px 12px 28px', textDecoration: 'none' }}>
           <Logo /><span className="t" style={{ fontSize: 24, fontWeight: 900 }}>Croivez</span>
         </NavLink>
         {LIENS.map((l) => (
-          <NavLink key={l.to} to={l.to} end={l.to === '/'} className={({ isActive }) => `nav${isActive ? ' active' : ''}`}>
+          <NavLink key={l.to} to={l.to} end={l.to === '/'} className={({ isActive }) => `nav${isActive ? ' active' : ''}${l.to === '/parametres' ? ' nav-pc' : ''}`}>
             <Icon d={l.icon} />{t(l.k)}
             {l.to === '/revision' && dues > 0 && <span className="chip" style={{ marginLeft: 'auto', minHeight: 22, padding: '0 8px', background: 'var(--his-t)', color: 'var(--his-i)' }}>{dues}</span>}
           </NavLink>
         ))}
-        <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <div className="side-pied" style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: 10 }}>
           {!online && (
             <div role="status" style={{ display: 'flex', gap: 10, alignItems: 'flex-start', padding: '10px 12px', borderRadius: 14, background: 'var(--surface2)', color: 'var(--muted)', fontSize: 13, lineHeight: 1.4 }}>
               <Icon d={ICONS.cloudOff} size={18} />{t('offline')}
@@ -49,7 +49,11 @@ export default function Layout() {
           </NavLink>
         </div>
       </nav>
-      <main className="main"><MiseAJour /><Outlet /></main>
+      <main className="main">
+        <NavLink to="/" className="entete-mobile" aria-label="Croivez"><Logo width={34} /><span className="t" style={{ fontSize: 20, fontWeight: 900 }}>Croivez</span></NavLink>
+        <MiseAJour />
+        <Outlet />
+      </main>
     </div>
   )
 }
