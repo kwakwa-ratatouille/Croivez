@@ -2,10 +2,10 @@
 // Usage : node scripts/build-qr.mjs
 import QRCode from 'qrcode'
 
-export const SOURCE_URL = 'https://raw.githubusercontent.com/kwakwa-ratatouille/croivez-ios/main/source.json'
+export const SOURCE_URL = 'https://raw.githubusercontent.com/kwakwa-ratatouille/Croivez/main/sidestore/source.json'
 const lien = `sidestore://source?url=${SOURCE_URL}`
 const opts = { margin: 2, width: 512, color: { dark: '#2F3437', light: '#FBF8F3' } }
 
 await QRCode.toFile('public/qr-sidestore.svg', lien, { ...opts, type: 'svg' })
-await QRCode.toFile('../depot-ios/qr-sidestore.png', lien, opts)
+await QRCode.toFile('../sidestore/qr-sidestore.png', lien, opts)
 console.log('QR codes écrits :', lien)

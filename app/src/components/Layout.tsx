@@ -2,6 +2,7 @@ import { NavLink, Outlet } from 'react-router-dom'
 import { useAuth, niveau } from '../auth'
 import { usePrefs, type Key } from '../i18n'
 import { ICONS, Icon, Logo, useOnline } from './ui'
+import { aReviser } from '../quiz/revision'
 
 const LIENS: { to: string; k: Key; icon: string }[] = [
   { to: '/', k: 'nav.home', icon: ICONS.home },
@@ -18,6 +19,7 @@ export default function Layout() {
   const { profile } = useAuth()
   const online = useOnline()
   const pseudo = profile?.pseudo ?? '…'
+  const dues = aReviser(profile?.revision).length
 
   return (
     <div className="shell">
@@ -28,6 +30,7 @@ export default function Layout() {
         {LIENS.map((l) => (
           <NavLink key={l.to} to={l.to} end={l.to === '/'} className={({ isActive }) => `nav${isActive ? ' active' : ''}`}>
             <Icon d={l.icon} />{t(l.k)}
+            {l.to === '/revision' && dues > 0 && <span className="chip" style={{ marginLeft: 'auto', minHeight: 22, padding: '0 8px', background: 'var(--his-t)', color: 'var(--his-i)' }}>{dues}</span>}
           </NavLink>
         ))}
         <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: 10 }}>

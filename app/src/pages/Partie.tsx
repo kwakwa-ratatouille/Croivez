@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { enregistrerPartie, useAuth } from '../auth'
+import { enregistrerPartie, jour, useAuth } from '../auth'
 import { usePrefs } from '../i18n'
 import { trouverSousTheme } from '../themes'
 import { calculerXp, difficulteAuto, distanceKm, genererPartie, type Difficulte, type Mode, type Question, type SousThemeId } from '../quiz/engine'
@@ -21,6 +21,9 @@ export default function Partie() {
   const nombre = Number(params.get('n') ?? 10)
   const diffChoisie = Number(params.get('d') ?? 0) as Difficulte
   const chrono = Number(params.get('t') ?? 0)
+  const defi = params.get('defi') === '1'
+  const revision = params.get('rev') === '1'
+  const seed = defi ? Number(jour().replace(/-/g, '')) : undefined
   const difficulte = diffChoisie || difficulteAuto(profile?.maitrise?.[sousTheme])
   const k = trouverSousTheme(sousTheme)?.famille.k ?? 'geo'
 
@@ -39,8 +42,8 @@ export default function Partie() {
     setSaisie('')
     setRestant(chrono)
     setFini(false)
-    genererPartie({ sousTheme, difficulte, nombre, mode, lang, ids }).then(setQuestions)
-  }, [sousTheme, difficulte, nombre, mode, lang, chrono])
+    genererPartie({ sousTheme, difficulte, nombre, mode, lang, ids, seed: ids ? undefined : seed }).then(setQuestions)
+  }, [sousTheme, difficulte, nombre, mode, lang, chrono, seed])
 
   // Une partie est générée une seule fois, à l'ouverture
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -102,13 +105,14 @@ export default function Partie() {
 
   const bonnes = reponses.filter((r) => r.juste).length
   // Les questions sur carte valent autant que la saisie libre
-  const xp = calculerXp(bonnes, q?.carte && !q.options.length ? 'libre' : mode, difficulte)
+  // Défi du jour : XP doublés
+  const xp = calculerXp(bonnes, q?.carte && !q.options.length ? 'libre' : mode, difficulte) * (defi ? 2 : 1)
   const enregistre = useRef(false)
   useEffect(() => {
     if (!fini || enregistre.current || !user || !profile || !questions) return
     enregistre.current = true
-    enregistrerPartie(user.uid, profile, sousTheme, xp, bonnes / questions.length).catch(console.error)
-  }, [fini, user, profile, sousTheme, xp, bonnes, questions])
+    enregistrerPartie(user.uid, profile, { sousTheme, xp, defi, revision, resultats: reponses.map((r) => ({ id: r.q.id, juste: r.juste })) }).catch(console.error)
+  }, [fini, user, profile, sousTheme, xp, defi, revision, reponses, questions])
 
   if (!questions) return <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center' }}><Logo width={72} /></div>
   if (!q) return <div style={{ padding: 48, textAlign: 'center' }}><p>{lang === 'fr' ? 'Aucune question disponible.' : 'No questions available.'}</p><Link className="btn btn-p" to="/">{t('res.home')}</Link></div>

@@ -58,7 +58,7 @@ export function difficulteAuto(maitrise = 0): 1 | 2 | 3 | 4 {
 const melanger = <T,>(arr: T[]) => {
   const a = [...arr]
   for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
+    const j = Math.floor(rand() * (i + 1));
     [a[i], a[j]] = [a[j], a[i]]
   }
   return a
@@ -110,10 +110,24 @@ export function distanceKm([lat1, lng1]: [number, number], [lat2, lng2]: [number
   return 6371 * 2 * Math.asin(Math.sqrt(a))
 }
 
-type Opts = { sousTheme: SousThemeId; difficulte: 1 | 2 | 3 | 4; nombre: number; mode: Mode; lang: Lang; ids?: string[] }
+type Opts = { sousTheme: SousThemeId; difficulte: 1 | 2 | 3 | 4; nombre: number; mode: Mode; lang: Lang; ids?: string[]; seed?: number }
+
+// Générateur pseudo-aléatoire reproductible (mulberry32) : même graine = mêmes questions pour tout le monde
+function mulberry32(a: number) {
+  return () => {
+    a = (a + 0x6d2b79f5) | 0
+    let t = Math.imul(a ^ (a >>> 15), 1 | a)
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+  }
+}
+let rand = Math.random
 
 export async function genererPartie(o: Opts): Promise<Question[]> {
   const tous = await chargerPays()
+  await (o.sousTheme === 'villes-fr' ? pack('villes-fr.json') : o.sousTheme === 'villes-monde' ? pack('villes-monde.json') : null)
+  // Packs chargés avant de fixer la graine : la génération qui suit est synchrone, donc reproductible
+  rand = o.seed ? mulberry32(o.seed) : Math.random
   if (o.sousTheme === 'villes-fr') return villesFrance(o)
   if (o.sousTheme === 'villes-monde') return villesMonde(o, tous)
   return questionsPays(o, tous)

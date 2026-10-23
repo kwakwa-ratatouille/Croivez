@@ -1,0 +1,22 @@
+{
+  "name": "Croivez",
+  "identifier": "fr.kwakwa.croivez.source",
+  "subtitle": "Culture générale, un peu chaque jour",
+  "iconURL": "https://raw.githubusercontent.com/kwakwa-ratatouille/Croivez/main/sidestore/icon.png",
+  "website": "https://github.com/kwakwa-ratatouille/Croivez",
+  "tintColor": "6FC59F",
+  "apps": [
+    {
+      "name": "Croivez",
+      "bundleIdentifier": "fr.kwakwa.croivez",
+      "developerName": "kwakwa-ratatouille",
+      "subtitle": "Quiz de culture générale",
+      "localizedDescription": "Drapeaux, capitales, villes, cinéma, musique, nature… Apprenez un peu chaque jour avec Croivez : ✗ faux, ✓ vrai.",
+      "iconURL": "https://raw.githubusercontent.com/kwakwa-ratatouille/Croivez/main/sidestore/icon.png",
+      "tintColor": "6FC59F",
+      "category": "education",
+      "versions": []
+    }
+  ],
+  "news": []
+}

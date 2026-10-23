@@ -9,6 +9,8 @@ import Configuration from './pages/Configuration'
 import Partie from './pages/Partie'
 import Parametres from './pages/Parametres'
 import Connexion from './pages/Connexion'
+import Revision from './pages/Revision'
+import Profil from './pages/Profil'
 
 function BientotDisponible() {
   const { t } = usePrefs()
@@ -34,6 +36,8 @@ function Routeur() {
           <Route path="/themes" element={<Themes />} />
           <Route path="/jouer/:sous" element={<Configuration />} />
           <Route path="/parametres" element={<Parametres />} />
+          <Route path="/revision" element={<Revision />} />
+          <Route path="/profil" element={<Profil />} />
           <Route path="*" element={<BientotDisponible />} />
         </Route>
       </Routes>

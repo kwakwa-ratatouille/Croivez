@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '../auth'
 import { usePrefs } from '../i18n'
 import { FAMILLES } from '../themes'
+import { defiDuJour } from '../quiz/defi'
 import { Coche, ICONS, Icon } from '../components/ui'
 
 export default function Accueil() {
@@ -10,6 +11,7 @@ export default function Accueil() {
   const serie = profile?.serie ?? 0
   const today = new Date().toLocaleDateString('sv')
   const joueAujourdhui = profile?.dernierJour === today
+  const defi = defiDuJour(today)
 
   // Semaine en cours (lundi → dimanche) : on coche les jours couverts par la série
   const jourSemaine = (new Date().getDay() + 6) % 7
@@ -76,9 +78,11 @@ export default function Accueil() {
         <div className="card" style={{ padding: 28, display: 'flex', flexDirection: 'column', gap: 16, background: 'var(--his-t)', borderColor: 'transparent', position: 'relative', overflow: 'hidden' }}>
           <svg viewBox="0 0 120 120" width="150" aria-hidden="true" style={{ position: 'absolute', right: -24, bottom: -30, opacity: .6 }}><path d="m60 10 14 30 32 4-24 22 6 32-28-16-28 16 6-32-24-22 32-4Z" style={{ fill: 'none', stroke: 'var(--his)', strokeWidth: 3, strokeLinejoin: 'round' }} /></svg>
           <span className="eyebrow" style={{ color: 'var(--his-i)' }}>{t('home.daily')}</span>
-          <h2 className="t" style={{ fontSize: 24, fontWeight: 800, color: 'var(--his-i)' }}>{lang === 'fr' ? '10 capitales, saisie libre' : '10 capitals, free typing'}</h2>
-          <p style={{ fontSize: 15, color: 'var(--his-i)' }}>{lang === 'fr' ? 'Sans propositions : tapez la réponse, les fautes de frappe sont pardonnées.' : 'No options: type the answer, typos are forgiven.'}</p>
-          <Link className="btn" to="/partie?s=capitales&m=libre&n=10&d=0" style={{ alignSelf: 'flex-start', background: 'var(--surface)', color: 'var(--his-i)', position: 'relative' }}>{t('home.dailyGo')}<Icon d={ICONS.arrowR} /></Link>
+          <h2 className="t" style={{ fontSize: 24, fontWeight: 800, color: 'var(--his-i)' }}>{defi.titre[lang]}</h2>
+          <p style={{ fontSize: 15, color: 'var(--his-i)' }}>{defi.texte[lang]} {lang === 'fr' ? 'XP doublés.' : 'Double XP.'}</p>
+          {profile?.defiJour === today
+            ? <span className="btn" style={{ alignSelf: 'flex-start', background: 'var(--surface)', color: 'var(--ok-i)', position: 'relative', cursor: 'default' }}><Coche size={22} anim={false} />{lang === 'fr' ? 'Défi réussi, à demain !' : 'Done, see you tomorrow!'}</span>
+            : <Link className="btn" to={defi.url} style={{ alignSelf: 'flex-start', background: 'var(--surface)', color: 'var(--his-i)', position: 'relative' }}>{t('home.dailyGo')}<Icon d={ICONS.arrowR} /></Link>}
         </div>
       </section>
 
