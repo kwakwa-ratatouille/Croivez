@@ -8,4 +8,8 @@ const opts = { margin: 2, width: 512, color: { dark: '#2F3437', light: '#FBF8F3'
 
 await QRCode.toFile('public/qr-sidestore.svg', lien, { ...opts, type: 'svg' })
 await QRCode.toFile('../sidestore/qr-sidestore.png', lien, opts)
-console.log('QR codes écrits :', lien)
+// Android : lien fixe vers la dernière APK
+const apk = 'https://github.com/kwakwa-ratatouille/Croivez/releases/download/android/Croivez.apk'
+await QRCode.toFile('public/qr-android.svg', apk, { ...opts, type: 'svg' })
+await QRCode.toFile('../sidestore/qr-android.png', apk, opts)
+console.log('QR codes écrits :', lien, apk)

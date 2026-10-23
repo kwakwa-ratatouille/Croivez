@@ -48,7 +48,8 @@ jobs:
         run: |
           gh release create "web-$WEB" app/web.zip --target main --title "Contenu web $WEB" --notes "Mise à jour à chaud (sans réinstallation)." --latest=false
           NATIF_MIN=$(tr -d '[:space:]' < app/natif-min.txt)
-          printf '{\n  "web": %s,\n  "url": "https://github.com/%s/releases/download/web-%s/web.zip",\n  "natifMin": %s\n}\n' "$WEB" "${{ github.repository }}" "$WEB" "$NATIF_MIN" > sidestore/web.json
+          NATIF_MIN_ANDROID=$(tr -d '[:space:]' < app/natif-min-android.txt)
+          printf '{\n  "web": %s,\n  "url": "https://github.com/%s/releases/download/web-%s/web.zip",\n  "natifMin": %s,\n  "natifMinAndroid": %s\n}\n' "$WEB" "${{ github.repository }}" "$WEB" "$NATIF_MIN" "$NATIF_MIN_ANDROID" > sidestore/web.json
           git config user.name "github-actions"
           git config user.email "github-actions@users.noreply.github.com"
           git add sidestore/web.json

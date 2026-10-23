@@ -15,6 +15,18 @@ Ou bien, à la main : SideStore → **Sources** → **+** →
 https://raw.githubusercontent.com/kwakwa-ratatouille/Croivez/main/sidestore/source.json
 ```
 
+## Installer sur Android
+
+Scanne ce QR code ou ouvre le lien sur le téléphone, puis installe l'APK (autorise l'installation depuis le navigateur si Android le demande).
+
+<p align="center"><img src="sidestore/qr-android.png" width="260" alt="QR code pour télécharger l'APK Android de Croivez"></p>
+
+```
+https://github.com/kwakwa-ratatouille/Croivez/releases/download/android/Croivez.apk
+```
+
+Ensuite, le contenu se met à jour tout seul (bannière « Mise à jour prête »). Une nouvelle APK n'est demandée que si la partie native change ; elle s'installe par-dessus, sans perdre tes données.
+
 ## Publier une nouvelle version iOS
 Changer `version` dans `app/package.json`, commiter, puis :
 ```

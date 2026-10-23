@@ -103,6 +103,17 @@ export default function Parametres() {
 
       {!natif && (
         <section className="card" style={{ padding: 28, display: 'flex', gap: 28, alignItems: 'center', flexWrap: 'wrap', maxWidth: 760 }}>
+          <img src="./qr-android.svg" alt="QR code Android" width={180} height={180} style={{ borderRadius: 16, border: '1px solid var(--line)' }} />
+          <div style={{ flex: '1 1 260px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <span className="t" style={titre}>{fr ? 'Installer sur Android' : 'Install on Android'}</span>
+            <p style={{ color: 'var(--muted)', lineHeight: 1.5 }}>
+              {fr ? 'Scannez ce QR code avec le téléphone : l’APK se télécharge. Le contenu se met ensuite à jour tout seul.' : 'Scan this QR code with your phone to download the APK. Content then updates by itself.'}
+            </p>
+          </div>
+        </section>
+      )}
+      {!natif && (
+        <section className="card" style={{ padding: 28, display: 'flex', gap: 28, alignItems: 'center', flexWrap: 'wrap', maxWidth: 760 }}>
           <img src="./qr-sidestore.svg" alt="QR code SideStore" width={180} height={180} style={{ borderRadius: 16, border: '1px solid var(--line)' }} />
           <div style={{ flex: '1 1 260px', display: 'flex', flexDirection: 'column', gap: 8 }}>
             <span className="t" style={titre}>{fr ? 'Installer sur iPhone' : 'Install on iPhone'}</span>

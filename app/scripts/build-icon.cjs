@@ -75,5 +75,42 @@ app.whenReady().then(async () => {
     for (const f of ['splash-2732x2732.png', 'splash-2732x2732-1.png', 'splash-2732x2732-2.png']) fs.writeFileSync(path.join(splashDir, f), png)
     console.log('Écran de lancement iOS écrit')
   }
+  // ——— Android : icônes (carrée, ronde, adaptative) et écrans de lancement ———
+  const res = path.join(__dirname, '..', 'android', 'app', 'src', 'main', 'res')
+  if (fs.existsSync(res)) {
+    const LOGO = `<path d="M16 16 Q33 36 50 58 M50 16 Q32 37 16 58" fill="none" stroke="#DE8B6A" stroke-width="13" stroke-linecap="round"/>
+<path d="M44 40 Q52 49 60 58 Q77 32 102 12" fill="none" stroke="#6FC59F" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/>`
+    const rendu = async (taille, svg) => {
+      win.setContentSize(taille, taille)
+      await win.loadURL('data:text/html;charset=utf-8,' + encodeURIComponent(`<html><body style="margin:0;background:transparent">${svg}</body></html>`))
+      await new Promise((r) => setTimeout(r, 200))
+      return (await win.webContents.capturePage()).resize({ width: taille, height: taille }).toPNG()
+    }
+    // Logo centré : le tracé occupe x 16→102, y 12→58 dans son repère
+    const logo = (taille, part) => {
+      const k = (taille * part) / 86
+      return `<g transform="translate(${taille / 2 - 59 * k} ${taille / 2 - 35 * k}) scale(${k})">${LOGO}</g>`
+    }
+    const DENS = { mdpi: 48, hdpi: 72, xhdpi: 96, xxhdpi: 144, xxxhdpi: 192 }
+    for (const [d, t] of Object.entries(DENS)) {
+      const dir = path.join(res, `mipmap-${d}`)
+      if (!fs.existsSync(dir)) continue
+      fs.writeFileSync(path.join(dir, 'ic_launcher.png'), await rendu(t, `<svg xmlns="http://www.w3.org/2000/svg" width="${t}" height="${t}"><rect x="${t * 0.04}" y="${t * 0.04}" width="${t * 0.92}" height="${t * 0.92}" rx="${t * 0.22}" fill="#FBF8F3"/>${logo(t, 0.7)}</svg>`))
+      fs.writeFileSync(path.join(dir, 'ic_launcher_round.png'), await rendu(t, `<svg xmlns="http://www.w3.org/2000/svg" width="${t}" height="${t}"><circle cx="${t / 2}" cy="${t / 2}" r="${t * 0.46}" fill="#FBF8F3"/>${logo(t, 0.62)}</svg>`))
+      // Icône adaptative : premier plan transparent, logo dans la zone sûre (66 % du centre)
+      const f = Math.round(t * 2.25)
+      fs.writeFileSync(path.join(dir, 'ic_launcher_foreground.png'), await rendu(f, `<svg xmlns="http://www.w3.org/2000/svg" width="${f}" height="${f}">${logo(f, 0.5)}</svg>`))
+    }
+    const fond = path.join(res, 'values', 'ic_launcher_background.xml')
+    fs.writeFileSync(fond, '<?xml version="1.0" encoding="utf-8"?>\n<resources>\n    <color name="ic_launcher_background">#FBF8F3</color>\n</resources>\n')
+    // Écrans de lancement : on remplace tous les splash.png de Capacitor
+    const splash = await rendu(1024, `<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024"><rect width="1024" height="1024" fill="#FBF8F3"/>${logo(1024, 0.32)}</svg>`)
+    for (const d of fs.readdirSync(res).filter((x) => x.startsWith('drawable'))) {
+      const p = path.join(res, d, 'splash.png')
+      if (fs.existsSync(p)) fs.writeFileSync(p, splash)
+    }
+    console.log('Icônes et écrans de lancement Android écrits')
+  }
+
   app.quit()
 })

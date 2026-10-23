@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { App } from '@capacitor/app'
 import { CapacitorUpdater } from '@capgo/capacitor-updater'
+import { Capacitor } from '@capacitor/core'
 import { natif } from '../firebase'
 import { usePrefs } from '../i18n'
 import { ICONS, Icon } from './ui'
@@ -9,7 +10,8 @@ import { ICONS, Icon } from './ui'
 const WEB = Number(import.meta.env.VITE_WEB ?? 0)
 const BASE = 'https://raw.githubusercontent.com/kwakwa-ratatouille/Croivez/main/sidestore'
 
-type Manifeste = { web: number; url: string; natifMin: number }
+type Manifeste = { web: number; url: string; natifMin: number; natifMinAndroid?: number }
+const android = Capacitor.getPlatform() === 'android'
 type Etat =
   | { type: 'pret'; id: string; web: number } // nouveau contenu téléchargé, appliqué au prochain lancement
   | { type: 'ipa'; version: string; url: string } // la partie native a changé : il faut réinstaller via SideStore
@@ -33,11 +35,16 @@ export default function MiseAJour() {
         App.getInfo(),
       ])
       const natifInstalle = Number(info.build) || 0
-      if (natifInstalle < m.natifMin) {
-        // Le nouveau contenu demande une version native plus récente : proposer l'IPA
-        const s = await fetch(`${BASE}/source.json?t=${Date.now()}`, sansCache).then((r) => r.json())
-        const v = s.apps?.[0]?.versions?.[0]
-        if (v && Number(v.buildVersion) > natifInstalle && vivant) setEtat({ type: 'ipa', version: v.version, url: v.downloadURL })
+      if (natifInstalle < (android ? m.natifMinAndroid ?? 1 : m.natifMin)) {
+        // Le nouveau contenu demande une version native plus récente : proposer l'IPA (SideStore) ou l'APK
+        if (android) {
+          const a = await fetch(`${BASE}/android.json?t=${Date.now()}`, sansCache).then((r) => r.json())
+          if (a.build > natifInstalle && vivant) setEtat({ type: 'ipa', version: a.version, url: a.url })
+        } else {
+          const s = await fetch(`${BASE}/source.json?t=${Date.now()}`, sansCache).then((r) => r.json())
+          const v = s.apps?.[0]?.versions?.[0]
+          if (v && Number(v.buildVersion) > natifInstalle && vivant) setEtat({ type: 'ipa', version: v.version, url: v.downloadURL })
+        }
         return
       }
       const actuel = await CapacitorUpdater.current()
@@ -57,7 +64,8 @@ export default function MiseAJour() {
 
   const action = etat.type === 'pret'
     ? () => CapacitorUpdater.set({ id: etat.id }) // recharge tout de suite sur le nouveau contenu
-    : () => { window.location.href = `sidestore://install?url=${encodeURIComponent(etat.url)}` }
+    // Android : le navigateur télécharge l'APK, qui s'installe par-dessus (même clé de signature)
+    : () => { window.location.href = android ? etat.url : `sidestore://install?url=${encodeURIComponent(etat.url)}` }
 
   return (
     <div role="status" className="rise card" style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px', background: 'var(--ok-t)', borderColor: 'transparent', color: 'var(--ok-i)', flexWrap: 'wrap' }}>
@@ -67,7 +75,9 @@ export default function MiseAJour() {
         <div style={{ fontSize: 14 }}>
           {etat.type === 'pret'
             ? (fr ? 'Redémarrez maintenant, ou elle s’appliquera au prochain lancement.' : 'Restart now, or it will apply next launch.')
-            : (fr ? `Croivez ${etat.version} : à installer via SideStore.` : `Croivez ${etat.version}: install via SideStore.`)}
+            : android
+              ? (fr ? `Croivez ${etat.version} : téléchargez et installez la nouvelle version.` : `Croivez ${etat.version}: download and install the new version.`)
+              : (fr ? `Croivez ${etat.version} : à installer via SideStore.` : `Croivez ${etat.version}: install via SideStore.`)}
         </div>
       </div>
       <button className="btn btn-p" style={{ minHeight: 44 }} onClick={action}>{etat.type === 'pret' ? (fr ? 'Redémarrer' : 'Restart') : (fr ? 'Mettre à jour' : 'Update')}</button>
