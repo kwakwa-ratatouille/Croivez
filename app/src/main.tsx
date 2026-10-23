@@ -2,6 +2,8 @@ import { Component, StrictMode, type ReactNode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './theme.css'
 import App from './App'
+import { Capacitor } from '@capacitor/core'
+import { CapacitorUpdater } from '@capgo/capacitor-updater'
 
 // Affiche l'erreur au lieu d'un écran vide : indispensable pour diagnostiquer l'app iOS sans console
 class Garde extends Component<{ children: ReactNode }, { erreur: Error | null }> {
@@ -20,6 +22,9 @@ class Garde extends Component<{ children: ReactNode }, { erreur: Error | null }>
 }
 
 window.addEventListener('error', (e) => console.error('Erreur globale', e.error))
+
+// Mise à jour à chaud : signale que ce contenu démarre bien, sinon le module revient à la version précédente
+if (Capacitor.isNativePlatform()) CapacitorUpdater.notifyAppReady().catch(() => {})
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

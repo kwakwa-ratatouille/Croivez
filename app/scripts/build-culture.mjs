@@ -4,15 +4,16 @@
 import { writeFile, mkdir } from 'node:fs/promises'
 
 const UA = { 'User-Agent': 'Croivez/0.1 (app perso de quiz)', Accept: 'application/sparql-results+json' }
-const LIMITE = 600
+const LIMITE = 1200
 
 async function sparql(requete, essais = 3) {
   for (let i = 1; i <= essais; i++) {
+    // Une coupure réseau compte comme un essai raté, pas comme un échec définitif
     const res = await fetch('https://query.wikidata.org/sparql', {
       method: 'POST',
       headers: { ...UA, 'Content-Type': 'application/x-www-form-urlencoded' },
       body: 'query=' + encodeURIComponent(requete),
-    })
+    }).catch((e) => ({ ok: false, status: e.message }))
     if (res.ok) return (await res.json()).results.bindings
     console.warn(`  Wikidata ${res.status}, essai ${i}/${essais}`)
     await new Promise((r) => setTimeout(r, 5000 * i))
@@ -67,6 +68,31 @@ function finaliser(lignes, map) {
   return [...out.values()].sort((a, b) => b.sl - a.sl).slice(0, LIMITE).map(({ sl, ...e }) => e)
 }
 
+// Continent de chaque pays (nom français) : les leurres viennent du même continent
+const CONTINENT = Object.fromEntries(JSON.parse(await (await import('node:fs/promises')).readFile('public/packs/pays.json', 'utf8')).pays.map((p) => [p.nom.fr, p.region.fr]))
+CONTINENT['République populaire de Chine'] = 'Asie'
+
+// Ajoute à chaque élément le libellé d'une propriété (pays, sport…) par lots de 150 : une seule grosse requête dépasserait le délai
+async function enrichir(items, prop, champ, libelle) {
+  for (let i = 0; i < items.length; i += 150) {
+    const lot = items.slice(i, i + 150)
+    const l = await sparql(`SELECT ?item ?vFr ?vEn WHERE {
+  VALUES ?item { ${lot.map((e) => 'wd:' + e.id).join(' ')} }
+  ?item wdt:${prop} ?v. ?v rdfs:label ?vFr FILTER(LANG(?vFr) = "fr")
+  OPTIONAL { ?v rdfs:label ?vEn FILTER(LANG(?vEn) = "en") }
+}`).catch(() => [])
+    const vals = new Map()
+    for (const b of l) { const id = b.item.value.split('/').pop(); if (!vals.has(id)) vals.set(id, { fr: b.vFr.value, en: b.vEn?.value ?? b.vFr.value }) }
+    for (const e of lot) {
+      const v = vals.get(e.id)
+      if (!v) continue
+      e.x = { ...(e.x ?? {}), [champ]: v }
+      e.f = [...(e.f ?? []), [libelle, v]]
+    }
+  }
+  return items
+}
+
 const GENRES = { Q6581097: 'm', Q6581072: 'f' }
 
 // Regroupe toutes les valeurs ?x d'un élément : la première sert de réponse, les autres sont aussi acceptées
@@ -111,20 +137,20 @@ async function extraitsDeezer() {
 }
 
 const THEMES = {
-  films: () => sparql(req('?item wdt:P31 wd:Q11424; wdt:P57 ?x; wdt:P577 ?date.', { sl: 50, select: `?date ${libSelect('x')}`, extra: lib('x') }))
-    .then((l) => finaliser(l, (b) => paire(b, 'x') && ({ ...base(b), r: paire(b, 'x'), f: [[{ fr: 'Sortie', en: 'Released' }, annee(b)]] }))),
+  films: () => sparql(req('?item wdt:P31 wd:Q11424; wdt:P57 ?x; wdt:P577 ?date.', { sl: 35, select: `?date ${libSelect('x')}`, extra: lib('x') }))
+    .then((l) => finaliser(l, (b) => paire(b, 'x') && ({ ...base(b), r: paire(b, 'x'), x: { annee: annee(b) }, g: annee(b)?.slice(0, 3), f: [[{ fr: 'Sortie', en: 'Released' }, annee(b)]] }))),
 
-  series: () => sparql(req('?item wdt:P31 wd:Q5398426; wdt:P580 ?date.', { sl: 40, select: '?date' }))
+  series: () => sparql(req('?item wdt:P31 wd:Q5398426; wdt:P580 ?date.', { sl: 30, select: '?date' }))
     .then((l) => finaliser(l, (b) => annee(b) && ({ ...base(b), r: annee(b) }))),
 
-  acteurs: () => sparql(req('?item wdt:P106 wd:Q10800557; wdt:P18 ?img; wdt:P21 ?genre.', { sl: 70, select: '?genre' }))
+  acteurs: () => sparql(req('?item wdt:P106 wd:Q10800557; wdt:P18 ?img; wdt:P21 ?genre.', { sl: 50, select: '?genre' }))
     .then((l) => finaliser(l, (b) => ({ ...base(b), img: image(b), g: GENRES[b.genre.value.split('/').pop()] }))),
 
   // Maison de disques obligatoire : écarte les personnalités historiques qui « chantaient » aussi
-  artistes: () => sparql(req('VALUES ?metier { wd:Q177220 wd:Q639669 wd:Q2252262 } ?item wdt:P106 ?metier; wdt:P18 ?img; wdt:P21 ?genre; wdt:P264 [].', { sl: 50, select: '?genre' }))
+  artistes: () => sparql(req('VALUES ?metier { wd:Q177220 wd:Q639669 wd:Q2252262 } ?item wdt:P106 ?metier; wdt:P18 ?img; wdt:P21 ?genre; wdt:P264 [].', { sl: 40, select: '?genre' }))
     .then((l) => finaliser(l, (b) => ({ ...base(b), img: image(b), g: GENRES[b.genre.value.split('/').pop()] }))),
 
-  albums: () => sparql(req('?item wdt:P31 wd:Q482994; wdt:P175 ?x. OPTIONAL { ?item wdt:P577 ?date }', { sl: 30, select: `?date ${libSelect('x')}`, extra: lib('x') }))
+  albums: () => sparql(req('?item wdt:P31 wd:Q482994; wdt:P175 ?x. OPTIONAL { ?item wdt:P577 ?date }', { sl: 25, select: `?date ${libSelect('x')}`, extra: lib('x') }))
     // Album éponyme (« Metallica » de Metallica) : la question donnerait la réponse
     .then((l) => finaliser(l, (b) => paire(b, 'x') && b.xFr.value !== b.nFr.value && ({ ...base(b), r: paire(b, 'x'), ...(annee(b) ? { f: [[{ fr: 'Sortie', en: 'Released' }, annee(b)]] } : {}) }))),
 
@@ -217,20 +243,21 @@ SELECT ?item ?sl ?nFr ?nEn ?dFr ?dEn ?img WHERE {
   elements: () => sparql(req('?item wdt:P31 wd:Q11344; wdt:P246 ?sym; wdt:P1086 ?num.', { sl: 0, select: '?sym ?num' }))
     .then((l) => finaliser(l.filter((b) => +b.num.value <= 118), (b) => ({ ...base(b), r: b.sym.value, f: [[{ fr: 'Numéro atomique', en: 'Atomic number' }, b.num.value], [{ fr: 'Symbole', en: 'Symbol' }, b.sym.value]] }))),
 
-  personnalites: () => sparql(req('VALUES ?metier { wd:Q82955 wd:Q901 wd:Q36180 wd:Q1028181 wd:Q2066131 wd:Q937857 wd:Q116 wd:Q1622272 wd:Q131524 wd:Q39631 } ?item wdt:P106 ?metier; wdt:P18 ?img; wdt:P21 ?genre. OPTIONAL { ?item wdt:P569 ?date }', { sl: 110, select: `?genre ?date ${libSelect('metier')}`, extra: lib('metier') }))
-    .then((l) => finaliser(l, (b) => ({ ...base(b), img: image(b), g: GENRES[b.genre.value.split('/').pop()], f: [[{ fr: 'Activité', en: 'Occupation' }, paire(b, 'metier')], ...(annee(b) ? [[{ fr: 'Naissance', en: 'Born' }, annee(b)]] : [])] }))),
+  personnalites: () => sparql(req('VALUES ?metier { wd:Q82955 wd:Q901 wd:Q36180 wd:Q1028181 wd:Q2066131 wd:Q937857 wd:Q116 wd:Q1622272 wd:Q131524 wd:Q39631 } ?item wdt:P106 ?metier; wdt:P18 ?img; wdt:P21 ?genre. OPTIONAL { ?item wdt:P569 ?date }', { sl: 100, select: `?genre ?date ${libSelect('metier')}`, extra: lib('metier') }))
+    .then((l) => finaliser(l, (b) => ({ ...base(b), img: image(b), g: GENRES[b.genre.value.split('/').pop()], x: { metier: paire(b, 'metier'), naissance: annee(b) }, f: [[{ fr: 'Activité', en: 'Occupation' }, paire(b, 'metier')], ...(annee(b) ? [[{ fr: 'Naissance', en: 'Born' }, annee(b)]] : [])] })))
+    .then((items) => enrichir(items, 'P27', 'pays', { fr: 'Pays', en: 'Country' })),
 
-  histoire: () => sparql(req('VALUES ?t { wd:Q178561 wd:Q198 wd:Q10931 wd:Q103495 wd:Q131569 } ?item wdt:P31 ?t. { ?item wdt:P585 ?date } UNION { ?item wdt:P580 ?date }', { sl: 40, select: '?date' }))
+  histoire: () => sparql(req('VALUES ?t { wd:Q178561 wd:Q198 wd:Q10931 wd:Q103495 wd:Q131569 } ?item wdt:P31 ?t. { ?item wdt:P585 ?date } UNION { ?item wdt:P580 ?date }', { sl: 30, select: '?date' }))
     .then((l) => finaliser(l, (b) => annee(b) && ({ ...base(b), r: annee(b) }))),
 
-  logos: () => sparql(req('VALUES ?t { wd:Q4830453 wd:Q891723 wd:Q6881511 wd:Q167037 wd:Q431289 } ?item wdt:P31 ?t; wdt:P154 ?logo.', { sl: 40, select: '?logo' }))
+  logos: () => sparql(req('VALUES ?t { wd:Q4830453 wd:Q891723 wd:Q6881511 wd:Q167037 wd:Q431289 } ?item wdt:P31 ?t; wdt:P154 ?logo.', { sl: 30, select: '?logo' }))
     .then((l) => finaliser(l, (b) => ({ ...base(b), img: image(b, 'logo') }))),
 
-  monuments: () => sparql(req('VALUES ?t { wd:Q570116 wd:Q4989906 wd:Q2319498 wd:Q12518 wd:Q839954 wd:Q23413 wd:Q16560 wd:Q44539 wd:Q1081138 } ?item wdt:P31 ?t; wdt:P18 ?img; wdt:P17 ?x.', { sl: 60, select: libSelect('x'), extra: lib('x') }))
-    .then((l) => finaliser(l, (b) => ({ ...base(b), img: image(b), f: [[{ fr: 'Pays', en: 'Country' }, paire(b, 'x')]] }))),
+  monuments: () => sparql(req('VALUES ?t { wd:Q570116 wd:Q4989906 wd:Q2319498 wd:Q12518 wd:Q839954 wd:Q23413 wd:Q16560 wd:Q44539 wd:Q1081138 } ?item wdt:P31 ?t; wdt:P18 ?img; wdt:P17 ?x.', { sl: 40, select: libSelect('x'), extra: lib('x') }))
+    .then((l) => finaliser(l, (b) => ({ ...base(b), img: image(b), g: b.xFr?.value, f: [[{ fr: 'Pays', en: 'Country' }, paire(b, 'x')]] }))),
 
   tableaux: () => sparql(req('?item wdt:P31 wd:Q3305213; wdt:P18 ?img; wdt:P170 ?x. OPTIONAL { ?item wdt:P571 ?date }', { sl: 25, select: `?date ${libSelect('x')}`, extra: lib('x') }))
-    .then((l) => finaliser(l, (b) => paire(b, 'x') && ({ ...base(b), img: image(b), r: paire(b, 'x'), ...(annee(b) ? { f: [[{ fr: 'Année', en: 'Year' }, annee(b)]] } : {}) }))),
+    .then((l) => finaliser(l, (b) => paire(b, 'x') && ({ ...base(b), img: image(b), r: paire(b, 'x'), g: annee(b)?.slice(0, 2), ...(annee(b) ? { f: [[{ fr: 'Année', en: 'Year' }, annee(b)]] } : {}) }))),
 
   plats: () => sparql(req('?item wdt:P31/wdt:P279? wd:Q746549; wdt:P18 ?img; wdt:P495 ?x.', { sl: 25, select: libSelect('x'), extra: lib('x') }))
     .then(async (l) => {
@@ -238,20 +265,89 @@ SELECT ?item ?sl ?nFr ?nEn ?dFr ?dEn ?img WHERE {
       const { readFile } = await import('node:fs/promises')
       const pays = new Set(JSON.parse(await readFile('public/packs/pays.json', 'utf8')).pays.map((p) => p.nom.fr))
       pays.add('République populaire de Chine')
-      return finaliser(l.filter((b) => b.xFr && pays.has(b.xFr.value)), (b) => ({ ...base(b), img: image(b), r: paire(b, 'x') }))
+      return finaliser(l.filter((b) => b.xFr && pays.has(b.xFr.value)), (b) => ({ ...base(b), img: image(b), r: paire(b, 'x'), g: CONTINENT[b.xFr.value] }))
     }),
 
   // Monnaies et langues : un pays peut en avoir plusieurs, toutes sont acceptées (champ alt)
   monnaies: () => sparql(req('?item wdt:P31 wd:Q3624078; wdt:P38 ?x. FILTER NOT EXISTS { ?item wdt:P576 [] }', { sl: 0, select: libSelect('x'), extra: lib('x') }))
-    .then((l) => avecAlternatives(l, (b) => base(b))),
+    .then((l) => avecAlternatives(l, (b) => ({ ...base(b), g: CONTINENT[b.nFr.value] }))),
 
   langues: () => sparql(req('?item wdt:P31 wd:Q3624078; wdt:P37 ?x. FILTER NOT EXISTS { ?item wdt:P576 [] }', { sl: 0, select: libSelect('x'), extra: lib('x') }))
-    .then((l) => avecAlternatives(l, (b) => base(b))),
+    .then((l) => avecAlternatives(l, (b) => ({ ...base(b), g: CONTINENT[b.nFr.value] }))),
 
   extraits: () => extraitsDeezer(),
 
-  marques: () => sparql(req('VALUES ?t { wd:Q4830453 wd:Q891723 wd:Q6881511 wd:Q167037 wd:Q431289 } ?item wdt:P31 ?t; wdt:P17 ?x.', { sl: 40, select: libSelect('x'), extra: lib('x') }))
+  marques: () => sparql(req('VALUES ?t { wd:Q4830453 wd:Q891723 wd:Q6881511 wd:Q167037 wd:Q431289 } ?item wdt:P31 ?t; wdt:P17 ?x.', { sl: 30, select: libSelect('x'), extra: lib('x') }))
+    .then((l) => finaliser(l, (b) => paire(b, 'x') && ({ ...base(b), r: paire(b, 'x'), g: CONTINENT[b.xFr.value] }))),
+
+  // ——— Sport ———
+  clubs: () => sparql(req('?item wdt:P31 wd:Q476028; wdt:P154 ?logo. OPTIONAL { ?item wdt:P17 ?x }', { sl: 40, select: `?logo ${libSelect('x')}`, extra: `OPTIONAL { ${lib('x')} }` }))
+    .then((l) => finaliser(l, (b) => ({ ...base(b), img: image(b, 'logo'), g: b.xFr?.value, f: [[{ fr: 'Pays', en: 'Country' }, paire(b, 'x')]] }))),
+  sportifs: () => sparql(req('VALUES ?metier { wd:Q937857 wd:Q3665646 wd:Q10833314 wd:Q11513337 wd:Q10843402 wd:Q10871364 wd:Q13382576 wd:Q11338576 wd:Q19204627 wd:Q10843263 } ?item wdt:P106 ?metier; wdt:P18 ?img; wdt:P21 ?genre.', { sl: 70, select: '?genre' }))
+    .then((l) => finaliser(l, (b) => ({ ...base(b), img: image(b), g: GENRES[b.genre.value.split('/').pop()] })))
+    .then((items) => enrichir(items, 'P641', 'sport', { fr: 'Sport', en: 'Sport' })),
+  jo: () => sparql(req('VALUES ?t { wd:Q159821 wd:Q82414 } ?item wdt:P31 ?t; wdt:P17 ?x.', { sl: 30, select: libSelect('x'), extra: lib('x') }))
     .then((l) => finaliser(l, (b) => paire(b, 'x') && ({ ...base(b), r: paire(b, 'x') }))),
+
+  // ——— Littérature & BD ———
+  livres: () => sparql(req('?item wdt:P31 wd:Q7725634; wdt:P50 ?x. OPTIONAL { ?item wdt:P577 ?date }', { sl: 40, select: `?date ${libSelect('x')}`, extra: lib('x') }))
+    .then((l) => finaliser(l, (b) => paire(b, 'x') && ({ ...base(b), r: paire(b, 'x'), x: { annee: annee(b) }, g: annee(b)?.slice(0, 2), ...(annee(b) ? { f: [[{ fr: 'Publication', en: 'Published' }, annee(b)]] } : {}) }))),
+  // Romanciers, poètes, dramaturges : « écrivain » seul ramène aussi des cinéastes
+  auteurs: () => sparql(req('VALUES ?metier { wd:Q6625963 wd:Q49757 wd:Q214917 } ?item wdt:P106 ?metier; wdt:P18 ?img; wdt:P21 ?genre.', { sl: 60, select: '?genre' }))
+    .then((l) => finaliser(l, (b) => ({ ...base(b), img: image(b), g: GENRES[b.genre.value.split('/').pop()] }))),
+  bd: () => sparql(req('VALUES ?t { wd:Q1114461 wd:Q15773347 wd:Q80447738 } ?item wdt:P31 ?t; wdt:P18 ?img.', { sl: 25 }))
+    .then((l) => finaliser(l, (b) => ({ ...base(b), img: image(b) }))),
+  mangas: () => sparql(req('?item wdt:P31 wd:Q21198342; wdt:P50 ?x.', { sl: 25, select: libSelect('x'), extra: lib('x') }))
+    .then((l) => finaliser(l, (b) => paire(b, 'x') && ({ ...base(b), r: paire(b, 'x') }))),
+
+  // ——— Sciences & espace ———
+  // Sans coordonnées : écarte les îles et terres « découvertes » par des navigateurs
+  inventions: () => sparql(req('?item wdt:P61 ?x. ?x wdt:P31 wd:Q5. FILTER NOT EXISTS { ?item wdt:P625 [] }', { sl: 40, select: libSelect('x'), extra: lib('x') }))
+    .then((l) => finaliser(l, (b) => paire(b, 'x') && ({ ...base(b), r: paire(b, 'x') }))),
+  constellations: () => sparql(req('?item wdt:P31 wd:Q8928; wdt:P18 ?img.', { sl: 30 }))
+    .then((l) => finaliser(l, (b) => ({ ...base(b), img: image(b) }))),
+  scientifiques: () => sparql(req('VALUES ?metier { wd:Q901 wd:Q169470 wd:Q593644 wd:Q170790 wd:Q864503 wd:Q11063 } ?item wdt:P106 ?metier; wdt:P18 ?img; wdt:P21 ?genre.', { sl: 60, select: '?genre' }))
+    .then((l) => finaliser(l, (b) => ({ ...base(b), img: image(b), g: GENRES[b.genre.value.split('/').pop()] }))),
+  lunes: () => sparql(req('?item wdt:P31 wd:Q2537; wdt:P397 ?x.', { sl: 15, select: libSelect('x'), extra: lib('x') }))
+    .then((l) => finaliser(l, (b) => paire(b, 'x') && ({ ...base(b), r: paire(b, 'x') }))),
+
+  // ——— Jeux vidéo & pop culture ———
+  jeux: () => sparql(req('?item wdt:P31 wd:Q7889; wdt:P178 ?x. OPTIONAL { ?item wdt:P577 ?date }', { sl: 20, select: `?date ${libSelect('x')}`, extra: lib('x') }))
+    .then((l) => finaliser(l, (b) => paire(b, 'x') && ({ ...base(b), r: paire(b, 'x'), x: { annee: annee(b) }, g: annee(b)?.slice(0, 3), ...(annee(b) ? { f: [[{ fr: 'Sortie', en: 'Released' }, annee(b)]] } : {}) }))),
+  'persos-jeux': () => sparql(req('?item wdt:P31 wd:Q1569167; wdt:P18 ?img.', { sl: 10 }))
+    .then((l) => finaliser(l, (b) => ({ ...base(b), img: image(b) }))),
+  consoles: () => sparql(req('?item wdt:P31/wdt:P279? wd:Q8076; wdt:P176 ?x. OPTIONAL { ?item wdt:P18 ?img }', { sl: 20, select: libSelect('x'), extra: lib('x') }))
+    .then((l) => finaliser(l, (b) => paire(b, 'x') && ({ ...base(b), img: image(b), r: paire(b, 'x') }))),
+
+  // ——— France ———
+  departements: () => sparql(req('?item wdt:P31 wd:Q6465; wdt:P2586 ?num. OPTIONAL { ?item wdt:P36 ?pref } OPTIONAL { ?item wdt:P131 ?reg. ?reg wdt:P31 wd:Q36784 }', { sl: 0, select: `?num ${libSelect('pref')} ${libSelect('reg')}`, extra: 'OPTIONAL { ?pref rdfs:label ?prefFr FILTER(LANG(?prefFr) = "fr") } OPTIONAL { ?pref rdfs:label ?prefEn FILTER(LANG(?prefEn) = "en") } OPTIONAL { ?reg rdfs:label ?regFr FILTER(LANG(?regFr) = "fr") } OPTIONAL { ?reg rdfs:label ?regEn FILTER(LANG(?regEn) = "en") }' }))
+    .then((l) => finaliser(l, (b) => ({ ...base(b), g: b.regFr?.value, x: { numero: /^\d+$/.test(b.num.value) ? String(+b.num.value) : undefined, prefecture: paire(b, 'pref'), region: paire(b, 'reg') }, f: [[{ fr: 'Numéro', en: 'Number' }, b.num.value], [{ fr: 'Préfecture', en: 'Prefecture' }, paire(b, 'pref')], [{ fr: 'Région', en: 'Region' }, paire(b, 'reg')]] }))),
+  presidents: () => sparql(req('?item wdt:P39 wd:Q191954; wdt:P18 ?img.', { sl: 0 }))
+    .then((l) => finaliser(l, (b) => ({ ...base(b), img: image(b) }))),
+
+  // ——— Monde avancé ———
+  montagnes: () => sparql(req('?item wdt:P31 wd:Q8502; wdt:P17 ?x. OPTIONAL { ?item wdt:P18 ?img }', { sl: 50, select: libSelect('x'), extra: lib('x') }))
+    .then((l) => avecAlternatives(l, (b) => ({ ...base(b), img: image(b), g: CONTINENT[b.xFr.value] }))),
+  iles: () => sparql(req('?item wdt:P31 wd:Q23442; wdt:P17 ?x. OPTIONAL { ?item wdt:P18 ?img }', { sl: 60, select: libSelect('x'), extra: lib('x') }))
+    .then((l) => avecAlternatives(l, (b) => ({ ...base(b), img: image(b), g: CONTINENT[b.xFr.value] }))),
+  fleuves: () => sparql(req('?item wdt:P31 wd:Q4022; wdt:P17 ?x.', { sl: 60, select: libSelect('x'), extra: lib('x') }))
+    .then((l) => avecAlternatives(l, (b) => ({ ...base(b), g: CONTINENT[b.xFr.value] }))),
+  'etats-us': () => sparql(req('?item wdt:P31 wd:Q35657; wdt:P36 ?x.', { sl: 0, select: libSelect('x'), extra: lib('x') }))
+    .then((l) => finaliser(l, (b) => paire(b, 'x') && ({ ...base(b), r: paire(b, 'x') }))),
+
+  // ——— Art & architecture ———
+  sculptures: () => sparql(req('?item wdt:P31 wd:Q860861; wdt:P18 ?img; wdt:P170 ?x.', { sl: 20, select: libSelect('x'), extra: lib('x') }))
+    .then((l) => finaliser(l, (b) => paire(b, 'x') && ({ ...base(b), img: image(b), r: paire(b, 'x') }))),
+  architecture: () => sparql(req('?item wdt:P84 ?x; wdt:P18 ?img. ?x wdt:P31 wd:Q5.', { sl: 50, select: libSelect('x'), extra: lib('x') }))
+    .then((l) => finaliser(l, (b) => paire(b, 'x') && ({ ...base(b), img: image(b), r: paire(b, 'x') }))),
+  compositeurs: () => sparql(req('?item wdt:P106 wd:Q36834; wdt:P18 ?img; wdt:P21 ?genre. ?item wdt:P569 ?date. FILTER(YEAR(?date) < 1900)', { sl: 50, select: '?genre' }))
+    .then((l) => finaliser(l, (b) => ({ ...base(b), img: image(b), g: GENRES[b.genre.value.split('/').pop()] }))),
+  mouvements: () => sparql(req('?item wdt:P31 wd:Q3305213; wdt:P18 ?img; wdt:P135 ?x.', { sl: 20, select: libSelect('x'), extra: lib('x') }))
+    .then((l) => finaliser(l, (b) => paire(b, 'x') && ({ ...base(b), img: image(b), r: paire(b, 'x') }))),
+
+  // ——— Langue & mots : vocabulaire courant dans 4 langues ———
+  vocabulaire: () => sparql(req('VALUES ?t { wd:Q3314483 wd:Q11004 wd:Q1075 wd:Q34379 wd:Q39546 wd:Q14745 wd:Q40050 wd:Q42889 wd:Q11460 wd:Q28640 wd:Q7432 } ?item wdt:P31|wdt:P279 ?t. ?item rdfs:label ?es FILTER(LANG(?es) = "es") ?item rdfs:label ?de FILTER(LANG(?de) = "de") ?item rdfs:label ?it FILTER(LANG(?it) = "it")', { sl: 60, select: '?t ?es ?de ?it' }))
+    .then((l) => finaliser(l.filter((b) => !/\s.*\s/.test(b.nFr.value)), (b) => ({ ...base(b), g: b.t.value.split('/').pop(), x: { en: b.nEn?.value, es: b.es.value, de: b.de.value, it: b.it.value } }))),
 }
 
 // Répartition du thème « nature » en trois packs

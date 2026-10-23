@@ -3,5 +3,12 @@
   "appName": "Croivez",
   "webDir": "dist",
   "backgroundColor": "#FBF8F3",
-  "ios": { "contentInset": "never" }
+  "ios": { "contentInset": "never" },
+  "plugins": {
+    "CapacitorUpdater": {
+      "autoUpdate": false,
+      "appReadyTimeout": 15000,
+      "resetWhenUpdate": true
+    }
+  }
 }

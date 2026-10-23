@@ -7,6 +7,9 @@
   --sci:#E8AFC0;--sci-t:#FAE8EE;--sci-i:#8A3E56;--his:#DDB65E;--his-t:#F8EFD8;--his-i:#765610;
   --brd:#8FA0CF;--brd-t:#E7EBF6;--brd-i:#3E4F86;--ok:#8FD3B6;--ok-t:#E2F5EC;--ok-i:#22664A;
   --ko:#E0997A;--ko-t:#FBE9E1;--ko-i:#97482A;
+  /* Familles ajoutées : même douceur que les couleurs de la DA */
+  --spo:#7FC8A9;--spo-t:#E4F4EC;--spo-i:#245E47;--lit:#D9A07E;--lit-t:#F8EADF;--lit-i:#7D4424;
+  --jv:#C8A2D6;--jv-t:#F4EAF7;--jv-i:#6B3E7C;--lan:#C7B47E;--lan-t:#F4EEDD;--lan-i:#66552A;
   color-scheme: light;
 }
 :root[data-theme="dark"] {
@@ -17,6 +20,8 @@
   --sci:#EDB9C9;--sci-t:#3C2839;--sci-i:#F5CAD8;--his:#E5C26E;--his-t:#38321F;--his-i:#EED493;
   --brd:#9DADDA;--brd-t:#232F50;--brd-i:#BFCBEF;--ok:#93D9BB;--ok-t:#1D3B35;--ok-i:#A8E6CB;
   --ko:#E9A585;--ko-t:#3E2C29;--ko-i:#F3BCA2;
+  --spo:#8ED6B7;--spo-t:#1C3B32;--spo-i:#A9E6CC;--lit:#E6B293;--lit-t:#3D2D27;--lit-i:#F2C8AE;
+  --jv:#D4B2E1;--jv-t:#33283F;--jv-i:#E4CCED;--lan:#D6C590;--lan-t:#36311F;--lan-i:#E8DAAE;
   color-scheme: dark;
 }
 
@@ -78,6 +83,7 @@ button { font-family: inherit; }
 
 /* Mobile (iOS) : la barre latérale devient une barre d'onglets en bas */
 .entete-mobile { display: none; }
+.barre-suivant { display: none; }
 
 @media (max-width: 760px) {
   .shell { flex-direction: column; }
@@ -88,7 +94,12 @@ button { font-family: inherit; }
   .nav { flex: 1 1 0; min-width: 0; position: relative; flex-direction: column; align-items: center; justify-content: center; gap: 3px; min-height: 54px; padding: 4px 0; font-size: 10.5px; text-align: center; border-radius: 12px; }
   .nav .chip { position: absolute; top: 0; left: calc(50% + 6px); margin: 0 !important; min-height: 18px !important; padding: 0 6px !important; font-size: 11px; }
   .main { padding: calc(20px + env(safe-area-inset-top)) 16px calc(96px + env(safe-area-inset-bottom)); gap: 20px; }
-  .partie { padding: calc(16px + env(safe-area-inset-top)) 16px calc(32px + env(safe-area-inset-bottom)) !important; }
+  .partie { padding: calc(16px + env(safe-area-inset-top)) 16px calc(110px + env(safe-area-inset-bottom)) !important; gap: 16px !important; }
+  .partie h1 { font-size: 22px !important; }
+  .partie section > img { height: 150px !important; }
+  /* Bouton Suivant fixé en bas : on enchaîne sans faire défiler ; la fiche reste lisible au-dessus */
+  .barre-suivant { display: block; position: fixed; inset: auto 0 0 0; z-index: 20; padding: 12px 16px calc(12px + env(safe-area-inset-bottom)); background: var(--bg); border-top: 1px solid var(--line); }
+  .btn-suivant-fiche { display: none !important; }
 }
 
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }

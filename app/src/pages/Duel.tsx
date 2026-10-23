@@ -8,7 +8,9 @@ import { genererPartie, type Question } from '../quiz/engine'
 import { QUESTIONS_DUEL, SECONDES_DUEL, repondreDuel, terminerDuel, type Duel as DuelT } from '../duel'
 import { Coche, Croix, ICONS, Icon, Logo } from '../components/ui'
 import Extrait from '../components/Extrait'
+import Img from '../components/Img'
 import CarteQuiz from '../components/CarteQuiz'
+import { retourReponse } from '../retour'
 
 export default function Duel() {
   const { id = '' } = useParams()
@@ -46,6 +48,7 @@ export default function Duel() {
 
   const repondre = useCallback((label: string | null) => {
     if (!q || maReponse || !moi) return
+    retourReponse(label === q.reponse)
     repondreDuel(id, uid, i, label === q.reponse, Date.now() - debut, moi.score)
   }, [q, maReponse, moi, id, uid, i, debut])
 
@@ -115,7 +118,7 @@ export default function Duel() {
       {q && (
         <section key={i} className="rise" style={{ width: '100%', maxWidth: 1040, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20 }}>
           <h1 className="t" style={{ fontSize: 28, fontWeight: 900, textAlign: 'center' }}>{q.enonce}</h1>
-          {q.image && <img src={q.image} alt="" style={{ height: 180, maxWidth: '100%', borderRadius: 16, border: '1px solid var(--line)', objectFit: 'contain' }} />}
+          {q.image && <Img src={q.image} alt="" style={{ height: 180, maxWidth: '100%', borderRadius: 16, border: '1px solid var(--line)', objectFit: 'contain' }} />}
           {q.carte && <CarteQuiz carte={q.carte} repondu={!!maReponse} onClic={() => {}} />}
           {q.audio && <Extrait id={q.audio} />}
           <div style={{ width: '100%', display: 'grid', gridTemplateColumns: q.imagesOnly ? 'repeat(auto-fit, minmax(180px, 1fr))' : 'repeat(2, minmax(0, 1fr))', gap: 12 }}>
@@ -126,7 +129,7 @@ export default function Duel() {
                   style={{ display: 'flex', flexDirection: q.imagesOnly ? 'column' : 'row', alignItems: 'center', gap: 12, padding: q.imagesOnly ? 14 : '0 18px', minHeight: 64, borderRadius: 18, cursor: maReponse ? 'default' : 'pointer', font: "600 17px 'DM Sans', sans-serif", color: 'var(--text)', textAlign: 'left',
                     background: etat === 'ok' ? 'var(--ok-t)' : 'var(--surface)', border: `2px solid ${etat === 'ok' ? 'var(--ok)' : 'var(--line)'}`, opacity: etat === 'dim' ? .55 : 1, transition: 'all .2s ease-out' }}>
                   <span className="kbd">{n + 1}</span>
-                  {o.image && <img src={o.image} alt="" style={{ width: '100%', aspectRatio: '3 / 2', objectFit: 'contain', borderRadius: 8 }} />}
+                  {o.image && <Img src={o.image} alt="" style={{ width: '100%', aspectRatio: '3 / 2', objectFit: 'contain', borderRadius: 8 }} />}
                   {(!q.imagesOnly || maReponse) && <span style={{ flex: 1 }}>{o.label}</span>}
                 </button>
               )

@@ -5,8 +5,10 @@ import { usePrefs } from '../i18n'
 import { trouverSousTheme } from '../themes'
 import { calculerXp, difficulteAuto, distanceKm, genererPartie, type Difficulte, type Mode, type Question, type SousThemeId } from '../quiz/engine'
 import { estCorrect } from '../quiz/match'
+import { retourFin, retourReponse } from '../retour'
 import { Coche, Croix, ICONS, Icon, Logo } from '../components/ui'
 import Extrait from '../components/Extrait'
+import Img from '../components/Img'
 import CarteQuiz, { type Clic } from '../components/CarteQuiz'
 
 type Reponse = { q: Question; donnee: string; juste: boolean; clic?: Clic; km?: number }
@@ -24,6 +26,7 @@ export default function Partie() {
   const chrono = Number(params.get('t') ?? 0)
   const defi = params.get('defi') === '1'
   const revision = params.get('rev') === '1'
+  const rapide = params.get('r') === '1' // mode rapide : pas de fiche, question suivante automatique
   const seed = defi ? Number(jour().replace(/-/g, '')) : undefined
   const difficulte = diffChoisie || difficulteAuto(profile?.maitrise?.[sousTheme])
   const k = trouverSousTheme(sousTheme)?.famille.k ?? 'geo'
@@ -35,6 +38,7 @@ export default function Partie() {
   const [restant, setRestant] = useState(chrono)
   const [fini, setFini] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
+  const debutTouche = useRef<{ x: number; y: number } | null>(null)
 
   const demarrer = useCallback((ids?: string[]) => {
     setQuestions(null)
@@ -56,6 +60,7 @@ export default function Partie() {
   const enregistrer = useCallback((r: Omit<Reponse, 'q'>) => {
     if (!q || reponses[i]) return
     setReponses((prev) => [...prev, { q, ...r }])
+    retourReponse(r.juste)
   }, [q, i, reponses])
 
   const repondre = useCallback((donnee: string) => {
@@ -76,11 +81,11 @@ export default function Partie() {
 
   const suivant = useCallback(() => {
     if (!questions) return
-    if (i + 1 >= questions.length) { setFini(true); return }
+    if (i + 1 >= questions.length) { setFini(true); retourFin(reponses.filter((x) => x.juste).length >= questions.length / 2); return }
     setI(i + 1)
     setSaisie('')
     setRestant(chrono)
-  }, [i, questions, chrono])
+  }, [i, questions, chrono, reponses])
 
   // Chrono : à zéro, la question compte comme ratée
   useEffect(() => {
@@ -91,6 +96,13 @@ export default function Partie() {
   }, [chrono, restant, courante, fini, q, enregistrer])
 
   useEffect(() => { if (q && !q.options.length && !q.carte && !courante) inputRef.current?.focus() }, [q, courante])
+
+  // Mode rapide : on laisse juste le temps de voir ✓ ou ✗ (un peu plus en cas d'erreur, pour lire la bonne réponse)
+  useEffect(() => {
+    if (!rapide || !courante) return
+    const t = setTimeout(suivant, courante.juste ? 650 : q?.carte ? 1800 : 1400)
+    return () => clearTimeout(t)
+  }, [rapide, courante, suivant, q])
 
   // Raccourcis : 1-4 pour répondre, Entrée pour passer à la suite
   useEffect(() => {
@@ -126,10 +138,20 @@ export default function Partie() {
     demarrer(ids)
   }} />
 
+  // Balayer vers la gauche (après avoir répondu) passe à la question suivante
+  const toucher = (e: React.TouchEvent) => { debutTouche.current = { x: e.touches[0].clientX, y: e.touches[0].clientY } }
+  const relacher = (e: React.TouchEvent) => {
+    const d = debutTouche.current
+    if (!d || !courante || q?.carte) return
+    const dx = e.changedTouches[0].clientX - d.x
+    const dy = e.changedTouches[0].clientY - d.y
+    if (dx < -70 && Math.abs(dy) < 50) suivant()
+  }
+
   const submit = (e: FormEvent) => { e.preventDefault(); if (saisie.trim()) repondre(saisie) }
 
   return (
-    <div className="partie" style={{ minHeight: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '28px 40px 48px', gap: 24 }}>
+    <div className="partie" onTouchStart={toucher} onTouchEnd={relacher} style={{ minHeight: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '28px 40px 48px', gap: 24 }}>
       <header style={{ width: '100%', maxWidth: 1040, display: 'flex', alignItems: 'center', gap: 20 }}>
         <Link to="/" className="btn btn-g" aria-label={t('q.quit')} style={{ minHeight: 44, padding: '0 14px' }}><Icon d={ICONS.close} /></Link>
         <div className="bar" style={{ flex: 1 }}><span style={{ width: `${((i + (courante ? 1 : 0)) / questions.length) * 100}%`, background: `var(--${k})` }} /></div>
@@ -149,7 +171,7 @@ export default function Partie() {
       <section key={i} className="rise" style={{ width: '100%', maxWidth: 1040, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 24 }}>
         <h1 className="t" style={{ fontSize: 30, fontWeight: 900, textAlign: 'center', maxWidth: 760 }}>{q.enonce}</h1>
         {q.image && (
-          <img src={q.image} alt="" style={{ height: 220, maxWidth: '100%', borderRadius: 18, boxShadow: 'var(--shadow)', border: '1px solid var(--line)', objectFit: 'contain', background: 'var(--surface)' }} />
+          <Img src={q.image} alt="" style={{ height: 220, maxWidth: '100%', borderRadius: 18, boxShadow: 'var(--shadow)', border: '1px solid var(--line)', objectFit: 'contain', background: 'var(--surface)' }} />
         )}
         {q.carte && <CarteQuiz carte={q.carte} clic={courante?.clic} repondu={!!courante} onClic={repondreCarte} />}
         {q.audio && <Extrait id={q.audio} />}
@@ -171,7 +193,7 @@ export default function Partie() {
                     opacity: etat === 'dim' ? .55 : 1, transition: 'all .2s ease-out',
                   }}>
                   <span className="kbd" style={{ flex: 'none' }}>{n + 1}</span>
-                  {o.image && <img src={o.image} alt="" style={{ width: '100%', aspectRatio: '3 / 2', objectFit: 'contain', borderRadius: 10 }} />}
+                  {o.image && <Img src={o.image} alt="" style={{ width: '100%', aspectRatio: '3 / 2', objectFit: 'contain', borderRadius: 10 }} />}
                   {(!q.imagesOnly || courante) && <span style={{ flex: 1 }}>{o.label}</span>}
                   {etat === 'ok' && <Coche />}
                   {etat === 'ko' && <Croix />}
@@ -189,7 +211,19 @@ export default function Partie() {
           </form>
         )}
 
-        {courante && <Fiche r={courante} onNext={suivant} dernier={i + 1 >= questions.length} k={k} />}
+        {courante && rapide && (
+          <p className="rise" role="status" style={{ display: 'flex', alignItems: 'center', gap: 10, fontWeight: 800, fontSize: 20, color: courante.juste ? 'var(--ok-i)' : 'var(--ko-i)' }}>
+            {courante.juste ? <Coche size={32} /> : <Croix size={28} />}
+            {courante.juste ? t('q.right') : `${t('q.answerWas')} ${courante.q.reponse}`}
+          </p>
+        )}
+        {courante && !rapide && <Fiche r={courante} onNext={suivant} dernier={i + 1 >= questions.length} k={k} />}
+        {/* Sur téléphone : bouton Suivant toujours à portée de pouce, la fiche reste à lire en faisant défiler */}
+        {courante && !rapide && (
+          <div className="barre-suivant">
+            <button className="btn btn-p btn-lg" onClick={suivant} style={{ width: '100%' }}>{i + 1 >= questions.length ? t('res.title') : t('q.next')}<Icon d={ICONS.arrowR} /></button>
+          </div>
+        )}
       </section>
     </div>
   )
@@ -201,7 +235,7 @@ function Fiche({ r, onNext, dernier, k }: { r: Reponse; onNext: () => void; dern
   const seuil = r.q.carte?.seuilKm
   return (
     <div className="card rise" role="status" style={{ width: '100%', padding: 28, display: 'flex', gap: 28, flexWrap: 'wrap', alignItems: 'center', borderColor: r.juste ? 'var(--ok)' : 'var(--ko)', borderWidth: 2 }}>
-      {f.image && <img src={f.image} alt="" style={{ width: 160, borderRadius: 12, border: '1px solid var(--line)', flex: 'none' }} />}
+      {f.image && <Img src={f.image} alt="" style={{ width: 160, borderRadius: 12, border: '1px solid var(--line)', flex: 'none' }} />}
       <div style={{ flex: '1 1 340px', display: 'flex', flexDirection: 'column', gap: 12 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
           {r.juste ? <Coche size={30} /> : <Croix size={26} />}
@@ -218,7 +252,7 @@ function Fiche({ r, onNext, dernier, k }: { r: Reponse; onNext: () => void; dern
           <Icon d={ICONS.link} size={16} />{t('q.more')}
         </a>
       </div>
-      <button className="btn btn-p btn-lg" onClick={onNext} autoFocus>{dernier ? t('res.title') : t('q.next')}<span className="kbd">Entrée</span></button>
+      <button className="btn btn-p btn-lg btn-suivant-fiche" onClick={onNext} autoFocus>{dernier ? t('res.title') : t('q.next')}<span className="kbd">Entrée</span></button>
     </div>
   )
 }
@@ -251,7 +285,7 @@ function Resultat({ reponses, xp, k, onReplay }: { reponses: Reponse[]; xp: numb
             <h2 className="t" style={{ fontSize: 22, fontWeight: 800 }}>{t('res.review')}</h2>
             {erreurs.map((r) => (
               <div key={r.q.id} style={{ display: 'flex', alignItems: 'center', gap: 16, padding: 12, borderRadius: 16, background: 'var(--surface2)' }}>
-                {r.q.fiche.image && <img src={r.q.fiche.image} alt="" style={{ width: 54, borderRadius: 6 }} />}
+                {r.q.fiche.image && <Img src={r.q.fiche.image} alt="" style={{ width: 54, borderRadius: 6 }} />}
                 <div style={{ flex: 1 }}><div style={{ fontWeight: 700 }}>{r.q.reponse}</div><div style={{ fontSize: 14, color: 'var(--muted)' }}>{r.q.enonce}</div></div>
                 {r.donnee && <span style={{ fontSize: 14, color: 'var(--ko-i)', textDecoration: r.km === undefined ? 'line-through' : 'none' }}>{r.donnee}</span>}
               </div>

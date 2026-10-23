@@ -29,6 +29,7 @@ export default function Configuration() {
   const [mode, setMode] = useState<Mode>('qcm')
   const [chrono, setChrono] = useState(false)
   const [duree, setDuree] = useState(20)
+  const [rapide, setRapide] = useState(() => { try { return localStorage.getItem('rapide') === '1' } catch { return false } })
 
   const qcmSeul = sub === 'drapeaux-inverse'
   const carteSeule = sub.startsWith('villes') // on place toujours la ville sur la carte
@@ -40,7 +41,10 @@ export default function Configuration() {
     : surCarte ? (lang === 'fr' ? 'Nommer le pays surligné' : 'Name the highlighted country')
     : t(id === 'qcm' ? 'cfg.qcm' : 'cfg.free')
   const diffAuto = difficulteAuto(profile?.maitrise?.[sub])
-  const lancer = () => nav(`/partie?s=${sub}&m=${modeEffectif}&n=${nombre}&d=${diff}&t=${chrono ? duree : 0}`)
+  const lancer = () => {
+    try { localStorage.setItem('rapide', rapide ? '1' : '0') } catch { /* stockage indisponible */ }
+    nav(`/partie?s=${sub}&m=${modeEffectif}&n=${nombre}&d=${diff}&t=${chrono ? duree : 0}${rapide ? '&r=1' : ''}`)
+  }
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Enter' && !(e.target instanceof HTMLButtonElement)) lancer() }
@@ -97,6 +101,13 @@ export default function Configuration() {
                 {chrono
                   ? [10, 20, 30].map((s) => <button key={s} type="button" className="pill" aria-pressed={duree === s} onClick={() => setDuree(s)}>{s} s</button>)
                   : <span style={{ color: 'var(--muted)', fontWeight: 500 }}>{t('cfg.zen')}</span>}
+              </div>
+            </fieldset>
+            <fieldset style={{ border: 0, padding: 0, margin: 0 }}>
+              <legend className="t" style={{ fontSize: 20, fontWeight: 800, padding: 0, marginBottom: 14 }}>{lang === 'fr' ? 'Mode rapide' : 'Quick mode'}</legend>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14, minHeight: 48 }}>
+                <Toggle on={rapide} onChange={setRapide} label={lang === 'fr' ? 'Mode rapide' : 'Quick mode'} />
+                <span style={{ color: 'var(--muted)', fontWeight: 500 }}>{rapide ? (lang === 'fr' ? 'Pas de fiche : réponse, puis question suivante' : 'No card: answer, then next question') : (lang === 'fr' ? 'Fiche après chaque réponse' : 'Card after each answer')}</span>
               </div>
             </fieldset>
           </div>

@@ -1,0 +1,57 @@
+# Mise à jour à chaud : à chaque modification de l'app, publie le contenu web (quelques Mo)
+# que l'app iPhone télécharge en silence, sans réinstallation via SideStore.
+# Le numéro de contenu = nombre de commits (toujours croissant).
+name: Mise à jour à chaud
+
+on:
+  push:
+    branches: [main]
+    paths: ['app/**']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: web
+  cancel-in-progress: true
+
+jobs:
+  web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      - name: Numéro du contenu
+        run: echo "WEB=$(git rev-list --count HEAD)" >> "$GITHUB_ENV"
+
+      - name: Build
+        working-directory: app
+        env:
+          ELECTRON_SKIP_BINARY_DOWNLOAD: '1'
+        run: |
+          npm ci
+          VITE_WEB=$WEB npm run build
+          cd dist && zip -qr ../web.zip .
+
+      - name: Publier le paquet
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "web-$WEB" app/web.zip --target main --title "Contenu web $WEB" --notes "Mise à jour à chaud (sans réinstallation)." --latest=false
+          NATIF_MIN=$(tr -d '[:space:]' < app/natif-min.txt)
+          printf '{\n  "web": %s,\n  "url": "https://github.com/%s/releases/download/web-%s/web.zip",\n  "natifMin": %s\n}\n' "$WEB" "${{ github.repository }}" "$WEB" "$NATIF_MIN" > sidestore/web.json
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add sidestore/web.json
+          git commit -m "Contenu web $WEB"
+          git pull --rebase origin main
+          git push origin main
