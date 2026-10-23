@@ -69,6 +69,47 @@ function finaliser(lignes, map) {
 
 const GENRES = { Q6581097: 'm', Q6581072: 'f' }
 
+// Regroupe toutes les valeurs ?x d'un élément : la première sert de réponse, les autres sont aussi acceptées
+function avecAlternatives(lignes, map) {
+  const valeurs = new Map()
+  for (const b of lignes) {
+    const v = paire(b, 'x')
+    if (!v) continue
+    const l = valeurs.get(b.item.value) ?? []
+    if (!l.some((x) => x.fr === v.fr)) l.push(v)
+    valeurs.set(b.item.value, l)
+  }
+  return finaliser(lignes, (b) => {
+    const l = valeurs.get(b.item.value)
+    return l && { ...map(b), r: l[0], ...(l.length > 1 ? { alt: l.slice(1) } : {}) }
+  })
+}
+
+// Extraits musicaux : 3 titres phares des artistes les plus connus (Deezer, sans clé).
+// Les liens d'écoute expirent : on ne stocke que l'identifiant du titre, l'app redemande le lien à l'écoute.
+async function extraitsDeezer() {
+  const { readFile } = await import('node:fs/promises')
+  const artistes = JSON.parse(await readFile('public/packs/culture/artistes.json', 'utf8')).slice(0, 220)
+  const out = []
+  for (const a of artistes) {
+    try {
+      const r = await (await fetch(`https://api.deezer.com/search/artist?q=${encodeURIComponent(a.n.en)}&limit=1`)).json()
+      const art = r.data?.[0]
+      // Le nom trouvé doit correspondre, sinon Deezer propose un homonyme obscur
+      if (!art || art.name.toLowerCase() !== a.n.en.toLowerCase() || art.nb_fan < 50000) continue
+      const top = await (await fetch(`https://api.deezer.com/artist/${art.id}/top?limit=3`)).json()
+      for (const t of top.data ?? []) {
+        if (!t.preview) continue
+        out.push({ id: String(t.id), n: { fr: t.title_short, en: t.title_short }, r: art.name, g: a.g, img: t.album?.cover_medium, f: [[{ fr: 'Titre', en: 'Title' }, t.title_short], [{ fr: 'Album', en: 'Album' }, t.album?.title]] })
+      }
+    } catch (e) {
+      console.warn('  ', a.n.en, e.message)
+    }
+    await new Promise((ok) => setTimeout(ok, 250)) // limite Deezer : 50 requêtes / 5 s
+  }
+  return out
+}
+
 const THEMES = {
   films: () => sparql(req('?item wdt:P31 wd:Q11424; wdt:P57 ?x; wdt:P577 ?date.', { sl: 50, select: `?date ${libSelect('x')}`, extra: lib('x') }))
     .then((l) => finaliser(l, (b) => paire(b, 'x') && ({ ...base(b), r: paire(b, 'x'), f: [[{ fr: 'Sortie', en: 'Released' }, annee(b)]] }))),
@@ -184,6 +225,30 @@ SELECT ?item ?sl ?nFr ?nEn ?dFr ?dEn ?img WHERE {
 
   logos: () => sparql(req('VALUES ?t { wd:Q4830453 wd:Q891723 wd:Q6881511 wd:Q167037 wd:Q431289 } ?item wdt:P31 ?t; wdt:P154 ?logo.', { sl: 40, select: '?logo' }))
     .then((l) => finaliser(l, (b) => ({ ...base(b), img: image(b, 'logo') }))),
+
+  monuments: () => sparql(req('VALUES ?t { wd:Q570116 wd:Q4989906 wd:Q2319498 wd:Q12518 wd:Q839954 wd:Q23413 wd:Q16560 wd:Q44539 wd:Q1081138 } ?item wdt:P31 ?t; wdt:P18 ?img; wdt:P17 ?x.', { sl: 60, select: libSelect('x'), extra: lib('x') }))
+    .then((l) => finaliser(l, (b) => ({ ...base(b), img: image(b), f: [[{ fr: 'Pays', en: 'Country' }, paire(b, 'x')]] }))),
+
+  tableaux: () => sparql(req('?item wdt:P31 wd:Q3305213; wdt:P18 ?img; wdt:P170 ?x. OPTIONAL { ?item wdt:P571 ?date }', { sl: 25, select: `?date ${libSelect('x')}`, extra: lib('x') }))
+    .then((l) => finaliser(l, (b) => paire(b, 'x') && ({ ...base(b), img: image(b), r: paire(b, 'x'), ...(annee(b) ? { f: [[{ fr: 'Année', en: 'Year' }, annee(b)]] } : {}) }))),
+
+  plats: () => sparql(req('?item wdt:P31/wdt:P279? wd:Q746549; wdt:P18 ?img; wdt:P495 ?x.', { sl: 25, select: libSelect('x'), extra: lib('x') }))
+    .then(async (l) => {
+      // Origine = un pays actuel (pas « Mésoamérique » ni « Grèce antique »), comparé à la liste des pays
+      const { readFile } = await import('node:fs/promises')
+      const pays = new Set(JSON.parse(await readFile('public/packs/pays.json', 'utf8')).pays.map((p) => p.nom.fr))
+      pays.add('République populaire de Chine')
+      return finaliser(l.filter((b) => b.xFr && pays.has(b.xFr.value)), (b) => ({ ...base(b), img: image(b), r: paire(b, 'x') }))
+    }),
+
+  // Monnaies et langues : un pays peut en avoir plusieurs, toutes sont acceptées (champ alt)
+  monnaies: () => sparql(req('?item wdt:P31 wd:Q3624078; wdt:P38 ?x. FILTER NOT EXISTS { ?item wdt:P576 [] }', { sl: 0, select: libSelect('x'), extra: lib('x') }))
+    .then((l) => avecAlternatives(l, (b) => base(b))),
+
+  langues: () => sparql(req('?item wdt:P31 wd:Q3624078; wdt:P37 ?x. FILTER NOT EXISTS { ?item wdt:P576 [] }', { sl: 0, select: libSelect('x'), extra: lib('x') }))
+    .then((l) => avecAlternatives(l, (b) => base(b))),
+
+  extraits: () => extraitsDeezer(),
 
   marques: () => sparql(req('VALUES ?t { wd:Q4830453 wd:Q891723 wd:Q6881511 wd:Q167037 wd:Q431289 } ?item wdt:P31 ?t; wdt:P17 ?x.', { sl: 40, select: libSelect('x'), extra: lib('x') }))
     .then((l) => finaliser(l, (b) => paire(b, 'x') && ({ ...base(b), r: paire(b, 'x') }))),

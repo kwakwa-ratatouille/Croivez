@@ -17,7 +17,7 @@ export type Duel = {
 
 export const QUESTIONS_DUEL = 10
 export const SECONDES_DUEL = 15
-const THEMES: SousThemeId[] = ['drapeaux', 'capitales', 'drapeaux-inverse', 'capitales-inverse', 'pays-carte']
+const THEMES: SousThemeId[] = ['drapeaux', 'capitales', 'drapeaux-inverse', 'capitales-inverse', 'pays-carte', 'acteurs', 'films', 'artistes', 'logos', 'animaux', 'personnalites', 'monuments', 'elements', 'extraits', 'plats']
 
 function nouveauDuel(uid: string, pseudo: string, invite?: string): Duel {
   return {

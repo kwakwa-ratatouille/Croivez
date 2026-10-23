@@ -21,8 +21,8 @@ export type SousThemeId = 'drapeaux' | 'drapeaux-inverse' | 'capitales' | 'capit
 
 // Thèmes générés depuis Wikidata (scripts/build-culture.mjs)
 type Texte = Record<Lang, string>
-export type ItemCulture = { id: string; n: Texte; d?: Texte; img?: string; r?: string | Texte; g?: string; f?: [Texte, string | Texte | undefined][] }
-type TypeCulture = 'image' | 'attribut' | 'annee'
+export type ItemCulture = { id: string; n: Texte; d?: Texte; img?: string; r?: string | Texte; g?: string; alt?: Texte[]; f?: [Texte, string | Texte | undefined][] }
+type TypeCulture = 'image' | 'attribut' | 'annee' | 'audio'
 const CULTURE = {
   films: { type: 'attribut', q: { fr: (n) => `Qui a réalisé « ${n} » ?`, en: (n) => `Who directed “${n}”?` } },
   series: { type: 'annee', q: { fr: (n) => `En quelle année a débuté la série « ${n} » ?`, en: (n) => `In what year did “${n}” first air?` } },
@@ -38,7 +38,13 @@ const CULTURE = {
   histoire: { type: 'annee', q: { fr: (n) => `En quelle année a commencé : ${n} ?`, en: (n) => `In what year did this begin: ${n}?` } },
   logos: { type: 'image', q: { fr: () => 'À quelle marque appartient ce logo ?', en: () => 'Which brand does this logo belong to?' } },
   marques: { type: 'attribut', q: { fr: (n) => `De quel pays vient ${n} ?`, en: (n) => `Which country is ${n} from?` } },
-} satisfies Record<string, { type: TypeCulture; q: Record<Lang, (nom: string, genre?: string) => string> }>
+  monuments: { type: 'image', q: { fr: () => 'Quel est ce monument ?', en: () => 'What is this landmark?' } },
+  plats: { type: 'attribut', montrer: true, q: { fr: (n) => `De quel pays vient ce plat : ${n} ?`, en: (n) => `Which country is this dish from: ${n}?` } },
+  monnaies: { type: 'attribut', q: { fr: (n) => `Quelle est la monnaie de ce pays : ${n} ?`, en: (n) => `What is the currency of ${n}?` } },
+  langues: { type: 'attribut', q: { fr: (n) => `Quelle est une langue officielle de ce pays : ${n} ?`, en: (n) => `What is an official language of ${n}?` } },
+  tableaux: { type: 'attribut', montrer: true, q: { fr: (n) => `Qui a peint « ${n} » ?`, en: (n) => `Who painted “${n}”?` } },
+  extraits: { type: 'audio', q: { fr: () => 'Qui interprète ce titre ?', en: () => 'Who performs this song?' } },
+} satisfies Record<string, { type: TypeCulture; montrer?: boolean; q: Record<Lang, (nom: string, genre?: string) => string> }>
 export type CultureId = keyof typeof CULTURE
 export const estCulture = (s: string): s is CultureId => s in CULTURE
 
@@ -60,6 +66,7 @@ export type Question = {
   acceptees: string[]
   options: Option[]
   imagesOnly: boolean
+  audio?: string // identifiant de titre Deezer (extrait à écouter)
   carte?: Carte
   fiche: Fiche
 }
@@ -250,11 +257,12 @@ function culture({ sousTheme, difficulte, nombre, mode, lang, ids }: Opts, items
   return cibles.map((it): Question => {
     const nom = it.n[lang]
     const reponse = cfg.type === 'image' ? nom : texte(it.r, lang)
-    const acceptees = cfg.type === 'image' ? [it.n.fr, it.n.en] : typeof it.r === 'string' ? [it.r] : [it.r!.fr, it.r!.en]
+    const acceptees = cfg.type === 'image' ? [it.n.fr, it.n.en] : [it.r!, ...(it.alt ?? [])].flatMap((v) => (typeof v === 'string' ? [v] : [v.fr, v.en]))
 
     let options: Option[] = []
     if (mode === 'qcm') {
-      const vus = new Set([reponse])
+      // Les autres réponses valables (2e langue officielle…) ne doivent pas servir de leurre
+      const vus = new Set([reponse, ...(it.alt ?? []).map((v) => texte(v, lang))])
       const autres: string[] = []
       if (cfg.type === 'annee') {
         while (autres.length < 3) {
@@ -278,7 +286,8 @@ function culture({ sousTheme, difficulte, nombre, mode, lang, ids }: Opts, items
     return {
       id: it.id,
       enonce: cfg.q[lang](nom, it.g),
-      image: cfg.type === 'image' ? it.img : undefined,
+      image: cfg.type === 'image' || ('montrer' in cfg && cfg.montrer) ? it.img : undefined,
+      audio: cfg.type === 'audio' ? it.id : undefined,
       reponse,
       acceptees,
       options,

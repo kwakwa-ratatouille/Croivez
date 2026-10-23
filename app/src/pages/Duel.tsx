@@ -7,6 +7,7 @@ import { usePrefs } from '../i18n'
 import { genererPartie, type Question } from '../quiz/engine'
 import { QUESTIONS_DUEL, SECONDES_DUEL, repondreDuel, terminerDuel, type Duel as DuelT } from '../duel'
 import { Coche, Croix, ICONS, Icon, Logo } from '../components/ui'
+import Extrait from '../components/Extrait'
 import CarteQuiz from '../components/CarteQuiz'
 
 export default function Duel() {
@@ -116,6 +117,7 @@ export default function Duel() {
           <h1 className="t" style={{ fontSize: 28, fontWeight: 900, textAlign: 'center' }}>{q.enonce}</h1>
           {q.image && <img src={q.image} alt="" style={{ height: 180, maxWidth: '100%', borderRadius: 16, border: '1px solid var(--line)', objectFit: 'contain' }} />}
           {q.carte && <CarteQuiz carte={q.carte} repondu={!!maReponse} onClic={() => {}} />}
+          {q.audio && <Extrait id={q.audio} />}
           <div style={{ width: '100%', display: 'grid', gridTemplateColumns: q.imagesOnly ? 'repeat(auto-fit, minmax(180px, 1fr))' : 'repeat(2, minmax(0, 1fr))', gap: 12 }}>
             {q.options.map((o, n) => {
               const etat = !maReponse ? 'idle' : o.label === q.reponse ? 'ok' : 'dim'

@@ -6,6 +6,7 @@ import { trouverSousTheme } from '../themes'
 import { calculerXp, difficulteAuto, distanceKm, genererPartie, type Difficulte, type Mode, type Question, type SousThemeId } from '../quiz/engine'
 import { estCorrect } from '../quiz/match'
 import { Coche, Croix, ICONS, Icon, Logo } from '../components/ui'
+import Extrait from '../components/Extrait'
 import CarteQuiz, { type Clic } from '../components/CarteQuiz'
 
 type Reponse = { q: Question; donnee: string; juste: boolean; clic?: Clic; km?: number }
@@ -151,6 +152,7 @@ export default function Partie() {
           <img src={q.image} alt="" style={{ height: 220, maxWidth: '100%', borderRadius: 18, boxShadow: 'var(--shadow)', border: '1px solid var(--line)', objectFit: 'contain', background: 'var(--surface)' }} />
         )}
         {q.carte && <CarteQuiz carte={q.carte} clic={courante?.clic} repondu={!!courante} onClic={repondreCarte} />}
+        {q.audio && <Extrait id={q.audio} />}
 
         {q.options.length > 0 ? (
           <div style={{ width: '100%', display: 'grid', gridTemplateColumns: q.imagesOnly ? 'repeat(auto-fit, minmax(200px, 1fr))' : 'repeat(2, minmax(0, 1fr))', gap: 14 }}>

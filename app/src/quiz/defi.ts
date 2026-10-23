@@ -9,6 +9,10 @@ const DEFIS: { s: SousThemeId; m: Mode; titre: Record<Lang, string>; texte: Reco
   { s: 'pays-carte', m: 'libre', titre: { fr: '10 pays à trouver sur la carte', en: '10 countries to find on the map' }, texte: { fr: 'Cliquez sur le bon pays. Zoomez pour les plus petits.', en: 'Click the right country. Zoom in for the small ones.' } },
   { s: 'villes-monde', m: 'libre', titre: { fr: '10 villes du monde', en: '10 world cities' }, texte: { fr: 'La carte se cadre sur le pays, à vous de placer la ville.', en: 'The map zooms on the country, you place the city.' } },
   { s: 'drapeaux-inverse', m: 'qcm', titre: { fr: '10 drapeaux qui se ressemblent', en: '10 look-alike flags' }, texte: { fr: 'Quatre drapeaux du même continent : lequel est le bon ?', en: 'Four flags from the same continent: which one is it?' } },
+  { s: 'acteurs', m: 'qcm', titre: { fr: '10 acteurs et actrices à reconnaître', en: '10 actors to recognise' }, texte: { fr: 'Une photo, quatre noms.', en: 'One photo, four names.' } },
+  { s: 'extraits', m: 'qcm', titre: { fr: '10 extraits musicaux', en: '10 music clips' }, texte: { fr: 'Écoutez et trouvez l’artiste.', en: 'Listen and find the artist.' } },
+  { s: 'monuments', m: 'qcm', titre: { fr: '10 monuments du monde', en: '10 world landmarks' }, texte: { fr: 'D’où vient cette photo ?', en: 'Where was this photo taken?' } },
+  { s: 'animaux', m: 'libre', titre: { fr: '10 animaux à nommer', en: '10 animals to name' }, texte: { fr: 'Tapez le nom de l’animal.', en: 'Type the animal’s name.' } },
   { s: 'capitales-inverse', m: 'libre', titre: { fr: '10 capitales, retrouvez le pays', en: '10 capitals, find the country' }, texte: { fr: 'On vous donne la capitale, tapez le pays.', en: 'Given the capital, type the country.' } },
 ]
 
