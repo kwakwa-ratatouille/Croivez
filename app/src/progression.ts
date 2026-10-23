@@ -4,9 +4,10 @@ import { niveau, type Profile } from './auth'
 import { FAMILLES, type Famille } from './themes'
 
 // ——— Règles de progression ———
-// Au premier lancement, on choisit 3 familles ; les autres se débloquent avec des pièces.
+// Au premier lancement, on choisit 3 familles (entièrement ouvertes). Dans les autres, chaque quiz
+// se gagne en ouvrant une caisse : un quiz encore verrouillé de la famille, tiré au hasard.
 export const FAMILLES_DEPART = 3
-export const PRIX_FAMILLE = 200
+export const PRIX_CAISSE = 60
 // Difficile et Expert se méritent avec le niveau
 export const NIVEAU_DIFFICULTE: Record<number, number> = { 0: 1, 1: 1, 2: 1, 3: 3, 4: 6 }
 export const PRIX_INDICE = 10
@@ -31,7 +32,11 @@ export function plafonner(d: 1 | 2 | 3 | 4, p?: Profile | null): 1 | 2 | 3 | 4 {
 }
 
 export const familleDe = (id: string) => FAMILLES.find((x) => x.subs.some((s) => s.id === id))
-export const accesQuiz = (id: string, p?: Profile | null) => { const f = familleDe(id); return !f || familleOuverte(f.k, p) }
+export const accesQuiz = (id: string, p?: Profile | null) => { const f = familleDe(id); return !f || familleOuverte(f.k, p) || !!p?.quiz?.includes(id) }
+
+// Quiz encore à gagner dans une famille (contenu possible de la caisse)
+export const quizVerrouilles = (k: Famille, p?: Profile | null) =>
+  (FAMILLES.find((f) => f.k === k)?.subs ?? []).filter((s) => s.jouable && !accesQuiz(s.id, p))
 
 export const choisirFamilles = (uid: string, ks: Famille[]) => setDoc(doc(db, 'users', uid), { familles: ks }, { merge: true })
 
@@ -46,5 +51,11 @@ async function depenser(uid: string, montant: number, maj: Record<string, unknow
   })
 }
 
-export const acheterFamille = (uid: string, k: Famille) => depenser(uid, PRIX_FAMILLE, { familles: arrayUnion(k) })
+// Caisse : le gain est tiré ici, puis payé et enregistré d'un coup (refusé si pièces insuffisantes)
+export async function ouvrirCaisse(uid: string, k: Famille, p?: Profile | null) {
+  const possibles = quizVerrouilles(k, p)
+  if (!possibles.length) return null
+  const gain = possibles[Math.floor(Math.random() * possibles.length)]
+  return (await depenser(uid, PRIX_CAISSE, { quiz: arrayUnion(gain.id) })) ? gain : false
+}
 export const payerIndice = (uid: string) => depenser(uid, PRIX_INDICE)

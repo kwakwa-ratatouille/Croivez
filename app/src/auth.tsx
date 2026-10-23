@@ -21,7 +21,8 @@ export type Profile = {
   revision?: Record<string, CarteRevision>
   amis?: string[]
   pieces?: number
-  familles?: string[] // familles ouvertes (choisies au départ ou achetées) ; absent = ancien compte, tout ouvert
+  familles?: string[] // familles choisies au départ (entièrement ouvertes) ; absent = ancien compte, tout ouvert
+  quiz?: string[] // quiz gagnés dans les caisses
 }
 
 type Ctx = { user: User | null; profile: Profile | null; loading: boolean }

@@ -4,7 +4,8 @@ import { useAuth } from '../auth'
 import { usePrefs } from '../i18n'
 import { FAMILLES, type Famille, type SousTheme } from '../themes'
 import { ICONS, Icon, Piece } from '../components/ui'
-import { PRIX_FAMILLE, acheterFamille, familleOuverte } from '../progression'
+import { PRIX_CAISSE, accesQuiz, familleOuverte, ouvrirCaisse, quizVerrouilles } from '../progression'
+import Caisse from '../components/Caisse'
 import Illustration from '../components/Illustration'
 import { normaliser } from '../quiz/match'
 
@@ -46,18 +47,24 @@ export default function Themes() {
   const m = profile?.maitrise ?? {}
   const famille = FAMILLES.find((f) => f.k === k)
   const [msg, setMsg] = useState('')
-  const acheter = async (fk: Famille) => {
+  const [caisse, setCaisse] = useState<{ gain: SousTheme; possibles: SousTheme[] } | null>(null)
+  // Caisse : quiz tiré au hasard parmi ceux encore verrouillés de la famille
+  const ouvrir = async (fk: Famille) => {
     if (!user) return
     setMsg('')
-    if (!(await acheterFamille(user.uid, fk).catch(() => false))) setMsg(fr ? `Il vous faut ${PRIX_FAMILLE} pièces : jouez aux familles déjà ouvertes pour en gagner.` : `You need ${PRIX_FAMILLE} coins: play your open families to earn more.`)
+    const possibles = quizVerrouilles(fk, profile)
+    const gain = await ouvrirCaisse(user.uid, fk, profile).catch(() => false as const)
+    if (gain) setCaisse({ gain, possibles })
+    else setMsg(fr ? `Il vous faut ${PRIX_CAISSE} pièces : jouez aux quiz déjà ouverts pour en gagner.` : `You need ${PRIX_CAISSE} coins: play your open quizzes to earn more.`)
   }
 
   // ——— Page d'une famille ———
   if (famille) {
     const jouables = famille.subs.filter((s) => s.jouable)
-    const ouverte = familleOuverte(famille.k, profile)
+    const restants = quizVerrouilles(famille.k, profile)
     return (
       <>
+        {caisse && <Caisse k={famille.k} possibles={caisse.possibles} gain={caisse.gain} onFermer={() => setCaisse(null)} />}
         <Link to="/themes" style={{ alignSelf: 'flex-start', display: 'inline-flex', alignItems: 'center', gap: 8, minHeight: 44, fontWeight: 600, textDecoration: 'none', color: 'var(--muted)' }}><Icon d={ICONS.arrowL} />{fr ? 'Tous les thèmes' : 'All topics'}</Link>
         <header className="rise" style={{ display: 'flex', alignItems: 'center', gap: 24, flexWrap: 'wrap', padding: 24, borderRadius: 28, background: `var(--${famille.k}-t)`, color: `var(--${famille.k}-i)` }}>
           <Illustration k={famille.k} taille={180} fond={false} />
@@ -65,16 +72,17 @@ export default function Themes() {
             <h1 className="t" style={{ fontSize: 34, fontWeight: 900 }}>{famille.nom[lang]}</h1>
             <span style={{ fontWeight: 600 }}>{jouables.length} quiz · {pctFamille(famille.subs, m)} % {fr ? 'maîtrisé' : 'mastered'}</span>
             <div className="bar" style={{ background: 'var(--surface)', maxWidth: 320 }}><span style={{ width: `${pctFamille(famille.subs, m)}%`, background: `var(--${famille.k})` }} /></div>
-            {!ouverte && (
-              <button className="btn btn-p" onClick={() => acheter(famille.k)} style={{ alignSelf: 'flex-start', marginTop: 6 }}>
-                <Icon d={ICONS.lock} size={18} />{fr ? 'Débloquer' : 'Unlock'} · <Piece size={18} />{PRIX_FAMILLE}
+            {restants.length > 0 && (
+              <button className="btn btn-p" onClick={() => ouvrir(famille.k)} style={{ alignSelf: 'flex-start', marginTop: 6 }}>
+                <Icon d={ICONS.sparkle} size={18} />{fr ? 'Ouvrir une caisse' : 'Open a crate'} · <Piece size={18} />{PRIX_CAISSE}
               </button>
             )}
+            {restants.length > 0 && <span style={{ fontSize: 13, fontWeight: 600 }}>{fr ? `${restants.length} quiz à gagner dans cette famille` : `${restants.length} quizzes to win in this family`}</span>}
             {msg && <p role="status" style={{ fontSize: 14 }}>{msg}</p>}
           </div>
         </header>
         <section style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))', gap: 14 }}>
-          {famille.subs.map((s) => <Tuile key={s.id} s={s} k={famille.k} pct={m[s.id] ?? 0} verrou={!ouverte} />)}
+          {famille.subs.map((s) => <Tuile key={s.id} s={s} k={famille.k} pct={m[s.id] ?? 0} verrou={!accesQuiz(s.id, profile)} />)}
         </section>
       </>
     )
@@ -103,22 +111,23 @@ export default function Themes() {
       {n ? (
         <section style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))', gap: 14 }}>
           {resultats.length === 0 && <p style={{ color: 'var(--muted)' }}>{fr ? 'Aucun quiz ne correspond.' : 'No quiz matches.'}</p>}
-          {resultats.map(({ s, k: fk }) => <Tuile key={s.id} s={s} k={fk} pct={m[s.id] ?? 0} verrou={!familleOuverte(fk, profile)} />)}
+          {resultats.map(({ s, k: fk }) => <Tuile key={s.id} s={s} k={fk} pct={m[s.id] ?? 0} verrou={!accesQuiz(s.id, profile)} />)}
         </section>
       ) : (
         <section className="grille-familles">
           {FAMILLES.map((f, i) => {
             const pct = pctFamille(f.subs, m)
             const ouverte = familleOuverte(f.k, profile)
+            const nbOuverts = f.subs.filter((s) => s.jouable && accesQuiz(s.id, profile)).length
             return (
-              <Link key={f.k} to={`/themes/${f.k}`} className="famille rise" style={{ animationDelay: `${i * 40}ms`, filter: ouverte ? 'none' : 'grayscale(.55)', borderRadius: 28, padding: '18px 20px 20px', background: `var(--${f.k}-t)`, color: `var(--${f.k}-i)`, textDecoration: 'none', display: 'flex', flexDirection: 'column', gap: 10, position: 'relative', overflow: 'hidden' }}>
+              <Link key={f.k} to={`/themes/${f.k}`} className="famille rise" style={{ animationDelay: `${i * 40}ms`, filter: ouverte || nbOuverts ? 'none' : 'grayscale(.55)', borderRadius: 28, padding: '18px 20px 20px', background: `var(--${f.k}-t)`, color: `var(--${f.k}-i)`, textDecoration: 'none', display: 'flex', flexDirection: 'column', gap: 10, position: 'relative', overflow: 'hidden' }}>
                 <div className="illus-famille"><Illustration k={f.k} taille={190} fond={false} /></div>
                 <h2 className="t" style={{ fontSize: 21, fontWeight: 900 }}>{f.nom[lang]}</h2>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <div className="bar" style={{ flex: 1, height: 8, background: 'var(--surface)' }}><span style={{ width: `${pct}%`, background: `var(--${f.k})` }} /></div>
                   {ouverte
                     ? <span style={{ fontSize: 13, fontWeight: 700 }}>{f.subs.filter((s) => s.jouable).length} quiz</span>
-                    : <span style={{ fontSize: 13, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 4 }}><Icon d={ICONS.lock} size={15} /><Piece size={16} />{PRIX_FAMILLE}</span>}
+                    : <span style={{ fontSize: 13, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 4 }}><Icon d={ICONS.lock} size={15} />{nbOuverts} / {f.subs.filter((s) => s.jouable).length}</span>}
                 </div>
               </Link>
             )

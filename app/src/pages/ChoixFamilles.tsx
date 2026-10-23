@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useAuth } from '../auth'
 import { usePrefs } from '../i18n'
 import { FAMILLES, type Famille } from '../themes'
-import { FAMILLES_DEPART, PRIX_FAMILLE, choisirFamilles } from '../progression'
+import { FAMILLES_DEPART, PRIX_CAISSE, choisirFamilles } from '../progression'
 import Illustration from '../components/Illustration'
 import { Coche, Logo, Piece } from '../components/ui'
 
@@ -24,8 +24,8 @@ export default function ChoixFamilles() {
         <h1 className="t" style={{ fontSize: 30, fontWeight: 900 }}>{fr ? 'Par quoi on commence ?' : 'Where do we start?'}</h1>
         <p style={{ color: 'var(--muted)', lineHeight: 1.5 }}>
           {fr
-            ? `Choisissez ${FAMILLES_DEPART} familles de thèmes. Les autres se débloquent avec les pièces gagnées en jouant (${PRIX_FAMILLE} pièces chacune).`
-            : `Pick ${FAMILLES_DEPART} topic families. Unlock the others with coins earned by playing (${PRIX_FAMILLE} coins each).`}
+            ? `Choisissez ${FAMILLES_DEPART} familles de thèmes. Les autres se débloquent avec les pièces gagnées en jouant (une caisse de ${PRIX_CAISSE} pièces = un quiz au hasard).`
+            : `Pick ${FAMILLES_DEPART} topic families. Unlock the others with coins earned by playing (a ${PRIX_CAISSE}-coin crate = one random quiz).`}
         </p>
       </div>
       <div style={{ width: '100%', maxWidth: 980, display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(155px, 1fr))', gap: 12 }}>

@@ -82,6 +82,16 @@ button { font-family: inherit; }
 .famille:hover, .tuile:hover { transform: translateY(-3px); box-shadow: var(--shadow); }
 .famille:active, .tuile:active { transform: scale(.98); }
 
+/* Ouverture de caisse */
+.caisse-fond { position: fixed; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(20, 24, 32, .55); backdrop-filter: blur(4px); }
+.caisse { width: 100%; max-width: 760px; padding: 24px 0; border-radius: 28px; background: var(--bg); display: flex; flex-direction: column; gap: 20px; box-shadow: 0 20px 60px rgba(0,0,0,.25); }
+.caisse > * { margin: 0 20px; }
+.caisse-fenetre { position: relative; margin: 0 !important; overflow: hidden; padding: 14px 0; background: var(--kt); border-block: 1px solid var(--line); mask-image: linear-gradient(90deg, transparent, #000 15%, #000 85%, transparent); }
+.caisse-repere { position: absolute; left: 50%; top: 0; bottom: 0; width: 4px; margin-left: -2px; border-radius: 4px; background: var(--lx); z-index: 2; box-shadow: 0 0 0 3px var(--bg); }
+.caisse-bande { display: flex; gap: 10px; padding-left: 5px; will-change: transform; }
+.caisse-case { flex: none; height: 150px; border-radius: 18px; background: var(--surface); border: 2px solid var(--line); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 8px; text-align: center; font: 700 13px/1.25 Nunito, sans-serif; color: var(--ki); transition: transform .4s ease-out, border-color .4s ease-out; }
+.caisse-case.gagnante { border-color: var(--k); transform: scale(1.08); box-shadow: 0 8px 24px rgba(0,0,0,.15); }
+
 /* Attente d'un adversaire : le logo respire doucement */
 @keyframes respire { 0%,100% { transform: scale(1) rotate(0); } 50% { transform: scale(1.08) rotate(-4deg); } }
 .attente { animation: respire 2.4s ease-in-out infinite; }
