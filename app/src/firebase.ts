@@ -1,5 +1,6 @@
 import { initializeApp } from 'firebase/app'
-import { getAuth } from 'firebase/auth'
+import { browserLocalPersistence, getAuth, indexedDBLocalPersistence, initializeAuth } from 'firebase/auth'
+import { Capacitor } from '@capacitor/core'
 import { initializeFirestore, persistentLocalCache, persistentSingleTabManager } from 'firebase/firestore'
 import { getDatabase } from 'firebase/database'
 
@@ -15,7 +16,12 @@ const firebaseConfig = {
 }
 
 export const app = initializeApp(firebaseConfig)
-export const auth = getAuth(app)
+export const natif = Capacitor.isNativePlatform()
+// Dans l'app iOS, getAuth() charge une iframe de connexion Google qui ne répond jamais (WKWebView) :
+// l'état de connexion n'arrive pas et l'app reste bloquée sur le logo. On initialise donc l'auth sans elle.
+export const auth = natif
+  ? initializeAuth(app, { persistence: [indexedDBLocalPersistence, browserLocalPersistence] })
+  : getAuth(app)
 // Cache local persistant : la progression fonctionne hors ligne et se synchronise au retour du réseau
 export const db = initializeFirestore(app, { localCache: persistentLocalCache({ tabManager: persistentSingleTabManager({}) }) })
 export const rtdb = getDatabase(app)

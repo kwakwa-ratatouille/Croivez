@@ -3,6 +3,7 @@ import { useAuth, niveau } from '../auth'
 import { usePrefs, type Key } from '../i18n'
 import { ICONS, Icon, Logo, useOnline } from './ui'
 import { aReviser } from '../quiz/revision'
+import MiseAJour from './MiseAJour'
 
 const LIENS: { to: string; k: Key; icon: string }[] = [
   { to: '/', k: 'nav.home', icon: ICONS.home },
@@ -48,7 +49,7 @@ export default function Layout() {
           </NavLink>
         </div>
       </nav>
-      <main className="main"><Outlet /></main>
+      <main className="main"><MiseAJour /><Outlet /></main>
     </div>
   )
 }

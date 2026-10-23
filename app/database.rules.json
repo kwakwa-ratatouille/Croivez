@@ -1,0 +1,22 @@
+{
+  "rules": {
+    "duels": {
+      "$id": {
+        ".read": "auth != null",
+        ".write": "auth != null"
+      }
+    },
+    "invitations": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        "$duel": {
+          ".write": "auth != null"
+        }
+      }
+    },
+    "attente": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    }
+  }
+}

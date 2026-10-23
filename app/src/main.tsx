@@ -1,10 +1,28 @@
-import { StrictMode } from 'react'
+import { Component, StrictMode, type ReactNode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './theme.css'
 import App from './App'
 
+// Affiche l'erreur au lieu d'un écran vide : indispensable pour diagnostiquer l'app iOS sans console
+class Garde extends Component<{ children: ReactNode }, { erreur: Error | null }> {
+  state = { erreur: null as Error | null }
+  static getDerivedStateFromError(erreur: Error) { return { erreur } }
+  render() {
+    if (!this.state.erreur) return this.props.children
+    return (
+      <div style={{ padding: 32, display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <h1 className="t" style={{ fontSize: 24 }}>Oups, Croivez a rencontré une erreur</h1>
+        <pre style={{ whiteSpace: 'pre-wrap', fontSize: 13, color: 'var(--ko-i)' }}>{String(this.state.erreur?.stack ?? this.state.erreur)}</pre>
+        <button className="btn btn-p" onClick={() => location.reload()}>Recharger</button>
+      </div>
+    )
+  }
+}
+
+window.addEventListener('error', (e) => console.error('Erreur globale', e.error))
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    <Garde><App /></Garde>
   </StrictMode>,
 )

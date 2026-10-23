@@ -72,6 +72,10 @@ button { font-family: inherit; }
 @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 .rise { animation: rise .3s ease-out both; }
 
+/* Attente d'un adversaire : le logo respire doucement */
+@keyframes respire { 0%,100% { transform: scale(1) rotate(0); } 50% { transform: scale(1.08) rotate(-4deg); } }
+.attente { animation: respire 2.4s ease-in-out infinite; }
+
 /* Mobile (iOS) : la barre latérale devient une barre d'onglets en bas */
 @media (max-width: 760px) {
   .shell { flex-direction: column; }

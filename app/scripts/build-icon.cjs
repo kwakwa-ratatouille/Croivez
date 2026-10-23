@@ -58,5 +58,22 @@ app.whenReady().then(async () => {
     fs.writeFileSync(path.join(iosDir, 'AppIcon-512@2x.png'), iosPng)
     console.log('Icône iOS écrite')
   }
+
+  // Écran de lancement iOS : logo de la DA centré sur fond crème (remplace celui de Capacitor)
+  const splashDir = path.join(__dirname, '..', 'ios', 'App', 'App', 'Assets.xcassets', 'Splash.imageset')
+  if (fs.existsSync(splashDir)) {
+    const splash = `<html><body style="margin:0"><svg xmlns="http://www.w3.org/2000/svg" width="1366" height="1366" viewBox="0 0 1366 1366">
+<rect width="1366" height="1366" fill="#FBF8F3"/>
+<g transform="translate(513 571) scale(2.93)">
+<path d="M16 16 Q33 36 50 58 M50 16 Q32 37 16 58" fill="none" stroke="#DE8B6A" stroke-width="13" stroke-linecap="round"/>
+<path d="M44 40 Q52 49 60 58 Q77 32 102 12" fill="none" stroke="#6FC59F" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/>
+</g></svg></body></html>`
+    win.setContentSize(1366, 1366)
+    await win.loadURL('data:text/html;charset=utf-8,' + encodeURIComponent(splash))
+    await new Promise((r) => setTimeout(r, 300))
+    const png = (await win.webContents.capturePage()).resize({ width: 2732, height: 2732 }).toPNG()
+    for (const f of ['splash-2732x2732.png', 'splash-2732x2732-1.png', 'splash-2732x2732-2.png']) fs.writeFileSync(path.join(splashDir, f), png)
+    console.log('Écran de lancement iOS écrit')
+  }
   app.quit()
 })

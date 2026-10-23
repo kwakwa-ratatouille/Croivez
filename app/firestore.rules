@@ -1,9 +1,28 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Chaque joueur ne lit et n'écrit que son propre profil (classements : à ouvrir à l'étape duels)
+    function connecte() { return request.auth != null; }
+    function moi(uid) { return connecte() && request.auth.uid == uid; }
+
+    // Profil privé : progression, révision, amis
     match /users/{uid} {
-      allow read, write: if request.auth != null && request.auth.uid == uid;
+      allow read, write: if moi(uid);
+    }
+    // Profil public : pseudo, XP, niveau (classements, recherche d'amis)
+    match /profils/{uid} {
+      allow read: if connecte();
+      allow write: if moi(uid);
+    }
+    // Pseudos uniques : on ne peut réserver qu'un pseudo libre, pour soi
+    match /pseudos/{cle} {
+      allow read: if connecte();
+      allow create: if connecte() && request.resource.data.uid == request.auth.uid;
+      allow update, delete: if connecte() && resource.data.uid == request.auth.uid;
+    }
+    // Classement de la semaine
+    match /semaines/{semaine}/scores/{uid} {
+      allow read: if connecte();
+      allow write: if moi(uid);
     }
   }
 }

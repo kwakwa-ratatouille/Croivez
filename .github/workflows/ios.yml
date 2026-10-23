@@ -34,6 +34,7 @@ jobs:
         working-directory: app
         env:
           ELECTRON_SKIP_BINARY_DOWNLOAD: '1'
+          VITE_BUILD: ${{ github.run_number }}
         run: |
           npm ci
           npm run build

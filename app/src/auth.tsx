@@ -4,6 +4,7 @@ import { deleteField, doc, getDoc, onSnapshot, serverTimestamp, setDoc, incremen
 import { auth, db } from './firebase'
 import { cleRevision, planifier, type CarteRevision } from './quiz/revision'
 import type { SousThemeId } from './quiz/engine'
+import { publierXp, synchroniserProfilPublic } from './social'
 
 export type Profile = {
   pseudo: string
@@ -18,6 +19,7 @@ export type Profile = {
   defiJour?: string // dernier défi du jour réussi
   sansFaute?: number
   revision?: Record<string, CarteRevision>
+  amis?: string[]
 }
 
 type Ctx = { user: User | null; profile: Profile | null; loading: boolean }
@@ -28,14 +30,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => onAuthStateChanged(auth, (u) => { setUser(u); if (!u) { setProfile(null); setLoading(false) } }), [])
+  useEffect(() => {
+    // Filet de sécurité : jamais plus de 8 s sur l'écran de chargement, même si le réseau ne répond pas
+    const id = setTimeout(() => setLoading(false), 8000)
+    const off = onAuthStateChanged(auth, (u) => { setUser(u); if (!u) { setProfile(null); setLoading(false) } })
+    return () => { clearTimeout(id); off() }
+  }, [])
 
   useEffect(() => {
     if (!user) return
+    let synchro = false
     return onSnapshot(doc(db, 'users', user.uid), (snap) => {
-      setProfile(snap.exists() ? (snap.data() as Profile) : null)
+      const p = snap.exists() ? (snap.data() as Profile) : null
+      setProfile(p)
       setLoading(false)
-    })
+      // Une fois par session : pseudo réservé et profil public à jour (classements, amis)
+      if (p && !synchro) { synchro = true; synchroniserProfilPublic(user.uid, p).catch(console.error) }
+    }, (e) => { console.error(e); setLoading(false) })
   }, [user])
 
   return <AuthCtx.Provider value={{ user, profile, loading }}>{children}</AuthCtx.Provider>
@@ -98,4 +109,5 @@ export async function enregistrerPartie(uid: string, profile: Profile, p: Partie
     ...(defiReussi ? { defis: increment(1), defiJour: today } : {}),
     ...(Object.keys(revision).length ? { revision } : {}),
   }, { merge: true })
+  await publierXp(uid, profile.pseudo, p.xp, (profile.xp ?? 0) + p.xp, serie).catch(console.error)
 }
