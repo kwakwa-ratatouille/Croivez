@@ -6,8 +6,9 @@ import { writeFile, mkdir } from 'node:fs/promises'
 const UA = { 'User-Agent': 'Croivez/0.1 (app perso de quiz)', Accept: 'application/sparql-results+json' }
 
 const sparql = `
-SELECT ?iso ?nomFr ?nomEn ?capFr ?capEn ?contFr ?contEn ?pop ?area ?coord WHERE {
+SELECT ?iso ?num ?nomFr ?nomEn ?capFr ?capEn ?contFr ?contEn ?pop ?area ?coord WHERE {
   ?c wdt:P31 wd:Q3624078; wdt:P297 ?iso.
+  OPTIONAL { ?c wdt:P299 ?num }
   FILTER NOT EXISTS { ?c wdt:P576 [] }
   ?c rdfs:label ?nomFr FILTER(LANG(?nomFr) = "fr")
   ?c rdfs:label ?nomEn FILTER(LANG(?nomEn) = "en")
@@ -37,6 +38,7 @@ for (const r of rows) {
   }
   if (!p.capitale && r.capFr) p.capitale = { fr: r.capFr.value, en: r.capEn.value }
   if (!p.region && r.contFr) p.region = { fr: r.contFr.value, en: r.contEn.value }
+  if (r.num && !p.num) p.num = r.num.value
   if (r.pop) p.population = Math.max(p.population, Math.round(+r.pop.value))
   if (r.area && !p.superficie) p.superficie = Math.round(+r.area.value)
   if (r.coord && !p.latlng) {

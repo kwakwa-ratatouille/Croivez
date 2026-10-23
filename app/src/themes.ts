@@ -16,9 +16,9 @@ export const FAMILLES: { k: Famille; nom: Record<Lang, string>; icon: string; mo
       { id: 'drapeaux-inverse', nom: { fr: 'Trouver le drapeau', en: 'Find the flag' }, jouable: 'drapeaux-inverse' },
       { id: 'capitales', nom: { fr: 'Capitales', en: 'Capitals' }, jouable: 'capitales' },
       { id: 'capitales-inverse', nom: { fr: 'Capitale → pays', en: 'Capital → country' }, jouable: 'capitales-inverse' },
-      { id: 'villes-fr', nom: { fr: 'Villes de France', en: 'French cities' } },
-      { id: 'villes-monde', nom: { fr: 'Villes du monde', en: 'World cities' } },
-      { id: 'pays-carte', nom: { fr: 'Pays sur la carte', en: 'Countries on the map' } },
+      { id: 'villes-fr', nom: { fr: 'Villes de France', en: 'French cities' }, jouable: 'villes-fr' },
+      { id: 'villes-monde', nom: { fr: 'Villes du monde', en: 'World cities' }, jouable: 'villes-monde' },
+      { id: 'pays-carte', nom: { fr: 'Pays sur la carte', en: 'Countries on the map' }, jouable: 'pays-carte' },
     ],
   },
   {

@@ -31,7 +31,14 @@ export default function Configuration() {
   const [duree, setDuree] = useState(20)
 
   const qcmSeul = sub === 'drapeaux-inverse'
-  const modeEffectif = qcmSeul ? 'qcm' : mode
+  const carteSeule = sub.startsWith('villes') // on place toujours la ville sur la carte
+  const surCarte = sub === 'pays-carte'
+  const modeEffectif = qcmSeul ? 'qcm' : carteSeule ? 'libre' : mode
+  const labelMode = (id: Mode) => carteSeule
+    ? (lang === 'fr' ? 'Placer sur la carte' : 'Place on the map')
+    : surCarte && id === 'libre' ? (lang === 'fr' ? 'Cliquer sur la carte' : 'Click on the map')
+    : surCarte ? (lang === 'fr' ? 'Nommer le pays surligné' : 'Name the highlighted country')
+    : t(id === 'qcm' ? 'cfg.qcm' : 'cfg.free')
   const diffAuto = difficulteAuto(profile?.maitrise?.[sub])
   const lancer = () => nav(`/partie?s=${sub}&m=${modeEffectif}&n=${nombre}&d=${diff}&t=${chrono ? duree : 0}`)
 
@@ -94,18 +101,18 @@ export default function Configuration() {
             </fieldset>
           </div>
 
-          <fieldset style={{ border: 0, padding: 0, margin: 0 }}>
+          {!carteSeule && <fieldset style={{ border: 0, padding: 0, margin: 0 }}>
             <legend className="t" style={{ fontSize: 20, fontWeight: 800, padding: 0, marginBottom: 14 }}>{t('cfg.mode')}</legend>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 12 }}>
               {([['qcm', 'cfg.qcm', 'cfg.qcmHint', '1  2  3  4'], ['libre', 'cfg.free', 'cfg.freeHint', 'Aa']] as const).map(([id, l, h, keys]) => (
                 <button key={id} type="button" className="choice" aria-pressed={modeEffectif === id} disabled={qcmSeul && id === 'libre'} onClick={() => setMode(id)} style={{ minHeight: 120, opacity: qcmSeul && id === 'libre' ? .45 : 1 }}>
                   <span className="kbd">{keys}</span>
-                  <span className="t" style={{ fontSize: 19, fontWeight: 800 }}>{t(l)}</span>
-                  <span style={{ fontSize: 14, lineHeight: 1.45, color: 'var(--muted)', fontWeight: 500 }}>{t(h)}</span>
+                  <span className="t" style={{ fontSize: 19, fontWeight: 800 }}>{surCarte ? labelMode(id) : t(l)}</span>
+                  {!surCarte && <span style={{ fontSize: 14, lineHeight: 1.45, color: 'var(--muted)', fontWeight: 500 }}>{t(h)}</span>}
                 </button>
               ))}
             </div>
-          </fieldset>
+          </fieldset>}
         </div>
 
         <aside className="card" style={{ flex: '1 1 300px', padding: 28, display: 'flex', flexDirection: 'column', gap: 18, background: `var(--${k}-t)`, borderColor: 'transparent', color: `var(--${k}-i)`, position: 'sticky', top: 24 }}>
@@ -113,7 +120,7 @@ export default function Configuration() {
           <p className="t" style={{ fontSize: 26, fontWeight: 900, lineHeight: 1.2 }}>{titreSub}</p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10, fontSize: 16, fontWeight: 600 }}>
             <span>{nombre} questions · {diff === 0 ? `${t('diff.auto')} (${t(`diff.${diffAuto}` as Key)})` : t(DIFFS[diff].k)}</span>
-            <span>{modeEffectif === 'qcm' ? t('cfg.qcm') : t('cfg.free')}</span>
+            <span>{labelMode(modeEffectif)}</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}><Icon d={ICONS.timer} size={18} />{chrono ? `${duree} s / question` : t('cfg.zen')}</span>
           </div>
           <button className="btn btn-p btn-lg" onClick={lancer}>{t('cfg.go')}<span className="kbd">Entrée</span></button>

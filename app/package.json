@@ -10,6 +10,7 @@
     "app:dev": "concurrently -k \"vite\" \"wait-on tcp:5173 && cross-env VITE_DEV_SERVER_URL=http://localhost:5173 electron .\"",
     "app": "npm run build && electron .",
     "data": "node scripts/build-pays.mjs",
+    "data:villes": "node scripts/build-villes.mjs",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
@@ -17,16 +18,22 @@
   "dependencies": {
     "@capacitor/core": "^8.5.3",
     "@capacitor/ios": "^8.5.3",
+    "d3-geo": "^3.1.1",
     "firebase": "^13.1.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "react-router-dom": "^7.18.4"
+    "react-router-dom": "^7.18.4",
+    "topojson-client": "^3.1.0",
+    "world-atlas": "^2.0.2"
   },
   "devDependencies": {
     "@capacitor/cli": "^8.5.3",
     "@eslint/js": "^9.25.0",
+    "@types/d3-geo": "^3.1.1",
+    "@types/geojson": "^7946.0.16",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
+    "@types/topojson-client": "^3.1.5",
     "@vitejs/plugin-react": "^4.4.1",
     "concurrently": "^10.0.6",
     "cross-env": "^10.1.0",

@@ -3,11 +3,12 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { enregistrerPartie, useAuth } from '../auth'
 import { usePrefs } from '../i18n'
 import { trouverSousTheme } from '../themes'
-import { calculerXp, chargerPays, difficulteAuto, drapeau, genererPartie, type Difficulte, type Mode, type Pays, type Question, type SousThemeId } from '../quiz/engine'
+import { calculerXp, difficulteAuto, distanceKm, genererPartie, type Difficulte, type Mode, type Question, type SousThemeId } from '../quiz/engine'
 import { estCorrect } from '../quiz/match'
 import { Coche, Croix, ICONS, Icon, Logo } from '../components/ui'
+import CarteQuiz, { type Clic } from '../components/CarteQuiz'
 
-type Reponse = { q: Question; donnee: string; juste: boolean }
+type Reponse = { q: Question; donnee: string; juste: boolean; clic?: Clic; km?: number }
 
 export default function Partie() {
   const [params] = useSearchParams()
@@ -20,12 +21,10 @@ export default function Partie() {
   const nombre = Number(params.get('n') ?? 10)
   const diffChoisie = Number(params.get('d') ?? 0) as Difficulte
   const chrono = Number(params.get('t') ?? 0)
-  const ids = params.get('ids')?.split(',')
   const difficulte = diffChoisie || difficulteAuto(profile?.maitrise?.[sousTheme])
   const k = trouverSousTheme(sousTheme)?.famille.k ?? 'geo'
 
-  const [tous, setTous] = useState<Pays[] | null>(null)
-  const [questions, setQuestions] = useState<Question[]>([])
+  const [questions, setQuestions] = useState<Question[] | null>(null)
   const [i, setI] = useState(0)
   const [reponses, setReponses] = useState<Reponse[]>([])
   const [saisie, setSaisie] = useState('')
@@ -33,40 +32,61 @@ export default function Partie() {
   const [fini, setFini] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  useEffect(() => {
-    chargerPays().then((p) => {
-      setTous(p)
-      setQuestions(genererPartie({ tous: p, sousTheme, difficulte, nombre, mode, lang, ids }))
-    })
-    // Une partie est générée une seule fois, à l'ouverture
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  const demarrer = useCallback((ids?: string[]) => {
+    setQuestions(null)
+    setI(0)
+    setReponses([])
+    setSaisie('')
+    setRestant(chrono)
+    setFini(false)
+    genererPartie({ sousTheme, difficulte, nombre, mode, lang, ids }).then(setQuestions)
+  }, [sousTheme, difficulte, nombre, mode, lang, chrono])
 
-  const q = questions[i]
+  // Une partie est générée une seule fois, à l'ouverture
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => demarrer(params.get('ids')?.split(',')), [])
+
+  const q = questions?.[i]
   const courante = reponses[i] as Reponse | undefined
 
-  const repondre = useCallback((donnee: string) => {
+  const enregistrer = useCallback((r: Omit<Reponse, 'q'>) => {
     if (!q || reponses[i]) return
-    const juste = q.options.length ? donnee === q.reponse : estCorrect(donnee, q.acceptees)
-    setReponses((r) => [...r, { q, donnee, juste }])
+    setReponses((prev) => [...prev, { q, ...r }])
   }, [q, i, reponses])
 
+  const repondre = useCallback((donnee: string) => {
+    if (!q) return
+    const juste = !!donnee && (q.options.length ? donnee === q.reponse : estCorrect(donnee, q.acceptees))
+    enregistrer({ donnee, juste })
+  }, [q, enregistrer])
+
+  const repondreCarte = useCallback((clic: Clic) => {
+    if (!q?.carte) return
+    if (q.carte.trouverPays) {
+      enregistrer({ donnee: '', juste: clic.paysId === q.carte.trouverPays, clic })
+    } else if (q.carte.cible) {
+      const km = Math.round(distanceKm(clic.latlng, q.carte.cible))
+      enregistrer({ donnee: `${km} km`, juste: km <= q.carte.seuilKm, clic, km })
+    }
+  }, [q, enregistrer])
+
   const suivant = useCallback(() => {
+    if (!questions) return
     if (i + 1 >= questions.length) { setFini(true); return }
     setI(i + 1)
     setSaisie('')
     setRestant(chrono)
-  }, [i, questions.length, chrono])
+  }, [i, questions, chrono])
 
   // Chrono : à zéro, la question compte comme ratée
   useEffect(() => {
     if (!chrono || courante || fini || !q) return
-    if (restant <= 0) { repondre(''); return }
+    if (restant <= 0) { enregistrer({ donnee: '', juste: false }); return }
     const id = setTimeout(() => setRestant((r) => r - 0.1), 100)
     return () => clearTimeout(id)
-  }, [chrono, restant, courante, fini, q, repondre])
+  }, [chrono, restant, courante, fini, q, enregistrer])
 
-  useEffect(() => { if (q && !q.options.length && !courante) inputRef.current?.focus() }, [q, courante])
+  useEffect(() => { if (q && !q.options.length && !q.carte && !courante) inputRef.current?.focus() }, [q, courante])
 
   // Raccourcis : 1-4 pour répondre, Entrée pour passer à la suite
   useEffect(() => {
@@ -81,26 +101,30 @@ export default function Partie() {
   }, [q, courante, fini, repondre, suivant])
 
   const bonnes = reponses.filter((r) => r.juste).length
-  const xp = calculerXp(bonnes, mode, difficulte)
+  // Les questions sur carte valent autant que la saisie libre
+  const xp = calculerXp(bonnes, q?.carte && !q.options.length ? 'libre' : mode, difficulte)
   const enregistre = useRef(false)
   useEffect(() => {
-    if (!fini || enregistre.current || !user || !profile) return
+    if (!fini || enregistre.current || !user || !profile || !questions) return
     enregistre.current = true
     enregistrerPartie(user.uid, profile, sousTheme, xp, bonnes / questions.length).catch(console.error)
-  }, [fini, user, profile, sousTheme, xp, bonnes, questions.length])
+  }, [fini, user, profile, sousTheme, xp, bonnes, questions])
 
-  if (!tous || !q) return <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center' }}><Logo width={72} /></div>
+  if (!questions) return <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center' }}><Logo width={72} /></div>
+  if (!q) return <div style={{ padding: 48, textAlign: 'center' }}><p>{lang === 'fr' ? 'Aucune question disponible.' : 'No questions available.'}</p><Link className="btn btn-p" to="/">{t('res.home')}</Link></div>
 
-  if (fini) return <Resultat reponses={reponses} xp={xp} k={k} onReplay={(errIds) => {
+  if (fini) return <Resultat reponses={reponses} xp={xp} k={k} onReplay={(ids) => {
+    enregistre.current = false
     const p = new URLSearchParams(params)
-    if (errIds) p.set('ids', errIds.join(',')); else p.delete('ids')
-    nav(`/partie?${p}`, { replace: true }); window.location.reload()
+    if (ids) p.set('ids', ids.join(',')); else p.delete('ids')
+    nav(`/partie?${p}`, { replace: true })
+    demarrer(ids)
   }} />
 
   const submit = (e: FormEvent) => { e.preventDefault(); if (saisie.trim()) repondre(saisie) }
 
   return (
-    <div className="partie" style={{ minHeight: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '28px 40px 48px', gap: 28 }}>
+    <div className="partie" style={{ minHeight: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '28px 40px 48px', gap: 24 }}>
       <header style={{ width: '100%', maxWidth: 1040, display: 'flex', alignItems: 'center', gap: 20 }}>
         <Link to="/" className="btn btn-g" aria-label={t('q.quit')} style={{ minHeight: 44, padding: '0 14px' }}><Icon d={ICONS.close} /></Link>
         <div className="bar" style={{ flex: 1 }}><span style={{ width: `${((i + (courante ? 1 : 0)) / questions.length) * 100}%`, background: `var(--${k})` }} /></div>
@@ -112,16 +136,17 @@ export default function Partie() {
         )}
       </header>
       {chrono > 0 && (
-        <div style={{ width: '100%', maxWidth: 1040, height: 4, borderRadius: 4, background: 'var(--surface2)', marginTop: -20, overflow: 'hidden' }}>
+        <div style={{ width: '100%', maxWidth: 1040, height: 4, borderRadius: 4, background: 'var(--surface2)', marginTop: -16, overflow: 'hidden' }}>
           <span style={{ display: 'block', height: '100%', width: `${(Math.max(0, restant) / chrono) * 100}%`, background: restant <= 5 ? 'var(--ko)' : `var(--${k})`, transition: 'width .1s linear, background-color .3s ease-out' }} />
         </div>
       )}
 
-      <section key={i} className="rise" style={{ width: '100%', maxWidth: 1040, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 28 }}>
+      <section key={i} className="rise" style={{ width: '100%', maxWidth: 1040, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 24 }}>
         <h1 className="t" style={{ fontSize: 30, fontWeight: 900, textAlign: 'center', maxWidth: 760 }}>{q.enonce}</h1>
         {q.image && (
           <img src={q.image} alt="" style={{ height: 220, maxWidth: '100%', borderRadius: 18, boxShadow: 'var(--shadow)', border: '1px solid var(--line)', objectFit: 'contain', background: 'var(--surface)' }} />
         )}
+        {q.carte && <CarteQuiz carte={q.carte} clic={courante?.clic} repondu={!!courante} onClic={repondreCarte} />}
 
         {q.options.length > 0 ? (
           <div style={{ width: '100%', display: 'grid', gridTemplateColumns: q.imagesOnly ? 'repeat(auto-fit, minmax(200px, 1fr))' : 'repeat(2, minmax(0, 1fr))', gap: 14 }}>
@@ -148,50 +173,42 @@ export default function Partie() {
               )
             })}
           </div>
-        ) : (
-          <form onSubmit={submit} style={{ width: '100%', maxWidth: 620, display: 'flex', gap: 12 }}>
+        ) : !q.carte && (
+          <form onSubmit={submit} style={{ width: '100%', maxWidth: 620, display: 'flex', gap: 12, flexWrap: 'wrap' }}>
             <label htmlFor="rep" className="sr">{t('q.placeholder')}</label>
             <input id="rep" ref={inputRef} className="input" value={saisie} onChange={(e) => setSaisie(e.target.value)} disabled={!!courante} placeholder={t('q.placeholder')} autoComplete="off" spellCheck={false}
-              style={{ fontSize: 20, minHeight: 64, borderColor: courante ? (courante.juste ? 'var(--ok)' : 'var(--ko)') : undefined }} />
+              style={{ flex: '1 1 260px', width: 'auto', fontSize: 20, minHeight: 64, borderColor: courante ? (courante.juste ? 'var(--ok)' : 'var(--ko)') : undefined }} />
             {!courante && <button className="btn btn-p" style={{ minHeight: 64 }}>{t('q.validate')}</button>}
             {!courante && <button type="button" className="btn btn-g" style={{ minHeight: 64 }} onClick={() => repondre('')}>{t('q.skip')}</button>}
           </form>
         )}
 
-        {courante && <Fiche r={courante} tous={tous} onNext={suivant} dernier={i + 1 >= questions.length} k={k} />}
+        {courante && <Fiche r={courante} onNext={suivant} dernier={i + 1 >= questions.length} k={k} />}
       </section>
     </div>
   )
 }
 
-function Fiche({ r, tous, onNext, dernier, k }: { r: Reponse; tous: Pays[]; onNext: () => void; dernier: boolean; k: string }) {
+function Fiche({ r, onNext, dernier, k }: { r: Reponse; onNext: () => void; dernier: boolean; k: string }) {
   const { t, lang } = usePrefs()
-  const p = r.q.pays
-  const fmt = new Intl.NumberFormat(lang === 'fr' ? 'fr-FR' : 'en-GB')
-  const rang = tous.indexOf(p) + 1
-  const saviez = lang === 'fr'
-    ? `${p.nom.fr} est le ${rang === 1 ? '1er' : `${rang}e`} pays le plus peuplé du monde${p.superficie ? `, pour ${fmt.format(p.superficie)} km²` : ''}.`
-    : `${p.nom.en} is the world's ${rang}${['th', 'st', 'nd', 'rd'][rang % 100 > 10 && rang % 100 < 14 ? 0 : Math.min(rang % 10, 4) % 4] ?? 'th'} most populous country${p.superficie ? `, covering ${fmt.format(p.superficie)} km²` : ''}.`
-  const faits = [
-    p.capitale && { l: t('q.capital'), v: p.capitale[lang] },
-    { l: t('q.continent'), v: p.region[lang] },
-    p.population > 0 && { l: t('q.population'), v: fmt.format(p.population) },
-  ].filter(Boolean) as { l: string; v: string }[]
-
+  const f = r.q.fiche
+  const seuil = r.q.carte?.seuilKm
   return (
     <div className="card rise" role="status" style={{ width: '100%', padding: 28, display: 'flex', gap: 28, flexWrap: 'wrap', alignItems: 'center', borderColor: r.juste ? 'var(--ok)' : 'var(--ko)', borderWidth: 2 }}>
-      <img src={drapeau(p.id, 320)} alt="" style={{ width: 180, borderRadius: 12, border: '1px solid var(--line)', flex: 'none' }} />
+      {f.image && <img src={f.image} alt="" style={{ width: 160, borderRadius: 12, border: '1px solid var(--line)', flex: 'none' }} />}
       <div style={{ flex: '1 1 340px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
           {r.juste ? <Coche size={30} /> : <Croix size={26} />}
           <span className="t" style={{ fontSize: 22, fontWeight: 900, color: r.juste ? 'var(--ok-i)' : 'var(--ko-i)' }}>{r.juste ? t('q.right') : t('q.wrong')}</span>
-          {!r.juste && <span style={{ color: 'var(--muted)' }}>· {t('q.answerWas')} <strong style={{ color: 'var(--text)' }}>{r.q.reponse}</strong></span>}
+          {r.km !== undefined
+            ? <span style={{ color: 'var(--muted)' }}>· {lang === 'fr' ? `à ${r.km} km` : `${r.km} km away`} ({lang === 'fr' ? 'objectif' : 'target'} : {seuil} km)</span>
+            : !r.juste && <span style={{ color: 'var(--muted)' }}>· {t('q.answerWas')} <strong style={{ color: 'var(--text)' }}>{r.q.reponse}</strong></span>}
         </div>
         <div style={{ display: 'flex', gap: 22, flexWrap: 'wrap' }}>
-          {faits.map((f) => <div key={f.l} style={{ display: 'flex', flexDirection: 'column' }}><span className="eyebrow" style={{ fontSize: 11 }}>{f.l}</span><span style={{ fontWeight: 700 }}>{f.v}</span></div>)}
+          {f.faits.map((x) => <div key={x.l} style={{ display: 'flex', flexDirection: 'column' }}><span className="eyebrow" style={{ fontSize: 11 }}>{x.l}</span><span style={{ fontWeight: 700 }}>{x.v}</span></div>)}
         </div>
-        <p style={{ fontSize: 15, color: `var(--${k}-i)`, background: `var(--${k}-t)`, padding: '10px 14px', borderRadius: 12 }}><strong>{t('q.didyouknow')}</strong> {saviez}</p>
-        <a href={`https://${lang}.wikipedia.org/wiki/${encodeURIComponent(p.nom[lang])}`} target="_blank" rel="noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontWeight: 600, fontSize: 14, color: 'var(--muted)', alignSelf: 'flex-start', minHeight: 32 }}>
+        <p style={{ fontSize: 15, color: `var(--${k}-i)`, background: `var(--${k}-t)`, padding: '10px 14px', borderRadius: 12 }}><strong>{t('q.didyouknow')}</strong> {f.saviez}</p>
+        <a href={f.wiki} target="_blank" rel="noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontWeight: 600, fontSize: 14, color: 'var(--muted)', alignSelf: 'flex-start', minHeight: 32 }}>
           <Icon d={ICONS.link} size={16} />{t('q.more')}
         </a>
       </div>
@@ -207,7 +224,7 @@ function Resultat({ reponses, xp, k, onReplay }: { reponses: Reponse[]; xp: numb
   const taux = bonnes / reponses.length
 
   return (
-    <div style={{ minHeight: '100%', display: 'flex', justifyContent: 'center', padding: '48px 40px' }}>
+    <div className="partie" style={{ minHeight: '100%', display: 'flex', justifyContent: 'center', padding: '48px 40px' }}>
       <div style={{ width: '100%', maxWidth: 880, display: 'flex', flexDirection: 'column', gap: 24 }}>
         <section className="card rise" style={{ padding: 40, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
           <svg viewBox="0 0 400 300" width="420" aria-hidden="true" style={{ position: 'absolute', right: -120, top: -100, opacity: .5 }}><path d="M210 30c80-10 170 40 160 120s-90 130-180 120S20 200 40 120 130 40 210 30Z" style={{ fill: `var(--${k}-t)` }} /></svg>
@@ -218,7 +235,7 @@ function Resultat({ reponses, xp, k, onReplay }: { reponses: Reponse[]; xp: numb
             <div><div className="t" style={{ fontSize: 44, fontWeight: 900, color: 'var(--ok-i)' }}>+{xp}</div><div style={{ color: 'var(--muted)' }}>{t('res.xp')}</div></div>
           </div>
           <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center', position: 'relative' }}>
-            {erreurs.length > 0 && <button className="btn btn-p" onClick={() => onReplay(erreurs.map((r) => r.q.pays.id))}>{t('res.errors')}</button>}
+            {erreurs.length > 0 && <button className="btn btn-p" onClick={() => onReplay(erreurs.map((r) => r.q.id))}>{t('res.errors')}</button>}
             <button className="btn btn-s" onClick={() => onReplay()}>{t('res.replay')}</button>
             <Link className="btn btn-g" to="/">{t('res.home')}</Link>
           </div>
@@ -227,10 +244,10 @@ function Resultat({ reponses, xp, k, onReplay }: { reponses: Reponse[]; xp: numb
           <section className="card" style={{ padding: 28, display: 'flex', flexDirection: 'column', gap: 14 }}>
             <h2 className="t" style={{ fontSize: 22, fontWeight: 800 }}>{t('res.review')}</h2>
             {erreurs.map((r) => (
-              <div key={r.q.pays.id} style={{ display: 'flex', alignItems: 'center', gap: 16, padding: 12, borderRadius: 16, background: 'var(--surface2)' }}>
-                <img src={drapeau(r.q.pays.id, 80)} alt="" style={{ width: 54, borderRadius: 6 }} />
+              <div key={r.q.id} style={{ display: 'flex', alignItems: 'center', gap: 16, padding: 12, borderRadius: 16, background: 'var(--surface2)' }}>
+                {r.q.fiche.image && <img src={r.q.fiche.image} alt="" style={{ width: 54, borderRadius: 6 }} />}
                 <div style={{ flex: 1 }}><div style={{ fontWeight: 700 }}>{r.q.reponse}</div><div style={{ fontSize: 14, color: 'var(--muted)' }}>{r.q.enonce}</div></div>
-                {r.donnee && <span style={{ fontSize: 14, color: 'var(--ko-i)', textDecoration: 'line-through' }}>{r.donnee}</span>}
+                {r.donnee && <span style={{ fontSize: 14, color: 'var(--ko-i)', textDecoration: r.km === undefined ? 'line-through' : 'none' }}>{r.donnee}</span>}
               </div>
             ))}
           </section>
