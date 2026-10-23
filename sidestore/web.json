@@ -1,5 +1,6 @@
 {
-  "web": 13,
-  "url": "https://github.com/kwakwa-ratatouille/Croivez/releases/download/web-13/web.zip",
-  "natifMin": 5
+  "web": 15,
+  "url": "https://github.com/kwakwa-ratatouille/Croivez/releases/download/web-15/web.zip",
+  "natifMin": 5,
+  "natifMinAndroid": 1
 }
