@@ -280,6 +280,18 @@ SELECT ?item ?sl ?nFr ?nEn ?dFr ?dEn ?img WHERE {
   marques: () => sparql(req('VALUES ?t { wd:Q4830453 wd:Q891723 wd:Q6881511 wd:Q167037 wd:Q431289 } ?item wdt:P31 ?t; wdt:P17 ?x.', { sl: 30, select: libSelect('x'), extra: lib('x') }))
     .then((l) => finaliser(l, (b) => paire(b, 'x') && ({ ...base(b), r: paire(b, 'x'), g: CONTINENT[b.xFr.value] }))),
 
+  // Complète le pack existant (activité, naissance, pays) sans relancer la grosse requête, qui dépasse souvent le délai
+  'personnalites-maj': async () => {
+    const { readFile } = await import('node:fs/promises')
+    const items = JSON.parse(await readFile('public/packs/culture/personnalites.json', 'utf8'))
+    for (const e of items) {
+      const fait = (fr) => e.f?.find(([l]) => l.fr === fr)?.[1]
+      e.x = { ...(e.x ?? {}), metier: fait('Activité'), naissance: fait('Naissance') }
+      e.f = (e.f ?? []).filter(([l]) => l.fr !== 'Pays')
+    }
+    return enrichir(items, 'P27', 'pays', { fr: 'Pays', en: 'Country' })
+  },
+
   // ——— Sport ———
   clubs: () => sparql(req('?item wdt:P31 wd:Q476028; wdt:P154 ?logo. OPTIONAL { ?item wdt:P17 ?x }', { sl: 40, select: `?logo ${libSelect('x')}`, extra: `OPTIONAL { ${lib('x')} }` }))
     .then((l) => finaliser(l, (b) => ({ ...base(b), img: image(b, 'logo'), g: b.xFr?.value, f: [[{ fr: 'Pays', en: 'Country' }, paire(b, 'x')]] }))),
@@ -375,7 +387,7 @@ for (const [nom, fn] of Object.entries(THEMES)) {
       console.log()
     } else {
       const items = await fn()
-      await writeFile(`public/packs/culture/${nom}.json`, JSON.stringify(items))
+      await writeFile(`public/packs/culture/${nom.replace(/-maj$/, "")}.json`, JSON.stringify(items))
       console.log(items.length)
     }
   } catch (e) {
