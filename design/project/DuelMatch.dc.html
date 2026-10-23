@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Croivez — Duel en face-à-face</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&amp;family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:inherit}a:hover{color:inherit}
+.cz{--bg:#FBF8F3;--surface:#FFFFFF;--surface2:#F4EFE6;--line:#E9E2D6;--text:#2F3437;--muted:#5D646A;--primary:#2F3437;--on-primary:#FBF8F3;--shadow:0 8px 28px rgba(80,62,35,.07);--lx:#DE8B6A;--lv:#6FC59F;--geo:#6BB8C4;--geo-t:#E3F3F4;--geo-i:#1F6670;--sci:#E8AFC0;--sci-t:#FAE8EE;--sci-i:#8A3E56;--ok:#8FD3B6;--ok-t:#E2F5EC;--ok-i:#22664A;font-family:'DM Sans',system-ui,sans-serif;color:var(--text);background:var(--bg)}
+.cz.dark{--bg:#131B2E;--surface:#1A2440;--surface2:#24304F;--line:#2F3B5E;--text:#EEE9E0;--muted:#AEB6C8;--primary:#EEE9E0;--on-primary:#131B2E;--shadow:0 10px 30px rgba(0,0,0,.3);--lx:#EDA98A;--lv:#93D9BB;--geo:#7CCFDA;--geo-t:#1B3946;--geo-i:#A6E3EA;--sci:#EDB9C9;--sci-t:#3C2839;--sci-i:#F5CAD8;--ok:#93D9BB;--ok-t:#1D3B35;--ok-i:#A8E6CB}
+.cz *{box-sizing:border-box}
+.cz h1,.cz h2,.cz p{margin:0}
+.t{font-family:Nunito,system-ui,sans-serif}
+.ic{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.kbd{display:inline-flex;align-items:center;justify-content:center;min-width:26px;height:26px;padding:0 7px;border-radius:8px;border:1.5px solid var(--line);background:var(--surface2);font:600 13px 'DM Sans',sans-serif;color:var(--muted)}
+.chip{display:inline-flex;align-items:center;gap:6px;min-height:30px;padding:0 12px;border-radius:999px;font:600 13px 'DM Sans',sans-serif}
+.opt{transition:transform .25s ease-out,border-color .25s ease-out}
+.opt:hover{transform:translateY(-2px)}
+@media (prefers-reduced-motion:reduce){.cz *{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div class="cz {{mode}}" style="min-height: 900px; display: flex; flex-direction: column">
+
+<header style="display: flex; align-items: center; gap: 24px; padding: 20px 40px; border-bottom: 1px solid var(--line); background: var(--surface); flex-wrap: wrap">
+<a href="DuelInvitation.dc.html" style="display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 14px; border-radius: 14px; text-decoration: none; font-weight: 600; color: var(--muted)"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg>Abandonner</a>
+<span class="chip" style="background: var(--geo-t); color: var(--geo-i)">Duel · Géographie · Capitales</span>
+<span style="margin-left: auto; font-size: 14px; font-weight: 600; color: var(--muted)">Question 6 / 10</span>
+</header>
+
+<section aria-label="Scores en direct" style="width: 100%; max-width: 1120px; margin: 0 auto; padding: 28px 40px 0; display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 24px; align-items: center">
+<div style="display: flex; align-items: center; gap: 16px; padding: 18px 22px; border-radius: 24px; background: var(--sci-t); color: var(--sci-i)">
+<span class="t" style="width: 56px; height: 56px; border-radius: 50%; background: var(--surface); display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 900">C</span>
+<div style="flex: 1; display: flex; flex-direction: column; gap: 8px"><span style="font-weight: 700">Camille · vous</span><div style="display: flex; gap: 4px"><sc-for list="{{me}}" as="s" hint-placeholder-count="10"><span style="flex: 1; height: 8px; border-radius: 999px; background: {{s}}"></span></sc-for></div></div>
+<span class="t" style="font-size: 44px; font-weight: 900">4</span>
+</div>
+<div style="position: relative; width: 84px; height: 84px" role="timer" aria-label="12 secondes restantes">
+<svg viewBox="0 0 84 84" width="84" height="84" aria-hidden="true"><circle cx="42" cy="42" r="36" style="fill: none; stroke: var(--surface2); stroke-width: 8"></circle><circle cx="42" cy="42" r="36" transform="rotate(-90 42 42)" style="fill: none; stroke: var(--geo); stroke-width: 8; stroke-linecap: round; stroke-dasharray: 226; stroke-dashoffset: 90"></circle></svg>
+<span class="t" style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 26px; font-weight: 900">12</span>
+</div>
+<div style="display: flex; align-items: center; gap: 16px; padding: 18px 22px; border-radius: 24px; background: var(--geo-t); color: var(--geo-i)">
+<span class="t" style="font-size: 44px; font-weight: 900">3</span>
+<div style="flex: 1; display: flex; flex-direction: column; gap: 8px; align-items: flex-end"><span style="font-weight: 700">Hugo</span><div style="display: flex; gap: 4px; width: 100%"><sc-for list="{{him}}" as="s" hint-placeholder-count="10"><span style="flex: 1; height: 8px; border-radius: 999px; background: {{s}}"></span></sc-for></div></div>
+<span class="t" style="width: 56px; height: 56px; border-radius: 50%; background: var(--surface); display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 900">H</span>
+</div>
+</section>
+
+<main style="flex: 1; width: 100%; max-width: 1000px; margin: 0 auto; padding: 36px 40px; display: flex; flex-direction: column; gap: 28px">
+<h1 class="t" style="font-size: 42px; font-weight: 900; text-align: center">Quelle est la capitale du Canada ?</h1>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px">
+<sc-for list="{{opts}}" as="o" hint-placeholder-count="4">
+<button type="button" class="opt" aria-pressed="{{o.on}}" style="display: flex; align-items: center; gap: 16px; min-height: 80px; padding: 0 22px; border-radius: 22px; border: {{o.bd}}; background: var(--surface); color: var(--text); font: 600 20px 'DM Sans', sans-serif; text-align: left; cursor: pointer"><span class="kbd" style="background: {{o.kbg}}; color: {{o.kfg}}; border-color: {{o.kbd}}">{{o.n}}</span>{{o.label}}</button>
+</sc-for>
+</div>
+<div style="display: flex; justify-content: center; gap: 12px; flex-wrap: wrap" role="status">
+<span class="chip" style="min-height: 40px; padding: 0 16px; background: var(--surface2); color: var(--text)">Votre réponse est enregistrée</span>
+<span class="chip" style="min-height: 40px; padding: 0 16px; background: var(--geo-t); color: var(--geo-i)">Hugo a répondu</span>
+</div>
+<a href="DuelResultat.dc.html" style="align-self: center; font-size: 15px; font-weight: 600; color: var(--muted); min-height: 44px; display: inline-flex; align-items: center">Voir la fin du duel</a>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"dark":{"editor":"boolean","default":false},"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const seq = (arr) => Array.from({ length: 10 }, (_, i) => i < arr.length ? (arr[i] ? 'var(--ok)' : 'var(--lx)') : 'var(--surface)');
+    const opts = ['Toronto', 'Ottawa', 'Montréal', 'Vancouver'].map((label, i) => {
+      const on = i === 1;
+      return { n: i + 1, label, on: on ? 'true' : 'false', bd: on ? '2px solid var(--text)' : '1.5px solid var(--line)', kbg: on ? 'var(--text)' : 'var(--surface2)', kfg: on ? 'var(--bg)' : 'var(--muted)', kbd: on ? 'var(--text)' : 'var(--line)' };
+    });
+    return { mode: this.props.dark ? 'dark' : '', me: seq([1, 1, 0, 1, 1]), him: seq([1, 0, 1, 1, 0]), opts };
+  }
+}
+</script>
+</body>
+</html>

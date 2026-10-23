@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Croivez — Classements</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&amp;family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:inherit}a:hover{color:inherit}
+.cz{--bg:#FBF8F3;--surface:#FFFFFF;--surface2:#F4EFE6;--line:#E9E2D6;--text:#2F3437;--muted:#5D646A;--primary:#2F3437;--on-primary:#FBF8F3;--shadow:0 8px 28px rgba(80,62,35,.07);--lx:#DE8B6A;--lv:#6FC59F;--geo:#6BB8C4;--geo-t:#E3F3F4;--geo-i:#1F6670;--cine:#F2A68A;--cine-t:#FCEAE2;--cine-i:#8E4128;--mus:#B3A3DB;--mus-t:#EEEAF8;--mus-i:#5A4A8C;--nat:#9DBB97;--nat-t:#E8F0E5;--nat-i:#3F6339;--sci:#E8AFC0;--sci-t:#FAE8EE;--sci-i:#8A3E56;--his:#DDB65E;--his-t:#F8EFD8;--his-i:#765610;--brd:#8FA0CF;--brd-t:#E7EBF6;--brd-i:#3E4F86;--ok:#8FD3B6;--ok-t:#E2F5EC;--ok-i:#22664A;font-family:'DM Sans',system-ui,sans-serif;color:var(--text);background:var(--bg)}
+.cz.dark{--bg:#131B2E;--surface:#1A2440;--surface2:#24304F;--line:#2F3B5E;--text:#EEE9E0;--muted:#AEB6C8;--primary:#EEE9E0;--on-primary:#131B2E;--shadow:0 10px 30px rgba(0,0,0,.3);--lx:#EDA98A;--lv:#93D9BB;--geo:#7CCFDA;--geo-t:#1B3946;--geo-i:#A6E3EA;--cine:#F4B097;--cine-t:#3D2A2C;--cine-i:#F8C4B0;--mus:#BDAEE6;--mus-t:#2C2A4C;--mus-i:#D3C8F4;--nat:#A9C8A2;--nat-t:#223A30;--nat-i:#C1DDBA;--sci:#EDB9C9;--sci-t:#3C2839;--sci-i:#F5CAD8;--his:#E5C26E;--his-t:#38321F;--his-i:#EED493;--brd:#9DADDA;--brd-t:#232F50;--brd-i:#BFCBEF;--ok:#93D9BB;--ok-t:#1D3B35;--ok-i:#A8E6CB}
+.cz *{box-sizing:border-box}
+.cz h1,.cz h2,.cz h3,.cz p{margin:0}
+.t{font-family:Nunito,system-ui,sans-serif}
+.ic{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow)}
+.chip{display:inline-flex;align-items:center;gap:6px;min-height:30px;padding:0 12px;border-radius:999px;font:600 13px 'DM Sans',sans-serif}
+.nav{display:flex;align-items:center;gap:12px;min-height:46px;padding:0 14px;border-radius:14px;text-decoration:none;color:var(--muted);font-weight:500;font-size:15px;transition:background-color .2s ease-out}
+.nav:hover{background:var(--surface2);color:var(--text)}
+.nav.on{background:var(--surface2);color:var(--text);font-weight:700}
+.seg{min-height:44px;padding:0 18px;border-radius:12px;border:0;font:600 15px 'DM Sans',sans-serif;cursor:pointer;transition:background-color .2s ease-out}
+.lx{fill:none;stroke:var(--lx);stroke-linecap:round}
+.lv{fill:none;stroke:var(--lv);stroke-linecap:round;stroke-linejoin:round}
+@media (prefers-reduced-motion:reduce){.cz *{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div class="cz {{mode}}" style="min-height: 900px; display: flex; flex-wrap: wrap">
+
+<nav aria-label="Navigation principale" style="flex: 1 1 248px; display: flex; flex-direction: column; gap: 4px; padding: 28px 18px; background: var(--surface); border-right: 1px solid var(--line)">
+<a href="Accueil.dc.html" aria-label="Croivez, accueil" style="display: flex; align-items: center; gap: 10px; padding: 4px 12px 28px; text-decoration: none"><svg viewBox="0 0 116 72" width="42" aria-hidden="true"><path class="lx" d="M16 16 Q33 36 50 58 M50 16 Q32 37 16 58" style="stroke-width: 14"></path><path class="lv" d="M44 40 Q52 49 60 58 Q77 32 102 12" style="stroke-width: 14"></path></svg><span class="t" style="font-size: 24px; font-weight: 900">Croivez</span></a>
+<a class="nav" href="Accueil.dc.html"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 10.5 12 3.5l8.5 7M5.5 9.5V20h13V9.5"></path></svg>Accueil</a>
+<a class="nav" href="Themes.dc.html"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="2"></rect><rect x="13.5" y="3.5" width="7" height="7" rx="2"></rect><rect x="3.5" y="13.5" width="7" height="7" rx="2"></rect><rect x="13.5" y="13.5" width="7" height="7" rx="2"></rect></svg>Thèmes</a>
+<a class="nav" href="Revision.dc.html"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.7M20 4v5h-5"></path></svg>Révision<span class="chip" style="margin-left: auto; min-height: 24px; padding: 0 9px; background: var(--his-t); color: var(--his-i)">12</span></a>
+<a class="nav" href="DuelInvitation.dc.html"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h12.5l-3.5-3.5M20 16H7.5l3.5 3.5"></path></svg>Duels</a>
+<a class="nav on" href="Classements.dc.html" aria-current="page"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 20.5h17"></path><rect x="9" y="5" width="6" height="15.5" rx="1.5"></rect><rect x="3.5" y="10.5" width="5.5" height="10" rx="1.5"></rect><rect x="15" y="13.5" width="5.5" height="7" rx="1.5"></rect></svg>Classements</a>
+<a class="nav" href="Profil.dc.html"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4.5 20.5c1.4-3.8 4.2-5.7 7.5-5.7s6.1 1.9 7.5 5.7"></path></svg>Profil</a>
+</nav>
+
+<main style="flex: 999 1 560px; min-width: 0; padding: 40px 56px; display: flex; flex-direction: column; gap: 22px">
+<header style="display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap">
+<h1 class="t" style="font-size: 36px; font-weight: 900">Classements</h1>
+<div style="display: flex; gap: 12px; flex-wrap: wrap">
+<div role="tablist" aria-label="Portée" style="display: flex; gap: 4px; padding: 4px; border-radius: 16px; background: var(--surface2)">
+<sc-for list="{{tabs}}" as="tb" hint-placeholder-count="3"><button type="button" role="tab" class="seg" aria-selected="{{tb.on}}" onClick="{{tb.pick}}" style="background: {{tb.bg}}; color: {{tb.fg}}; box-shadow: {{tb.sh}}">{{tb.label}}</button></sc-for>
+</div>
+<div role="tablist" aria-label="Période" style="display: flex; gap: 4px; padding: 4px; border-radius: 16px; background: var(--surface2)">
+<sc-for list="{{periods}}" as="p" hint-placeholder-count="2"><button type="button" role="tab" class="seg" aria-selected="{{p.on}}" onClick="{{p.pick}}" style="background: {{p.bg}}; color: {{p.fg}}; box-shadow: {{p.sh}}">{{p.label}}</button></sc-for>
+</div>
+</div>
+</header>
+
+<sc-if value="{{byTheme}}" hint-placeholder-val="{{false}}">
+<div style="display: flex; gap: 8px; flex-wrap: wrap">
+<span class="chip" style="min-height: 40px; padding: 0 16px; background: var(--geo-t); color: var(--geo-i); border: 2px solid var(--geo)">Géographie</span>
+<span class="chip" style="min-height: 40px; padding: 0 16px; background: var(--cine-t); color: var(--cine-i)">Cinéma</span>
+<span class="chip" style="min-height: 40px; padding: 0 16px; background: var(--mus-t); color: var(--mus-i)">Musique</span>
+<span class="chip" style="min-height: 40px; padding: 0 16px; background: var(--nat-t); color: var(--nat-i)">Nature</span>
+<span class="chip" style="min-height: 40px; padding: 0 16px; background: var(--sci-t); color: var(--sci-i)">Corps &amp; sciences</span>
+<span class="chip" style="min-height: 40px; padding: 0 16px; background: var(--his-t); color: var(--his-i)">Histoire</span>
+<span class="chip" style="min-height: 40px; padding: 0 16px; background: var(--brd-t); color: var(--brd-i)">Marques</span>
+</div>
+</sc-if>
+
+<div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start">
+<section class="card" aria-label="Podium" style="flex: 1 1 380px; padding: 28px; display: flex; align-items: flex-end; justify-content: center; gap: 16px; min-height: 360px">
+<sc-for list="{{podium}}" as="p" hint-placeholder-count="3">
+<div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 10px">
+<span class="t" style="width: {{p.size}}px; height: {{p.size}}px; border-radius: 50%; background: var(--{{p.k}}-t); color: var(--{{p.k}}-i); border: 3px solid var(--{{p.k}}); display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 900">{{p.i}}</span>
+<span style="font-weight: 700">{{p.name}}</span>
+<span style="font-size: 14px; color: var(--muted)">{{p.pts}} pts</span>
+<div style="width: 100%; height: {{p.h}}px; border-radius: 18px 18px 8px 8px; background: var(--{{p.k}}-t); display: flex; align-items: flex-start; justify-content: center; padding-top: 12px"><span class="t" style="font-size: 30px; font-weight: 900; color: var(--{{p.k}}-i)">{{p.rank}}</span></div>
+</div>
+</sc-for>
+</section>
+
+<section class="card" style="flex: 999 1 460px; min-width: 0; padding: 10px 14px">
+<ol style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column">
+<sc-for list="{{rows}}" as="r" hint-placeholder-count="7">
+<li style="display: flex; align-items: center; gap: 16px; min-height: 60px; padding: 0 14px; border-radius: 16px; background: {{r.bg}}; border: {{r.bd}}">
+<span class="t" style="width: 28px; font-size: 17px; font-weight: 900; color: var(--muted)">{{r.rank}}</span>
+<span class="t" style="width: 40px; height: 40px; border-radius: 50%; background: var(--{{r.k}}-t); color: var(--{{r.k}}-i); display: flex; align-items: center; justify-content: center; font-weight: 900">{{r.i}}</span>
+<span style="flex: 1; font-weight: {{r.fw}}; font-size: 16px">{{r.name}}</span>
+<span style="font-size: 13px; color: var(--muted)">{{r.trend}}</span>
+<span style="font-weight: 700; font-size: 16px; min-width: 80px; text-align: right">{{r.pts}} pts</span>
+</li>
+</sc-for>
+</ol>
+</section>
+</div>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"dark":{"editor":"boolean","default":false},"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { tab: 'amis', period: 'hebdo' };
+  }
+  renderVals() {
+    const seg = (on) => on ? { bg: 'var(--surface)', fg: 'var(--text)', sh: '0 2px 8px rgba(0,0,0,.08)' } : { bg: 'transparent', fg: 'var(--muted)', sh: 'none' };
+    const tabs = [['global', 'Global'], ['theme', 'Par thème'], ['amis', 'Entre amis']].map(([id, label]) => ({ label, on: this.state.tab === id ? 'true' : 'false', ...seg(this.state.tab === id), pick: () => this.setState({ tab: id }) }));
+    const periods = [['hebdo', 'Cette semaine'], ['tout', 'Tout temps']].map(([id, label]) => ({ label, on: this.state.period === id ? 'true' : 'false', ...seg(this.state.period === id), pick: () => this.setState({ period: id }) }));
+    const podium = [
+      { rank: 2, name: 'Hugo', i: 'H', k: 'geo', pts: '2 310', h: 110, size: 64 },
+      { rank: 1, name: 'Léa', i: 'L', k: 'his', pts: '2 480', h: 150, size: 76 },
+      { rank: 3, name: 'Inès', i: 'I', k: 'mus', pts: '2 105', h: 80, size: 60 }
+    ];
+    const list = [
+      ['Malik', 'M', 'nat', '1 980', '↑ 2'], ['Camille (vous)', 'C', 'sci', '1 875', '↑ 1'], ['Jules', 'J', 'cine', '1 760', '↓ 1'],
+      ['Sarah', 'S', 'brd', '1 640', '='], ['Nora', 'N', 'geo', '1 410', '↓ 2'], ['Théo', 'T', 'his', '1 290', '='], ['Yanis', 'Y', 'mus', '1 150', '↑ 1']
+    ];
+    const rows = list.map(([name, i, k, pts, trend], idx) => {
+      const me = name.indexOf('vous') >= 0;
+      return { rank: idx + 4, name, i, k, pts, trend, fw: me ? 800 : 600, bg: me ? 'var(--sci-t)' : 'transparent', bd: me ? '2px solid var(--sci)' : '2px solid transparent' };
+    });
+    return { mode: this.props.dark ? 'dark' : '', tabs, periods, byTheme: this.state.tab === 'theme', podium, rows };
+  }
+}
+</script>
+</body>
+</html>

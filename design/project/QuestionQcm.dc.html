@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Croivez — Question QCM images</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&amp;family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:inherit}a:hover{color:inherit}
+.cz{--bg:#FBF8F3;--surface:#FFFFFF;--surface2:#F4EFE6;--line:#E9E2D6;--text:#2F3437;--muted:#5D646A;--primary:#2F3437;--on-primary:#FBF8F3;--shadow:0 8px 28px rgba(80,62,35,.07);--lx:#DE8B6A;--lv:#6FC59F;--geo:#6BB8C4;--geo-t:#E3F3F4;--geo-i:#1F6670;--his:#DDB65E;--his-t:#F8EFD8;--his-i:#765610;--ok:#8FD3B6;--ok-t:#E2F5EC;--ok-i:#22664A;--ko:#E0997A;--ko-t:#FBE9E1;--ko-i:#97482A;font-family:'DM Sans',system-ui,sans-serif;color:var(--text);background:var(--bg)}
+.cz.dark{--bg:#131B2E;--surface:#1A2440;--surface2:#24304F;--line:#2F3B5E;--text:#EEE9E0;--muted:#AEB6C8;--primary:#EEE9E0;--on-primary:#131B2E;--shadow:0 10px 30px rgba(0,0,0,.3);--lx:#EDA98A;--lv:#93D9BB;--geo:#7CCFDA;--geo-t:#1B3946;--geo-i:#A6E3EA;--his:#E5C26E;--his-t:#38321F;--his-i:#EED493;--ok:#93D9BB;--ok-t:#1D3B35;--ok-i:#A8E6CB;--ko:#E9A585;--ko-t:#3E2C29;--ko-i:#F3BCA2}
+.cz *{box-sizing:border-box}
+.cz h1,.cz h2,.cz h3,.cz p{margin:0}
+.t{font-family:Nunito,system-ui,sans-serif}
+.ic{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:52px;padding:0 24px;border-radius:16px;border:0;font:600 16px 'DM Sans',sans-serif;text-decoration:none;cursor:pointer;transition:transform .2s ease-out}
+.btn:hover{transform:translateY(-1px)}
+.btn-p{background:var(--primary);color:var(--on-primary)}
+.kbd{display:inline-flex;align-items:center;justify-content:center;min-width:26px;height:26px;padding:0 7px;border-radius:8px;border:1.5px solid var(--line);background:var(--surface2);font:600 13px 'DM Sans',sans-serif;color:var(--muted)}
+.chip{display:inline-flex;align-items:center;gap:6px;min-height:30px;padding:0 12px;border-radius:999px;font:600 13px 'DM Sans',sans-serif}
+.bar{height:10px;border-radius:999px;background:var(--surface2);overflow:hidden}
+.bar>span{display:block;height:100%;border-radius:999px}
+.lx{fill:none;stroke:var(--lx);stroke-linecap:round}
+.lv{fill:none;stroke:var(--lv);stroke-linecap:round;stroke-linejoin:round}
+.opt{transition:transform .25s ease-out,border-color .25s ease-out,background-color .25s ease-out,opacity .25s ease-out}
+.opt:hover{transform:translateY(-2px)}
+.draw{stroke-dasharray:110;animation:cz-draw .3s ease-out both}
+.sway{transform-box:fill-box;transform-origin:center;animation:cz-sway .4s ease-out both}
+.pulse{animation:cz-pulse .6s ease-out both}
+.rise{animation:cz-in .3s ease-out both}
+@keyframes cz-draw{from{stroke-dashoffset:110}to{stroke-dashoffset:0}}
+@keyframes cz-sway{0%,100%{transform:rotate(0)}30%{transform:rotate(-9deg)}65%{transform:rotate(7deg)}}
+@keyframes cz-pulse{from{box-shadow:0 0 0 0 rgba(143,211,182,.6)}to{box-shadow:0 0 0 16px rgba(143,211,182,0)}}
+@keyframes cz-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.cz *{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div class="cz {{mode}}" style="min-height: 900px; display: flex; flex-direction: column">
+
+<header style="display: flex; align-items: center; gap: 24px; flex-wrap: wrap; padding: 20px 40px; border-bottom: 1px solid var(--line); background: var(--surface)">
+<a href="Accueil.dc.html" style="display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 14px; border-radius: 14px; text-decoration: none; font-weight: 600; color: var(--muted)"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg>Quitter<span class="kbd">Échap</span></a>
+<div style="flex: 1 1 300px; display: flex; align-items: center; gap: 14px">
+<div class="bar" style="flex: 1" role="progressbar" aria-valuenow="4" aria-valuemin="0" aria-valuemax="10" aria-label="Progression"><span style="width: 40%; background: var(--geo)"></span></div>
+<span style="font-size: 14px; font-weight: 600; color: var(--muted); white-space: nowrap">4 / 10</span>
+</div>
+<span class="chip" style="background: var(--geo-t); color: var(--geo-i)">Géographie · Drapeaux</span>
+<span class="chip" style="background: var(--ok-t); color: var(--ok-i)"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" style="width: 16px; height: 16px; stroke-width: 2.6"><path d="m5 12.5 4.5 4.5L19 7.5"></path></svg>3 justes</span>
+</header>
+
+<main style="flex: 1; width: 100%; max-width: 1120px; margin: 0 auto; padding: 40px 40px 32px; display: flex; flex-direction: column; gap: 28px">
+<h1 class="t" style="font-size: 44px; font-weight: 900; line-height: 1.15; text-align: center">Quel est le drapeau du Tchad ?</h1>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px">
+<sc-for list="{{opts}}" as="o" hint-placeholder-count="4">
+<button type="button" class="opt {{o.anim}}" onClick="{{o.pick}}" aria-label="{{o.aria}}" style="display: flex; flex-direction: column; gap: 14px; padding: 16px; border-radius: 24px; cursor: pointer; text-align: left; font-family: inherit; color: var(--text); background: {{o.bg}}; border: {{o.bd}}; opacity: {{o.op}}">
+<svg viewBox="0 0 3 2" width="100%" aria-hidden="true" style="display: block; border-radius: 12px; box-shadow: 0 0 0 1px rgba(0,0,0,.06)"><rect x="0" y="0" width="1" height="2" style="fill: {{o.c1}}"></rect><rect x="1" y="0" width="1" height="2" style="fill: {{o.c2}}"></rect><rect x="2" y="0" width="1" height="2" style="fill: {{o.c3}}"></rect></svg>
+<span style="display: flex; align-items: center; gap: 10px; min-height: 30px">
+<span class="kbd" style="color: {{o.fg}}; border-color: {{o.kb}}">{{o.n}}</span>
+<span style="font-weight: 600; font-size: 16px; color: {{o.fg}}">{{o.label}}</span>
+<sc-if value="{{o.isOk}}" hint-placeholder-val="{{false}}"><svg viewBox="0 0 48 44" width="30" aria-hidden="true" style="margin-left: auto"><path class="lv draw" d="M6 24 Q11 31 16 38 Q27 18 43 5" style="stroke-width: 7"></path></svg></sc-if>
+<sc-if value="{{o.isKo}}" hint-placeholder-val="{{false}}"><svg viewBox="0 0 24 24" width="28" aria-hidden="true" style="margin-left: auto"><path class="lx sway" d="M6 6 Q12 12 18 18 M18 6 Q12 12 6 18" style="stroke-width: 3.6"></path></svg></sc-if>
+</span>
+</button>
+</sc-for>
+</div>
+
+<sc-if value="{{answered}}" hint-placeholder-val="{{true}}">
+<section class="rise" style="display: flex; align-items: center; gap: 24px; flex-wrap: wrap; padding: 24px 28px; border-radius: 24px; background: {{fb.bg}}; color: {{fb.fg}}">
+<div style="width: 64px; height: 64px; border-radius: 50%; background: var(--surface); display: flex; align-items: center; justify-content: center; flex: none">
+<sc-if value="{{fb.ok}}" hint-placeholder-val="{{false}}"><svg viewBox="0 0 48 44" width="36" aria-hidden="true"><path class="lv draw" d="M6 24 Q11 31 16 38 Q27 18 43 5" style="stroke-width: 7"></path></svg></sc-if>
+<sc-if value="{{fb.ko}}" hint-placeholder-val="{{true}}"><svg viewBox="0 0 24 24" width="32" aria-hidden="true"><path class="lx sway" d="M6 6 Q12 12 18 18 M18 6 Q12 12 6 18" style="stroke-width: 3.4"></path></svg></sc-if>
+</div>
+<div style="flex: 1 1 420px; display: flex; flex-direction: column; gap: 6px">
+<p class="t" style="font-size: 22px; font-weight: 800">{{fb.title}}</p>
+<p style="font-size: 16px; line-height: 1.55"><strong>Le saviez-vous ?</strong> Les drapeaux du Tchad et de la Roumanie sont presque identiques : seul le bleu diffère, un peu plus foncé pour le Tchad.</p>
+</div>
+<a class="btn btn-p" href="QuestionSaisie.dc.html">Question suivante<span class="kbd" style="background: transparent; color: var(--on-primary); border-color: var(--on-primary); opacity: .7">Entrée</span></a>
+</section>
+</sc-if>
+<sc-if value="{{notAnswered}}" hint-placeholder-val="{{false}}">
+<p style="text-align: center; font-size: 15px; color: var(--muted)">Cliquez sur un drapeau ou appuyez sur <span class="kbd">1</span> <span class="kbd">2</span> <span class="kbd">3</span> <span class="kbd">4</span></p>
+</sc-if>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"etat":{"editor":"enum","options":["question","juste","faux"],"default":"faux"},"dark":{"editor":"boolean","default":false},"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { picked: null };
+  }
+  renderVals() {
+    const etat = this.props.etat ?? 'faux';
+    const correct = 2;
+    const fallback = etat === 'juste' ? 2 : (etat === 'faux' ? 0 : null);
+    const picked = this.state.picked ?? fallback;
+    const answered = picked !== null;
+    const flags = [
+      { name: 'Roumanie', c: ['#002B7F', '#FCD116', '#CE1126'] },
+      { name: 'Mali', c: ['#14B53A', '#FCD116', '#CE1126'] },
+      { name: 'Tchad', c: ['#002664', '#FECB00', '#C60C30'] },
+      { name: 'Belgique', c: ['#000000', '#FDDA24', '#EF3340'] }
+    ];
+    const opts = flags.map((f, i) => {
+      const isOk = answered && i === correct;
+      const isKo = answered && i === picked && i !== correct;
+      const dim = answered && !isOk && !isKo;
+      return {
+        n: i + 1, c1: f.c[0], c2: f.c[1], c3: f.c[2],
+        label: answered ? f.name : 'Drapeau ' + (i + 1),
+        aria: 'Option ' + (i + 1) + (answered ? ', ' + f.name : ''),
+        isOk, isKo,
+        anim: isOk && picked === correct ? 'pulse' : '',
+        bg: isOk ? 'var(--ok-t)' : (isKo ? 'var(--ko-t)' : 'var(--surface)'),
+        bd: isOk ? '2px solid var(--ok)' : (isKo ? '2px solid var(--ko)' : '1.5px solid var(--line)'),
+        fg: isOk ? 'var(--ok-i)' : (isKo ? 'var(--ko-i)' : 'var(--text)'),
+        kb: isOk ? 'var(--ok)' : (isKo ? 'var(--ko)' : 'var(--line)'),
+        op: dim ? 0.55 : 1,
+        pick: () => this.setState({ picked: i })
+      };
+    });
+    const ok = picked === correct;
+    const fb = {
+      ok, ko: answered && !ok,
+      bg: ok ? 'var(--ok-t)' : 'var(--ko-t)', fg: ok ? 'var(--ok-i)' : 'var(--ko-i)',
+      title: ok ? 'Juste ! C’est bien le Tchad.' : 'Pas tout à fait : le Tchad, c’était le drapeau 3.'
+    };
+    return { mode: this.props.dark ? 'dark' : '', opts, answered, notAnswered: !answered, fb };
+  }
+}
+</script>
+</body>
+</html>

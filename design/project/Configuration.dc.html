@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Croivez — Configuration d'une partie</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&amp;family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:inherit}a:hover{color:inherit}
+.cz{--bg:#FBF8F3;--surface:#FFFFFF;--surface2:#F4EFE6;--line:#E9E2D6;--text:#2F3437;--muted:#5D646A;--primary:#2F3437;--on-primary:#FBF8F3;--shadow:0 8px 28px rgba(80,62,35,.07);--lx:#DE8B6A;--lv:#6FC59F;--geo:#6BB8C4;--geo-t:#E3F3F4;--geo-i:#1F6670;--cine:#F2A68A;--cine-t:#FCEAE2;--cine-i:#8E4128;--mus:#B3A3DB;--mus-t:#EEEAF8;--mus-i:#5A4A8C;--nat:#9DBB97;--nat-t:#E8F0E5;--nat-i:#3F6339;--sci:#E8AFC0;--sci-t:#FAE8EE;--sci-i:#8A3E56;--his:#DDB65E;--his-t:#F8EFD8;--his-i:#765610;--brd:#8FA0CF;--brd-t:#E7EBF6;--brd-i:#3E4F86;--ok:#8FD3B6;--ok-t:#E2F5EC;--ok-i:#22664A;--ko:#E0997A;--ko-t:#FBE9E1;--ko-i:#97482A;font-family:'DM Sans',system-ui,sans-serif;color:var(--text);background:var(--bg)}
+.cz.dark{--bg:#131B2E;--surface:#1A2440;--surface2:#24304F;--line:#2F3B5E;--text:#EEE9E0;--muted:#AEB6C8;--primary:#EEE9E0;--on-primary:#131B2E;--shadow:0 10px 30px rgba(0,0,0,.3);--lx:#EDA98A;--lv:#93D9BB;--geo:#7CCFDA;--geo-t:#1B3946;--geo-i:#A6E3EA;--cine:#F4B097;--cine-t:#3D2A2C;--cine-i:#F8C4B0;--mus:#BDAEE6;--mus-t:#2C2A4C;--mus-i:#D3C8F4;--nat:#A9C8A2;--nat-t:#223A30;--nat-i:#C1DDBA;--sci:#EDB9C9;--sci-t:#3C2839;--sci-i:#F5CAD8;--his:#E5C26E;--his-t:#38321F;--his-i:#EED493;--brd:#9DADDA;--brd-t:#232F50;--brd-i:#BFCBEF;--ok:#93D9BB;--ok-t:#1D3B35;--ok-i:#A8E6CB;--ko:#E9A585;--ko-t:#3E2C29;--ko-i:#F3BCA2}
+.cz *{box-sizing:border-box}
+.cz h1,.cz h2,.cz h3,.cz h4,.cz p{margin:0}
+.t{font-family:Nunito,system-ui,sans-serif}
+.ic{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:52px;padding:0 24px;border-radius:16px;border:0;font:600 16px 'DM Sans',sans-serif;text-decoration:none;cursor:pointer;transition:transform .2s ease-out,background-color .2s ease-out}
+.btn:hover{transform:translateY(-1px)}
+.btn-p{background:var(--primary);color:var(--on-primary)}
+.kbd{display:inline-flex;align-items:center;justify-content:center;min-width:26px;height:26px;padding:0 7px;border-radius:8px;border:1.5px solid var(--line);background:var(--surface2);font:600 13px 'DM Sans',sans-serif;color:var(--muted)}
+.chip{display:inline-flex;align-items:center;gap:6px;min-height:30px;padding:0 12px;border-radius:999px;font:600 13px 'DM Sans',sans-serif}
+.eyebrow{font:700 13px 'DM Sans',sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.nav{display:flex;align-items:center;gap:12px;min-height:46px;padding:0 14px;border-radius:14px;text-decoration:none;color:var(--muted);font-weight:500;font-size:15px;transition:background-color .2s ease-out}
+.nav:hover{background:var(--surface2);color:var(--text)}
+.nav.on{background:var(--surface2);color:var(--text);font-weight:700}
+.lx{fill:none;stroke:var(--lx);stroke-linecap:round}
+.lv{fill:none;stroke:var(--lv);stroke-linecap:round;stroke-linejoin:round}
+.pill{display:inline-flex;align-items:center;gap:8px;min-height:48px;padding:0 18px;border-radius:16px;font:600 15px 'DM Sans',sans-serif;cursor:pointer;transition:background-color .2s ease-out,border-color .2s ease-out}
+@media (prefers-reduced-motion:reduce){.cz *{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div class="cz {{mode}}" style="min-height: 900px; display: flex; flex-wrap: wrap">
+
+<nav aria-label="Navigation principale" style="flex: 1 1 248px; display: flex; flex-direction: column; gap: 4px; padding: 28px 18px; background: var(--surface); border-right: 1px solid var(--line)">
+<a href="Accueil.dc.html" aria-label="Croivez, accueil" style="display: flex; align-items: center; gap: 10px; padding: 4px 12px 28px; text-decoration: none"><svg viewBox="0 0 116 72" width="42" aria-hidden="true"><path class="lx" d="M16 16 Q33 36 50 58 M50 16 Q32 37 16 58" style="stroke-width: 14"></path><path class="lv" d="M44 40 Q52 49 60 58 Q77 32 102 12" style="stroke-width: 14"></path></svg><span class="t" style="font-size: 24px; font-weight: 900">Croivez</span></a>
+<a class="nav" href="Accueil.dc.html"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 10.5 12 3.5l8.5 7M5.5 9.5V20h13V9.5"></path></svg>Accueil</a>
+<a class="nav on" href="Themes.dc.html" aria-current="page"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="2"></rect><rect x="13.5" y="3.5" width="7" height="7" rx="2"></rect><rect x="3.5" y="13.5" width="7" height="7" rx="2"></rect><rect x="13.5" y="13.5" width="7" height="7" rx="2"></rect></svg>Thèmes</a>
+<a class="nav" href="Revision.dc.html"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.7M20 4v5h-5"></path></svg>Révision<span class="chip" style="margin-left: auto; min-height: 24px; padding: 0 9px; background: var(--his-t); color: var(--his-i)">12</span></a>
+<a class="nav" href="DuelInvitation.dc.html"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h12.5l-3.5-3.5M20 16H7.5l3.5 3.5"></path></svg>Duels</a>
+<a class="nav" href="Classements.dc.html"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 20.5h17"></path><rect x="9" y="5" width="6" height="15.5" rx="1.5"></rect><rect x="3.5" y="10.5" width="5.5" height="10" rx="1.5"></rect><rect x="15" y="13.5" width="5.5" height="7" rx="1.5"></rect></svg>Classements</a>
+<a class="nav" href="Profil.dc.html"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4.5 20.5c1.4-3.8 4.2-5.7 7.5-5.7s6.1 1.9 7.5 5.7"></path></svg>Profil</a>
+<a href="Profil.dc.html" style="margin-top: auto; display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 18px; background: var(--surface2); text-decoration: none"><span class="t" style="width: 40px; height: 40px; border-radius: 50%; background: var(--sci-t); color: var(--sci-i); display: flex; align-items: center; justify-content: center; font-weight: 800">C</span><span style="display: flex; flex-direction: column"><span style="font-weight: 700; font-size: 15px">Camille</span><span style="font-size: 13px; color: var(--muted)">Niveau 7</span></span></a>
+</nav>
+
+<main style="flex: 999 1 560px; min-width: 0; padding: 40px 56px; display: flex; flex-direction: column; gap: 24px">
+<a href="Themes.dc.html" style="align-self: flex-start; display: inline-flex; align-items: center; gap: 8px; min-height: 44px; font-weight: 600; text-decoration: none; color: var(--muted)"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"></path></svg>Thèmes</a>
+<header style="display: flex; align-items: center; gap: 18px">
+<div style="width: 64px; height: 64px; border-radius: 20px; background: var(--geo-t); color: var(--geo-i); display: flex; align-items: center; justify-content: center"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" style="width: 32px; height: 32px"><circle cx="12" cy="12" r="8.5"></circle><path d="M3.5 12h17M12 3.5c2.4 2.6 3.5 5.4 3.5 8.5s-1.1 5.9-3.5 8.5c-2.4-2.6-3.5-5.4-3.5-8.5s1.1-5.9 3.5-8.5Z"></path></svg></div>
+<div><span class="eyebrow" style="color: var(--geo-i)">Géographie</span><h1 class="t" style="font-size: 34px; font-weight: 900">Nouvelle partie</h1></div>
+</header>
+
+<div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start">
+<div class="card" style="flex: 999 1 560px; min-width: 0; padding: 32px; display: flex; flex-direction: column; gap: 30px">
+
+<fieldset style="border: 0; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 14px">
+<legend class="t" style="font-size: 20px; font-weight: 800; padding: 0; margin-bottom: 14px">Sous-thème</legend>
+<div style="display: flex; flex-wrap: wrap; gap: 10px">
+<sc-for list="{{subs}}" as="s" hint-placeholder-count="5"><button type="button" class="pill" onClick="{{s.pick}}" aria-pressed="{{s.on}}" style="background: {{s.bg}}; color: {{s.fg}}; border: {{s.bd}}">{{s.label}}</button></sc-for>
+</div>
+</fieldset>
+
+<fieldset style="border: 0; padding: 0; margin: 0">
+<legend class="t" style="font-size: 20px; font-weight: 800; padding: 0; margin-bottom: 14px">Difficulté</legend>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px">
+<sc-for list="{{diffs}}" as="d" hint-placeholder-count="3"><button type="button" onClick="{{d.pick}}" aria-pressed="{{d.on}}" style="display: flex; flex-direction: column; align-items: flex-start; gap: 8px; min-height: 104px; padding: 18px 20px; border-radius: 20px; text-align: left; cursor: pointer; font-family: inherit; color: var(--text); background: {{d.bg}}; border: {{d.bd}}; transition: border-color .2s ease-out, background-color .2s ease-out"><span style="display: flex; gap: 4px">{{d.dots}}</span><span class="t" style="font-size: 18px; font-weight: 800">{{d.label}}</span><span style="font-size: 14px; color: var(--muted); font-weight: 500">{{d.hint}}</span></button></sc-for>
+</div>
+</fieldset>
+
+<fieldset style="border: 0; padding: 0; margin: 0">
+<legend class="t" style="font-size: 20px; font-weight: 800; padding: 0; margin-bottom: 14px">Nombre de questions</legend>
+<div style="display: flex; gap: 10px">
+<sc-for list="{{counts}}" as="c" hint-placeholder-count="3"><button type="button" class="pill" onClick="{{c.pick}}" aria-pressed="{{c.on}}" style="background: {{c.bg}}; color: {{c.fg}}; border: {{c.bd}}; min-width: 84px; justify-content: center">{{c.label}}</button></sc-for>
+</div>
+</fieldset>
+
+<fieldset style="border: 0; padding: 0; margin: 0">
+<legend class="t" style="font-size: 20px; font-weight: 800; padding: 0; margin-bottom: 14px">Mode de réponse</legend>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px">
+<sc-for list="{{modes}}" as="m" hint-placeholder-count="2"><button type="button" onClick="{{m.pick}}" aria-pressed="{{m.on}}" style="display: flex; flex-direction: column; align-items: flex-start; gap: 8px; min-height: 120px; padding: 18px 20px; border-radius: 20px; text-align: left; cursor: pointer; font-family: inherit; color: var(--text); background: {{m.bg}}; border: {{m.bd}}; transition: border-color .2s ease-out, background-color .2s ease-out">
+<span style="display: flex; gap: 6px">{{m.keys}}</span>
+<span class="t" style="font-size: 19px; font-weight: 800">{{m.label}}</span>
+<span style="font-size: 14px; line-height: 1.45; color: var(--muted); font-weight: 500">{{m.hint}}</span>
+</button></sc-for>
+</div>
+</fieldset>
+</div>
+
+<aside class="card" style="flex: 1 1 300px; padding: 28px; display: flex; flex-direction: column; gap: 18px; background: var(--geo-t); border-color: transparent; color: var(--geo-i)">
+<span class="eyebrow" style="color: var(--geo-i)">Votre partie</span>
+<p class="t" style="font-size: 26px; font-weight: 900; line-height: 1.2">{{summary.sub}}</p>
+<div style="display: flex; flex-direction: column; gap: 10px; font-size: 16px; font-weight: 600">
+<span>{{summary.count}} questions · {{summary.diff}}</span>
+<span>{{summary.mode}}</span></div>
+<a class="btn btn-p" href="QuestionQcm.dc.html" style="min-height: 60px; font-size: 18px">Lancer la partie<span class="kbd" style="background: transparent; color: var(--on-primary); border-color: var(--on-primary); opacity: .7">Entrée</span></a>
+</aside>
+</div>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"dark":{"editor":"boolean","default":false},"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { sub: 'Drapeaux', diff: 'Moyen', count: 10, mode: 'qcm' };
+  }
+  renderVals() {
+    const s = this.state;
+    const look = (on) => on
+      ? { bg: 'var(--geo-t)', fg: 'var(--geo-i)', bd: '2px solid var(--geo)' }
+      : { bg: 'var(--surface)', fg: 'var(--text)', bd: '1.5px solid var(--line)' };
+    const subs = ['Villes de France', 'Villes du monde', 'Capitales', 'Drapeaux', 'Pays sur la carte'].map((label) => ({ label, on: s.sub === label ? 'true' : 'false', ...look(s.sub === label), pick: () => this.setState({ sub: label }) }));
+    const diffs = [
+      { label: 'Facile', hint: 'Les plus connus', n: 1 },
+      { label: 'Moyen', hint: 'Un peu de flair', n: 2 },
+      { label: 'Difficile', hint: 'Pour les explorateurs', n: 3 }
+    ].map((d) => ({ ...d, dots: '●'.repeat(d.n) + '○'.repeat(3 - d.n), on: s.diff === d.label ? 'true' : 'false', ...look(s.diff === d.label), pick: () => this.setState({ diff: d.label }) }));
+    const counts = [10, 20, 30].map((n) => ({ label: String(n), on: s.count === n ? 'true' : 'false', ...look(s.count === n), pick: () => this.setState({ count: n }) }));
+    const modes = [
+      { id: 'qcm', label: 'QCM · 4 choix', hint: 'Choisissez parmi quatre propositions, au clic ou avec les touches 1 à 4.', keys: '1  2  3  4' },
+      { id: 'libre', label: 'Saisie libre', hint: 'Tapez la réponse. L’autocomplétion pardonne les fautes de frappe.', keys: 'Aa' }
+    ].map((m) => ({ ...m, on: s.mode === m.id ? 'true' : 'false', ...look(s.mode === m.id), pick: () => this.setState({ mode: m.id }) }));
+    const summary = { sub: s.sub, count: s.count, diff: s.diff.toLowerCase(), mode: s.mode === 'qcm' ? 'QCM · 4 choix' : 'Saisie libre' };
+    return { mode: this.props.dark ? 'dark' : '', subs, diffs, counts, modes, summary };
+  }
+}
+</script>
+</body>
+</html>

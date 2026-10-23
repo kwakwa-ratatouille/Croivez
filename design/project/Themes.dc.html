@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Croivez — Catalogue des thèmes</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&amp;family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:inherit}a:hover{color:inherit}
+.cz{--bg:#FBF8F3;--surface:#FFFFFF;--surface2:#F4EFE6;--line:#E9E2D6;--text:#2F3437;--muted:#5D646A;--primary:#2F3437;--on-primary:#FBF8F3;--shadow:0 8px 28px rgba(80,62,35,.07);--lx:#DE8B6A;--lv:#6FC59F;--geo:#6BB8C4;--geo-t:#E3F3F4;--geo-i:#1F6670;--cine:#F2A68A;--cine-t:#FCEAE2;--cine-i:#8E4128;--mus:#B3A3DB;--mus-t:#EEEAF8;--mus-i:#5A4A8C;--nat:#9DBB97;--nat-t:#E8F0E5;--nat-i:#3F6339;--sci:#E8AFC0;--sci-t:#FAE8EE;--sci-i:#8A3E56;--his:#DDB65E;--his-t:#F8EFD8;--his-i:#765610;--brd:#8FA0CF;--brd-t:#E7EBF6;--brd-i:#3E4F86;--ok:#8FD3B6;--ok-t:#E2F5EC;--ok-i:#22664A;--ko:#E0997A;--ko-t:#FBE9E1;--ko-i:#97482A;font-family:'DM Sans',system-ui,sans-serif;color:var(--text);background:var(--bg)}
+.cz.dark{--bg:#131B2E;--surface:#1A2440;--surface2:#24304F;--line:#2F3B5E;--text:#EEE9E0;--muted:#AEB6C8;--primary:#EEE9E0;--on-primary:#131B2E;--shadow:0 10px 30px rgba(0,0,0,.3);--lx:#EDA98A;--lv:#93D9BB;--geo:#7CCFDA;--geo-t:#1B3946;--geo-i:#A6E3EA;--cine:#F4B097;--cine-t:#3D2A2C;--cine-i:#F8C4B0;--mus:#BDAEE6;--mus-t:#2C2A4C;--mus-i:#D3C8F4;--nat:#A9C8A2;--nat-t:#223A30;--nat-i:#C1DDBA;--sci:#EDB9C9;--sci-t:#3C2839;--sci-i:#F5CAD8;--his:#E5C26E;--his-t:#38321F;--his-i:#EED493;--brd:#9DADDA;--brd-t:#232F50;--brd-i:#BFCBEF;--ok:#93D9BB;--ok-t:#1D3B35;--ok-i:#A8E6CB;--ko:#E9A585;--ko-t:#3E2C29;--ko-i:#F3BCA2}
+.cz *{box-sizing:border-box}
+.cz h1,.cz h2,.cz h3,.cz h4,.cz p{margin:0}
+.t{font-family:Nunito,system-ui,sans-serif}
+.ic{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow)}
+.kbd{display:inline-flex;align-items:center;justify-content:center;min-width:26px;height:26px;padding:0 7px;border-radius:8px;border:1.5px solid var(--line);background:var(--surface2);font:600 13px 'DM Sans',sans-serif;color:var(--muted)}
+.chip{display:inline-flex;align-items:center;gap:6px;min-height:30px;padding:0 12px;border-radius:999px;font:600 13px 'DM Sans',sans-serif}
+.nav{display:flex;align-items:center;gap:12px;min-height:46px;padding:0 14px;border-radius:14px;text-decoration:none;color:var(--muted);font-weight:500;font-size:15px;transition:background-color .2s ease-out}
+.nav:hover{background:var(--surface2);color:var(--text)}
+.nav.on{background:var(--surface2);color:var(--text);font-weight:700}
+.bar{height:8px;border-radius:999px;background:var(--surface2);overflow:hidden}
+.bar>span{display:block;height:100%;border-radius:999px}
+.lx{fill:none;stroke:var(--lx);stroke-linecap:round}
+.lv{fill:none;stroke:var(--lv);stroke-linecap:round;stroke-linejoin:round}
+.sub{display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border-radius:14px;background:var(--surface);font:600 14px 'DM Sans',sans-serif;text-decoration:none;transition:transform .2s ease-out}
+.sub:hover{transform:translateY(-1px)}
+@media (prefers-reduced-motion:reduce){.cz *{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div class="cz {{mode}}" style="min-height: 900px; display: flex; flex-wrap: wrap">
+
+<nav aria-label="Navigation principale" style="flex: 1 1 248px; display: flex; flex-direction: column; gap: 4px; padding: 28px 18px; background: var(--surface); border-right: 1px solid var(--line)">
+<a href="Accueil.dc.html" aria-label="Croivez, accueil" style="display: flex; align-items: center; gap: 10px; padding: 4px 12px 28px; text-decoration: none"><svg viewBox="0 0 116 72" width="42" aria-hidden="true"><path class="lx" d="M16 16 Q33 36 50 58 M50 16 Q32 37 16 58" style="stroke-width: 14"></path><path class="lv" d="M44 40 Q52 49 60 58 Q77 32 102 12" style="stroke-width: 14"></path></svg><span class="t" style="font-size: 24px; font-weight: 900">Croivez</span></a>
+<a class="nav" href="Accueil.dc.html"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 10.5 12 3.5l8.5 7M5.5 9.5V20h13V9.5"></path></svg>Accueil</a>
+<a class="nav on" href="Themes.dc.html" aria-current="page"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="2"></rect><rect x="13.5" y="3.5" width="7" height="7" rx="2"></rect><rect x="3.5" y="13.5" width="7" height="7" rx="2"></rect><rect x="13.5" y="13.5" width="7" height="7" rx="2"></rect></svg>Thèmes</a>
+<a class="nav" href="Revision.dc.html"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.7M20 4v5h-5"></path></svg>Révision<span class="chip" style="margin-left: auto; min-height: 24px; padding: 0 9px; background: var(--his-t); color: var(--his-i)">12</span></a>
+<a class="nav" href="DuelInvitation.dc.html"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h12.5l-3.5-3.5M20 16H7.5l3.5 3.5"></path></svg>Duels</a>
+<a class="nav" href="Classements.dc.html"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 20.5h17"></path><rect x="9" y="5" width="6" height="15.5" rx="1.5"></rect><rect x="3.5" y="10.5" width="5.5" height="10" rx="1.5"></rect><rect x="15" y="13.5" width="5.5" height="7" rx="1.5"></rect></svg>Classements</a>
+<a class="nav" href="Profil.dc.html"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4.5 20.5c1.4-3.8 4.2-5.7 7.5-5.7s6.1 1.9 7.5 5.7"></path></svg>Profil</a>
+<a href="Profil.dc.html" style="margin-top: auto; display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 18px; background: var(--surface2); text-decoration: none"><span class="t" style="width: 40px; height: 40px; border-radius: 50%; background: var(--sci-t); color: var(--sci-i); display: flex; align-items: center; justify-content: center; font-weight: 800">C</span><span style="display: flex; flex-direction: column"><span style="font-weight: 700; font-size: 15px">Camille</span><span style="font-size: 13px; color: var(--muted)">Niveau 7</span></span></a>
+</nav>
+
+<main style="flex: 999 1 560px; min-width: 0; padding: 48px 56px; display: flex; flex-direction: column; gap: 28px">
+<header style="display: flex; align-items: center; justify-content: space-between; gap: 24px; flex-wrap: wrap">
+<div style="display: flex; flex-direction: column; gap: 6px"><h1 class="t" style="font-size: 36px; font-weight: 900">Thèmes</h1><p style="font-size: 17px; color: var(--muted)">Sept familles, une couleur chacune. Choisissez un sous-thème pour lancer une partie.</p></div>
+<div style="flex: 0 1 420px; display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 0 18px; border-radius: 18px; background: var(--surface); border: 1.5px solid var(--line)">
+<svg class="ic" viewBox="0 0 24 24" aria-hidden="true" style="color: var(--muted)"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+<label for="th-search" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Rechercher un thème</label>
+<input id="th-search" placeholder="Rechercher : capitales, insectes, logos…" style="flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; font: 500 16px 'DM Sans', sans-serif; color: var(--text)">
+<span class="kbd">Ctrl K</span>
+</div>
+</header>
+
+<section style="display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 20px">
+<sc-for list="{{families}}" as="f" hint-placeholder-count="7">
+<article style="border-radius: 24px; padding: 24px; background: var(--{{f.k}}-t); color: var(--{{f.k}}-i); display: flex; flex-direction: column; gap: 16px; position: relative; overflow: hidden">
+<svg viewBox="0 0 120 80" width="150" aria-hidden="true" style="position: absolute; right: -16px; top: -8px; opacity: .55"><path d="{{f.motif}}" style="fill: none; stroke: var(--{{f.k}}); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round"></path></svg>
+<div style="display: flex; align-items: center; gap: 14px; position: relative">
+<div style="width: 52px; height: 52px; border-radius: 16px; background: var(--surface); display: flex; align-items: center; justify-content: center"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" style="width: 28px; height: 28px"><path d="{{f.icon}}"></path></svg></div>
+<div style="display: flex; flex-direction: column; gap: 2px"><h2 class="t" style="font-size: 21px; font-weight: 800">{{f.name}}</h2><span style="font-size: 13px; font-weight: 600">{{f.pct}} % maîtrisé · {{f.count}} sous-thèmes</span></div>
+</div>
+<div class="bar" style="background: var(--surface); position: relative"><span style="width: {{f.pct}}%; background: var(--{{f.k}})"></span></div>
+<div style="display: flex; flex-wrap: wrap; gap: 8px; position: relative">
+<sc-for list="{{f.subs}}" as="s" hint-placeholder-count="4"><a class="sub" href="Configuration.dc.html">{{s}}</a></sc-for>
+</div>
+</article>
+</sc-for>
+</section>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"dark":{"editor":"boolean","default":false},"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const families = [
+      { k: 'geo', name: 'Géographie', pct: 62, icon: 'M12 3.5a8.5 8.5 0 1 0 0 17a8.5 8.5 0 1 0 0-17ZM3.5 12h17M12 3.5c2.4 2.6 3.5 5.4 3.5 8.5s-1.1 5.9-3.5 8.5c-2.4-2.6-3.5-5.4-3.5-8.5s1.1-5.9 3.5-8.5Z', motif: 'M0 20 Q30 0 60 20 T120 20 M0 42 Q30 22 60 42 T120 42 M0 64 Q30 44 60 64 T120 64', subs: ['Villes de France', 'Villes du monde', 'Capitales', 'Drapeaux', 'Pays sur la carte'] },
+      { k: 'cine', name: 'Cinéma & séries', pct: 41, icon: 'M6 7h12a2.5 2.5 0 0 1 2.5 2.5v8A2.5 2.5 0 0 1 18 20H6a2.5 2.5 0 0 1-2.5-2.5v-8A2.5 2.5 0 0 1 6 7ZM3.5 11h17M8 7l2 4M13 7l2 4', motif: 'M10 10h100v60H10ZM10 20h100M10 60h100M20 10v10M40 10v10M60 10v10M80 10v10M100 10v10M20 60v10M40 60v10M60 60v10M80 60v10M100 60v10', subs: ['Films', 'Séries', 'Acteurs', 'Affiches de films'] },
+      { k: 'mus', name: 'Musique', pct: 28, icon: 'M9 18V6l10-2v12M9 18a2.5 2.5 0 1 1-5 0a2.5 2.5 0 1 1 5 0ZM19 16a2.5 2.5 0 1 1-5 0a2.5 2.5 0 1 1 5 0Z', motif: 'M30 60V20l40-8v40M30 60a8 6 0 1 1-16 0a8 6 0 1 1 16 0M70 52a8 6 0 1 1-16 0a8 6 0 1 1 16 0M96 40V14l14 6', subs: ['Artistes', 'Extraits musicaux'] },
+      { k: 'nat', name: 'Nature', pct: 53, icon: 'M5 19.5C5 11 10 5 20 4.5c0 9.5-6 15-15 15ZM5 19.5c3-4.5 6.5-7.5 10-9', motif: 'M20 70C20 40 40 18 80 16c0 36-24 54-60 54M20 70c12-16 26-28 40-34M80 60c0-14 10-24 30-26 0 18-12 26-30 26', subs: ['Animaux', 'Insectes', 'Plantes'] },
+      { k: 'sci', name: 'Corps humain & sciences', pct: 35, icon: 'M9.5 3.5h5M10.5 3.5v5.5L5.2 18.3a1.5 1.5 0 0 0 1.3 2.2h11a1.5 1.5 0 0 0 1.3-2.2L13.5 9V3.5M7.5 15h9', motif: 'M40 40a10 10 0 1 1-20 0a10 10 0 1 1 20 0M80 20a8 8 0 1 1-16 0a8 8 0 1 1 16 0M100 56a10 10 0 1 1-20 0a10 10 0 1 1 20 0M40 36l26-12M76 26l12 22', subs: ['Corps humain', 'Sciences'] },
+      { k: 'his', name: 'Personnalités & histoire', pct: 47, icon: 'M3.5 9 12 4.5 20.5 9M6 10v7.5M10 10v7.5M14 10v7.5M18 10v7.5M3.5 20h17', motif: 'M20 30 60 10l40 20M28 34v30M48 34v30M72 34v30M92 34v30M16 70h88', subs: ['Personnalités', 'Histoire'] },
+      { k: 'brd', name: 'Marques & logos', pct: 19, icon: 'M3.5 12.6V4.5a1 1 0 0 1 1-1h8.1l8 8-9 9ZM10 8.5a1.5 1.5 0 1 1-3 0a1.5 1.5 0 1 1 3 0Z', motif: 'M20 44V14h30l34 34-30 30ZM40 30a5 5 0 1 1-10 0a5 5 0 1 1 10 0', subs: ['Logos', 'Marques'] }
+    ].map((f) => ({ ...f, count: f.subs.length }));
+    return { mode: this.props.dark ? 'dark' : '', families };
+  }
+}
+</script>
+</body>
+</html>

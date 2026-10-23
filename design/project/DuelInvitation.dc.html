@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Croivez — Duel : invitation et salon d'attente</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&amp;family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:inherit}a:hover{color:inherit}
+.cz{--bg:#FBF8F3;--surface:#FFFFFF;--surface2:#F4EFE6;--line:#E9E2D6;--text:#2F3437;--muted:#5D646A;--primary:#2F3437;--on-primary:#FBF8F3;--shadow:0 8px 28px rgba(80,62,35,.07);--lx:#DE8B6A;--lv:#6FC59F;--geo:#6BB8C4;--geo-t:#E3F3F4;--geo-i:#1F6670;--cine:#F2A68A;--cine-t:#FCEAE2;--cine-i:#8E4128;--mus:#B3A3DB;--mus-t:#EEEAF8;--mus-i:#5A4A8C;--nat:#9DBB97;--nat-t:#E8F0E5;--nat-i:#3F6339;--sci:#E8AFC0;--sci-t:#FAE8EE;--sci-i:#8A3E56;--his:#DDB65E;--his-t:#F8EFD8;--his-i:#765610;--brd:#8FA0CF;--brd-t:#E7EBF6;--brd-i:#3E4F86;--ok:#8FD3B6;--ok-t:#E2F5EC;--ok-i:#22664A;font-family:'DM Sans',system-ui,sans-serif;color:var(--text);background:var(--bg)}
+.cz.dark{--bg:#131B2E;--surface:#1A2440;--surface2:#24304F;--line:#2F3B5E;--text:#EEE9E0;--muted:#AEB6C8;--primary:#EEE9E0;--on-primary:#131B2E;--shadow:0 10px 30px rgba(0,0,0,.3);--lx:#EDA98A;--lv:#93D9BB;--geo:#7CCFDA;--geo-t:#1B3946;--geo-i:#A6E3EA;--cine:#F4B097;--cine-t:#3D2A2C;--cine-i:#F8C4B0;--mus:#BDAEE6;--mus-t:#2C2A4C;--mus-i:#D3C8F4;--nat:#A9C8A2;--nat-t:#223A30;--nat-i:#C1DDBA;--sci:#EDB9C9;--sci-t:#3C2839;--sci-i:#F5CAD8;--his:#E5C26E;--his-t:#38321F;--his-i:#EED493;--brd:#9DADDA;--brd-t:#232F50;--brd-i:#BFCBEF;--ok:#93D9BB;--ok-t:#1D3B35;--ok-i:#A8E6CB}
+.cz *{box-sizing:border-box}
+.cz h1,.cz h2,.cz h3,.cz p{margin:0}
+.t{font-family:Nunito,system-ui,sans-serif}
+.ic{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:52px;padding:0 24px;border-radius:16px;border:0;font:600 16px 'DM Sans',sans-serif;text-decoration:none;cursor:pointer;transition:transform .2s ease-out}
+.btn:hover{transform:translateY(-1px)}
+.btn-p{background:var(--primary);color:var(--on-primary)}
+.btn-s{background:var(--surface2);color:var(--text)}
+.btn-g{background:transparent;color:var(--text);border:1.5px solid var(--line)}
+.chip{display:inline-flex;align-items:center;gap:6px;min-height:30px;padding:0 12px;border-radius:999px;font:600 13px 'DM Sans',sans-serif}
+.nav{display:flex;align-items:center;gap:12px;min-height:46px;padding:0 14px;border-radius:14px;text-decoration:none;color:var(--muted);font-weight:500;font-size:15px;transition:background-color .2s ease-out}
+.nav:hover{background:var(--surface2);color:var(--text)}
+.nav.on{background:var(--surface2);color:var(--text);font-weight:700}
+.lx{fill:none;stroke:var(--lx);stroke-linecap:round}
+.lv{fill:none;stroke:var(--lv);stroke-linecap:round;stroke-linejoin:round}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--muted);animation:cz-wait 1.4s ease-in-out infinite}
+@keyframes cz-wait{0%,100%{opacity:.25}50%{opacity:1}}
+@media (prefers-reduced-motion:reduce){.cz *{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div class="cz {{mode}}" style="min-height: 900px; display: flex; flex-wrap: wrap">
+
+<nav aria-label="Navigation principale" style="flex: 1 1 248px; display: flex; flex-direction: column; gap: 4px; padding: 28px 18px; background: var(--surface); border-right: 1px solid var(--line)">
+<a href="Accueil.dc.html" aria-label="Croivez, accueil" style="display: flex; align-items: center; gap: 10px; padding: 4px 12px 28px; text-decoration: none"><svg viewBox="0 0 116 72" width="42" aria-hidden="true"><path class="lx" d="M16 16 Q33 36 50 58 M50 16 Q32 37 16 58" style="stroke-width: 14"></path><path class="lv" d="M44 40 Q52 49 60 58 Q77 32 102 12" style="stroke-width: 14"></path></svg><span class="t" style="font-size: 24px; font-weight: 900">Croivez</span></a>
+<a class="nav" href="Accueil.dc.html"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 10.5 12 3.5l8.5 7M5.5 9.5V20h13V9.5"></path></svg>Accueil</a>
+<a class="nav" href="Themes.dc.html"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="2"></rect><rect x="13.5" y="3.5" width="7" height="7" rx="2"></rect><rect x="3.5" y="13.5" width="7" height="7" rx="2"></rect><rect x="13.5" y="13.5" width="7" height="7" rx="2"></rect></svg>Thèmes</a>
+<a class="nav" href="Revision.dc.html"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.7M20 4v5h-5"></path></svg>Révision<span class="chip" style="margin-left: auto; min-height: 24px; padding: 0 9px; background: var(--his-t); color: var(--his-i)">12</span></a>
+<a class="nav on" href="DuelInvitation.dc.html" aria-current="page"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h12.5l-3.5-3.5M20 16H7.5l3.5 3.5"></path></svg>Duels</a>
+<a class="nav" href="Classements.dc.html"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 20.5h17"></path><rect x="9" y="5" width="6" height="15.5" rx="1.5"></rect><rect x="3.5" y="10.5" width="5.5" height="10" rx="1.5"></rect><rect x="15" y="13.5" width="5.5" height="7" rx="1.5"></rect></svg>Classements</a>
+<a class="nav" href="Profil.dc.html"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4.5 20.5c1.4-3.8 4.2-5.7 7.5-5.7s6.1 1.9 7.5 5.7"></path></svg>Profil</a>
+</nav>
+
+<main style="flex: 999 1 560px; min-width: 0; padding: 40px 56px; display: flex; flex-direction: column; gap: 24px">
+<header style="display: flex; flex-direction: column; gap: 6px"><h1 class="t" style="font-size: 36px; font-weight: 900">Duels</h1><p style="font-size: 17px; color: var(--muted)">Mêmes questions, en même temps. Le plus juste l'emporte.</p></header>
+
+<div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: stretch">
+<section class="card" style="flex: 1 1 380px; padding: 28px; display: flex; flex-direction: column; gap: 16px">
+<h2 class="t" style="font-size: 22px; font-weight: 800">Inviter un ami</h2>
+<div style="display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 0 16px; border-radius: 16px; border: 1.5px solid var(--line); background: var(--surface)">
+<svg class="ic" viewBox="0 0 24 24" aria-hidden="true" style="color: var(--muted)"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+<label for="duel-q" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Chercher un ami</label>
+<input id="duel-q" placeholder="Chercher un ami" style="flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; font: 500 16px 'DM Sans', sans-serif; color: var(--text)">
+</div>
+<ul style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px">
+<sc-for list="{{friends}}" as="f" hint-placeholder-count="5">
+<li style="display: flex; align-items: center; gap: 14px; min-height: 60px; padding: 0 12px; border-radius: 16px; background: {{f.bg}}">
+<span style="position: relative"><span class="t" style="width: 42px; height: 42px; border-radius: 50%; background: var(--{{f.k}}-t); color: var(--{{f.k}}-i); display: flex; align-items: center; justify-content: center; font-weight: 900">{{f.i}}</span><span style="position: absolute; right: -1px; bottom: -1px; width: 13px; height: 13px; border-radius: 50%; border: 2px solid var(--surface); background: {{f.dot}}"></span></span>
+<span style="flex: 1; display: flex; flex-direction: column"><span style="font-weight: 700">{{f.name}}</span><span style="font-size: 13px; color: var(--muted)">{{f.status}}</span></span>
+<button type="button" class="btn {{f.btn}}" style="min-height: 44px; padding: 0 16px; font-size: 14px">{{f.cta}}</button>
+</li>
+</sc-for>
+</ul>
+<button type="button" class="btn btn-g" style="margin-top: auto"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"></path><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"></path></svg>Copier le lien d'invitation</button>
+</section>
+
+<section class="card" style="flex: 999 1 460px; min-width: 0; padding: 32px; display: flex; flex-direction: column; gap: 26px; background: var(--brd-t); border-color: transparent">
+<div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px"><h2 class="t" style="font-size: 22px; font-weight: 800; color: var(--brd-i)">Salon d'attente</h2><span class="chip" style="background: var(--surface); color: var(--geo-i)">Géographie · Capitales · 10 questions · QCM</span></div>
+<div style="display: flex; align-items: center; justify-content: center; gap: 36px; padding: 20px 0">
+<div style="display: flex; flex-direction: column; align-items: center; gap: 10px"><span class="t" style="width: 112px; height: 112px; border-radius: 50%; background: var(--sci-t); color: var(--sci-i); border: 4px solid var(--sci); display: flex; align-items: center; justify-content: center; font-size: 42px; font-weight: 900">C</span><span style="font-weight: 700; font-size: 17px">Camille</span><span class="chip" style="background: var(--ok-t); color: var(--ok-i)"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" style="width: 16px; height: 16px; stroke-width: 2.6"><path d="m5 12.5 4.5 4.5L19 7.5"></path></svg>Prête</span></div>
+<svg viewBox="0 0 116 72" width="88" aria-hidden="true"><path class="lx" d="M16 16 Q33 36 50 58 M50 16 Q32 37 16 58" style="stroke-width: 12"></path><path class="lv" d="M44 40 Q52 49 60 58 Q77 32 102 12" style="stroke-width: 12"></path></svg>
+<div style="display: flex; flex-direction: column; align-items: center; gap: 10px"><span class="t" style="width: 112px; height: 112px; border-radius: 50%; background: var(--geo-t); color: var(--geo-i); border: 4px dashed var(--geo); display: flex; align-items: center; justify-content: center; font-size: 42px; font-weight: 900">H</span><span style="font-weight: 700; font-size: 17px">Hugo</span><span class="chip" style="background: var(--surface); color: var(--muted)" role="status"><span class="dot"></span><span class="dot" style="animation-delay: .2s"></span><span class="dot" style="animation-delay: .4s"></span>Invitation envoyée</span></div>
+</div>
+<p style="text-align: center; font-size: 16px; color: var(--brd-i)">Vous pourrez commencer dès que Hugo aura rejoint le salon.</p>
+<div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap">
+<a class="btn btn-g" href="Accueil.dc.html" style="background: var(--surface)">Annuler</a>
+<a class="btn btn-p" href="DuelMatch.dc.html">Commencer le duel</a>
+</div>
+</section>
+</div>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"dark":{"editor":"boolean","default":false},"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const friends = [
+      { name: 'Hugo', i: 'H', k: 'geo', status: 'En ligne · invité', online: true, sent: true },
+      { name: 'Léa', i: 'L', k: 'his', status: 'En ligne', online: true },
+      { name: 'Inès', i: 'I', k: 'mus', status: 'En ligne', online: true },
+      { name: 'Malik', i: 'M', k: 'nat', status: 'Vu il y a 2 h', online: false },
+      { name: 'Jules', i: 'J', k: 'cine', status: 'Vu hier', online: false }
+    ].map((f) => ({ ...f, dot: f.online ? 'var(--ok)' : 'var(--line)', bg: f.sent ? 'var(--surface2)' : 'transparent', btn: f.sent ? 'btn-g' : 'btn-s', cta: f.sent ? 'Invité' : 'Inviter' }));
+    return { mode: this.props.dark ? 'dark' : '', friends };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Croivez — Connexion</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&amp;family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:inherit}a:hover{color:inherit}
+.cz{--bg:#FBF8F3;--surface:#FFFFFF;--surface2:#F4EFE6;--line:#E9E2D6;--text:#2F3437;--muted:#5D646A;--primary:#2F3437;--on-primary:#FBF8F3;--shadow:0 8px 28px rgba(80,62,35,.07);--lx:#DE8B6A;--lv:#6FC59F;--geo:#6BB8C4;--geo-t:#E3F3F4;--mus-t:#EEEAF8;--his-t:#F8EFD8;--cine-t:#FCEAE2;--nat-t:#E8F0E5;font-family:'DM Sans',system-ui,sans-serif;color:var(--text);background:var(--bg)}
+.cz.dark{--bg:#131B2E;--surface:#1A2440;--surface2:#24304F;--line:#2F3B5E;--text:#EEE9E0;--muted:#AEB6C8;--primary:#EEE9E0;--on-primary:#131B2E;--shadow:0 10px 30px rgba(0,0,0,.3);--lx:#EDA98A;--lv:#93D9BB;--geo:#7CCFDA;--geo-t:#1B3946;--mus-t:#2C2A4C;--his-t:#38321F;--cine-t:#3D2A2C;--nat-t:#223A30}
+.cz *{box-sizing:border-box}
+.cz h1,.cz h2,.cz p{margin:0}
+.t{font-family:Nunito,system-ui,sans-serif}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:56px;padding:0 24px;border-radius:16px;border:0;font:600 16px 'DM Sans',sans-serif;text-decoration:none;cursor:pointer;transition:transform .2s ease-out}
+.btn:hover{transform:translateY(-1px)}
+.btn-p{background:var(--primary);color:var(--on-primary)}
+.btn-g{background:var(--surface);color:var(--text);border:1.5px solid var(--line)}
+.field{display:flex;flex-direction:column;gap:8px}
+.field label{font-weight:600;font-size:15px}
+.field input{min-height:56px;padding:0 18px;border-radius:16px;border:1.5px solid var(--line);background:var(--surface);font:500 17px 'DM Sans',sans-serif;color:var(--text);outline:0;transition:border-color .2s ease-out,box-shadow .2s ease-out}
+.field input:focus{border-color:var(--geo);box-shadow:0 0 0 4px var(--geo-t)}
+.lx{fill:none;stroke:var(--lx);stroke-linecap:round}
+.lv{fill:none;stroke:var(--lv);stroke-linecap:round;stroke-linejoin:round}
+@media (prefers-reduced-motion:reduce){.cz *{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div class="cz {{mode}}" style="min-height: 900px; display: flex; flex-wrap: wrap">
+
+<section aria-hidden="true" style="flex: 1 1 480px; min-height: 420px; position: relative; overflow: hidden; background: var(--surface2); display: flex; align-items: center; justify-content: center">
+<svg viewBox="0 0 600 900" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" style="position: absolute; inset: 0">
+<path d="M80 120c90-40 210 10 230 100s-60 170-160 160S-10 300 10 220 40 140 80 120Z" style="fill: var(--his-t)"></path>
+<path d="M430 620c80-30 170 20 170 110s-80 150-170 130-130-80-110-150 50-80 110-90Z" style="fill: var(--mus-t)"></path>
+<path d="M460 90c60-10 120 40 110 100s-70 90-120 70-60-70-40-120 20-45 50-50Z" style="fill: var(--nat-t)"></path>
+<path d="M60 700c50-30 130-10 140 50s-40 110-100 100-80-60-70-100 10-40 30-50Z" style="fill: var(--cine-t)"></path>
+<g style="fill: none; stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; opacity: .55">
+<path d="M120 480l18 18M138 480l-18 18" style="stroke: var(--lx)"></path><path d="M480 400l8 9 18-22" style="stroke: var(--lv)"></path>
+<path d="M260 760l18 18M278 760l-18 18" style="stroke: var(--lx)"></path><path d="M380 230l8 9 18-22" style="stroke: var(--lv)"></path>
+<path d="M500 540l18 18M518 540l-18 18" style="stroke: var(--lx)"></path><path d="M180 600l8 9 18-22" style="stroke: var(--lv)"></path>
+<path d="M300 90l18 18M318 90l-18 18" style="stroke: var(--lx)"></path><path d="M60 360l8 9 18-22" style="stroke: var(--lv)"></path>
+</g>
+</svg>
+<div style="position: relative; display: flex; flex-direction: column; align-items: center; gap: 16px; text-align: center; padding: 40px">
+<svg viewBox="0 0 116 72" width="170"><path class="lx" d="M16 16 Q33 36 50 58 M50 16 Q32 37 16 58" style="stroke-width: 13"></path><path class="lv" d="M44 40 Q52 49 60 58 Q77 32 102 12" style="stroke-width: 13"></path></svg>
+<span class="t" style="font-size: 72px; font-weight: 900; line-height: 1">Croivez</span>
+<p style="font-size: 20px; color: var(--muted)">Le ✗ du faux, le ✓ du vrai.</p>
+</div>
+</section>
+
+<main style="flex: 1 1 480px; display: flex; align-items: center; justify-content: center; padding: 48px 32px">
+<div style="width: 100%; max-width: 420px; display: flex; flex-direction: column; gap: 22px">
+<div style="display: flex; flex-direction: column; gap: 8px"><h1 class="t" style="font-size: 34px; font-weight: 900">Bon retour parmi nous</h1><p style="font-size: 16px; color: var(--muted)">Pas encore de compte ? <a href="#inscription" style="font-weight: 700">Créer un compte</a></p></div>
+<form style="display: flex; flex-direction: column; gap: 16px">
+<div class="field"><label for="cx-mail">Adresse e-mail</label><input id="cx-mail" type="email" autocomplete="email" placeholder="vous@exemple.fr"></div>
+<div class="field"><label for="cx-pass">Mot de passe</label><input id="cx-pass" type="password" autocomplete="current-password" value="motdepasse"></div>
+<a href="#oubli" style="align-self: flex-end; font-size: 15px; font-weight: 600; min-height: 44px; display: inline-flex; align-items: center">Mot de passe oublié ?</a>
+<a class="btn btn-p" href="Accueil.dc.html">Se connecter</a>
+</form>
+<div style="display: flex; align-items: center; gap: 14px; color: var(--muted); font-size: 14px"><span style="flex: 1; height: 1px; background: var(--line)"></span>ou<span style="flex: 1; height: 1px; background: var(--line)"></span></div>
+<div style="display: flex; flex-direction: column; gap: 10px">
+<button type="button" class="btn btn-g">Continuer avec Google</button>
+<button type="button" class="btn btn-g">Continuer avec Apple</button>
+</div>
+</div>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"dark":{"editor":"boolean","default":false},"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { mode: this.props.dark ? 'dark' : '' };
+  }
+}
+</script>
+</body>
+</html>

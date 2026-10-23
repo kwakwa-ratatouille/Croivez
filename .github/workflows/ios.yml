@@ -1,0 +1,80 @@
+# Compile l'IPA iOS (non signée : SideStore la signe avec ton identifiant Apple)
+# puis la publie sur le dépôt public kwakwa-ratatouille/croivez-ios et met à jour la source SideStore.
+# Déclenchement : pousser un tag vX.Y.Z, ou bouton « Run workflow » dans l'onglet Actions.
+name: IPA iOS
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+env:
+  PUBLIC_REPO: kwakwa-ratatouille/croivez-ios
+
+jobs:
+  ipa:
+    runs-on: macos-15
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      - name: Version
+        id: v
+        run: echo "version=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+
+      - name: Build web + sync iOS
+        env:
+          ELECTRON_SKIP_BINARY_DOWNLOAD: '1'
+        run: |
+          npm ci
+          npm run build
+          npx cap sync ios
+
+      - name: Build Xcode (sans signature)
+        run: |
+          xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Release \
+            -sdk iphoneos -destination 'generic/platform=iOS' -derivedDataPath build/dd \
+            MARKETING_VERSION=${{ steps.v.outputs.version }} CURRENT_PROJECT_VERSION=${{ github.run_number }} \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" build
+
+      - name: Emballer l'IPA
+        run: |
+          mkdir -p Payload
+          cp -R build/dd/Build/Products/Release-iphoneos/App.app Payload/
+          zip -qry Croivez.ipa Payload
+
+      - name: Publier la release publique
+        env:
+          GH_TOKEN: ${{ secrets.PUBLIC_REPO_TOKEN }}
+        run: |
+          TAG="v${{ steps.v.outputs.version }}-${{ github.run_number }}"
+          gh release create "$TAG" Croivez.ipa --repo "$PUBLIC_REPO" --title "Croivez ${{ steps.v.outputs.version }} (build ${{ github.run_number }})" --notes "Build automatique."
+          echo "TAG=$TAG" >> "$GITHUB_ENV"
+
+      - uses: actions/checkout@v4
+        with:
+          repository: kwakwa-ratatouille/croivez-ios
+          token: ${{ secrets.PUBLIC_REPO_TOKEN }}
+          path: public-repo
+
+      - name: Mettre à jour la source SideStore
+        working-directory: .
+        run: |
+          node app/scripts/update-source.mjs public-repo/source.json \
+            "${{ steps.v.outputs.version }}" "${{ github.run_number }}" \
+            "https://github.com/${PUBLIC_REPO}/releases/download/${TAG}/Croivez.ipa" \
+            "$(stat -f%z app/Croivez.ipa)"
+          cd public-repo
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add source.json
+          git commit -m "Croivez ${{ steps.v.outputs.version }} (build ${{ github.run_number }})"
+          git push

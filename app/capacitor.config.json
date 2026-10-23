@@ -1,0 +1,7 @@
+{
+  "appId": "fr.kwakwa.croivez",
+  "appName": "Croivez",
+  "webDir": "dist",
+  "backgroundColor": "#FBF8F3",
+  "ios": { "contentInset": "never" }
+}

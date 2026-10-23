@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Croivez — Question image ou son</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&amp;family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:inherit}a:hover{color:inherit}
+.cz{--bg:#FBF8F3;--surface:#FFFFFF;--surface2:#F4EFE6;--line:#E9E2D6;--text:#2F3437;--muted:#5D646A;--primary:#2F3437;--on-primary:#FBF8F3;--shadow:0 8px 28px rgba(80,62,35,.07);--mus:#B3A3DB;--mus-t:#EEEAF8;--mus-i:#5A4A8C;font-family:'DM Sans',system-ui,sans-serif;color:var(--text);background:var(--bg)}
+.cz.dark{--bg:#131B2E;--surface:#1A2440;--surface2:#24304F;--line:#2F3B5E;--text:#EEE9E0;--muted:#AEB6C8;--primary:#EEE9E0;--on-primary:#131B2E;--shadow:0 10px 30px rgba(0,0,0,.3);--mus:#BDAEE6;--mus-t:#2C2A4C;--mus-i:#D3C8F4}
+.cz *{box-sizing:border-box}
+.cz h1,.cz h2,.cz p{margin:0}
+.t{font-family:Nunito,system-ui,sans-serif}
+.ic{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:52px;padding:0 24px;border-radius:16px;border:0;font:600 16px 'DM Sans',sans-serif;text-decoration:none;cursor:pointer;transition:transform .2s ease-out}
+.btn-p{background:var(--primary);color:var(--on-primary)}
+.kbd{display:inline-flex;align-items:center;justify-content:center;min-width:26px;height:26px;padding:0 7px;border-radius:8px;border:1.5px solid var(--line);background:var(--surface2);font:600 13px 'DM Sans',sans-serif;color:var(--muted)}
+.chip{display:inline-flex;align-items:center;gap:6px;min-height:30px;padding:0 12px;border-radius:999px;font:600 13px 'DM Sans',sans-serif}
+.bar{height:10px;border-radius:999px;background:var(--surface2);overflow:hidden}
+.bar>span{display:block;height:100%;border-radius:999px}
+.opt{transition:transform .25s ease-out,border-color .25s ease-out}
+.opt:hover{transform:translateY(-2px);border-color:var(--mus)!important}
+@media (prefers-reduced-motion:reduce){.cz *{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div class="cz {{mode}}" style="min-height: 900px; display: flex; flex-direction: column; overflow: hidden">
+
+<header style="display: flex; align-items: center; gap: 24px; flex-wrap: wrap; padding: 20px 40px; border-bottom: 1px solid var(--line); background: var(--surface)">
+<a href="Accueil.dc.html" style="display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 14px; border-radius: 14px; text-decoration: none; font-weight: 600; color: var(--muted)"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg>Quitter<span class="kbd">Échap</span></a>
+<div style="flex: 1 1 300px; display: flex; align-items: center; gap: 14px">
+<div class="bar" style="flex: 1"><span style="width: 70%; background: var(--mus)"></span></div>
+<span style="font-size: 14px; font-weight: 600; color: var(--muted); white-space: nowrap">7 / 10</span>
+</div>
+<span class="chip" style="background: var(--mus-t); color: var(--mus-i)">Musique · Extraits musicaux</span>
+</header>
+
+<main style="flex: 1; width: 100%; max-width: 1000px; margin: 0 auto; padding: 44px 40px; display: flex; flex-direction: column; gap: 30px; position: relative">
+<svg viewBox="0 0 200 120" width="260" aria-hidden="true" style="position: absolute; right: -150px; top: 40px; opacity: .6"><path d="M40 90V30l80-16v60M40 90a14 10 0 1 1-28 0a14 10 0 1 1 28 0M120 74a14 10 0 1 1-28 0a14 10 0 1 1 28 0M160 60V20l24 10" style="fill: none; stroke: var(--mus); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round"></path></svg>
+<h1 class="t" style="font-size: 40px; font-weight: 900; text-align: center">Qui a composé cette œuvre ?</h1>
+
+<section style="padding: 28px 32px; border-radius: 28px; background: var(--mus-t); color: var(--mus-i); display: flex; align-items: center; gap: 28px">
+<button type="button" aria-label="Lire l'extrait" style="width: 84px; height: 84px; border-radius: 50%; border: 0; background: var(--primary); color: var(--on-primary); display: flex; align-items: center; justify-content: center; cursor: pointer; flex: none"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" style="width: 32px; height: 32px; fill: currentColor; stroke: none"><path d="M8 5v14l11-7Z"></path></svg></button>
+<div style="flex: 1; display: flex; flex-direction: column; gap: 12px">
+<div style="display: flex; align-items: center; gap: 4px; height: 72px" aria-hidden="true">
+<sc-for list="{{wave}}" as="w" hint-placeholder-count="56"><span style="flex: 1; height: {{w.h}}px; border-radius: 4px; background: {{w.c}}"></span></sc-for>
+</div>
+<div style="display: flex; justify-content: space-between; font-size: 14px; font-weight: 600"><span>0:06</span><span style="display: inline-flex; align-items: center; gap: 8px">Réécouter <span class="kbd">Espace</span></span><span>0:15</span></div>
+</div>
+</section>
+
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px">
+<sc-for list="{{opts}}" as="o" hint-placeholder-count="4">
+<button type="button" class="opt" style="display: flex; align-items: center; gap: 16px; min-height: 76px; padding: 0 22px; border-radius: 22px; border: 1.5px solid var(--line); background: var(--surface); color: var(--text); font: 600 19px 'DM Sans', sans-serif; text-align: left; cursor: pointer"><span class="kbd">{{o.n}}</span>{{o.label}}</button>
+</sc-for>
+</div>
+<p style="text-align: center; font-size: 15px; color: var(--muted)">Répondez au clic ou avec <span class="kbd">1</span> <span class="kbd">2</span> <span class="kbd">3</span> <span class="kbd">4</span></p>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"dark":{"editor":"boolean","default":false},"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const n = 56;
+    const wave = Array.from({ length: n }, (_, i) => {
+      const h = 14 + Math.round(Math.abs(Math.sin(i * 0.55) * 30 + Math.sin(i * 1.7) * 16));
+      return { h: Math.min(h, 70), c: i < n * 0.4 ? 'var(--mus-i)' : 'var(--mus)' };
+    });
+    const opts = ['Antonio Vivaldi', 'Jean-Sébastien Bach', 'Wolfgang Amadeus Mozart', 'Ludwig van Beethoven'].map((label, i) => ({ n: i + 1, label }));
+    return { mode: this.props.dark ? 'dark' : '', wave, opts };
+  }
+}
+</script>
+</body>
+</html>

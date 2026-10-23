@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Croivez — Résultat de la partie</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&amp;family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:inherit}a:hover{color:inherit}
+.cz{--bg:#FBF8F3;--surface:#FFFFFF;--surface2:#F4EFE6;--line:#E9E2D6;--text:#2F3437;--muted:#5D646A;--primary:#2F3437;--on-primary:#FBF8F3;--shadow:0 8px 28px rgba(80,62,35,.07);--lx:#DE8B6A;--lv:#6FC59F;--geo:#6BB8C4;--geo-t:#E3F3F4;--geo-i:#1F6670;--cine:#F2A68A;--mus:#B3A3DB;--nat:#9DBB97;--sci:#E8AFC0;--his:#DDB65E;--his-t:#F8EFD8;--his-i:#765610;--brd:#8FA0CF;--ok:#8FD3B6;--ok-t:#E2F5EC;--ok-i:#22664A;--ko:#E0997A;--ko-t:#FBE9E1;--ko-i:#97482A;font-family:'DM Sans',system-ui,sans-serif;color:var(--text);background:var(--bg)}
+.cz.dark{--bg:#131B2E;--surface:#1A2440;--surface2:#24304F;--line:#2F3B5E;--text:#EEE9E0;--muted:#AEB6C8;--primary:#EEE9E0;--on-primary:#131B2E;--shadow:0 10px 30px rgba(0,0,0,.3);--lx:#EDA98A;--lv:#93D9BB;--geo:#7CCFDA;--geo-t:#1B3946;--geo-i:#A6E3EA;--cine:#F4B097;--mus:#BDAEE6;--nat:#A9C8A2;--sci:#EDB9C9;--his:#E5C26E;--his-t:#38321F;--his-i:#EED493;--brd:#9DADDA;--ok:#93D9BB;--ok-t:#1D3B35;--ok-i:#A8E6CB;--ko:#E9A585;--ko-t:#3E2C29;--ko-i:#F3BCA2}
+.cz *{box-sizing:border-box}
+.cz h1,.cz h2,.cz h3,.cz p{margin:0}
+.t{font-family:Nunito,system-ui,sans-serif}
+.ic{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:56px;padding:0 26px;border-radius:16px;border:0;font:600 17px 'DM Sans',sans-serif;text-decoration:none;cursor:pointer;transition:transform .2s ease-out}
+.btn:hover{transform:translateY(-1px)}
+.btn-p{background:var(--primary);color:var(--on-primary)}
+.btn-g{background:transparent;color:var(--text);border:1.5px solid var(--line)}
+.kbd{display:inline-flex;align-items:center;justify-content:center;min-width:26px;height:26px;padding:0 7px;border-radius:8px;border:1.5px solid var(--line);background:var(--surface2);font:600 13px 'DM Sans',sans-serif;color:var(--muted)}
+.chip{display:inline-flex;align-items:center;gap:6px;min-height:30px;padding:0 12px;border-radius:999px;font:600 13px 'DM Sans',sans-serif}
+.lx{fill:none;stroke:var(--lx);stroke-linecap:round}
+.lv{fill:none;stroke:var(--lv);stroke-linecap:round;stroke-linejoin:round}
+.conf{position:absolute;animation:cz-fall 1.2s ease-out both}
+@keyframes cz-fall{from{opacity:0;transform:translateY(-30px) rotate(0)}to{opacity:.9}}
+@media (prefers-reduced-motion:reduce){.cz *{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div class="cz {{mode}}" style="min-height: 900px; position: relative; overflow: hidden; display: flex; flex-direction: column; align-items: center; padding: 48px 40px">
+
+<sc-for list="{{confetti}}" as="c" hint-placeholder-count="24"><svg class="conf" viewBox="0 0 24 24" width="{{c.s}}" aria-hidden="true" style="left: {{c.x}}%; top: {{c.y}}px; transform: rotate({{c.r}}deg); animation-delay: {{c.d}}ms"><path d="{{c.p}}" style="fill: {{c.fill}}; stroke: {{c.col}}; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round"></path></svg></sc-for>
+
+<div style="width: 100%; max-width: 1000px; display: flex; flex-direction: column; gap: 28px; position: relative">
+<section style="display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center">
+<svg viewBox="0 0 120 120" width="96" height="96" aria-hidden="true">
+<path d="M60 22c22 0 40 15 40 40s-16 42-40 42-40-15-40-42 18-40 40-40Z" style="fill: var(--his-t); stroke: var(--his); stroke-width: 3"></path>
+<path d="M52 22 Q55 15 58 10 Q64 4 72 2" style="fill: none; stroke: var(--lv); stroke-width: 5; stroke-linecap: round; stroke-linejoin: round"></path>
+<path d="M41 60 Q47 54 53 60 M67 60 Q73 54 79 60" style="fill: none; stroke: var(--text); stroke-width: 3.5; stroke-linecap: round"></path>
+<path d="M49 72 Q60 83 71 72" style="fill: none; stroke: var(--text); stroke-width: 3; stroke-linecap: round"></path>
+</svg>
+<span class="chip" style="background: var(--geo-t); color: var(--geo-i)">Géographie · 10 questions</span>
+<h1 class="t" style="font-size: 76px; font-weight: 900; line-height: 1">8 <span style="color: var(--muted); font-size: 48px">/ 10</span></h1>
+<p style="font-size: 19px; color: var(--muted)">Belle série ! Deux réponses méritent un petit retour.</p>
+</section>
+
+<section class="card" style="padding: 22px 28px; display: flex; align-items: center; gap: 28px; flex-wrap: wrap; justify-content: space-between">
+<div style="display: flex; gap: 10px" role="list" aria-label="Détail des 10 réponses">
+<sc-for list="{{answers}}" as="a" hint-placeholder-count="10">
+<span role="listitem" aria-label="{{a.aria}}" style="width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: {{a.bg}}">
+<sc-if value="{{a.ok}}" hint-placeholder-val="{{true}}"><svg viewBox="0 0 48 44" width="20" aria-hidden="true"><path d="M6 24 Q11 31 16 38 Q27 18 43 5" style="fill: none; stroke: var(--ok-i); stroke-width: 8; stroke-linecap: round; stroke-linejoin: round"></path></svg></sc-if>
+<sc-if value="{{a.ko}}" hint-placeholder-val="{{false}}"><svg viewBox="0 0 24 24" width="18" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" style="fill: none; stroke: var(--ko-i); stroke-width: 3.6; stroke-linecap: round"></path></svg></sc-if>
+</span>
+</sc-for>
+</div>
+<div style="display: flex; gap: 28px">
+<div><p class="t" style="font-size: 26px; font-weight: 900; color: var(--ok-i)">8 justes</p><p style="font-size: 14px; color: var(--muted)">dont 4 d'affilée</p></div>
+<div><p class="t" style="font-size: 26px; font-weight: 900; color: var(--ko-i)">2 à revoir</p><p style="font-size: 14px; color: var(--muted)">ajoutées à la révision</p></div>
+</div>
+</section>
+
+<section style="display: flex; flex-direction: column; gap: 14px">
+<h2 class="t" style="font-size: 22px; font-weight: 800">Anecdotes à revoir</h2>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px">
+<article class="card" style="padding: 22px; display: flex; gap: 18px; align-items: flex-start">
+<svg viewBox="0 0 3 2" width="96" aria-hidden="true" style="flex: none; border-radius: 8px; box-shadow: 0 0 0 1px rgba(0,0,0,.06)"><rect x="0" y="0" width="1" height="2" style="fill: #002664"></rect><rect x="1" y="0" width="1" height="2" style="fill: #FECB00"></rect><rect x="2" y="0" width="1" height="2" style="fill: #C60C30"></rect></svg>
+<div style="display: flex; flex-direction: column; gap: 6px"><p style="font-weight: 700">Drapeau du Tchad</p><p style="font-size: 15px; line-height: 1.5; color: var(--muted)">Presque identique à celui de la Roumanie : seul le bleu diffère, un peu plus foncé pour le Tchad.</p></div>
+</article>
+<article class="card" style="padding: 22px; display: flex; gap: 18px; align-items: flex-start">
+<div style="width: 96px; height: 64px; border-radius: 8px; background: var(--geo-t); color: var(--geo-i); display: flex; align-items: center; justify-content: center; flex: none"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" style="width: 30px; height: 30px"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21Z"></path><circle cx="12" cy="9.5" r="2.5"></circle></svg></div>
+<div style="display: flex; flex-direction: column; gap: 6px"><p style="font-weight: 700">Lyon · épingle à 58 km</p><p style="font-size: 15px; line-height: 1.5; color: var(--muted)">La ville s'est construite au confluent du Rhône et de la Saône.</p></div>
+</article>
+</div>
+</section>
+
+<div style="display: flex; gap: 14px; justify-content: center; flex-wrap: wrap">
+<a class="btn btn-p" href="QuestionQcm.dc.html"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.7M20 4v5h-5"></path></svg>Rejouer les erreurs<span class="kbd" style="background: transparent; color: var(--on-primary); border-color: var(--on-primary); opacity: .7">Entrée</span></a>
+<a class="btn btn-g" href="Accueil.dc.html">Retour à l'accueil</a>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"dark":{"editor":"boolean","default":false},"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const shapes = {
+      check: 'M5 12.5 9.5 17 19 7.5',
+      star: 'm12 3.8 2.5 5.1 5.6.8-4 4 1 5.6-5.1-2.7-5 2.7.9-5.6-4-4 5.6-.8Z',
+      dot: 'M12 7a5 5 0 1 1 0 10a5 5 0 1 1 0-10Z'
+    };
+    const cols = ['var(--geo)', 'var(--cine)', 'var(--mus)', 'var(--nat)', 'var(--sci)', 'var(--his)', 'var(--brd)', 'var(--ok)'];
+    const kinds = ['check', 'star', 'dot'];
+    const confetti = Array.from({ length: 24 }, (_, i) => {
+      const k = kinds[i % 3];
+      const col = cols[(i * 3) % cols.length];
+      const side = i % 2 === 0;
+      return {
+        p: shapes[k], col, fill: k === 'check' ? 'none' : col,
+        x: side ? 3 + ((i * 7) % 22) : 75 + ((i * 5) % 22),
+        y: 30 + ((i * 53) % 520), r: (i * 37) % 360, s: k === 'dot' ? 14 : 22, d: (i % 8) * 90
+      };
+    });
+    const res = [1, 1, 1, 0, 1, 0, 1, 1, 1, 1];
+    const answers = res.map((r, i) => ({ ok: !!r, ko: !r, bg: r ? 'var(--ok-t)' : 'var(--ko-t)', aria: 'Question ' + (i + 1) + (r ? ' : juste' : ' : fausse') }));
+    return { mode: this.props.dark ? 'dark' : '', confetti, answers };
+  }
+}
+</script>
+</body>
+</html>
