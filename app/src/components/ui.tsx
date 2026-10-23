@@ -29,6 +29,8 @@ export const ICONS = {
   timer: 'M12 7.5a6.5 6.5 0 1 1 0 13a6.5 6.5 0 1 1 0-13ZM12 11v3l2 1.5M9.5 3.5h5',
   sparkle: 'M12 3.5l1.8 5.2 5.2 1.8-5.2 1.8L12 17.5l-1.8-5.2L5 10.5l5.2-1.8ZM18.5 16l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7Z',
   link: 'M14 4.5h5.5V10M19.5 4.5 11 13M17 13.5v5a1.5 1.5 0 0 1-1.5 1.5h-10A1.5 1.5 0 0 1 4 18.5v-10A1.5 1.5 0 0 1 5.5 7h5',
+  lock: 'M7 10.5V8a5 5 0 0 1 10 0v2.5M6 10.5h12a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-8a1 1 0 0 1 1-1ZM12 14.5v2.5',
+  bulb: 'M9 17.5h6M10 20.5h4M12 3.5a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2V17h5v-.6c0-.8.4-1.5 1-2A6 6 0 0 0 12 3.5Z',
 }
 
 // Coche ✓ et croix ✗ du logo, utilisées pour le feedback de réponse
@@ -37,6 +39,25 @@ export function Coche({ size = 28, color = 'var(--ok-i)', anim = true }: { size?
 }
 export function Croix({ size = 26, color = 'var(--ko-i)', anim = true }: { size?: number; color?: string; anim?: boolean }) {
   return <svg viewBox="0 0 44 44" width={size} className={anim ? 'sway' : ''} aria-hidden="true"><path className="lx" d="M8 8 Q22 22 36 36 M36 8 Q22 22 8 36" style={{ strokeWidth: 8, stroke: color }} /></svg>
+}
+
+// Pièce d'or douce (moutarde de la DA) et compteur de pièces
+export function Piece({ size = 20 }: { size?: number }) {
+  return (
+    <svg viewBox="0 0 24 24" width={size} height={size} aria-hidden="true" style={{ flex: 'none' }}>
+      <circle cx="12" cy="12" r="10" fill="var(--his)" />
+      <circle cx="12" cy="12" r="6.5" fill="none" stroke="var(--his-i)" strokeWidth="1.6" opacity=".6" />
+      <path d="M10 9.5l2.5 5 2.5-5" fill="none" stroke="var(--his-i)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+export function Pieces({ n }: { n: number }) {
+  return (
+    <span className="chip" aria-label={`${n} pièces`} style={{ alignSelf: 'flex-start', background: 'var(--his-t)', color: 'var(--his-i)', gap: 6, fontSize: 14 }}>
+      <Piece size={18} />{n}
+    </span>
+  )
 }
 
 export function useOnline() {

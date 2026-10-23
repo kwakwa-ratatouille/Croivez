@@ -236,7 +236,8 @@ function questionsPays({ sousTheme, difficulte, nombre, mode: modeChoisi, lang, 
       case 'drapeaux-inverse':
         return { ...base, enonce: lang === 'fr' ? `Quel est le drapeau de ce pays : ${p.nom.fr} ?` : `Which flag belongs to ${p.nom.en}?`, imagesOnly: true, options: melange.map((x) => ({ label: nom(x), image: drapeau(x.id) })) }
       case 'capitales':
-        return { ...base, enonce: lang === 'fr' ? `Quelle est la capitale de ce pays : ${p.nom.fr} ?` : `What is the capital of ${p.nom.en}?`, reponse: p.capitale![lang], acceptees: [p.capitale!.fr, p.capitale!.en], options: mode === 'qcm' ? optionsCapitale(p, autres, lang) : [] }
+        // Le drapeau illustre la question sans donner la capitale
+        return { ...base, image: drapeau(p.id, 640), enonce: lang === 'fr' ? `Quelle est la capitale de ce pays : ${p.nom.fr} ?` : `What is the capital of ${p.nom.en}?`, reponse: p.capitale![lang], acceptees: [p.capitale!.fr, p.capitale!.en], options: mode === 'qcm' ? optionsCapitale(p, autres, lang) : [] }
       case 'capitales-inverse':
         return { ...base, enonce: lang === 'fr' ? `${p.capitale!.fr} est la capitale de quel pays ?` : `${p.capitale!.en} is the capital of which country?`, options: mode === 'qcm' ? melange.map((x) => ({ label: nom(x) })) : [] }
       default: // pays-carte : QCM = pays surligné à nommer, libre = cliquer le pays

@@ -70,7 +70,7 @@ export default function Duel() {
     terminerDuel(id).catch(console.error)
     const gagne = moi.score > (autre?.score ?? 0)
     const resultats = questions.map((qq, n) => ({ id: qq.id, juste: !!moi.r?.[n]?.j }))
-    enregistrerPartie(uid, profile, { sousTheme: theme, xp: (gagne ? 60 : 25) + resultats.filter((r) => r.juste).length * 5, resultats, revision: true }).catch(console.error)
+    enregistrerPartie(uid, profile, { sousTheme: theme, xp: (gagne ? 60 : 25) + resultats.filter((r) => r.juste).length * 5, pieces: gagne ? 30 : 10, resultats, revision: true }).catch(console.error)
   }, [fini, profile, moi, autre, questions, theme, id, uid])
 
   if (!duel || !questions || !moi) return <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center' }}><Logo width={72} /></div>

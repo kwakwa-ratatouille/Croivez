@@ -1,9 +1,13 @@
 import { NavLink, Outlet } from 'react-router-dom'
 import { useAuth, niveau } from '../auth'
 import { usePrefs, type Key } from '../i18n'
-import { ICONS, Icon, Logo, useOnline } from './ui'
+import { ICONS, Icon, Logo, Piece, Pieces, useOnline } from './ui'
 import { aReviser } from '../quiz/revision'
 import MiseAJour from './MiseAJour'
+import { useEffect } from 'react'
+import { telechargerEnFond, surveillerWifi } from '../telechargementFond'
+import { familleOuverte } from '../progression'
+import type { Famille } from '../themes'
 
 const LIENS: { to: string; k: Key; icon: string }[] = [
   { to: '/', k: 'nav.home', icon: ICONS.home },
@@ -21,6 +25,18 @@ export default function Layout() {
   const online = useOnline()
   const pseudo = profile?.pseudo ?? '…'
   const dues = aReviser(profile?.revision).length
+
+  // Images des thèmes en arrière-plan, en Wi-Fi seulement, familles ouvertes d'abord
+  const ouvertes = (k: Famille) => familleOuverte(k, profile)
+  const familles = profile?.familles?.join(',')
+  useEffect(() => {
+    if (!profile) return
+    const lancer = () => telechargerEnFond(ouvertes)
+    const t = setTimeout(lancer, 4000) // après le démarrage, pour ne pas le ralentir
+    const stop = surveillerWifi(lancer)
+    return () => { clearTimeout(t); stop() }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [!!profile, familles])
 
   return (
     <div className="shell">
@@ -44,13 +60,16 @@ export default function Layout() {
             <span className="t" style={{ width: 40, height: 40, borderRadius: '50%', background: 'var(--sci-t)', color: 'var(--sci-i)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800 }}>{pseudo[0]?.toUpperCase()}</span>
             <span style={{ display: 'flex', flexDirection: 'column' }}>
               <span style={{ fontWeight: 700, fontSize: 15 }}>{pseudo}</span>
-              <span style={{ fontSize: 13, color: 'var(--muted)' }}>{t('level')} {niveau(profile?.xp ?? 0)}</span>
+              <span style={{ fontSize: 13, color: 'var(--muted)', display: 'flex', alignItems: 'center', gap: 6 }}>{t('level')} {niveau(profile?.xp ?? 0)} · <Piece size={14} />{profile?.pieces ?? 0}</span>
             </span>
           </NavLink>
         </div>
       </nav>
       <main className="main">
-        <NavLink to="/" className="entete-mobile" aria-label="Croivez"><Logo width={34} /><span className="t" style={{ fontSize: 20, fontWeight: 900 }}>Croivez</span></NavLink>
+        <div className="entete-mobile" style={{ justifyContent: 'space-between' }}>
+          <NavLink to="/" aria-label="Croivez" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}><Logo width={34} /><span className="t" style={{ fontSize: 20, fontWeight: 900 }}>Croivez</span></NavLink>
+          <Pieces n={profile?.pieces ?? 0} />
+        </div>
         <MiseAJour />
         <Outlet />
       </main>

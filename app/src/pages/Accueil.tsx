@@ -4,6 +4,7 @@ import { usePrefs } from '../i18n'
 import { FAMILLES } from '../themes'
 import { defiDuJour } from '../quiz/defi'
 import { Coche, ICONS, Icon } from '../components/ui'
+import Illustration from '../components/Illustration'
 
 export default function Accueil() {
   const { t, lang } = usePrefs()
@@ -42,9 +43,7 @@ export default function Accueil() {
       </header>
 
       <section className="card" style={{ padding: 32, display: 'flex', alignItems: 'center', gap: 32, flexWrap: 'wrap', position: 'relative' }}>
-        <div style={{ width: 96, height: 96, borderRadius: 28, background: 'var(--geo-t)', color: 'var(--geo-i)', display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none' }}>
-          <Icon d={FAMILLES[0].icon} size={44} />
-        </div>
+        <Illustration k="geo" taille={150} />
         <div style={{ flex: '1 1 320px', display: 'flex', flexDirection: 'column', gap: 12 }}>
           <span className="chip" style={{ alignSelf: 'flex-start', background: 'var(--geo-t)', color: 'var(--geo-i)' }}>{lang === 'fr' ? 'Géographie · Drapeaux' : 'Geography · Flags'}</span>
           <h2 className="t" style={{ fontSize: 26, fontWeight: 800 }}>{lang === 'fr' ? 'Les drapeaux du monde' : 'Flags of the world'}</h2>
@@ -93,8 +92,8 @@ export default function Accueil() {
         </div>
         <div className="grid-auto" style={{ ['--min' as string]: '200px', gap: 16 }}>
           {FAMILLES.slice(0, 4).map((f) => (
-            <Link key={f.k} to="/themes" className="card" style={{ padding: 22, display: 'flex', flexDirection: 'column', gap: 14, textDecoration: 'none', background: `var(--${f.k}-t)`, color: `var(--${f.k}-i)`, borderColor: 'transparent', boxShadow: 'none' }}>
-              <Icon d={f.icon} size={30} />
+            <Link key={f.k} to={`/themes/${f.k}`} className="card famille" style={{ padding: 18, display: 'flex', flexDirection: 'column', gap: 14, textDecoration: 'none', background: `var(--${f.k}-t)`, color: `var(--${f.k}-i)`, borderColor: 'transparent', boxShadow: 'none' }}>
+              <Illustration k={f.k} taille={130} fond={false} />
               <span className="t" style={{ fontSize: 19, fontWeight: 800 }}>{f.nom[lang]}</span>
               <div className="bar" style={{ background: 'var(--surface)' }}><span style={{ width: `${maitrise(f.k)}%`, background: `var(--${f.k})` }} /></div>
               <span style={{ fontSize: 13 }}>{maitrise(f.k)} % {t('mastered')}</span>

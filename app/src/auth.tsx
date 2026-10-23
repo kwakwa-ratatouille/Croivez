@@ -20,6 +20,8 @@ export type Profile = {
   sansFaute?: number
   revision?: Record<string, CarteRevision>
   amis?: string[]
+  pieces?: number
+  familles?: string[] // familles ouvertes (choisies au départ ou achetées) ; absent = ancien compte, tout ouvert
 }
 
 type Ctx = { user: User | null; profile: Profile | null; loading: boolean }
@@ -59,7 +61,7 @@ export async function ensureProfile(user: User, pseudo?: string) {
   if ((await getDoc(ref)).exists()) return
   await setDoc(ref, {
     pseudo: pseudo || user.displayName || user.email?.split('@')[0] || 'Explorateur',
-    xp: 0, serie: 0, dernierJour: '', maitrise: {}, creeLe: serverTimestamp(),
+    xp: 0, serie: 0, dernierJour: '', maitrise: {}, pieces: 50, familles: [], creeLe: serverTimestamp(),
   })
 }
 
@@ -74,6 +76,7 @@ type Partie = {
   resultats: { id: string; juste: boolean }[]
   revision?: boolean // partie de révision : ne compte pas dans la maîtrise
   defi?: boolean
+  pieces?: number // pièces gagnées pendant la partie
 }
 
 // Enregistre une partie : XP, série, maîtrise, statistiques des badges et cartes de révision
@@ -99,6 +102,7 @@ export async function enregistrerPartie(uid: string, profile: Profile, p: Partie
   const defiReussi = p.defi && taux >= 0.5 && profile.defiJour !== today
   await setDoc(doc(db, 'users', uid), {
     xp: increment(p.xp),
+    ...(p.pieces ? { pieces: increment(p.pieces) } : {}),
     serie,
     meilleureSerie: Math.max(serie, profile.meilleureSerie ?? 0),
     dernierJour: today,

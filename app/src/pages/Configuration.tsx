@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../auth'
 import { usePrefs, type Key } from '../i18n'
 import { trouverSousTheme } from '../themes'
+import { NIVEAU_DIFFICULTE, accesQuiz, difficulteOuverte, plafonner } from '../progression'
 import { difficulteAuto, type Difficulte, type Mode } from '../quiz/engine'
 import { ICONS, Icon, Toggle } from '../components/ui'
+import Illustration from '../components/Illustration'
 
 const DIFFS: { v: Difficulte; k: Key; h: Key }[] = [
   { v: 0, k: 'diff.auto', h: 'diff.autoHint' },
@@ -20,6 +22,8 @@ export default function Configuration() {
   const { profile } = useAuth()
   const nav = useNavigate()
   const found = trouverSousTheme(sous)
+  // Famille pas encore débloquée : retour à sa page, où l'on peut l'acheter
+  const bloque = !accesQuiz(sous, profile)
   const famille = found?.famille
   const jouables = famille?.subs.filter((s) => s.jouable) ?? []
 
@@ -40,7 +44,7 @@ export default function Configuration() {
     : surCarte && id === 'libre' ? (lang === 'fr' ? 'Cliquer sur la carte' : 'Click on the map')
     : surCarte ? (lang === 'fr' ? 'Nommer le pays surligné' : 'Name the highlighted country')
     : t(id === 'qcm' ? 'cfg.qcm' : 'cfg.free')
-  const diffAuto = difficulteAuto(profile?.maitrise?.[sub])
+  const diffAuto = plafonner(difficulteAuto(profile?.maitrise?.[sub]), profile)
   const lancer = () => {
     try { localStorage.setItem('rapide', rapide ? '1' : '0') } catch { /* stockage indisponible */ }
     nav(`/partie?s=${sub}&m=${modeEffectif}&n=${nombre}&d=${diff}&t=${chrono ? duree : 0}${rapide ? '&r=1' : ''}`)
@@ -55,11 +59,13 @@ export default function Configuration() {
   const titreSub = jouables.find((s) => s.id === sub)?.nom[lang] ?? sub
   const k = famille?.k ?? 'geo'
 
+  if (bloque && found) return <Navigate to={`/themes/${found.famille.k}`} replace />
+
   return (
     <>
-      <Link to="/themes" style={{ alignSelf: 'flex-start', display: 'inline-flex', alignItems: 'center', gap: 8, minHeight: 44, fontWeight: 600, textDecoration: 'none', color: 'var(--muted)' }}><Icon d={ICONS.arrowL} />{t('nav.themes')}</Link>
+      <Link to={`/themes/${k}`} style={{ alignSelf: 'flex-start', display: 'inline-flex', alignItems: 'center', gap: 8, minHeight: 44, fontWeight: 600, textDecoration: 'none', color: 'var(--muted)' }}><Icon d={ICONS.arrowL} />{t('nav.themes')}</Link>
       <header style={{ display: 'flex', alignItems: 'center', gap: 18, marginTop: -12 }}>
-        <div style={{ width: 64, height: 64, borderRadius: 20, background: `var(--${k}-t)`, color: `var(--${k}-i)`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon d={famille?.icon ?? ''} size={32} /></div>
+        <Illustration k={k} taille={120} />
         <div><span className="eyebrow" style={{ color: `var(--${k}-i)` }}>{famille?.nom[lang]}</span><h1 className="t" style={{ fontSize: 34, fontWeight: 900 }}>{t('cfg.new')}</h1></div>
       </header>
 
@@ -76,12 +82,12 @@ export default function Configuration() {
             <legend className="t" style={{ fontSize: 20, fontWeight: 800, padding: 0, marginBottom: 14 }}>{t('cfg.diff')}</legend>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(118px, 1fr))', gap: 12 }}>
               {DIFFS.map((d) => (
-                <button key={d.v} type="button" className="choice" aria-pressed={diff === d.v} onClick={() => setDiff(d.v)} style={{ minHeight: 104 }}>
+                <button key={d.v} type="button" className="choice" aria-pressed={diff === d.v} disabled={!difficulteOuverte(d.v, profile)} onClick={() => setDiff(d.v)} style={{ minHeight: 104, opacity: difficulteOuverte(d.v, profile) ? 1 : 0.5 }}>
                   <span style={{ display: 'flex', gap: 4, color: 'var(--muted)', fontSize: 13, letterSpacing: 2 }}>
                     {d.v === 0 ? <Icon d={ICONS.sparkle} size={18} /> : '●'.repeat(d.v) + '○'.repeat(4 - d.v)}
                   </span>
                   <span className="t" style={{ fontSize: 18, fontWeight: 800 }}>{t(d.k)}</span>
-                  <span style={{ fontSize: 13, color: 'var(--muted)', fontWeight: 500 }}>{d.v === 0 ? `${t(d.h)} · ${t(`diff.${diffAuto}` as Key)}` : t(d.h)}</span>
+                  <span style={{ fontSize: 13, color: 'var(--muted)', fontWeight: 500 }}>{!difficulteOuverte(d.v, profile) ? (lang === 'fr' ? `Niveau ${NIVEAU_DIFFICULTE[d.v]} requis` : `Level ${NIVEAU_DIFFICULTE[d.v]} required`) : d.v === 0 ? `${t(d.h)} · ${t(`diff.${diffAuto}` as Key)}` : t(d.h)}</span>
                 </button>
               ))}
             </div>

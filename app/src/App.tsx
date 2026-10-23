@@ -9,6 +9,8 @@ import Configuration from './pages/Configuration'
 import Partie from './pages/Partie'
 import Parametres from './pages/Parametres'
 import Connexion from './pages/Connexion'
+import ChoixFamilles from './pages/ChoixFamilles'
+import { choixAFaire } from './progression'
 import Revision from './pages/Revision'
 import Profil from './pages/Profil'
 import Duels from './pages/Duels'
@@ -27,9 +29,11 @@ function BientotDisponible() {
 }
 
 function Routeur() {
-  const { user, loading } = useAuth()
+  const { user, profile, loading } = useAuth()
   if (loading) return <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center' }}><Logo width={72} /></div>
   if (!user) return <Connexion />
+  // Nouveau compte : choisir ses 3 familles de départ avant de jouer
+  if (choixAFaire(profile)) return <ChoixFamilles />
   return (
     <HashRouter>
       <Routes>
@@ -38,6 +42,7 @@ function Routeur() {
         <Route element={<Layout />}>
           <Route path="/" element={<Accueil />} />
           <Route path="/themes" element={<Themes />} />
+          <Route path="/themes/:k" element={<Themes />} />
           <Route path="/jouer/:sous" element={<Configuration />} />
           <Route path="/parametres" element={<Parametres />} />
           <Route path="/revision" element={<Revision />} />

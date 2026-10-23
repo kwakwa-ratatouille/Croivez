@@ -29,12 +29,12 @@ export async function mettreEnCache(src: string, cache?: Cache) {
   }
 }
 
-export async function telechargerImages(srcs: string[], progres: (fait: number) => void) {
+export async function telechargerImages(srcs: string[], progres: (fait: number) => void, parallele = 6) {
   const c = await caches.open(NOM)
   let fait = 0
   const file = [...srcs]
-  // 6 téléchargements en parallèle : rapide sans saturer la connexion
-  await Promise.all(Array.from({ length: 6 }, async () => {
+  // Plusieurs téléchargements en parallèle (6 par défaut : rapide sans saturer la connexion)
+  await Promise.all(Array.from({ length: parallele }, async () => {
     while (file.length) {
       await mettreEnCache(file.shift()!, c)
       progres(++fait)

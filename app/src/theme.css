@@ -77,12 +77,19 @@ button { font-family: inherit; }
 @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 .rise { animation: rise .3s ease-out both; }
 
+/* Cartes de familles et tuiles de quiz : léger soulèvement au survol / à l'appui */
+.famille, .tuile { transition: transform .25s ease-out, box-shadow .25s ease-out; }
+.famille:hover, .tuile:hover { transform: translateY(-3px); box-shadow: var(--shadow); }
+.famille:active, .tuile:active { transform: scale(.98); }
+
 /* Attente d'un adversaire : le logo respire doucement */
 @keyframes respire { 0%,100% { transform: scale(1) rotate(0); } 50% { transform: scale(1.08) rotate(-4deg); } }
 .attente { animation: respire 2.4s ease-in-out infinite; }
 
 /* Mobile (iOS) : la barre latérale devient une barre d'onglets en bas */
 .entete-mobile { display: none; }
+.grille-familles { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 18px; }
+.illus-famille { display: flex; justify-content: center; margin: -6px 0 2px; }
 .barre-suivant { display: none; }
 
 @media (max-width: 760px) {
@@ -100,6 +107,13 @@ button { font-family: inherit; }
   /* Bouton Suivant fixé en bas : on enchaîne sans faire défiler ; la fiche reste lisible au-dessus */
   .barre-suivant { display: block; position: fixed; inset: auto 0 0 0; z-index: 20; padding: 12px 16px calc(12px + env(safe-area-inset-bottom)); background: var(--bg); border-top: 1px solid var(--line); }
   .btn-suivant-fiche { display: none !important; }
+  /* Familles : deux par ligne, illustrations réduites */
+  .grille-familles { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
+  .grille-familles > * { min-width: 0; }
+  .grille-familles .famille { padding: 10px 12px 14px !important; border-radius: 22px !important; }
+  .grille-familles .famille h2 { font-size: 16px !important; }
+  .illus-famille svg { width: 120px; height: 90px; }
+  .illus-question svg { width: 120px; height: 90px; }
 }
 
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
