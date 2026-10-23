@@ -77,11 +77,16 @@ button { font-family: inherit; }
 .attente { animation: respire 2.4s ease-in-out infinite; }
 
 /* Mobile (iOS) : la barre latérale devient une barre d'onglets en bas */
+.entete-mobile { display: none; }
+
 @media (max-width: 760px) {
   .shell { flex-direction: column; }
-  .side { position: fixed; inset: auto 0 0 0; height: auto; z-index: 10; flex-direction: row; justify-content: space-around; gap: 0; padding: 6px 4px calc(6px + env(safe-area-inset-bottom)); border-right: 0; border-top: 1px solid var(--line); }
-  .side > a:first-child, .side > div:last-child { display: none; }
-  .nav { flex: 1; flex-direction: column; justify-content: center; gap: 3px; min-height: 52px; padding: 4px 2px; font-size: 10.5px; text-align: center; }
+  .side { position: fixed; inset: auto 0 0 0; height: auto; z-index: 10; flex-direction: row; justify-content: space-evenly; align-items: stretch; gap: 0; padding: 6px 4px calc(6px + env(safe-area-inset-bottom)); border-right: 0; border-top: 1px solid var(--line); }
+  /* Le logo passe en haut de l'écran, le profil a son onglet, les paramètres sont dans le profil */
+  .side-logo, .side-pied, .nav-pc { display: none !important; }
+  .entete-mobile { display: flex; align-items: center; gap: 10px; text-decoration: none; margin-bottom: -4px; }
+  .nav { flex: 1 1 0; min-width: 0; position: relative; flex-direction: column; align-items: center; justify-content: center; gap: 3px; min-height: 54px; padding: 4px 0; font-size: 10.5px; text-align: center; border-radius: 12px; }
+  .nav .chip { position: absolute; top: 0; left: calc(50% + 6px); margin: 0 !important; min-height: 18px !important; padding: 0 6px !important; font-size: 11px; }
   .main { padding: calc(20px + env(safe-area-inset-top)) 16px calc(96px + env(safe-area-inset-bottom)); gap: 20px; }
   .partie { padding: calc(16px + env(safe-area-inset-top)) 16px calc(32px + env(safe-area-inset-bottom)) !important; }
 }
