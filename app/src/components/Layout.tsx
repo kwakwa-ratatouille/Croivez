@@ -4,7 +4,8 @@ import { usePrefs, type Key } from '../i18n'
 import { ICONS, Icon, Logo, Piece, Pieces, useOnline } from './ui'
 import { aReviser } from '../quiz/revision'
 import MiseAJour from './MiseAJour'
-import { useEffect } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import MenuTest from './MenuTest'
 import { telechargerEnFond, surveillerWifi } from '../telechargementFond'
 import { familleOuverte } from '../progression'
 import type { Famille } from '../themes'
@@ -26,6 +27,15 @@ export default function Layout() {
   const pseudo = profile?.pseudo ?? '…'
   const dues = aReviser(profile?.revision).length
 
+  // 3 appuis rapides sur le logo : menu de test
+  const [test, setTest] = useState(false)
+  const appuis = useRef<number[]>([])
+  const appuiLogo = (e: React.MouseEvent) => {
+    const t = Date.now()
+    appuis.current = [...appuis.current.filter((x) => t - x < 1200), t]
+    if (appuis.current.length >= 3) { e.preventDefault(); appuis.current = []; setTest(true) }
+  }
+
   // Images des thèmes en arrière-plan, en Wi-Fi seulement, familles ouvertes d'abord
   const ouvertes = (k: Famille) => familleOuverte(k, profile)
   const familles = profile?.familles?.join(',')
@@ -40,8 +50,9 @@ export default function Layout() {
 
   return (
     <div className="shell">
+      {test && <MenuTest onFermer={() => setTest(false)} />}
       <nav className="side" aria-label="Navigation principale">
-        <NavLink to="/" aria-label="Croivez" className="side-logo" style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '4px 12px 28px', textDecoration: 'none' }}>
+        <NavLink to="/" aria-label="Croivez" className="side-logo" onClick={appuiLogo} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '4px 12px 28px', textDecoration: 'none' }}>
           <Logo /><span className="t" style={{ fontSize: 24, fontWeight: 900 }}>Croivez</span>
         </NavLink>
         {LIENS.map((l) => (
@@ -67,7 +78,7 @@ export default function Layout() {
       </nav>
       <main className="main">
         <div className="entete-mobile" style={{ justifyContent: 'space-between' }}>
-          <NavLink to="/" aria-label="Croivez" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}><Logo width={34} /><span className="t" style={{ fontSize: 20, fontWeight: 900 }}>Croivez</span></NavLink>
+          <NavLink to="/" aria-label="Croivez" onClick={appuiLogo} style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}><Logo width={34} /><span className="t" style={{ fontSize: 20, fontWeight: 900 }}>Croivez</span></NavLink>
           <Pieces n={profile?.pieces ?? 0} />
         </div>
         <MiseAJour />

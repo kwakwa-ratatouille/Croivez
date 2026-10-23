@@ -1,4 +1,4 @@
-import { doc, runTransaction, arrayUnion, increment, setDoc } from 'firebase/firestore'
+import { doc, runTransaction, arrayUnion, increment, setDoc, deleteField } from 'firebase/firestore'
 import { db } from './firebase'
 import { niveau, type Profile } from './auth'
 import { FAMILLES, type Famille } from './themes'
@@ -31,6 +31,14 @@ export function plafonner(d: 1 | 2 | 3 | 4, p?: Profile | null): 1 | 2 | 3 | 4 {
   return x
 }
 
+// Légende : ouverte dans une famille quand chaque quiz ouvert de la famille a ses 4 difficultés réussies
+export function progresLegende(k: Famille, p?: Profile | null) {
+  const quiz = (FAMILLES.find((f) => f.k === k)?.subs ?? []).filter((s) => s.jouable)
+  const faits = quiz.reduce((n, s) => n + [1, 2, 3, 4].filter((d) => p?.paliers?.[s.id]?.includes(d)).length, 0)
+  return { faits, total: quiz.length * 4 }
+}
+export const legendeOuverte = (k: Famille, p?: Profile | null) => { const { faits, total } = progresLegende(k, p); return total > 0 && faits >= total }
+
 export const familleDe = (id: string) => FAMILLES.find((x) => x.subs.some((s) => s.id === id))
 export const accesQuiz = (id: string, p?: Profile | null) => { const f = familleDe(id); return !f || familleOuverte(f.k, p) || !!p?.quiz?.includes(id) }
 
@@ -59,3 +67,10 @@ export async function ouvrirCaisse(uid: string, k: Famille, p?: Profile | null) 
   return (await depenser(uid, PRIX_CAISSE, { quiz: arrayUnion(gain.id) })) ? gain : false
 }
 export const payerIndice = (uid: string) => depenser(uid, PRIX_INDICE)
+
+// ——— Menu de test (3 appuis sur le logo) ———
+// Tout débloquer : retire la liste des familles (= tout ouvert, comme un ancien compte)
+export const testToutDebloquer = (uid: string) => setDoc(doc(db, 'users', uid), { familles: deleteField(), quiz: deleteField() }, { merge: true })
+// Repartir de zéro côté progression : choix des 3 familles, caisses, 50 pièces (XP et stats conservés)
+export const testReinitialiser = (uid: string) => setDoc(doc(db, 'users', uid), { familles: [], quiz: [], pieces: 50 }, { merge: true })
+export const testPieces = (uid: string, n: number) => setDoc(doc(db, 'users', uid), { pieces: increment(n) }, { merge: true })

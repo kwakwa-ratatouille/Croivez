@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
 import { onAuthStateChanged, type User } from 'firebase/auth'
-import { deleteField, doc, getDoc, onSnapshot, serverTimestamp, setDoc, increment } from 'firebase/firestore'
+import { arrayUnion, deleteField, doc, getDoc, onSnapshot, serverTimestamp, setDoc, increment } from 'firebase/firestore'
 import { auth, db } from './firebase'
 import { cleRevision, planifier, type CarteRevision } from './quiz/revision'
 import type { SousThemeId } from './quiz/engine'
@@ -23,6 +23,7 @@ export type Profile = {
   pieces?: number
   familles?: string[] // familles choisies au départ (entièrement ouvertes) ; absent = ancien compte, tout ouvert
   quiz?: string[] // quiz gagnés dans les caisses
+  paliers?: Record<string, number[]> // difficultés réussies (≥ 70 %) par quiz : ouvre la Légende
 }
 
 type Ctx = { user: User | null; profile: Profile | null; loading: boolean }
@@ -78,6 +79,7 @@ type Partie = {
   revision?: boolean // partie de révision : ne compte pas dans la maîtrise
   defi?: boolean
   pieces?: number // pièces gagnées pendant la partie
+  difficulte?: number // 1 à 4 : réussir à 70 % valide le palier (Légende)
 }
 
 // Enregistre une partie : XP, série, maîtrise, statistiques des badges et cartes de révision
@@ -113,6 +115,7 @@ export async function enregistrerPartie(uid: string, profile: Profile, p: Partie
     ...(p.revision ? {} : { maitrise: { [p.sousTheme]: maitrise } }),
     ...(defiReussi ? { defis: increment(1), defiJour: today } : {}),
     ...(Object.keys(revision).length ? { revision } : {}),
+    ...(p.difficulte && p.difficulte <= 4 && taux >= 0.7 ? { paliers: { [p.sousTheme]: arrayUnion(p.difficulte) } } : {}),
   }, { merge: true })
   await publierXp(uid, profile.pseudo, p.xp, (profile.xp ?? 0) + p.xp, serie).catch(console.error)
 }

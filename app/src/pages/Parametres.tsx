@@ -26,16 +26,23 @@ export default function Parametres() {
   const titre = { fontSize: 19, fontWeight: 800 }
 
   // Télécharge toutes les images d'une famille de thèmes pour jouer sans réseau
-  async function telecharger(k: string) {
+  async function telecharger(k: string, deja: Set<string> = faits) {
     const f = FAMILLES.find((x) => x.k === k)!
     const srcs = [...new Set((await Promise.all(f.subs.filter((s) => s.jouable).map((s) => imagesDe(s.jouable as SousThemeId)))).flat())]
     setEnCours({ k, fait: 0, total: srcs.length })
     await telechargerImages(srcs, (fait) => setEnCours({ k, fait, total: srcs.length }))
-    const n = new Set(faits).add(k)
+    const n = new Set(deja).add(k)
     setFaits(n)
     try { localStorage.setItem('hors-ligne', JSON.stringify([...n])) } catch { /* stockage indisponible */ }
     setEnCours(null)
     majTaille()
+    return n
+  }
+
+  // Toutes les familles à la suite (celles déjà téléchargées sont sautées)
+  async function toutTelecharger() {
+    let deja = faits
+    for (const f of FAMILLES) if (!deja.has(f.k)) deja = await telecharger(f.k, deja)
   }
 
   return (
@@ -83,6 +90,7 @@ export default function Parametres() {
               {taille !== null && ` ${fr ? 'Espace utilisé' : 'Space used'} : ${(taille / 1e6).toFixed(0)} Mo.`}
             </span>
           </div>
+          <button className="btn btn-p" disabled={!!enCours || FAMILLES.every((f) => faits.has(f.k))} onClick={toutTelecharger}>{fr ? 'Tout télécharger' : 'Download all'}</button>
           <button className="btn btn-g" onClick={async () => { await viderCache(); setFaits(new Set()); try { localStorage.removeItem('hors-ligne') } catch { /* rien */ } majTaille() }}>{fr ? 'Vider' : 'Clear'}</button>
         </div>
         {FAMILLES.map((f) => {

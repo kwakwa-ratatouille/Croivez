@@ -3,8 +3,8 @@ import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../auth'
 import { usePrefs, type Key } from '../i18n'
 import { trouverSousTheme } from '../themes'
-import { NIVEAU_DIFFICULTE, accesQuiz, difficulteOuverte, plafonner } from '../progression'
-import { difficulteAuto, type Difficulte, type Mode } from '../quiz/engine'
+import { NIVEAU_DIFFICULTE, accesQuiz, difficulteOuverte, legendeOuverte, plafonner, progresLegende } from '../progression'
+import { type Difficulte, type Mode } from '../quiz/engine'
 import { ICONS, Icon, Toggle } from '../components/ui'
 import Illustration from '../components/Illustration'
 
@@ -44,7 +44,7 @@ export default function Configuration() {
     : surCarte && id === 'libre' ? (lang === 'fr' ? 'Cliquer sur la carte' : 'Click on the map')
     : surCarte ? (lang === 'fr' ? 'Nommer le pays surligné' : 'Name the highlighted country')
     : t(id === 'qcm' ? 'cfg.qcm' : 'cfg.free')
-  const diffAuto = plafonner(difficulteAuto(profile?.maitrise?.[sub]), profile)
+  const maxDiff = plafonner(4, profile)
   const lancer = () => {
     try { localStorage.setItem('rapide', rapide ? '1' : '0') } catch { /* stockage indisponible */ }
     nav(`/partie?s=${sub}&m=${modeEffectif}&n=${nombre}&d=${diff}&t=${chrono ? duree : 0}${rapide ? '&r=1' : ''}`)
@@ -87,9 +87,25 @@ export default function Configuration() {
                     {d.v === 0 ? <Icon d={ICONS.sparkle} size={18} /> : '●'.repeat(d.v) + '○'.repeat(4 - d.v)}
                   </span>
                   <span className="t" style={{ fontSize: 18, fontWeight: 800 }}>{t(d.k)}</span>
-                  <span style={{ fontSize: 13, color: 'var(--muted)', fontWeight: 500 }}>{!difficulteOuverte(d.v, profile) ? (lang === 'fr' ? `Niveau ${NIVEAU_DIFFICULTE[d.v]} requis` : `Level ${NIVEAU_DIFFICULTE[d.v]} required`) : d.v === 0 ? `${t(d.h)} · ${t(`diff.${diffAuto}` as Key)}` : t(d.h)}</span>
+                  <span style={{ fontSize: 13, color: 'var(--muted)', fontWeight: 500 }}>{!difficulteOuverte(d.v, profile) ? (lang === 'fr' ? `Niveau ${NIVEAU_DIFFICULTE[d.v]} requis` : `Level ${NIVEAU_DIFFICULTE[d.v]} required`) : t(d.h)}</span>
                 </button>
               ))}
+              {/* Légende : le sommet, ouvert quand toute la famille est terminée dans les 4 difficultés */}
+              {famille && (() => {
+                const ouverte = legendeOuverte(famille.k, profile)
+                const { faits, total } = progresLegende(famille.k, profile)
+                return (
+                  <button type="button" className="choice legende" aria-pressed={diff === 5} disabled={!ouverte} onClick={() => setDiff(5)} style={{ minHeight: 104, gridColumn: '1 / -1', opacity: ouverte ? 1 : 0.75 }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 800 }}><Icon d={ouverte ? ICONS.sparkle : ICONS.lock} size={18} />{lang === 'fr' ? 'Légende' : 'Legend'}</span>
+                    <span style={{ fontSize: 13, fontWeight: 500 }}>
+                      {ouverte
+                        ? (lang === 'fr' ? 'Le plus pointu, 6 choix piégés, 12 s, sans indice · XP et pièces ×2' : 'Ultra niche, 6 tricky options, 12 s, no hints · 2× XP & coins')
+                        : (lang === 'fr' ? `Réussissez les 4 difficultés de chaque quiz de la famille (${faits} / ${total})` : `Pass all 4 difficulties of every quiz in this family (${faits} / ${total})`)}
+                    </span>
+                    {!ouverte && <div className="bar" style={{ width: '100%', height: 6 }}><span style={{ width: `${(faits / Math.max(1, total)) * 100}%`, background: 'var(--his)' }} /></div>}
+                  </button>
+                )
+              })()}
             </div>
           </fieldset>
 
@@ -136,7 +152,7 @@ export default function Configuration() {
           <span className="eyebrow" style={{ color: `var(--${k}-i)` }}>{t('cfg.yours')}</span>
           <p className="t" style={{ fontSize: 26, fontWeight: 900, lineHeight: 1.2 }}>{titreSub}</p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10, fontSize: 16, fontWeight: 600 }}>
-            <span>{nombre} questions · {diff === 0 ? `${t('diff.auto')} (${t(`diff.${diffAuto}` as Key)})` : t(DIFFS[diff].k)}</span>
+            <span>{nombre} questions · {diff === 0 ? `${t('diff.auto')} (${lang === 'fr' ? 'jusqu’à' : 'up to'} ${t(`diff.${maxDiff}` as Key).toLowerCase()})` : t(DIFFS[diff].k)}</span>
             <span>{labelMode(modeEffectif)}</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}><Icon d={ICONS.timer} size={18} />{chrono ? `${duree} s / question` : t('cfg.zen')}</span>
           </div>

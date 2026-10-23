@@ -127,3 +127,7 @@ button { font-family: inherit; }
 }
 
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+
+/* Choix Légende : doré, il doit donner envie */
+.choice.legende { background: linear-gradient(135deg, var(--his-t), var(--surface)); border-color: var(--his); color: var(--his-i); }
+.choice.legende[aria-pressed="true"] { background: var(--his-t); border: 2px solid var(--his); box-shadow: 0 0 0 4px var(--his-t); }

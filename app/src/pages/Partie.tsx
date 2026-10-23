@@ -3,8 +3,9 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { enregistrerPartie, jour, useAuth } from '../auth'
 import { usePrefs } from '../i18n'
 import { trouverSousTheme } from '../themes'
-import { calculerXp, difficulteAuto, distanceKm, genererPartie, type Difficulte, type Mode, type Question, type SousThemeId } from '../quiz/engine'
+import { calculerXp, distanceKm, genererPartie, type Difficulte, type Mode, type Question, type SousThemeId } from '../quiz/engine'
 import { estCorrect } from '../quiz/match'
+import { memoriser } from '../quiz/memoire'
 import { retourFin, retourReponse } from '../retour'
 import { PRIX_INDICE, payerIndice, piecesGagnees, plafonner } from '../progression'
 import { Coche, Croix, ICONS, Icon, Logo, Piece } from '../components/ui'
@@ -27,12 +28,15 @@ export default function Partie() {
   const mode = (params.get('m') ?? 'qcm') as Mode
   const nombre = Number(params.get('n') ?? 10)
   const diffChoisie = Number(params.get('d') ?? 0) as Difficulte
-  const chrono = Number(params.get('t') ?? 0)
+  const legende = Number(params.get('d') ?? 0) === 5
+  // Légende : chrono de 12 s imposé
+  const chrono = legende ? 12 : Number(params.get('t') ?? 0)
   const defi = params.get('defi') === '1'
   const revision = params.get('rev') === '1'
   const rapide = params.get('r') === '1' // mode rapide : pas de fiche, question suivante automatique
   const seed = defi ? Number(jour().replace(/-/g, '')) : undefined
-  const difficulte = diffChoisie || plafonner(difficulteAuto(profile?.maitrise?.[sousTheme]), profile)
+  const difficulte = diffChoisie // 0 = tout mélangé
+  const max = plafonner(4, profile) // difficulté la plus haute débloquée
   const k = trouverSousTheme(sousTheme)?.famille.k ?? 'geo'
 
   const [questions, setQuestions] = useState<Question[] | null>(null)
@@ -53,8 +57,8 @@ export default function Partie() {
     setSaisie('')
     setRestant(chrono)
     setFini(false)
-    genererPartie({ sousTheme, difficulte, nombre, mode, lang, ids, seed: ids ? undefined : seed }).then(setQuestions)
-  }, [sousTheme, difficulte, nombre, mode, lang, chrono, seed])
+    genererPartie({ sousTheme, difficulte, max, nombre, mode, lang, ids, seed: ids ? undefined : seed }).then(setQuestions)
+  }, [sousTheme, difficulte, max, nombre, mode, lang, chrono, seed])
 
   // Une partie est générée une seule fois, à l'ouverture
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -67,7 +71,8 @@ export default function Partie() {
     if (!q || reponses[i]) return
     setReponses((prev) => [...prev, { q, ...r }])
     retourReponse(r.juste)
-  }, [q, i, reponses])
+    memoriser(sousTheme, q.id, r.juste) // ratée : reviendra ; réussie plusieurs fois : mise de côté un temps
+  }, [q, i, reponses, sousTheme])
 
   const repondre = useCallback((donnee: string) => {
     if (!q) return
@@ -125,13 +130,13 @@ export default function Partie() {
   const bonnes = reponses.filter((r) => r.juste).length
   // Les questions sur carte valent autant que la saisie libre
   // Défi du jour : XP doublés
-  const pieces = piecesGagnees(bonnes, questions?.length ?? 0, defi)
-  const xp = calculerXp(bonnes, q?.carte && !q.options.length ? 'libre' : mode, difficulte) * (defi ? 2 : 1)
+  const pieces = piecesGagnees(bonnes, questions?.length ?? 0, defi) * (legende ? 2 : 1)
+  const xp = calculerXp(bonnes, q?.carte && !q.options.length ? 'libre' : mode, difficulte || 2) * (defi || legende ? 2 : 1)
   const enregistre = useRef(false)
   useEffect(() => {
     if (!fini || enregistre.current || !user || !profile || !questions) return
     enregistre.current = true
-    enregistrerPartie(user.uid, profile, { sousTheme, xp, pieces, defi, revision, resultats: reponses.map((r) => ({ id: r.q.id, juste: r.juste })) }).catch(console.error)
+    enregistrerPartie(user.uid, profile, { sousTheme, xp, pieces, defi, revision, difficulte, resultats: reponses.map((r) => ({ id: r.q.id, juste: r.juste })) }).catch(console.error)
   }, [fini, user, profile, sousTheme, xp, pieces, defi, revision, reponses, questions])
 
   if (!questions) return <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center' }}><Logo width={72} /></div>
@@ -236,7 +241,7 @@ export default function Partie() {
         )}
 
         {/* Indice payant : 50/50 en QCM, première lettre en saisie libre */}
-        {!courante && !q.carte && (indice?.i === i ? (
+        {!courante && !q.carte && !legende && (indice?.i === i ? (
           indice.lettre && <p className="rise" style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 700, color: 'var(--his-i)' }}><Icon d={ICONS.bulb} size={20} />{indice.lettre}</p>
         ) : (
           <button type="button" className="btn btn-s" onClick={demanderIndice} style={{ minHeight: 44, gap: 8 }}>
@@ -310,8 +315,9 @@ function Resultat({ reponses, xp, pieces, k, onReplay }: { reponses: Reponse[]; 
             <div><div className="t" style={{ fontSize: 44, fontWeight: 900, color: 'var(--his-i)', display: 'flex', alignItems: 'center', gap: 8 }}><Piece size={36} />+{pieces}</div><div style={{ color: 'var(--muted)' }}>{lang === 'fr' ? 'pièces' : 'coins'}</div></div>
           </div>
           <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center', position: 'relative' }}>
-            {erreurs.length > 0 && <button className="btn btn-p" onClick={() => onReplay(erreurs.map((r) => r.q.id))}>{t('res.errors')}</button>}
-            <button className="btn btn-s" onClick={() => onReplay()}>{t('res.replay')}</button>
+            {/* Rejouer : mêmes réglages, nouvelles questions (la mémoire évite de reposer les mêmes) */}
+            <button className="btn btn-p btn-lg" onClick={() => onReplay()} autoFocus>{t('res.replay')}<Icon d={ICONS.review} /></button>
+            {erreurs.length > 0 && <button className="btn btn-s btn-lg" onClick={() => onReplay(erreurs.map((r) => r.q.id))}>{t('res.errors')}</button>}
             <Link className="btn btn-g" to="/">{t('res.home')}</Link>
           </div>
         </section>

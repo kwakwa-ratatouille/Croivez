@@ -1,5 +1,6 @@
 import type { Lang } from '../i18n'
 import { PIEGES_CAPITALES, piegesSymbole, sosiesDe } from './pieges'
+import { prioriser } from './memoire'
 
 export type Pays = {
   id: string
@@ -16,7 +17,11 @@ export type Pays = {
 export type Ville = [string, number, number, number, string]
 
 export type Mode = 'qcm' | 'libre'
-export type Difficulte = 0 | 1 | 2 | 3 | 4 // 0 = auto
+export type Difficulte = 0 | 1 | 2 | 3 | 4 | 5 // 0 = tout (toutes débloquées mélangées) ; 5 = Légende
+export const LEGENDE = 5
+// Légende : 6 propositions au lieu de 4, toutes piégeuses
+const nbLeurres = (d: Difficulte) => (d === LEGENDE ? 5 : 3)
+export type Palier = 1 | 2 | 3 | 4
 
 export type SousThemeId = 'drapeaux' | 'drapeaux-inverse' | 'capitales' | 'capitales-inverse' | 'villes-fr' | 'villes-monde' | 'pays-carte' | CultureId
 
@@ -121,9 +126,6 @@ async function pack<T>(nom: string): Promise<T> {
 }
 export const chargerPays = async () => (await pack<{ pays: Pays[] }>('pays.json')).pays
 
-export function difficulteAuto(maitrise = 0): 1 | 2 | 3 | 4 {
-  return maitrise < 30 ? 1 : maitrise < 55 ? 2 : maitrise < 80 ? 3 : 4
-}
 
 const melanger = <T,>(arr: T[]) => {
   const a = [...arr]
@@ -179,10 +181,10 @@ function distracteurs(cible: Pays, pool: Pays[], n: number, tous: Pays[] = [], s
 }
 
 // Capitales : la plus grande ville du pays (Sydney pour l'Australie…) remplace un leurre quand elle existe
-function optionsCapitale(p: Pays, autres: Pays[], lang: Lang): Option[] {
+function optionsCapitale(p: Pays, autres: Pays[], lang: Lang, n = 3): Option[] {
   const pieges = (PIEGES_CAPITALES[p.id] ?? []).map(([fr, en]) => (lang === 'fr' ? fr : en))
   const leurres = [...melanger(pieges).slice(0, 2), ...autres.map((x) => x.capitale![lang])]
-  const uniques = [...new Set(leurres)].filter((l) => l !== p.capitale![lang]).slice(0, 3)
+  const uniques = [...new Set(leurres)].filter((l) => l !== p.capitale![lang]).slice(0, n)
   return melanger([p.capitale![lang], ...uniques]).map((label) => ({ label }))
 }
 
@@ -192,7 +194,29 @@ export function distanceKm([lat1, lng1]: [number, number], [lat2, lng2]: [number
   return 6371 * 2 * Math.asin(Math.sqrt(a))
 }
 
-type Opts = { sousTheme: SousThemeId; difficulte: 1 | 2 | 3 | 4; nombre: number; mode: Mode; lang: Lang; ids?: string[]; seed?: number }
+// max : difficulté la plus haute débloquée (pour le mode Tout)
+type Opts = { sousTheme: SousThemeId; difficulte: Difficulte; max?: Palier; nombre: number; mode: Mode; lang: Lang; ids?: string[]; seed?: number }
+
+// Paliers cumulatifs : chaque difficulté contient celles d'en dessous, mais 60 % des questions
+// viennent de son propre palier (Expert = surtout du très pointu). Mode Tout : tout ce qui est débloqué.
+// Le choix suit la mémoire de l'appareil : jamais vu ou raté d'abord, bien su mis de côté un temps.
+function tirer<T>(liste: T[], fin: (d: Palier) => number, o: Opts, idDe: (x: T) => string): { cibles: T[]; pool: T[] } {
+  const max = o.max ?? 4
+  const d = o.difficulte
+  const haut = d === 0 ? max : d === LEGENDE ? 4 : d
+  const pool = liste.slice(0, fin(haut))
+  if (o.ids) return { cibles: liste.filter((x) => o.ids!.includes(idDe(x))), pool }
+  const debut = d === LEGENDE ? fin(3) : d <= 1 ? 0 : fin((d - 1) as Palier)
+  const palier = liste.slice(debut, fin(haut))
+  const dessous = liste.slice(0, debut)
+  // Défi du jour et duels (graine) : même tirage pour tout le monde, sans la mémoire personnelle
+  const trier = (l: T[]) => (o.seed ? melanger(l) : prioriser(o.sousTheme, l, idDe, rand))
+  const nPalier = dessous.length && d !== LEGENDE ? Math.ceil(o.nombre * 0.6) : o.nombre
+  let cibles = [...trier(palier).slice(0, nPalier), ...trier(dessous).slice(0, o.nombre - Math.min(nPalier, palier.length))]
+  if (cibles.length < o.nombre) cibles = [...cibles, ...trier(pool.filter((x) => !cibles.includes(x)))].slice(0, o.nombre)
+  return { cibles: melanger(cibles), pool }
+}
+const palierDe = (d: Difficulte): Palier => (d === 0 ? 2 : d === LEGENDE ? 4 : d)
 
 // Générateur pseudo-aléatoire reproductible (mulberry32) : même graine = mêmes questions pour tout le monde
 function mulberry32(a: number) {
@@ -217,17 +241,17 @@ export async function genererPartie(o: Opts): Promise<Question[]> {
   return questionsPays(o, tous)
 }
 
-function questionsPays({ sousTheme, difficulte, nombre, mode: modeChoisi, lang, ids }: Opts, tous: Pays[]): Question[] {
+function questionsPays(o: Opts, tous: Pays[]): Question[] {
+  const { sousTheme, mode: modeChoisi, lang } = o
   const avecCapitale = sousTheme.startsWith('capitales')
   const avecCarte = sousTheme === 'pays-carte'
   const valides = tous.filter((p) => (!avecCapitale || p.capitale) && (!avecCarte || p.num))
-  const pool = valides.slice(0, POOL_PAYS[difficulte])
-  const cibles = ids ? valides.filter((p) => ids.includes(p.id)) : melanger(pool).slice(0, nombre)
+  const { cibles, pool } = tirer(valides, (d) => Math.min(valides.length, POOL_PAYS[d]), o, (p) => p.id)
   const mode = sousTheme === 'drapeaux-inverse' ? 'qcm' : modeChoisi
 
   return cibles.map((p): Question => {
     const nom = (x: Pays) => x.nom[lang]
-    const autres = mode === 'qcm' ? distracteurs(p, pool.length >= 4 ? pool : valides, 3, valides, sousTheme.startsWith('drapeaux')) : []
+    const autres = mode === 'qcm' ? distracteurs(p, pool.length >= 4 ? pool : valides, nbLeurres(o.difficulte), valides, sousTheme.startsWith('drapeaux')) : []
     const melange = melanger([p, ...autres])
     const base = { id: p.id, imagesOnly: false, fiche: fichePays(p, tous, lang), acceptees: [p.nom.fr, p.nom.en, ...(p.alias ?? [])], reponse: nom(p) }
     switch (sousTheme) {
@@ -237,7 +261,7 @@ function questionsPays({ sousTheme, difficulte, nombre, mode: modeChoisi, lang, 
         return { ...base, enonce: lang === 'fr' ? `Quel est le drapeau de ce pays : ${p.nom.fr} ?` : `Which flag belongs to ${p.nom.en}?`, imagesOnly: true, options: melange.map((x) => ({ label: nom(x), image: drapeau(x.id) })) }
       case 'capitales':
         // Le drapeau illustre la question sans donner la capitale
-        return { ...base, image: drapeau(p.id, 640), enonce: lang === 'fr' ? `Quelle est la capitale de ce pays : ${p.nom.fr} ?` : `What is the capital of ${p.nom.en}?`, reponse: p.capitale![lang], acceptees: [p.capitale!.fr, p.capitale!.en], options: mode === 'qcm' ? optionsCapitale(p, autres, lang) : [] }
+        return { ...base, image: drapeau(p.id, 640), enonce: lang === 'fr' ? `Quelle est la capitale de ce pays : ${p.nom.fr} ?` : `What is the capital of ${p.nom.en}?`, reponse: p.capitale![lang], acceptees: [p.capitale!.fr, p.capitale!.en], options: mode === 'qcm' ? optionsCapitale(p, autres, lang, nbLeurres(o.difficulte)) : [] }
       case 'capitales-inverse':
         return { ...base, enonce: lang === 'fr' ? `${p.capitale!.fr} est la capitale de quel pays ?` : `${p.capitale!.en} is the capital of which country?`, options: mode === 'qcm' ? melange.map((x) => ({ label: nom(x) })) : [] }
       default: // pays-carte : QCM = pays surligné à nommer, libre = cliquer le pays
@@ -248,11 +272,13 @@ function questionsPays({ sousTheme, difficulte, nombre, mode: modeChoisi, lang, 
   })
 }
 
-async function villesFrance({ difficulte, nombre, lang, ids }: Opts): Promise<Question[]> {
+async function villesFrance(o: Opts): Promise<Question[]> {
+  const { lang } = o
+  const difficulte = palierDe(o.difficulte)
   const { deps, villes } = await pack<{ deps: Record<string, string>; villes: Ville[] }>('villes-fr.json')
   const idDe = (v: Ville) => `${v[0]}|${v[4]}`
-  const pool = villes.filter((v) => v[1] >= MIN_FR[difficulte]).slice(0, difficulte === 4 ? Infinity : 4000)
-  const cibles = ids ? villes.filter((v) => ids.includes(idDe(v))) : melanger(pool).slice(0, nombre)
+  const finSeuil = (d: Palier) => { const i = villes.findIndex((v) => v[1] < MIN_FR[d]); return i < 0 ? villes.length : i }
+  const { cibles } = tirer(villes, finSeuil, o, idDe)
   const fmt = new Intl.NumberFormat(lang === 'fr' ? 'fr-FR' : 'en-GB')
   return cibles.map(([nom, pop, lat, lng, dep]) => {
     const rang = villes.findIndex((v) => v[0] === nom && v[4] === dep) + 1
@@ -269,12 +295,14 @@ async function villesFrance({ difficulte, nombre, lang, ids }: Opts): Promise<Qu
   })
 }
 
-async function villesMonde({ difficulte, nombre, lang, ids }: Opts, tous: Pays[]): Promise<Question[]> {
+async function villesMonde(o: Opts, tous: Pays[]): Promise<Question[]> {
+  const { lang } = o
   const { villes } = await pack<{ villes: Ville[] }>('villes-monde.json')
   const parCode = new Map(tous.map((p) => [p.id, p]))
   const idDe = (v: Ville) => `${v[0]}|${v[4]}`
-  const pool = villes.filter((v) => v[1] >= MIN_MONDE[difficulte] && parCode.get(v[4])?.num)
-  const cibles = ids ? villes.filter((v) => ids.includes(idDe(v))) : melanger(pool).slice(0, nombre)
+  const avecCarte = villes.filter((v) => parCode.get(v[4])?.num)
+  const finSeuil = (d: Palier) => { const i = avecCarte.findIndex((v) => v[1] < MIN_MONDE[d]); return i < 0 ? avecCarte.length : i }
+  const { cibles } = tirer(avecCarte, finSeuil, o, idDe)
   const fmt = new Intl.NumberFormat(lang === 'fr' ? 'fr-FR' : 'en-GB')
   return cibles.map(([nom, pop, lat, lng, cc]) => {
     const p = parCode.get(cc)!
@@ -301,17 +329,20 @@ async function villesMonde({ difficulte, nombre, lang, ids }: Opts, tous: Pays[]
 const POOL_CULTURE = { 1: 60, 2: 150, 3: 300, 4: Infinity } as const
 const texte = (v: string | Texte | undefined, lang: Lang) => (v === undefined ? '' : typeof v === 'string' ? v : v[lang])
 
-function culture({ sousTheme, difficulte, nombre, mode, lang, ids }: Opts, tousItems: ItemCulture[]): Question[] {
+function culture(o: Opts, tousItems: ItemCulture[]): Question[] {
+  const { sousTheme, mode, lang } = o
+  const difficulte = palierDe(o.difficulte)
   const cfg = CULTURE[sousTheme as CultureId] as { type: TypeCulture; montrer?: boolean; champ?: string; q: Record<Lang, (nom: string, genre?: string) => string> }
   // Question dérivée (année d'un film, pays d'une personnalité…) : la réponse vient d'un champ annexe
   const val = (it: ItemCulture) => (cfg.champ ? it.x?.[cfg.champ] : it.r)
   // Traduction identique au mot français (« sari » → « sari ») : question sans intérêt, on l'écarte
   const simple = (v: string) => v.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
   const items = cfg.type === 'image' ? tousItems : tousItems.filter((it) => val(it) && !(sousTheme.startsWith('traduction') && simple(texte(val(it), 'fr')) === simple(it.n.fr)))
-  const pool = items.slice(0, POOL_CULTURE[difficulte])
-  const cibles = ids ? items.filter((it) => ids.includes(it.id)) : melanger(pool).slice(0, nombre)
+  const { cibles, pool } = tirer(items, (d) => Math.min(items.length, POOL_CULTURE[d]), o, (it) => it.id)
   // Années proposées autour de la bonne : à 1 ou 2 ans près en difficile
-  const ecarts = { 1: [-15, -10, -7, -5, 5, 7, 10, 15], 2: [-6, -4, -3, -2, 2, 3, 4, 6], 3: [-3, -2, -1, 1, 2, 3], 4: [-2, -1, 1, 2] }[difficulte]
+  // Légende : toutes les années à 1, 2 ou 3 ans près
+  const ecarts = o.difficulte === LEGENDE ? [-3, -2, -1, 1, 2, 3] : { 1: [-15, -10, -7, -5, 5, 7, 10, 15], 2: [-6, -4, -3, -2, 2, 3, 4, 6], 3: [-3, -2, -1, 1, 2, 3], 4: [-2, -1, 1, 2] }[difficulte]
+  const nb = nbLeurres(o.difficulte)
   const symboles = sousTheme === 'elements' ? items.map((x) => texte(val(x), lang)) : []
 
   return cibles.map((it): Question => {
@@ -328,20 +359,21 @@ function culture({ sousTheme, difficulte, nombre, mode, lang, ids }: Opts, tousI
         for (const d of melanger(ecarts)) {
           const y = String(Number(reponse) + d)
           if (!vus.has(y)) { vus.add(y); autres.push(y) }
-          if (autres.length === 3) break
+          if (autres.length === nb) break
         }
       } else if (sousTheme === 'elements') {
         for (const s of melanger(piegesSymbole(it.n.fr, it.n.en, reponse, symboles))) {
           if (!vus.has(s)) { vus.add(s); autres.push(s) }
-          if (autres.length === 3) break
+          if (autres.length === nb) break
         }
       } else {
         // Distracteurs du même groupe d'abord (même genre, même classe d'animaux…)
-        const cand = [...melanger(pool.filter((x) => x.g && x.g === it.g)), ...melanger(pool.length >= 4 ? pool : items)]
+        const memes = melanger((o.difficulte === LEGENDE ? items : pool).filter((x) => x.g && x.g === it.g))
+        const cand = [...memes, ...melanger(pool.length >= 4 ? pool : items)]
         for (const x of cand) {
           const v = cfg.type === 'image' ? x.n[lang] : texte(val(x), lang)
           if (v && !vus.has(v)) { vus.add(v); autres.push(v) }
-          if (autres.length === 3) break
+          if (autres.length === nb) break
         }
       }
       options = melanger([reponse, ...autres]).map((label) => ({ label }))
