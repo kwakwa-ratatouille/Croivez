@@ -1,3 +1,4 @@
+import { appliquerEffets } from '../effets'
 import { doc, setDoc } from 'firebase/firestore'
 import { db } from '../firebase'
 import { pseudoCle } from '../social'
@@ -59,6 +60,7 @@ export default function Layout() {
   const uid = profile ? auth.currentUser?.uid : undefined
   useEffect(() => { if (uid) reclamerParrainages(uid).catch(() => {}) }, [uid])
   // Rappels du lendemain (série, quiz du jour, révisions), replanifiés à chaque ouverture
+  useEffect(() => { appliquerEffets(profile) }, [profile?.couleurApp, profile?.victoire, profile?.sonReponse]) // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { if (profile) planifierRappels(profile).catch(() => {}) }, [profile?.dernierJour, profile?.serie]) // eslint-disable-line react-hooks/exhaustive-deps
   // Demande du créateur : le solde de « Victor la tortue » est remis à 1 400 pièces (une seule fois, la pénalité ne s'applique plus)
   useEffect(() => {

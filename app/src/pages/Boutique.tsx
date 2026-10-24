@@ -1,3 +1,4 @@
+import { feter, sonReponse } from '../effets'
 import { useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { doc, deleteField, setDoc } from 'firebase/firestore'
@@ -9,11 +10,11 @@ import Avatar from '../components/Avatar'
 import { Particules, Pseudo, fondAnime } from '../components/Cosmetiques'
 import { ICONS, Icon, Piece, Pieces } from '../components/ui'
 
-type Onglet = 'avatar' | 'cadre' | 'fond' | 'pseudo' | 'titre'
-const ONGLETS: Onglet[] = ['avatar', 'cadre', 'fond', 'pseudo', 'titre']
+type Onglet = 'avatar' | 'cadre' | 'fond' | 'pseudo' | 'titre' | 'effet'
+const ONGLETS: Onglet[] = ['avatar', 'cadre', 'fond', 'pseudo', 'titre', 'effet']
 const NOMS_ONGLETS: Record<Onglet, Record<Lang, string>> = {
   avatar: { fr: 'Avatars', en: 'Avatars' }, cadre: { fr: 'Cadres', en: 'Frames' }, fond: { fr: 'Vitrines', en: 'Showcases' },
-  pseudo: { fr: 'Pseudos', en: 'Names' }, titre: { fr: 'Titres', en: 'Titles' },
+  pseudo: { fr: 'Pseudos', en: 'Names' }, titre: { fr: 'Titres', en: 'Titles' }, effet: { fr: 'Effets', en: 'Effects' },
 }
 type Vue = 'tout' | 'moi' | 'acheter' | 'gagner'
 type Tri = 'conseil' | 'prix-' | 'prix+' | 'nom'
@@ -68,7 +69,7 @@ export default function Boutique() {
   const valeur = (o: Objet) => (o.jetons ? o.jetons * 200 : o.prix)
   const Prix = ({ o }: { o: Objet }) => o.jetons ? <span className="prix-jetons">🎖️ {o.jetons}</span> : <><Piece size={15} />{o.prix.toLocaleString(fr ? 'fr-FR' : 'en-GB')}</>
 
-  const equipe = (o: Objet) => ({ avatar: profile?.avatar, cadre: profile?.cadre, titre: profile?.titre, fond: profile?.vitrineFond, pseudo: profile?.pseudoStyle })[o.type] === o.id
+  const equipe = (o: Objet) => ({ avatar: profile?.avatar, cadre: profile?.cadre, titre: profile?.titre, fond: profile?.vitrineFond, pseudo: profile?.pseudoStyle, effet: o.sorte === 'couleur' ? (profile?.couleurApp || 'couleur-defaut') : o.sorte === 'son' ? (profile?.sonReponse || 'son-classique') : (profile?.victoire || 'victoire-confettis') })[o.type] === o.id
   const retirerTitre = async () => {
     if (!user) return
     await Promise.all([setDoc(doc(db, 'users', user.uid), { titre: deleteField() }, { merge: true }), setDoc(doc(db, 'profils', user.uid), { titre: '' }, { merge: true })])
@@ -82,6 +83,8 @@ export default function Boutique() {
   }
   const toucher = async (o: Objet) => {
     setMsg('')
+    if (o.type === 'effet' && o.sorte === 'son') sonReponse(true, o.id)
+    if (o.type === 'effet' && o.sorte === 'victoire') feter(o.id, 1)
     if (possede(profile, o) && user) { if (!equipe(o)) await equiper(user.uid, o); return }
     setConfirmer(false)
     setChoisi(o)
@@ -108,7 +111,9 @@ export default function Boutique() {
 
   const nb = (l: Objet[]) => `${l.filter((o) => possede(profile, o)).length} / ${l.length}`
 
-  const Apercu = ({ o, taille = 76 }: { o: Objet; taille?: number }) => o.type === 'fond'
+  const Apercu = ({ o, taille = 76 }: { o: Objet; taille?: number }) => o.type === 'effet'
+    ? <span className={`apercu-effet effet-${o.sorte}`} data-couleur-apercu={o.sorte === 'couleur' ? o.id.replace('couleur-', '') : undefined}>{o.emoji}</span>
+    : o.type === 'fond'
     ? (() => { const f = fondAnime(o.id); return f ? <span className="apercu-fond" style={{ background: f.fond }}><Particules f={f} nb={8} /></span> : null })()
     : o.type === 'pseudo' ? <span className="apercu-pseudo t"><Pseudo nom={profile?.pseudo || 'Croivez'} style={o.id} /></span>
       : o.type === 'titre' ? <span className={`apercu-titre t${o.anim ? ' titre-affiche ' + o.anim.split(' ').map((x) => 'titre-fx-' + x).join(' ') : ''}`}>{o.nom[lang]}</span>
@@ -136,7 +141,10 @@ export default function Boutique() {
     : onglet === 'avatar'
       // Avatars : par catégorie (métiers, animaux, fun, familles), le luxe à part
       ? [...CATEGORIES.map((c) => ({ g: { k: c.k, nom: c.nom, emoji: c.emoji }, l: liste.filter((o) => o.categorie === c.k && !o.luxe) })), { g: { k: 'luxe', nom: { fr: 'Luxe et ultra', en: 'Luxury & ultra' }, emoji: '👑' }, l: liste.filter((o) => o.luxe) }].filter((s) => s.l.length)
-      : ORIGINES.map((g) => ({ g, l: liste.filter((o) => origine(o) === g.k) })).filter((s) => s.l.length)
+      : onglet === 'effet'
+        // Effets : thèmes de couleur, fêtes de victoire, sons
+        ? ([['couleur', { fr: 'Thèmes de couleur', en: 'Colour themes' }, '🎨'], ['victoire', { fr: 'Fêtes de victoire', en: 'Victory effects' }, '🎉'], ['son', { fr: 'Sons des réponses', en: 'Answer sounds' }, '🔊']] as const).map(([k, nom, emoji]) => ({ g: { k, nom, emoji }, l: liste.filter((o) => o.sorte === k) })).filter((s) => s.l.length)
+        : ORIGINES.map((g) => ({ g, l: liste.filter((o) => origine(o) === g.k) })).filter((s) => s.l.length)
 
   return (
     <>
@@ -161,7 +169,7 @@ export default function Boutique() {
         {ONGLETS.map((id) => {
           const l = BOUTIQUE.filter((o) => o.type === id && !o.cache && !!o.jetons === rangs)
           if (!l.length) return null
-          return <button key={id} type="button" role="tab" aria-selected={onglet === id} className="tuile-boutique" onClick={() => { setOnglet(id); setCat(''); setMsg('') }}><span>{{ avatar: '🧑‍🎨', cadre: '🖼️', fond: '🌈', pseudo: '✍️', titre: '🏷️' }[id]}</span><strong>{NOMS_ONGLETS[id][lang]}</strong><small>{nb(l)}</small></button>
+          return <button key={id} type="button" role="tab" aria-selected={onglet === id} className="tuile-boutique" onClick={() => { setOnglet(id); setCat(''); setMsg('') }}><span>{{ avatar: '🧑‍🎨', cadre: '🖼️', fond: '🌈', pseudo: '✍️', titre: '🏷️', effet: '✨' }[id]}</span><strong>{NOMS_ONGLETS[id][lang]}</strong><small>{nb(l)}</small></button>
         })}
       </div>
 

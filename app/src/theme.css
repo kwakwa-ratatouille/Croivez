@@ -1716,3 +1716,44 @@ button.rang-palier[aria-pressed="true"] { background: color-mix(in srgb, var(--r
 .signaler-menu button { border: 0; background: none; text-align: left; padding: 8px 10px; border-radius: 8px; font: 700 14px Nunito, sans-serif; color: var(--text); cursor: pointer; }
 .signaler-menu button:hover { background: var(--surface2); }
 .signaler-ok { font-size: 13px; font-weight: 700; color: var(--ok); }
+
+/* ——— Thèmes de couleur achetés (priment sur clair / sombre) ——— */
+:root[data-couleur="ocean"][data-couleur] { --bg:#EEF6FB; --surface:#FFFFFF; --surface2:#DDEEF7; --line:#C6E0EE; --text:#0F2D40; --muted:#4B6B7E; --primary:#0E6BA8; --on-primary:#fff; }
+:root[data-couleur="menthe"][data-couleur] { --bg:#EFF8F3; --surface:#FFFFFF; --surface2:#DCF0E5; --line:#C3E4D2; --text:#163A2A; --muted:#4E6E5E; --primary:#1F8A5B; --on-primary:#fff; }
+:root[data-couleur="lavande"][data-couleur] { --bg:#F5F2FC; --surface:#FFFFFF; --surface2:#EAE3F8; --line:#DAD0F0; --text:#2D2148; --muted:#665B80; --primary:#6D4AC9; --on-primary:#fff; }
+:root[data-couleur="bonbon"][data-couleur] { --bg:#FFF2F8; --surface:#FFFFFF; --surface2:#FDE1EE; --line:#F8CDE0; --text:#4A1530; --muted:#8A4F6B; --primary:#E0367F; --on-primary:#fff; }
+:root[data-couleur="papier"][data-couleur] { --bg:#F3E9D2; --surface:#FBF4E4; --surface2:#EADCBC; --line:#D9C59C; --text:#3E2E14; --muted:#75613F; --primary:#7A4E1D; --on-primary:#FBF4E4; }
+:root[data-couleur="foret"][data-couleur] { --bg:#0F1D17; --surface:#16291F; --surface2:#1F3A2C; --line:#2A4A39; --text:#E4F1E8; --muted:#A3BFAE; --primary:#7FD1A2; --on-primary:#0F1D17; }
+:root[data-couleur="neon"][data-couleur] { --bg:#0A0816; --surface:#140F2A; --surface2:#1E1740; --line:#33275E; --text:#F3EEFF; --muted:#B2A6D6; --primary:#F472D0; --on-primary:#0A0816; }
+:root[data-couleur="or"][data-couleur] { --bg:#0D0B08; --surface:#1A1610; --surface2:#262016; --line:#3D3220; --text:#F7EEDB; --muted:#C2B08A; --primary:#E9B949; --on-primary:#1A1610; }
+:root[data-couleur="neon"] .card, :root[data-couleur="or"] .card { box-shadow: 0 0 0 1px var(--line), 0 10px 30px rgba(0,0,0,.35); }
+
+/* Aperçu d'un effet en boutique : une pastille compacte */
+.apercu-effet { width: 64px; height: 64px; border-radius: 18px; display: grid; place-items: center; font-size: 32px; background: linear-gradient(135deg, var(--surface2), var(--surface)); border: 1px solid var(--line); }
+.apercu-effet.effet-son { border-radius: 50%; }
+.apercu-effet[data-couleur-apercu="ocean"] { background: linear-gradient(135deg, #DDEEF7 50%, #0E6BA8 50%); }
+.apercu-effet[data-couleur-apercu="menthe"] { background: linear-gradient(135deg, #DCF0E5 50%, #1F8A5B 50%); }
+.apercu-effet[data-couleur-apercu="lavande"] { background: linear-gradient(135deg, #EAE3F8 50%, #6D4AC9 50%); }
+.apercu-effet[data-couleur-apercu="bonbon"] { background: linear-gradient(135deg, #FDE1EE 50%, #E0367F 50%); }
+.apercu-effet[data-couleur-apercu="papier"] { background: linear-gradient(135deg, #F3E9D2 50%, #7A4E1D 50%); }
+.apercu-effet[data-couleur-apercu="foret"] { background: linear-gradient(135deg, #16291F 50%, #7FD1A2 50%); }
+.apercu-effet[data-couleur-apercu="neon"] { background: linear-gradient(135deg, #140F2A 50%, #F472D0 50%); }
+.apercu-effet[data-couleur-apercu="or"] { background: linear-gradient(135deg, #1A1610 50%, #E9B949 50%); }
+.tuiles-boutique { grid-template-columns: repeat(6, minmax(0, 1fr)) !important; }
+@media (max-width: 560px) { .tuiles-boutique { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; } }
+
+/* ——— Fêtes de victoire ——— */
+.confettis .goutte { position: absolute; top: -40px; animation-name: fete-chute; animation-timing-function: cubic-bezier(.3,.5,.5,1); animation-fill-mode: forwards; }
+@keyframes fete-chute { to { transform: translateY(110vh) rotate(var(--rot, 180deg)); } }
+.confettis .eclat { position: absolute; width: 5px; height: 5px; border-radius: 50%; opacity: 0; animation: fete-eclat 1.3s cubic-bezier(.1,.7,.3,1) forwards; }
+@keyframes fete-eclat { 0% { opacity: 1; transform: translate(0, 0) scale(1.4); } 80% { opacity: 1; } 100% { opacity: 0; transform: translate(var(--dx), calc(var(--dy) + 40px)) scale(.4); } }
+.confettis .onde { position: absolute; left: 50%; top: 50%; width: 40px; height: 40px; margin: -20px; border-radius: 50%; border: 4px solid; opacity: 0; animation: fete-onde 1.4s ease-out forwards; }
+@keyframes fete-onde { 0% { opacity: 1; transform: scale(.2); } 100% { opacity: 0; transform: scale(30); border-width: 1px; } }
+.confettis .arc { position: absolute; left: -10%; right: -10%; top: 30%; height: 38vh; border-radius: 50% 50% 0 0 / 100% 100% 0 0; background: radial-gradient(ellipse at 50% 100%, transparent 52%, #A855F7 53% 56%, #3B82F6 56% 59%, #22C55E 59% 62%, #FACC15 62% 65%, #F97316 65% 68%, #EF4444 68% 71%, transparent 72%); clip-path: inset(0 100% 0 0); opacity: .85; animation: fete-arc 2.6s ease-out forwards; }
+@keyframes fete-arc { 0% { clip-path: inset(0 100% 0 0); } 45% { clip-path: inset(0 0 0 0); opacity: .85; } 100% { clip-path: inset(0 0 0 0); opacity: 0; } }
+.confettis .paillette { position: absolute; color: #fff; font-size: 18px; text-shadow: 0 0 8px #FDE047; opacity: 0; animation: fete-paillette 1.2s ease-in-out forwards; }
+@keyframes fete-paillette { 0%, 100% { opacity: 0; transform: scale(.3); } 50% { opacity: 1; transform: scale(1.2) rotate(90deg); } }
+.confettis .couronne { position: absolute; left: 50%; top: 30%; font-size: 110px; transform: translate(-50%, -200%); filter: drop-shadow(0 0 30px #FDE047); animation: fete-couronne 3s cubic-bezier(.3,1.4,.5,1) forwards; }
+@keyframes fete-couronne { 0% { transform: translate(-50%, -200%) rotate(-20deg); } 35% { transform: translate(-50%, 0) rotate(0); } 80% { opacity: 1; transform: translate(-50%, 0) scale(1.1); } 100% { opacity: 0; transform: translate(-50%, 0) scale(1.4); } }
+.fete-royale::before { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at 50% 40%, rgba(253, 224, 71, .35), transparent 60%); animation: fete-lueur 3s ease-out forwards; }
+@keyframes fete-lueur { 0% { opacity: 0; } 30% { opacity: 1; } 100% { opacity: 0; } }

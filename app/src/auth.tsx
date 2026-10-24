@@ -50,6 +50,7 @@ export type Profile = {
   bio?: string // phrase de la vitrine
   vitrineFond?: string // fond de la vitrine (dégradé ou fond animé « fond-… »)
   pseudoStyle?: string // style du pseudo acheté en boutique
+  couleurApp?: string; victoire?: string; sonReponse?: string // effets portés (thème de couleur, fête de victoire, son des réponses)
   caisses?: number // caisses ouvertes (le prix augmente avec)
   jetons?: number // jetons de rang (boutique des rangs)
   ligue?: EtatLigue // rang : points de rang, dernier jour joué, semaine en cours, semaines finies par rang

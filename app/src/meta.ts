@@ -1,3 +1,4 @@
+import { CHAMP_EFFET, EFFETS as EFFETS_BOUTIQUE, type Sorte } from './effets'
 import { PORTRAITS } from './components/Portrait'
 import { arrayUnion, doc, increment, runTransaction, setDoc } from 'firebase/firestore'
 import { db } from './firebase'
@@ -94,7 +95,7 @@ export const secretsObtenus = (p: Profile | null | undefined, c: ContexteFin) =>
 // Certains s'achètent avec des pièces, d'autres se gagnent par un exploit précis (condition) : ils montrent ce qu'on a accompli.
 // Cadres animés : animations CSS (transform / opacity / filter), seulement sur les grands avatars.
 export type Objet = {
-  id: string; type: 'avatar' | 'cadre' | 'titre' | 'fond' | 'pseudo'; nom: Record<Lang, string>; prix: number
+  id: string; type: 'avatar' | 'cadre' | 'titre' | 'fond' | 'pseudo' | 'effet'; sorte?: Sorte; nom: Record<Lang, string>; prix: number
   categorie?: 'portrait' | 'metier' | 'animal' | 'fun' | 'famille'
   portrait?: string // personnage illustré (components/Portrait)
   k?: Famille; couleur?: string; perso?: string; animal?: string; emoji?: string; anim?: string
@@ -300,6 +301,7 @@ export const BOUTIQUE: Objet[] = [
     ]
   }),
   // ——— Fonds de vitrine animés et styles de pseudo (achetables ; un fond par saison au palier 15) ———
+  ...EFFETS_BOUTIQUE.map((e): Objet => ({ id: e.id, type: 'effet', sorte: e.sorte, nom: e.nom, prix: e.prix, emoji: e.emoji, luxe: e.luxe })),
   ...FONDS_ANIMES.map((f): Objet => f.rang
     ? { id: f.id, type: 'fond', nom: f.nom, prix: 0, luxe: f.luxe, condition: { desc: { fr: `Finir 3 semaines au rang ${TOUS_RANGS.find((r) => r.id === f.rang)?.nom.fr} (ou plus haut)`, en: 'Finish 3 weeks at this rank' }, test: (p) => !!p.possede?.includes(f.id) } }
     : f.saison
@@ -417,7 +419,7 @@ export async function acheterObjet(uid: string, o: Objet) {
   })
 }
 export async function equiper(uid: string, o: Objet) {
-  const champ = { [o.type === 'fond' ? 'vitrineFond' : o.type === 'pseudo' ? 'pseudoStyle' : o.type]: o.id }
+  const champ = { [o.type === 'effet' && o.sorte ? CHAMP_EFFET[o.sorte] : o.type === 'fond' ? 'vitrineFond' : o.type === 'pseudo' ? 'pseudoStyle' : o.type]: o.id }
   await Promise.all([
     setDoc(doc(db, 'users', uid), champ, { merge: true }),
     setDoc(doc(db, 'profils', uid), champ, { merge: true }),

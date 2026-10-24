@@ -1,4 +1,4 @@
-import { confettis } from './confettis'
+import { feter, sonReponse } from './effets'
 import { Haptics, ImpactStyle, NotificationType } from '@capacitor/haptics'
 import { natif } from './firebase'
 
@@ -44,7 +44,7 @@ async function vibrer(juste: boolean | 'fin') {
 }
 
 export function retourReponse(juste: boolean) {
-  if (juste) notes([660, 880]); else notes([220], 0.2, 'triangle', 0.06)
+  if (prefsRetour.son) sonReponse(juste)
   vibrer(juste)
 }
 
@@ -58,6 +58,6 @@ export function retourTic(secondes: number) {
 // Fin réussie : son, vibration et confettis (grosse fête si « fete » vaut 2)
 export function retourFin(bon: boolean, fete: 1 | 2 = 1) {
   notes(bon ? [523, 659, 784, 1047] : [392, 330], 0.11)
-  if (bon) confettis(fete)
+  if (bon) feter(undefined, fete)
   vibrer('fin')
 }
