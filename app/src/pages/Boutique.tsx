@@ -16,6 +16,7 @@ export default function Boutique() {
   const action = async (o: Objet) => {
     if (!user) return
     setMsg('')
+    if (o.condition && !possede(profile, o)) { setMsg(o.condition.desc[lang]); return }
     if (!possede(profile, o) && !(await acheterObjet(user.uid, o).catch(() => false))) { setMsg(fr ? 'Pas assez de pièces.' : 'Not enough coins.'); return }
     await equiper(user.uid, o)
   }
@@ -29,10 +30,10 @@ export default function Boutique() {
           const porte = (type === 'avatar' ? profile?.avatar : profile?.cadre) === o.id
           return (
             <button key={o.id} type="button" onClick={() => action(o)} className="card famille" style={{ padding: 14, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, cursor: 'pointer', font: 'inherit', color: 'inherit', borderColor: porte ? 'var(--ok)' : 'var(--line)', borderWidth: porte ? 2 : 1 }}>
-              <Avatar pseudo={profile?.pseudo} avatar={type === 'avatar' ? o.id : profile?.avatar} cadre={type === 'cadre' ? o.id : profile?.cadre} taille={72} />
+              <Avatar pseudo={profile?.pseudo} avatar={type === 'avatar' ? o.id : profile?.avatar} cadre={type === 'cadre' ? o.id : profile?.cadre} taille={72} anime={porte} />
               <span style={{ fontWeight: 700, fontSize: 14, textAlign: 'center' }}>{o.nom[lang]}</span>
               <span style={{ fontSize: 13, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 4, color: porte ? 'var(--ok-i)' : a ? 'var(--muted)' : 'var(--his-i)' }}>
-                {porte ? (fr ? 'Équipé' : 'Equipped') : a ? (fr ? 'Équiper' : 'Equip') : <><Piece size={15} />{o.prix}</>}
+                {porte ? (fr ? 'Équipé' : 'Equipped') : a ? (fr ? 'Équiper' : 'Equip') : o.condition ? <><Icon d={ICONS.lock} size={14} />{o.condition.desc[lang]}</> : <><Piece size={15} />{o.prix}</>}
               </span>
             </button>
           )
@@ -50,7 +51,7 @@ export default function Boutique() {
       </header>
       {msg && <p role="status" style={{ color: 'var(--ko-i)', fontWeight: 600 }}>{msg}</p>}
       {section('avatar', fr ? 'Avatars' : 'Avatars')}
-      {section('cadre', fr ? 'Cadres' : 'Frames')}
+      {section('cadre', fr ? 'Cadres (les animés se gagnent en jouant)' : 'Frames (animated ones are earned)')}
     </>
   )
 }

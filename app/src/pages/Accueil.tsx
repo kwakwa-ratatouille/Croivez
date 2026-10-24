@@ -81,8 +81,8 @@ export default function Accueil() {
       <Link to={`/themes/${evenement.k}`} className="famille rise" style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '10px 16px', borderRadius: 22, textDecoration: 'none', background: `linear-gradient(100deg, var(--${evenement.k}-t), var(--his-t))`, color: `var(--${evenement.k}-i)` }}>
         <Illustration k={evenement.k} taille={86} fond={false} />
         <div style={{ flex: 1, minWidth: 0 }}>
-          <span className="eyebrow" style={{ color: 'inherit' }}>{fr ? 'Événement de la semaine' : 'Event of the week'}</span>
-          <strong className="t" style={{ display: 'block', fontSize: 18 }}>{evenement.nom[lang]} · XP {fr ? 'et pièces' : '& coins'} ×2</strong>
+          <span className="eyebrow" style={{ color: 'inherit' }}>{evenement.reel ? (fr ? 'Événement en cours' : 'Live event') : (fr ? 'Famille de la semaine' : 'Family of the week')}</span>
+          <strong className="t" style={{ display: 'block', fontSize: 18 }}>{evenement.nom[lang]} · XP {fr ? 'et pièces' : '& coins'} ×2{evenement.quiz ? (fr ? ` sur ${evenement.quiz.length} quiz` : ` on ${evenement.quiz.length} quizzes`) : ''}</strong>
         </div>
         <Icon d={ICONS.arrowR} />
       </Link>

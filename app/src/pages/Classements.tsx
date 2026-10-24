@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { useAuth } from '../auth'
 import { usePrefs } from '../i18n'
@@ -61,7 +62,7 @@ export default function Classements() {
         {affichees?.map((l, n) => {
           const moi = l.uid === user?.uid
           return (
-            <div key={l.uid} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '12px 14px', borderRadius: 16, background: moi ? 'var(--geo-t)' : 'transparent' }}>
+            <Link key={l.uid} to={moi ? '/profil' : `/joueur/${l.uid}`} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '12px 14px', borderRadius: 16, background: moi ? 'var(--geo-t)' : 'transparent', color: 'inherit', textDecoration: 'none' }}>
               <span className="t" style={{ width: 34, height: 34, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, background: n < 3 ? medaille[n] : 'var(--surface2)', color: n < 3 ? 'var(--surface)' : 'var(--muted)' }}>{n + 1}</span>
               <Avatar pseudo={l.pseudo} avatar={l.avatar} cadre={l.cadre} taille={40} />
               <div style={{ flex: 1 }}>
@@ -69,7 +70,7 @@ export default function Classements() {
                 {l.niveau && <div style={{ fontSize: 13, color: 'var(--muted)' }}>{fr ? 'Niveau' : 'Level'} {l.niveau}</div>}
               </div>
               <span className="t" style={{ fontWeight: 900, fontSize: 18 }}>{new Intl.NumberFormat(fr ? 'fr-FR' : 'en-GB').format(l.xp)} XP</span>
-            </div>
+            </Link>
           )
         })}
       </section>

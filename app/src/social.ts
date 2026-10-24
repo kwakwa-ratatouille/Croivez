@@ -1,9 +1,28 @@
 import { arrayRemove, arrayUnion, collection, doc, getDoc, getDocs, increment, limit, orderBy, query, runTransaction, setDoc, where, documentId } from 'firebase/firestore'
 import { db } from './firebase'
 import { niveau, type Profile } from './auth'
+import { FAMILLES } from './themes'
 
 // Profil public (lisible par tous les joueurs connectés) : sert aux classements et à la recherche d'amis
-export type ProfilPublic = { uid: string; pseudo: string; xp: number; niveau: number; serie: number }
+export type ProfilPublic = { uid: string; pseudo: string; xp: number; niveau: number; serie: number; avatar?: string; cadre?: string; vitrine?: string[]; favori?: string; familles?: Record<string, number>; parties?: number; bonnes?: number; meilleureSerie?: number }
+
+// Ce que les autres voient : maîtrise moyenne par famille (pas par quiz, trop nombreux), vitrine, thème favori, stats
+export function resumePublic(p: Profile) {
+  const familles: Record<string, number> = {}
+  for (const f of FAMILLES) {
+    const j = f.subs.filter((s) => s.jouable)
+    familles[f.k] = j.length ? Math.round(j.reduce((a, s) => a + (p.maitrise?.[s.id] ?? 0), 0) / j.length) : 0
+  }
+  return { familles, vitrine: p.vitrine ?? [], favori: p.favori ?? '', parties: p.parties ?? 0, bonnes: p.bonnes ?? 0, meilleureSerie: p.meilleureSerie ?? p.serie ?? 0 }
+}
+export const publierVitrine = (uid: string, p: Profile, maj: { vitrine?: string[]; favori?: string }) => Promise.all([
+  setDoc(doc(db, 'users', uid), maj, { merge: true }),
+  setDoc(doc(db, 'profils', uid), { ...resumePublic({ ...p, ...maj }) }, { merge: true }),
+])
+export async function profilPublic(uid: string): Promise<ProfilPublic | null> {
+  const d = await getDoc(doc(db, 'profils', uid))
+  return d.exists() ? ({ uid, ...d.data() } as ProfilPublic) : null
+}
 
 export const pseudoCle = (p: string) => p.trim().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9_-]/g, '')
 
@@ -37,14 +56,14 @@ export async function synchroniserProfilPublic(uid: string, p: Profile) {
     if (pseudo !== p.pseudo) await setDoc(doc(db, 'users', uid), { pseudo }, { merge: true })
     p = { ...p, pseudo }
   }
-  await setDoc(doc(db, 'profils', uid), { pseudo: p.pseudo, xp: p.xp ?? 0, niveau: niveau(p.xp ?? 0), serie: p.serie ?? 0 }, { merge: true })
+  await setDoc(doc(db, 'profils', uid), { pseudo: p.pseudo, xp: p.xp ?? 0, niveau: niveau(p.xp ?? 0), serie: p.serie ?? 0, ...resumePublic(p) }, { merge: true })
 }
 
 // Appelé après chaque partie : XP du profil public et du classement de la semaine
-export async function publierXp(uid: string, pseudo: string, xp: number, xpTotal: number, serie: number, look: { avatar?: string; cadre?: string } = {}) {
+export async function publierXp(uid: string, pseudo: string, xp: number, xpTotal: number, serie: number, look: { avatar?: string; cadre?: string } = {}, resume: Record<string, unknown> = {}) {
   const apparence = { ...(look.avatar ? { avatar: look.avatar } : {}), ...(look.cadre ? { cadre: look.cadre } : {}) }
   await Promise.all([
-    setDoc(doc(db, 'profils', uid), { pseudo, xp: xpTotal, niveau: niveau(xpTotal), serie, ...apparence }, { merge: true }),
+    setDoc(doc(db, 'profils', uid), { pseudo, xp: xpTotal, niveau: niveau(xpTotal), serie, ...apparence, ...resume }, { merge: true }),
     setDoc(doc(db, 'semaines', semaine(), 'scores', uid), { pseudo, xp: increment(xp), ...apparence }, { merge: true }),
   ])
 }

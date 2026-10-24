@@ -201,8 +201,8 @@ export default function Partie() {
   // Les questions sur carte valent autant que la saisie libre
   // Défi du jour : XP doublés
   // Question boss réussie : +30 pièces ; gros score : un peu d'XP en plus
-  const pieces = (piecesGagnees(bonnes, questions?.length ?? 0, defi) * (legende ? 2 : 1) + (bossReussi ? 30 : 0)) * (jeu ? 1 : bonusEvenement(k))
-  const xp = (calculerXp(bonnes, q?.carte && !q.options.length ? 'libre' : mode, difficulte || 2) * (defi || legende ? 2 : 1) + Math.round(score / 250)) * (jeu ? 1 : bonusEvenement(k))
+  const pieces = (piecesGagnees(bonnes, questions?.length ?? 0, defi) * (legende ? 2 : 1) + (bossReussi ? 30 : 0)) * (jeu ? 1 : bonusEvenement(k, sousTheme))
+  const xp = (calculerXp(bonnes, q?.carte && !q.options.length ? 'libre' : mode, difficulte || 2) * (defi || legende ? 2 : 1) + Math.round(score / 250)) * (jeu ? 1 : bonusEvenement(k, sousTheme))
   const enregistre = useRef(false)
   useEffect(() => {
     if (!fini || enregistre.current || !user || !profile || !questions) return

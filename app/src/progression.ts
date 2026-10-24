@@ -27,7 +27,7 @@ const RARETE: Record<string, Rarete> = {
   inventions: 'epique', architecture: 'epique', mangas: 'epique', 'persos-jeux': 'epique', fleuves: 'epique', iles: 'epique',
   'departements-prefecture': 'epique', compositeurs: 'epique', 'sportifs-sport': 'epique', 'personnalites-metier': 'epique',
   'noms-scientifiques': 'legendaire', 'departements-numero': 'legendaire', elements: 'legendaire', 'villes-fr': 'legendaire',
-  tableaux: 'legendaire', logos: 'legendaire', 'personnalites-pays': 'legendaire',
+  tableaux: 'legendaire', 'blind-album': 'legendaire', 'blind-titre': 'epique', 'artistes-genre': 'rare', studios: 'commun', 'studios-annee': 'rare', lunes: 'epique', jo: 'rare', 'persos-univers': 'rare', 'lieux-jeux': 'epique', sagas: 'rare', consoles: 'rare', logos: 'legendaire', 'personnalites-pays': 'legendaire',
 }
 export const rareteDe = (id: string): Rarete => RARETE[id] ?? 'commun'
 
@@ -70,9 +70,10 @@ export function plafonner(d: 1 | 2 | 3 | 4, p?: Profile | null, id?: string): 1 
   return x
 }
 
-// Légende : ouverte dans une famille quand chaque quiz possédé de la famille a ses 4 difficultés réussies
+// Légende : ouverte dans une famille quand TOUS ses quiz (il faut donc tous les posséder) ont leurs 4 difficultés réussies.
+// Jamais achetable ni sautable.
 export function progresLegende(k: Famille, p?: Profile | null) {
-  const quiz = (FAMILLES.find((f) => f.k === k)?.subs ?? []).filter((s) => s.jouable && accesQuiz(s.id, p))
+  const quiz = (FAMILLES.find((f) => f.k === k)?.subs ?? []).filter((s) => s.jouable)
   const faits = quiz.reduce((n, s) => n + [1, 2, 3, 4].filter((d) => p?.paliers?.[s.id]?.includes(d)).length, 0)
   return { faits, total: quiz.length * 4 }
 }
@@ -91,7 +92,7 @@ async function depenser(uid: string, montant: number, maj: Record<string, unknow
 
 export const choisirQuiz = (uid: string, ids: string[]) => setDoc(doc(db, 'users', uid), { quiz: ids, choixFait: true }, { merge: true })
 export const acheterQuiz = (uid: string, id: string) => depenser(uid, RARETES[rareteDe(id)].prix, { quiz: arrayUnion(id) })
-export const sauterDifficulte = (uid: string, id: string, d: number) => depenser(uid, PRIX_SAUT, { [`sauts.${id}`]: arrayUnion(d) })
+export const sauterDifficulte = async (uid: string, id: string, d: number) => d >= 2 && d <= 4 && depenser(uid, PRIX_SAUT, { [`sauts.${id}`]: arrayUnion(d) })
 export const payerIndice = (uid: string) => depenser(uid, PRIX_INDICE)
 // Dépense de pièces pour un bonus en partie
 export const payerPieces = (uid: string, n: number) => depenser(uid, n)

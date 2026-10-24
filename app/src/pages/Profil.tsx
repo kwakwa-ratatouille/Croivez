@@ -1,114 +1,196 @@
-import { Link } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { Link, useParams } from 'react-router-dom'
 import { niveau, useAuth, xpPourNiveau } from '../auth'
-import { usePrefs } from '../i18n'
+import { usePrefs, type Lang } from '../i18n'
 import { FAMILLES } from '../themes'
 import { BADGES, PALIERS, palierAtteint } from '../badges'
 import { SECRETS } from '../meta'
+import { accesQuiz } from '../progression'
+import { profilPublic, publierVitrine, resumePublic, type ProfilPublic } from '../social'
 import Avatar from '../components/Avatar'
+import CarteCouverture from '../components/CarteCouverture'
 import { Icon, ICONS } from '../components/ui'
 
+// Médaille d'un badge (vitrine : « id:palier »)
+function Medaille({ v, lang, taille = 56 }: { v: string; lang: Lang; taille?: number }) {
+  const [id, n] = v.split(':')
+  const b = BADGES.find((x) => x.id === id)
+  if (!b) return null
+  const pl = PALIERS[Math.max(0, Number(n) - 1)]
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, width: 84, textAlign: 'center' }}>
+      <span className={Number(n) === 3 ? 'medaille-or' : ''} style={{ width: taille, height: taille, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: `var(--${b.couleur}-t)`, color: `var(--${b.couleur}-i)`, border: `3px solid ${pl.couleur}`, position: 'relative', overflow: 'hidden' }}>
+        <Icon d={b.icon} size={taille * 0.45} />
+      </span>
+      <span style={{ fontSize: 11.5, fontWeight: 700, lineHeight: 1.15 }}>{b.nom[lang]}</span>
+    </div>
+  )
+}
+
+// Carte de joueur : partagée entre mon profil et celui des autres
+export function CarteJoueur({ p, moi = false }: { p: ProfilPublic; moi?: boolean }) {
+  const { lang } = usePrefs()
+  const fr = lang === 'fr'
+  const fmt = new Intl.NumberFormat(fr ? 'fr-FR' : 'en-GB')
+  const nv = niveau(p.xp ?? 0)
+  const debut = xpPourNiveau(nv), fin = xpPourNiveau(nv + 1)
+  const pct = Math.round((((p.xp ?? 0) - debut) / (fin - debut)) * 100)
+  const stats: [string | number, string][] = [
+    [fmt.format(p.parties ?? 0), fr ? 'parties' : 'games'], [fmt.format(p.bonnes ?? 0), fr ? 'bonnes' : 'correct'],
+    [p.meilleureSerie ?? p.serie ?? 0, fr ? 'série max' : 'best streak'], [fmt.format(p.xp ?? 0), 'XP'],
+  ]
+  // Familles triées par maîtrise : les points forts d'abord
+  const familles = FAMILLES.map((f) => ({ f, v: p.familles?.[f.k] ?? 0 })).sort((a, b) => b.v - a.v)
+  return (
+    <>
+      <section className="card profil-tete">
+        {moi ? <Link to="/boutique" aria-label={fr ? 'Changer d’avatar' : 'Change avatar'}><Avatar pseudo={p.pseudo} avatar={p.avatar} cadre={p.cadre} taille={84} anime /></Link> : <Avatar pseudo={p.pseudo} avatar={p.avatar} cadre={p.cadre} taille={84} anime />}
+        <div style={{ flex: '1 1 220px', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <h1 className="t" style={{ fontSize: 26, fontWeight: 900, overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.pseudo}</h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span className="chip" style={{ background: 'var(--mus-t)', color: 'var(--mus-i)' }}>{fr ? 'Niv.' : 'Lv.'} {nv}</span>
+            <div className="bar" style={{ flex: 1 }}><span style={{ width: `${pct}%`, background: 'var(--mus)' }} /></div>
+          </div>
+          <div className="profil-stats">{stats.map(([v, l]) => <div key={l}><strong className="t">{v}</strong><span>{l}</span></div>)}</div>
+        </div>
+      </section>
+      <section className="card" style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <h2 className="t" style={{ fontSize: 17, fontWeight: 900 }}>{fr ? 'Maîtrise par famille' : 'Mastery by family'}</h2>
+        <div className="profil-familles">
+          {familles.map(({ f, v }) => (
+            <div key={f.k} style={{ display: 'grid', gridTemplateColumns: '22px minmax(0, 1fr) 70px 38px', alignItems: 'center', gap: 8 }}>
+              <span style={{ color: `var(--${f.k}-i)` }}><Icon d={f.icon} size={18} /></span>
+              <span style={{ fontWeight: 600, fontSize: 14, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.nom[lang]}</span>
+              <div className="bar" style={{ height: 7 }}><span style={{ width: `${v}%`, background: `var(--${f.k})` }} /></div>
+              <span style={{ textAlign: 'right', fontSize: 13, color: 'var(--muted)', fontWeight: 700 }}>{v} %</span>
+            </div>
+          ))}
+        </div>
+      </section>
+    </>
+  )
+}
+
+function Vitrine({ p, moi, onModifier }: { p: ProfilPublic; moi: boolean; onModifier?: () => void }) {
+  const { lang } = usePrefs()
+  const fr = lang === 'fr'
+  return (
+    <section className="card" style={{ padding: 16, display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'center' }}>
+      <div style={{ flex: '1 1 260px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+          <h2 className="t" style={{ fontSize: 17, fontWeight: 900 }}>{fr ? 'Vitrine' : 'Showcase'}</h2>
+          {moi && <button className="btn btn-g" style={{ minHeight: 36, fontSize: 14 }} onClick={onModifier}><Icon d={ICONS.settings} size={16} />{fr ? 'Modifier' : 'Edit'}</button>}
+        </div>
+        <div style={{ display: 'flex', gap: 8, justifyContent: 'space-around' }}>
+          {(p.vitrine?.length ? p.vitrine : []).map((v) => <Medaille key={v} v={v} lang={lang} />)}
+          {!p.vitrine?.length && <span style={{ color: 'var(--muted)', fontSize: 14 }}>{moi ? (fr ? 'Choisis jusqu’à 3 badges à exposer.' : 'Pick up to 3 badges.') : (fr ? 'Vitrine vide' : 'Empty')}</span>}
+        </div>
+      </div>
+      {p.favori && (
+        <div style={{ width: 150, display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <span className="eyebrow">{fr ? 'Thème favori' : 'Favourite'}</span>
+          <CarteCouverture id={p.favori} largeur={150} />
+        </div>
+      )}
+    </section>
+  )
+}
+
+// Mon profil : compact, détails repliables
 export default function Profil() {
   const { lang } = usePrefs()
-  const { profile } = useAuth()
-  if (!profile) return null
   const fr = lang === 'fr'
-  const nv = niveau(profile.xp)
-  const debut = xpPourNiveau(nv)
-  const fin = xpPourNiveau(nv + 1)
-  const pct = Math.round(((profile.xp - debut) / (fin - debut)) * 100)
-  const fmt = new Intl.NumberFormat(fr ? 'fr-FR' : 'en-GB')
-  const stats = [
-    [fmt.format(profile.parties ?? 0), fr ? 'parties' : 'games'],
-    [fmt.format(profile.bonnes ?? 0), fr ? 'bonnes réponses' : 'correct answers'],
-    [profile.meilleureSerie ?? profile.serie ?? 0, fr ? 'meilleure série' : 'best streak'],
-    [profile.defis ?? 0, fr ? 'défis réussis' : 'challenges won'],
-  ]
-  const sousJouables = FAMILLES.flatMap((f) => f.subs.filter((s) => s.jouable).map((s) => ({ ...s, k: f.k })))
+  const { user, profile } = useAuth()
+  const [edition, setEdition] = useState(false)
+  if (!profile || !user) return null
+  const pub: ProfilPublic = { uid: user.uid, pseudo: profile.pseudo, xp: profile.xp, niveau: niveau(profile.xp), serie: profile.serie, avatar: profile.avatar, cadre: profile.cadre, ...resumePublic(profile) }
+  const obtenus = BADGES.map((b) => ({ b, n: palierAtteint(b, profile) })).filter((x) => x.n > 0)
+  const vitrine = profile.vitrine ?? []
+  const basculer = (v: string) => {
+    const sans = vitrine.filter((x) => x.split(':')[0] !== v.split(':')[0])
+    publierVitrine(user.uid, profile, { vitrine: sans.length < vitrine.length ? sans : [...vitrine, v].slice(-3) })
+  }
+  const possedes = FAMILLES.flatMap((f) => f.subs.filter((s) => s.jouable && accesQuiz(s.id, profile)))
 
   return (
     <>
-      <section className="card" style={{ padding: 32, display: 'flex', alignItems: 'center', gap: 28, flexWrap: 'wrap' }}>
-        <Link to="/boutique" aria-label={fr ? 'Changer d’avatar' : 'Change avatar'}><Avatar pseudo={profile.pseudo} avatar={profile.avatar} cadre={profile.cadre} taille={96} /></Link>
-        <div style={{ flex: '1 1 300px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <h1 className="t" style={{ fontSize: 32, fontWeight: 900 }}>{profile.pseudo}</h1>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-            <span className="chip" style={{ background: 'var(--mus-t)', color: 'var(--mus-i)' }}>{fr ? 'Niveau' : 'Level'} {nv}</span>
-            <div className="bar" style={{ flex: 1 }}><span style={{ width: `${pct}%`, background: 'var(--mus)' }} /></div>
-            <span style={{ fontSize: 14, color: 'var(--muted)', whiteSpace: 'nowrap' }}>{fmt.format(profile.xp - debut)} / {fmt.format(fin - debut)} XP</span>
+      <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+        <Link className="btn btn-s" to="/album">Album</Link>
+        <Link className="btn btn-s" to="/boutique">{fr ? 'Boutique' : 'Shop'}</Link>
+        <Link className="btn btn-g" to="/parametres" aria-label={fr ? 'Paramètres' : 'Settings'}><Icon d={ICONS.settings} /></Link>
+      </div>
+      <CarteJoueur p={pub} moi />
+      <Vitrine p={pub} moi onModifier={() => setEdition((e) => !e)} />
+      {edition && (
+        <section className="card rise" style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <strong>{fr ? 'Badges à exposer (3 max)' : 'Badges to show (max 3)'}</strong>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            {obtenus.length === 0 && <span style={{ color: 'var(--muted)' }}>{fr ? 'Aucun badge pour l’instant.' : 'No badge yet.'}</span>}
+            {obtenus.map(({ b, n }) => <button key={b.id} type="button" className="pill" aria-pressed={vitrine.some((v) => v.startsWith(b.id + ':'))} onClick={() => basculer(`${b.id}:${n}`)}>{b.nom[lang]} · {PALIERS[n - 1].nom[lang]}</button>)}
           </div>
-        </div>
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          <Link className="btn btn-s" to="/album">{fr ? 'Album' : 'Album'}</Link>
-          <Link className="btn btn-s" to="/boutique">{fr ? 'Boutique' : 'Shop'}</Link>
-          <Link className="btn btn-g" to="/parametres"><Icon d={ICONS.settings} />{fr ? 'Paramètres' : 'Settings'}</Link>
-        </div>
-      </section>
+          <label style={{ display: 'flex', alignItems: 'center', gap: 10, fontWeight: 600 }}>{fr ? 'Thème favori' : 'Favourite'}
+            <select className="input" style={{ flex: 1, minHeight: 44 }} value={profile.favori ?? ''} onChange={(e) => publierVitrine(user.uid, profile, { favori: e.target.value })}>
+              <option value="">—</option>
+              {possedes.map((s) => <option key={s.id} value={s.id}>{s.nom[lang]}</option>)}
+            </select>
+          </label>
+        </section>
+      )}
 
-      <section className="grid-auto" style={{ ['--min' as string]: '180px', gap: 16 }}>
-        {stats.map(([v, l]) => (
-          <div key={l} className="card" style={{ padding: 22 }}>
-            <div className="t" style={{ fontSize: 32, fontWeight: 900 }}>{v}</div>
-            <div style={{ color: 'var(--muted)', fontWeight: 600 }}>{l}</div>
-          </div>
-        ))}
-      </section>
-
-      <section className="card" style={{ padding: 28, display: 'flex', flexDirection: 'column', gap: 16 }}>
-        <h2 className="t" style={{ fontSize: 22, fontWeight: 800 }}>{fr ? 'Maîtrise par thème' : 'Mastery by topic'}</h2>
-        {sousJouables.map((s) => {
-          const v = profile.maitrise?.[s.id] ?? 0
-          return (
-            <div key={s.id} style={{ display: 'grid', gridTemplateColumns: 'minmax(140px, 220px) 1fr 52px', alignItems: 'center', gap: 16 }}>
-              <span style={{ fontWeight: 600 }}>{s.nom[lang]}</span>
-              <div className="bar"><span style={{ width: `${v}%`, background: `var(--${s.k})` }} /></div>
-              <span style={{ textAlign: 'right', color: 'var(--muted)', fontWeight: 600 }}>{v} %</span>
-            </div>
-          )
-        })}
-      </section>
-
-      <section style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <h2 className="t" style={{ fontSize: 22, fontWeight: 800 }}>{fr ? 'Succès secrets' : 'Secret achievements'} <span style={{ color: 'var(--muted)', fontWeight: 600, fontSize: 16 }}>{profile.secrets?.length ?? 0} / {SECRETS.length}</span></h2>
-        <div className="grid-auto" style={{ ['--min' as string]: '160px', gap: 10 }}>
-          {SECRETS.map((s) => {
-            const ok = profile.secrets?.includes(s.id)
-            return (
-              <div key={s.id} className="card" style={{ padding: 14, display: 'flex', flexDirection: 'column', gap: 4, boxShadow: 'none', background: ok ? 'var(--his-t)' : 'var(--surface2)', borderColor: 'transparent', color: ok ? 'var(--his-i)' : 'var(--muted)' }}>
-                <span className="t" style={{ fontWeight: 800 }}>{ok ? s.nom[lang] : '???'}</span>
-                <span style={{ fontSize: 12.5 }}>{ok ? s.indice[lang] : (fr ? 'Secret : continuez à jouer…' : 'Secret: keep playing…')}</span>
-              </div>
-            )
-          })}
-        </div>
-      </section>
-
-      <section style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-        <h2 className="t" style={{ fontSize: 22, fontWeight: 800 }}>{fr ? 'Badges' : 'Badges'} <span style={{ color: 'var(--muted)', fontWeight: 600, fontSize: 16 }}>{BADGES.reduce((a, b) => a + palierAtteint(b, profile), 0)} / {BADGES.length * 3} {fr ? 'paliers' : 'tiers'}</span></h2>
-        <div className="grid-auto" style={{ ['--min' as string]: '170px', gap: 12 }}>
-          {/* Badges entamés d'abord, puis ceux à commencer */}
+      <details className="card repli">
+        <summary className="t">{fr ? 'Badges' : 'Badges'} <span>{BADGES.reduce((a, b) => a + palierAtteint(b, profile), 0)} / {BADGES.length * 3}</span></summary>
+        <div className="grid-auto" style={{ ['--min' as string]: '150px', gap: 10 }}>
           {[...BADGES].sort((a, b) => palierAtteint(b, profile) - palierAtteint(a, profile)).map((b) => {
             const n = palierAtteint(b, profile)
             const v = b.valeur(profile)
             const prochain = b.paliers[Math.min(n, 2)]
             const prec = n ? b.paliers[n - 1] : 0
-            const medaille = n ? PALIERS[n - 1].couleur : 'var(--line)'
             return (
-              <div key={b.id} className="card" style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'flex-start', background: n ? `var(--${b.couleur}-t)` : 'var(--surface)', borderColor: n ? 'transparent' : 'var(--line)' }}>
-                <div style={{ position: 'relative', width: 48, height: 48, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--surface)', border: `3px solid ${medaille}`, color: n ? `var(--${b.couleur}-i)` : 'var(--muted)' }}>
-                  <Icon d={b.icon} size={24} />
+              <div key={b.id} style={{ padding: 12, borderRadius: 16, display: 'flex', flexDirection: 'column', gap: 6, background: n ? `var(--${b.couleur}-t)` : 'var(--surface2)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ color: n ? `var(--${b.couleur}-i)` : 'var(--muted)' }}><Icon d={b.icon} size={20} /></span>
+                  <span className="t" style={{ fontWeight: 800, fontSize: 14, lineHeight: 1.2, flex: 1 }}>{b.nom[lang]}</span>
                 </div>
-                <span className="t" style={{ fontWeight: 800, fontSize: 15.5, lineHeight: 1.2, color: n ? `var(--${b.couleur}-i)` : 'var(--text)' }}>{b.nom[lang]}</span>
-                {/* 3 pastilles : bronze, argent, or */}
-                <div style={{ display: 'flex', gap: 4 }} aria-label={n ? PALIERS[n - 1].nom[lang] : (fr ? 'Pas encore' : 'Not yet')}>
-                  {PALIERS.map((pl, i) => <span key={i} style={{ width: 14, height: 14, borderRadius: '50%', background: i < n ? pl.couleur : 'var(--surface2)', border: `1.5px solid ${pl.couleur}` }} />)}
-                </div>
-                <span style={{ fontSize: 12.5, color: 'var(--muted)' }}>{n === 3 ? b.desc[lang](b.paliers[2]) + ' ✓' : b.desc[lang](prochain)}</span>
-                {n < 3 && <div className="bar" style={{ width: '100%', height: 6 }}><span style={{ width: `${Math.min(100, ((v - prec) / Math.max(1, prochain - prec)) * 100)}%`, background: `var(--${b.couleur})` }} /></div>}
+                <div style={{ display: 'flex', gap: 4 }}>{PALIERS.map((pl, i) => <span key={i} style={{ width: 12, height: 12, borderRadius: '50%', background: i < n ? pl.couleur : 'transparent', border: `1.5px solid ${pl.couleur}` }} />)}</div>
+                <span style={{ fontSize: 12, color: 'var(--muted)' }}>{n === 3 ? b.desc[lang](b.paliers[2]) + ' ✓' : b.desc[lang](prochain)}</span>
+                {n < 3 && <div className="bar" style={{ height: 5 }}><span style={{ width: `${Math.min(100, ((v - prec) / Math.max(1, prochain - prec)) * 100)}%`, background: `var(--${b.couleur})` }} /></div>}
               </div>
             )
           })}
         </div>
-      </section>
+      </details>
+
+      <details className="card repli">
+        <summary className="t">{fr ? 'Succès secrets' : 'Secret achievements'} <span>{profile.secrets?.length ?? 0} / {SECRETS.length}</span></summary>
+        <div className="grid-auto" style={{ ['--min' as string]: '150px', gap: 8 }}>
+          {SECRETS.map((s) => {
+            const ok = profile.secrets?.includes(s.id)
+            return (
+              <div key={s.id} style={{ padding: 12, borderRadius: 14, background: ok ? 'var(--his-t)' : 'var(--surface2)', color: ok ? 'var(--his-i)' : 'var(--muted)' }}>
+                <div className="t" style={{ fontWeight: 800 }}>{ok ? s.nom[lang] : '???'}</div>
+                <div style={{ fontSize: 12 }}>{ok ? s.indice[lang] : (fr ? 'Continue à jouer…' : 'Keep playing…')}</div>
+              </div>
+            )
+          })}
+        </div>
+      </details>
+    </>
+  )
+}
+
+// Profil d'un autre joueur (adversaire, classement, ami)
+export function Joueur() {
+  const { uid } = useParams()
+  const { lang } = usePrefs()
+  const fr = lang === 'fr'
+  const [p, setP] = useState<ProfilPublic | null | undefined>(undefined)
+  useEffect(() => { if (uid) profilPublic(uid).then(setP).catch(() => setP(null)) }, [uid])
+  return (
+    <>
+      <button type="button" onClick={() => history.back()} style={{ alignSelf: 'flex-start', display: 'inline-flex', alignItems: 'center', gap: 8, minHeight: 44, fontWeight: 600, border: 0, background: 'none', color: 'var(--muted)', cursor: 'pointer', font: 'inherit' }}><Icon d={ICONS.arrowL} />{fr ? 'Retour' : 'Back'}</button>
+      {p === undefined && <p style={{ color: 'var(--muted)' }}>…</p>}
+      {p === null && <p style={{ color: 'var(--muted)' }}>{fr ? 'Joueur introuvable.' : 'Player not found.'}</p>}
+      {p && <><CarteJoueur p={p} /><Vitrine p={p} moi={false} /></>}
     </>
   )
 }

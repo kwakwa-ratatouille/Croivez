@@ -150,7 +150,8 @@ const THEMES = {
 
   // Maison de disques obligatoire : écarte les personnalités historiques qui « chantaient » aussi
   artistes: () => sparql(req('VALUES ?metier { wd:Q177220 wd:Q639669 wd:Q2252262 } ?item wdt:P106 ?metier; wdt:P18 ?img; wdt:P21 ?genre; wdt:P264 [].', { sl: 40, select: '?genre' }))
-    .then((l) => finaliser(l, (b) => ({ ...base(b), img: image(b), g: GENRES[b.genre.value.split('/').pop()] }))),
+    .then((l) => finaliser(l, (b) => ({ ...base(b), img: image(b), g: GENRES[b.genre.value.split('/').pop()] })))
+    .then((items) => enrichir(items, 'P136', 'genre', { fr: 'Genre', en: 'Genre' })),
 
   albums: () => sparql(req('?item wdt:P31 wd:Q482994; wdt:P175 ?x. OPTIONAL { ?item wdt:P577 ?date }', { sl: 25, select: `?date ${libSelect('x')}`, extra: lib('x') }))
     // Album éponyme (« Metallica » de Metallica) : la question donnerait la réponse
@@ -331,14 +332,27 @@ SELECT ?item ?sl ?nFr ?nEn ?dFr ?dEn ?img WHERE {
     .then((l) => finaliser(l, (b) => ({ ...base(b), img: image(b) }))),
   scientifiques: () => sparql(req('VALUES ?metier { wd:Q901 wd:Q169470 wd:Q593644 wd:Q170790 wd:Q864503 wd:Q11063 } ?item wdt:P106 ?metier; wdt:P18 ?img; wdt:P21 ?genre.', { sl: 60, select: '?genre' }))
     .then((l) => finaliser(l, (b) => ({ ...base(b), img: image(b), g: GENRES[b.genre.value.split('/').pop()] }))),
-  lunes: () => sparql(req('?item wdt:P31 wd:Q2537; wdt:P397 ?x.', { sl: 15, select: libSelect('x'), extra: lib('x') }))
+  // Lunes des planètes (et planètes naines) du Système solaire
+  lunes: () => sparql(req('VALUES ?t { wd:Q634 wd:Q17362350 } ?item wdt:P397 ?x. ?x wdt:P31/wdt:P279* wd:Q634.', { sl: 8, select: libSelect('x'), extra: lib('x') }))
     .then((l) => finaliser(l, (b) => paire(b, 'x') && ({ ...base(b), r: paire(b, 'x') }))),
 
   // ——— Jeux vidéo & pop culture ———
   jeux: () => sparql(req('?item wdt:P31 wd:Q7889; wdt:P178 ?x. OPTIONAL { ?item wdt:P577 ?date }', { sl: 20, select: `?date ${libSelect('x')}`, extra: lib('x') }))
-    .then((l) => finaliser(l, (b) => paire(b, 'x') && ({ ...base(b), r: paire(b, 'x'), x: { annee: annee(b) }, g: annee(b)?.slice(0, 3), ...(annee(b) ? { f: [[{ fr: 'Sortie', en: 'Released' }, annee(b)]] } : {}) }))),
-  'persos-jeux': () => sparql(req('?item wdt:P31 wd:Q1569167; wdt:P18 ?img.', { sl: 10 }))
-    .then((l) => finaliser(l, (b) => ({ ...base(b), img: image(b) }))),
+    .then((l) => finaliser(l, (b) => paire(b, 'x') && ({ ...base(b), r: paire(b, 'x'), x: { annee: annee(b) }, g: annee(b)?.slice(0, 3), ...(annee(b) ? { f: [[{ fr: 'Sortie', en: 'Released' }, annee(b)]] } : {}) })))
+    .then((items) => enrichir(items, 'P400', 'plateforme', { fr: 'Plateforme', en: 'Platform' })),
+  // Seuil bas : on veut aussi les personnages secondaires
+  'persos-jeux': () => sparql(req('?item wdt:P31/wdt:P279* wd:Q1569167; wdt:P18 ?img.', { sl: 5 }))
+    .then((l) => finaliser(l, (b) => ({ ...base(b), img: image(b) })))
+    .then((items) => enrichir(items, 'P1080', 'univers', { fr: 'Univers', en: 'Universe' })),
+  // Lieux et cartes de jeux vidéo : de quel jeu ?
+  'lieux-jeux': () => sparql(req('?item wdt:P31/wdt:P279* wd:Q3895768; wdt:P1441 ?x. ?x wdt:P31/wdt:P279* wd:Q7889.', { sl: 5, select: libSelect('x'), extra: lib('x') }))
+    .then((l) => finaliser(l, (b) => paire(b, 'x') && ({ ...base(b), r: paire(b, 'x') }))),
+  // Sagas de jeux vidéo et leur éditeur
+  sagas: () => sparql(req('?item wdt:P31 wd:Q7058673; wdt:P123 ?x. OPTIONAL { ?item wdt:P18 ?img }', { sl: 15, select: libSelect('x'), extra: lib('x') }))
+    .then((l) => finaliser(l, (b) => paire(b, 'x') && ({ ...base(b), img: image(b), r: paire(b, 'x') }))),
+  // Licences : films des grands studios (Pixar, Disney, Marvel, DreamWorks, Ghibli, Illumination, Lucasfilm)
+  studios: () => sparql(req('VALUES ?x { wd:Q127552 wd:Q1047410 wd:Q367466 wd:Q238557 wd:Q182950 wd:Q1136155 wd:Q242446 } ?item wdt:P31/wdt:P279* wd:Q11424; wdt:P272 ?x. OPTIONAL { ?item wdt:P577 ?date }', { sl: 20, select: `?date ${libSelect('x')}`, extra: lib('x') }))
+    .then((l) => finaliser(l, (b) => paire(b, 'x') && ({ ...base(b), r: paire(b, 'x'), x: { annee: annee(b) }, ...(annee(b) ? { f: [[{ fr: 'Sortie', en: 'Released' }, annee(b)]] } : {}) }))),
   consoles: () => sparql(req('?item wdt:P31/wdt:P279? wd:Q8076; wdt:P176 ?x. OPTIONAL { ?item wdt:P18 ?img }', { sl: 20, select: libSelect('x'), extra: lib('x') }))
     .then((l) => finaliser(l, (b) => paire(b, 'x') && ({ ...base(b), img: image(b), r: paire(b, 'x') }))),
 

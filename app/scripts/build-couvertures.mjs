@@ -10,7 +10,7 @@ const lire = async (f) => JSON.parse(await readFile(f, 'utf8'))
 // Quiz dérivés : même pack que le quiz principal
 const PACK = {
   'films-annee': 'films', 'personnalites-pays': 'personnalites', 'personnalites-metier': 'personnalites', 'personnalites-naissance': 'personnalites',
-  'sportifs-sport': 'sportifs', 'livres-annee': 'livres', 'jeux-annee': 'jeux', 'noms-scientifiques': 'animaux',
+  'sportifs-sport': 'sportifs', 'livres-annee': 'livres', 'jeux-annee': 'jeux', 'noms-scientifiques': 'animaux', 'persos-univers': 'persos-jeux', 'studios-annee': 'studios', 'blind-titre': 'extraits', 'blind-album': 'extraits', 'artistes-genre': 'artistes',
 }
 // Couverture choisie à la main : drapeaux bien reconnaissables, ou article Wikipédia (fr) du sujet
 const DRAPEAUX = { drapeaux: 'br', 'drapeaux-inverse': 'jp' }
@@ -21,7 +21,7 @@ const WIKI = {
   films: 'Cinéma', albums: 'Disque microsillon', extraits: 'Casque audio',
   elements: 'Tableau périodique des éléments', histoire: 'Prise de la Bastille', livres: 'Livre',
   'livres-annee': 'Bibliothèque', mangas: 'Manga', inventions: 'Ampoule à incandescence', jeux: 'Jeu vidéo', 'jeux-annee': 'Manette de jeu',
-  'personnalites-pays': 'Passeport', 'sportifs-sport': 'Stade',
+  'personnalites-pays': 'Passeport', 'blind-titre': 'Platine vinyle', 'blind-album': 'Album musical', 'artistes-genre': 'Genre musical', studios: 'Pixar', 'studios-annee': 'Walt Disney Animation Studios', lunes: 'Jupiter (planète)', jo: 'Anneaux olympiques', consoles: 'Console de jeux vidéo', 'sportifs-sport': 'Stade',
   constellations: 'Grande Ourse', corps: 'Anatomie humaine', marques: 'Logo', series: 'Télévision', 'films-annee': 'Pellicule photographique',
   'personnalites-metier': 'Profession', 'personnalites-naissance': 'Anniversaire', 'noms-scientifiques': 'Carl von Linné', presidents: 'Palais de l\'Élysée', mouvements: 'Impressionnisme',
 }

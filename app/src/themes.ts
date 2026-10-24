@@ -38,13 +38,13 @@ export const FAMILLES: { k: Famille; nom: Record<Lang, string>; icon: string; mo
     k: 'cine', nom: { fr: 'Cinéma & séries', en: 'Film & TV' },
     icon: 'M6 7h12a2.5 2.5 0 0 1 2.5 2.5v8A2.5 2.5 0 0 1 18 20H6a2.5 2.5 0 0 1-2.5-2.5v-8A2.5 2.5 0 0 1 6 7ZM3.5 11h17M8 7l2 4M13 7l2 4',
     motif: 'M10 10h100v60H10ZM10 20h100M10 60h100M20 10v10M40 10v10M60 10v10M80 10v10M100 10v10M20 60v10M40 60v10M60 60v10M80 60v10M100 60v10',
-    subs: [{ id: 'films', nom: { fr: 'Films et réalisateurs', en: 'Films & directors' }, jouable: 'films' }, { id: 'films-annee', nom: { fr: 'Films : année de sortie', en: 'Films: release year' }, jouable: 'films-annee' }, { id: 'series', nom: { fr: 'Séries', en: 'TV shows' }, jouable: 'series' }, { id: 'acteurs', nom: { fr: 'Acteurs', en: 'Actors' }, jouable: 'acteurs' }, { id: 'affiches', nom: { fr: 'Affiches de films', en: 'Film posters' } }],
+    subs: [{ id: 'films', nom: { fr: 'Films et réalisateurs', en: 'Films & directors' }, jouable: 'films' }, { id: 'films-annee', nom: { fr: 'Films : année de sortie', en: 'Films: release year' }, jouable: 'films-annee' }, { id: 'series', nom: { fr: 'Séries', en: 'TV shows' }, jouable: 'series' }, { id: 'acteurs', nom: { fr: 'Acteurs', en: 'Actors' }, jouable: 'acteurs' }, j('studios', 'Disney, Pixar, Marvel… : le studio', 'Disney, Pixar, Marvel…: studio'), j('studios-annee', 'Films d’animation et super-héros : l’année', 'Animation & superhero films: year'), { id: 'affiches', nom: { fr: 'Affiches de films', en: 'Film posters' } }],
   },
   {
     k: 'mus', nom: { fr: 'Musique', en: 'Music' },
     icon: 'M9 18V6l10-2v12M9 18a2.5 2.5 0 1 1-5 0a2.5 2.5 0 1 1 5 0ZM19 16a2.5 2.5 0 1 1-5 0a2.5 2.5 0 1 1 5 0Z',
     motif: 'M30 60V20l40-8v40M30 60a8 6 0 1 1-16 0a8 6 0 1 1 16 0M70 52a8 6 0 1 1-16 0a8 6 0 1 1 16 0M96 40V14l14 6',
-    subs: [{ id: 'artistes', nom: { fr: 'Artistes', en: 'Artists' }, jouable: 'artistes' }, { id: 'extraits', nom: { fr: 'Extraits musicaux', en: 'Music clips' }, jouable: 'extraits' }, { id: 'albums', nom: { fr: 'Albums', en: 'Albums' }, jouable: 'albums' }, j('compositeurs', 'Compositeurs classiques', 'Classical composers')],
+    subs: [{ id: 'artistes', nom: { fr: 'Artistes', en: 'Artists' }, jouable: 'artistes' }, { id: 'extraits', nom: { fr: 'Extraits musicaux', en: 'Music clips' }, jouable: 'extraits' }, { id: 'albums', nom: { fr: 'Albums', en: 'Albums' }, jouable: 'albums' }, j('compositeurs', 'Compositeurs classiques', 'Classical composers'), j('blind-titre', 'Blind test : le titre', 'Blind test: title'), j('blind-album', 'Blind test : l’album', 'Blind test: album'), j('artistes-genre', 'Genres musicaux', 'Music genres')],
   },
   {
     k: 'nat', nom: { fr: 'Nature', en: 'Nature' },
@@ -71,7 +71,7 @@ export const FAMILLES: { k: Famille; nom: Record<Lang, string>; icon: string; mo
     k: 'sci', nom: { fr: 'Corps humain & sciences', en: 'Human body & science' },
     icon: 'M9.5 3.5h5M10.5 3.5v5.5L5.2 18.3a1.5 1.5 0 0 0 1.3 2.2h11a1.5 1.5 0 0 0 1.3-2.2L13.5 9V3.5M7.5 15h9',
     motif: 'M40 40a10 10 0 1 1-20 0a10 10 0 1 1 20 0M80 20a8 8 0 1 1-16 0a8 8 0 1 1 16 0M100 56a10 10 0 1 1-20 0a10 10 0 1 1 20 0M40 36l26-12M76 26l12 22',
-    subs: [{ id: 'corps', nom: { fr: 'Corps humain', en: 'Human body' }, jouable: 'corps' }, { id: 'elements', nom: { fr: 'Éléments chimiques', en: 'Chemical elements' }, jouable: 'elements' }, j('scientifiques', 'Scientifiques', 'Scientists'), j('inventions', 'Inventions et découvertes', 'Inventions & discoveries'), j('constellations', 'Constellations', 'Constellations')],
+    subs: [{ id: 'corps', nom: { fr: 'Corps humain', en: 'Human body' }, jouable: 'corps' }, { id: 'elements', nom: { fr: 'Éléments chimiques', en: 'Chemical elements' }, jouable: 'elements' }, j('scientifiques', 'Scientifiques', 'Scientists'), j('inventions', 'Inventions et découvertes', 'Inventions & discoveries'), j('constellations', 'Constellations', 'Constellations'), j('lunes', 'Planètes et lunes', 'Planets & moons')],
   },
   {
     k: 'his', nom: { fr: 'Histoire, personnalités & arts', en: 'History, people & arts' },
@@ -101,7 +101,7 @@ export const FAMILLES: { k: Famille; nom: Record<Lang, string>; icon: string; mo
     k: 'jv', nom: { fr: 'Jeux vidéo', en: 'Video games' },
     icon: 'M7 8h10a4 4 0 0 1 4 4v2.5a3 3 0 0 1-5.4 1.8L14.5 15h-5l-1.1 1.3A3 3 0 0 1 3 14.5V12a4 4 0 0 1 4-4ZM7.5 10.5v3M6 12h3M15.5 11.5h.01M17.5 13h.01',
     motif: 'M30 24h60a20 20 0 0 1 20 20v10a14 14 0 0 1-25 8l-6-6H41l-6 6a14 14 0 0 1-25-8V44a20 20 0 0 1 20-20Z',
-    subs: [j('jeux', 'Jeux et studios', 'Games & studios'), j('jeux-annee', 'Jeux : année de sortie', 'Games: release year'), j('persos-jeux', 'Personnages', 'Characters')],
+    subs: [j('jeux', 'Jeux et studios', 'Games & studios'), j('jeux-annee', 'Jeux : année de sortie', 'Games: release year'), j('persos-jeux', 'Personnages', 'Characters'), j('persos-univers', 'Personnages : de quel jeu ?', 'Characters: which game?'), j('lieux-jeux', 'Lieux et cartes : de quel jeu ?', 'Places & maps: which game?'), j('sagas', 'Sagas et éditeurs', 'Series & publishers')],
   },
 ]
 

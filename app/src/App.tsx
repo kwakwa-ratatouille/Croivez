@@ -14,7 +14,7 @@ import Connexion from './pages/Connexion'
 import ChoixFamilles from './pages/ChoixFamilles'
 import { choixAFaire } from './progression'
 import Revision from './pages/Revision'
-import Profil from './pages/Profil'
+import Profil, { Joueur } from './pages/Profil'
 import Duels from './pages/Duels'
 import Duel from './pages/Duel'
 import Classements from './pages/Classements'
@@ -59,6 +59,7 @@ function Routeur() {
           <Route path="/parametres" element={<Parametres />} />
           <Route path="/revision" element={<Revision />} />
           <Route path="/profil" element={<Profil />} />
+          <Route path="/joueur/:uid" element={<Joueur />} />
           <Route path="/duels" element={<Duels />} />
           <Route path="/classements" element={<Classements />} />
           <Route path="/album" element={<Album />} />

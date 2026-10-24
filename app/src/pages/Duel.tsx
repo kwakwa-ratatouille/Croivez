@@ -91,7 +91,7 @@ export default function Duel() {
         <section className="card rise" style={{ width: '100%', maxWidth: 640, padding: 40, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 18, textAlign: 'center' }}>
           {gagne ? <Coche size={72} /> : egal ? <Logo width={90} /> : <Croix size={60} />}
           <h1 className="t" style={{ fontSize: 34, fontWeight: 900 }}>{gagne ? (fr ? 'Victoire !' : 'Victory!') : egal ? (fr ? 'Égalité' : 'Draw') : (fr ? 'Défaite, de peu' : 'So close')}</h1>
-          <div style={{ display: 'flex', gap: 12, width: '100%' }}><Score j={moi} moiAussi /><Score j={autre} /></div>
+          <div style={{ display: 'flex', gap: 12, width: '100%' }}><Score j={moi} moiAussi />{autreId ? <Link to={`/joueur/${autreId}`} style={{ flex: 1, display: 'flex', color: 'inherit', textDecoration: 'none' }}><Score j={autre} /></Link> : <Score j={autre} />}</div>
           <div style={{ display: 'flex', gap: 12 }}>
             <Link className="btn btn-p" to="/duels">{fr ? 'Nouveau duel' : 'New duel'}</Link>
             <Link className="btn btn-g" to="/">{fr ? 'Accueil' : 'Home'}</Link>
@@ -107,7 +107,7 @@ export default function Duel() {
         <Link to="/duels" className="btn btn-g" aria-label={fr ? 'Quitter' : 'Quit'} style={{ minHeight: 44, padding: '0 14px' }}><Icon d={ICONS.close} /></Link>
         <Score j={moi} moiAussi />
         <span className="t" style={{ fontWeight: 900, color: 'var(--muted)' }}>VS</span>
-        <Score j={autre} />
+        {autreId ? <Link to={`/joueur/${autreId}`} style={{ flex: 1, display: 'flex', color: 'inherit', textDecoration: 'none' }}><Score j={autre} /></Link> : <Score j={autre} />}
       </header>
       <div style={{ width: '100%', maxWidth: 1040, display: 'flex', alignItems: 'center', gap: 12 }}>
         <span style={{ fontWeight: 600, color: 'var(--muted)', whiteSpace: 'nowrap' }}>{i + 1} / {questions.length}</span>

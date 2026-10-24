@@ -99,6 +99,15 @@ const CULTURE = {
   'traduction-de': { type: 'attribut', pack: 'vocabulaire', champ: 'de', q: { fr: (n) => `Comment dit-on « ${n.toLowerCase()} » en allemand ?`, en: (n) => `How do you say “${n.toLowerCase()}” in German?` } },
   'traduction-it': { type: 'attribut', pack: 'vocabulaire', champ: 'it', q: { fr: (n) => `Comment dit-on « ${n.toLowerCase()} » en italien ?`, en: (n) => `How do you say “${n.toLowerCase()}” in Italian?` } },
   extraits: { type: 'audio', q: { fr: () => 'Qui interprète ce titre ?', en: () => 'Who performs this song?' } },
+  // Blind tests : mêmes extraits, on demande le titre ou l'album
+  'blind-titre': { type: 'audio', pack: 'extraits', champ: 'nom', q: { fr: () => 'Quel est le titre de ce morceau ?', en: () => 'What is the title of this song?' } },
+  'blind-album': { type: 'audio', pack: 'extraits', champ: 'f:Album', q: { fr: () => 'De quel album vient ce morceau ?', en: () => 'Which album is this song from?' } },
+  'artistes-genre': { type: 'attribut', pack: 'artistes', champ: 'genre', montrer: true, q: { fr: (n) => `Quel est le genre musical de ${n} ?`, en: (n) => `What music genre is ${n} known for?` } },
+  studios: { type: 'attribut', q: { fr: (n) => `Quel studio a produit « ${n} » ?`, en: (n) => `Which studio produced “${n}”?` } },
+  'studios-annee': { type: 'annee', pack: 'studios', champ: 'annee', q: { fr: (n) => `En quelle année est sorti « ${n} » ?`, en: (n) => `In what year was “${n}” released?` } },
+  'lieux-jeux': { type: 'attribut', q: { fr: (n) => `Dans quel jeu trouve-t-on : ${n} ?`, en: (n) => `Which game features ${n}?` } },
+  sagas: { type: 'attribut', montrer: true, q: { fr: (n) => `Quel éditeur publie la saga « ${n} » ?`, en: (n) => `Who publishes the “${n}” series?` } },
+  'persos-univers': { type: 'attribut', pack: 'persos-jeux', champ: 'univers', montrer: true, q: { fr: (n) => `De quel univers vient ${n} ?`, en: (n) => `Which franchise is ${n} from?` } },
 } satisfies Record<string, { type: TypeCulture; montrer?: boolean; pack?: string; champ?: string; q: Record<Lang, (nom: string, genre?: string) => string> }>
 export type CultureId = keyof typeof CULTURE
 export const estCulture = (s: string): s is CultureId => s in CULTURE
@@ -370,7 +379,9 @@ function culture(o: Opts, tousItems: ItemCulture[]): Question[] {
   const difficulte = palierDe(o.difficulte)
   const cfg = CULTURE[sousTheme as CultureId] as { type: TypeCulture; montrer?: boolean; champ?: string; q: Record<Lang, (nom: string, genre?: string) => string> }
   // Question dérivée (année d'un film, pays d'une personnalité…) : la réponse vient d'un champ annexe
-  const val = (it: ItemCulture) => (cfg.champ ? it.x?.[cfg.champ] : it.r)
+  // Champ « nom » : le nom lui-même ; « f:Libellé » : un fait de la fiche ; sinon un attribut x (ou la réponse r)
+  const champ = (cfg as { champ?: string }).champ
+  const val = (it: ItemCulture) => (champ === 'nom' ? it.n : champ?.startsWith('f:') ? it.f?.find(([l]) => l.fr === champ.slice(2))?.[1] : champ ? it.x?.[champ] : it.r)
   // Traduction identique au mot français (« sari » → « sari ») : question sans intérêt, on l'écarte
   const simple = (v: string) => v.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
   const items = cfg.type === 'image' ? tousItems : tousItems.filter((it) => val(it) && !(sousTheme.startsWith('traduction') && simple(texte(val(it), 'fr')) === simple(it.n.fr)))

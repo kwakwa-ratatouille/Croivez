@@ -102,7 +102,7 @@ export default function Duels() {
           {amis.map((a) => (
             <div key={a.uid} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 10, borderRadius: 16, background: 'var(--surface2)' }}>
               <span className="t" style={{ width: 40, height: 40, borderRadius: '50%', background: 'var(--geo-t)', color: 'var(--geo-i)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800 }}>{a.pseudo[0]?.toUpperCase()}</span>
-              <div style={{ flex: 1 }}><div style={{ fontWeight: 700 }}>{a.pseudo}</div><div style={{ fontSize: 13, color: 'var(--muted)' }}>{fr ? 'Niveau' : 'Level'} {a.niveau}</div></div>
+              <div style={{ flex: 1, cursor: 'pointer' }} onClick={() => nav(`/joueur/${a.uid}`)}><div style={{ fontWeight: 700 }}>{a.pseudo}</div><div style={{ fontSize: 13, color: 'var(--muted)' }}>{fr ? 'Niveau' : 'Level'} {a.niveau}</div></div>
               <button className="btn btn-p" style={{ minHeight: 44 }} onClick={async () => setAttenteAmi(await inviter(uid, moi, a.uid))}>{fr ? 'Défier' : 'Challenge'}</button>
               <button className="btn btn-g" style={{ minHeight: 44, padding: '0 12px' }} aria-label={fr ? 'Retirer' : 'Remove'} onClick={() => retirerAmi(uid, a.uid)}><Icon d={ICONS.close} size={18} /></button>
             </div>

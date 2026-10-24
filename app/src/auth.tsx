@@ -4,7 +4,7 @@ import { arrayUnion, deleteField, doc, getDoc, onSnapshot, serverTimestamp, setD
 import { auth, db } from './firebase'
 import { cleRevision, planifier, type CarteRevision } from './quiz/revision'
 import type { SousThemeId } from './quiz/engine'
-import { publierXp, synchroniserProfilPublic } from './social'
+import { publierXp, resumePublic, synchroniserProfilPublic } from './social'
 import { avancerQuetes, type EtatQuetes, type StatsPartie } from './quetes'
 import { secretsObtenus } from './meta'
 
@@ -22,6 +22,8 @@ export type Profile = {
   sansFaute?: number
   revision?: Record<string, CarteRevision>
   amis?: string[]
+  vitrine?: string[] // jusqu'à 3 badges mis en avant
+  favori?: string // sous-thème favori
   pieces?: number
   familles?: string[] // familles choisies au départ (entièrement ouvertes) ; absent = ancien compte, tout ouvert
   quiz?: string[] // sous-thèmes possédés (choisis au départ ou achetés)
@@ -154,5 +156,5 @@ export async function enregistrerPartie(uid: string, profile: Profile, p: Partie
     // Sans-faute obligatoire ; valider un niveau valide aussi tous ceux du dessous
     ...(p.difficulte && p.difficulte <= 4 && taux >= 1 ? { paliers: { [p.sousTheme]: arrayUnion(...[1, 2, 3, 4].filter((d) => d <= p.difficulte!)) } } : {}),
   }, { merge: true })
-  await publierXp(uid, profile.pseudo, p.xp, (profile.xp ?? 0) + p.xp, serie, { avatar: profile.avatar, cadre: profile.cadre }).catch(console.error)
+  await publierXp(uid, profile.pseudo, p.xp, (profile.xp ?? 0) + p.xp, serie, { avatar: profile.avatar, cadre: profile.cadre }, resumePublic({ ...profile, parties: (profile.parties ?? 0) + 1, maitrise: p.revision ? profile.maitrise : { ...profile.maitrise, [p.sousTheme]: maitrise } })).catch(console.error)
 }
