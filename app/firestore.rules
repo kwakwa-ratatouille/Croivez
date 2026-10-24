@@ -19,6 +19,12 @@ service cloud.firestore {
       allow create: if connecte() && request.resource.data.uid == request.auth.uid;
       allow update, delete: if connecte() && resource.data.uid == request.auth.uid;
     }
+    // Parrainages : le filleul se déclare, seul le parrain lit et marque son bonus comme récupéré
+    match /parrainages/{filleul} {
+      allow create: if moi(filleul) && request.resource.data.parrain != filleul && request.resource.data.reclame == false;
+      allow read: if connecte() && resource.data.parrain == request.auth.uid;
+      allow update: if connecte() && resource.data.parrain == request.auth.uid && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reclame']);
+    }
     // Classement de la semaine
     match /semaines/{semaine}/scores/{uid} {
       allow read: if connecte();

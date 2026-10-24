@@ -1,9 +1,12 @@
 # Version web publique (GitHub Pages) : sert au mode télé, le QR code ouvre
 # https://kwakwa-ratatouille.github.io/Croivez/#/rejoindre/CODE sur n'importe quel téléphone.
-# Déclenchement manuel tant que Pages n'est pas activé (Settings → Pages → Source : GitHub Actions).
+# Se met à jour à chaque push (Pages doit être activé : Settings → Pages → Source : GitHub Actions).
 name: Version web
 
 on:
+  push:
+    branches: [main]
+    paths: ['app/**']
   workflow_dispatch:
 
 permissions:

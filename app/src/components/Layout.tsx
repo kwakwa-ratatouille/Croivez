@@ -1,3 +1,5 @@
+import { reclamerParrainages } from '../parrainage'
+import { auth } from '../firebase'
 import { NavLink, Outlet } from 'react-router-dom'
 import { useAuth, niveau } from '../auth'
 import { usePrefs, type Key } from '../i18n'
@@ -43,6 +45,9 @@ export default function Layout() {
     window.addEventListener('croivez:acheter', a)
     return () => { window.removeEventListener('croivez:fiche', h); window.removeEventListener('croivez:acheter', a) }
   }, [])
+  // Bonus des filleuls inscrits avec mon lien
+  const uid = profile ? auth.currentUser?.uid : undefined
+  useEffect(() => { if (uid) reclamerParrainages(uid).catch(() => {}) }, [uid])
   const appuis = useRef<number[]>([])
   const appuiLogo = (e: React.MouseEvent) => {
     const t = Date.now()

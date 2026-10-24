@@ -4,6 +4,7 @@ import { enregistrerPartie, jour, useAuth } from '../auth'
 import { usePrefs } from '../i18n'
 import { trouverSousTheme } from '../themes'
 import { calculerXp, distanceKm, genererMix, genererPartie, natureQuiz, type Difficulte, type Mode, type Question, type SousThemeId } from '../quiz/engine'
+import { partagerDefi } from '../partage'
 import { estCorrect, normaliser } from '../quiz/match'
 import { appliquerFormat, appliquerMiniJeu, infoMiniJeu, tirerMiniJeu, type Format, type InfoMiniJeu, type MiniJeu } from '../quiz/formats'
 import { memoriser } from '../quiz/memoire'
@@ -465,6 +466,8 @@ function Resultat({ reponses, xp, pieces, score, comboMax, k, reduit, onReplay }
   const bonnes = reponses.filter((r) => r.juste).length
   const erreurs = reponses.filter((r) => !r.juste)
   const taux = bonnes / reponses.length
+  const { user } = useAuth()
+  const [partage, setPartage] = useState('')
 
   return (
     <div className="partie" style={{ minHeight: '100%', display: 'flex', justifyContent: 'center', padding: '48px 40px' }}>
@@ -488,6 +491,7 @@ function Resultat({ reponses, xp, pieces, score, comboMax, k, reduit, onReplay }
           <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center', position: 'relative' }}>
             {/* Rejouer : tout le niveau, mêmes réglages, nouvelles questions (les erreurs vont en révision) */}
             <button className="btn btn-p btn-lg" onClick={() => onReplay()} autoFocus>{t('res.replay')}<Icon d={ICONS.review} /></button>
+            <button className="btn btn-s btn-lg" onClick={async () => { const r = await partagerDefi({ quiz: trouverSousTheme(reponses[0]?.q.s ?? new URLSearchParams(location.hash.split('?')[1]).get('s') ?? '')?.sous.id, nom: trouverSousTheme(reponses[0]?.q.s ?? new URLSearchParams(location.hash.split('?')[1]).get('s') ?? '')?.sous.nom[lang] ?? 'Mix', resultats: reponses.map((x) => x.juste), score, parrain: user?.uid }); setPartage(r) }}>{partage === 'copie' ? (lang === 'fr' ? 'Copié !' : 'Copied!') : (lang === 'fr' ? 'Défier un ami' : 'Challenge a friend')}</button>
             <Link className="btn btn-g" to="/">{t('res.home')}</Link>
           </div>
         </section>

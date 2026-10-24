@@ -1,3 +1,4 @@
+import { BONUS_PARRAIN, declarerFilleul, parrainRetenu } from './parrainage'
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
 import { onAuthStateChanged, type User } from 'firebase/auth'
 import { arrayUnion, deleteField, doc, getDoc, onSnapshot, serverTimestamp, setDoc, increment } from 'firebase/firestore'
@@ -95,9 +96,12 @@ export const useAuth = () => useContext(AuthCtx)
 export async function ensureProfile(user: User, pseudo?: string) {
   const ref = doc(db, 'users', user.uid)
   if ((await getDoc(ref)).exists()) return
+  // Invité par un ami : 100 pièces en plus, et le parrain est prévenu
+  const parrain = parrainRetenu()
+  if (parrain && parrain !== user.uid) declarerFilleul(user.uid, parrain).catch(console.error)
   await setDoc(ref, {
     pseudo: pseudo || user.displayName || user.email?.split('@')[0] || 'Explorateur',
-    xp: 0, serie: 0, dernierJour: '', maitrise: {}, pieces: 50, quiz: [], choixFait: false, creeLe: serverTimestamp(),
+    xp: 0, serie: 0, dernierJour: '', maitrise: {}, pieces: parrain && parrain !== user.uid ? 50 + BONUS_PARRAIN : 50, quiz: [], choixFait: false, creeLe: serverTimestamp(),
   })
 }
 

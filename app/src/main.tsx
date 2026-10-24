@@ -1,3 +1,4 @@
+import { retenirParrain } from './parrainage'
 import { Component, StrictMode, type ReactNode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './theme.css'
@@ -31,6 +32,7 @@ surveillerPlantages()
 // Mise à jour à chaud : signale que ce contenu démarre bien, sinon le module revient à la version précédente
 if (Capacitor.isNativePlatform()) CapacitorUpdater.notifyAppReady().catch(() => {})
 
+retenirParrain() // lien d'invitation « ?parrain=… » mémorisé avant l'inscription
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <Garde><App /></Garde>

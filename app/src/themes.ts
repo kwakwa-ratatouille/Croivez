@@ -38,7 +38,7 @@ export const FAMILLES: { k: Famille; nom: Record<Lang, string>; icon: string; mo
     k: 'cine', nom: { fr: 'Cinéma & séries', en: 'Film & TV' },
     icon: 'M6 7h12a2.5 2.5 0 0 1 2.5 2.5v8A2.5 2.5 0 0 1 18 20H6a2.5 2.5 0 0 1-2.5-2.5v-8A2.5 2.5 0 0 1 6 7ZM3.5 11h17M8 7l2 4M13 7l2 4',
     motif: 'M10 10h100v60H10ZM10 20h100M10 60h100M20 10v10M40 10v10M60 10v10M80 10v10M100 10v10M20 60v10M40 60v10M60 60v10M80 60v10M100 60v10',
-    subs: [{ id: 'films', nom: { fr: 'Films et réalisateurs', en: 'Films & directors' }, jouable: 'films' }, { id: 'films-annee', nom: { fr: 'Films : année de sortie', en: 'Films: release year' }, jouable: 'films-annee' }, { id: 'series', nom: { fr: 'Séries', en: 'TV shows' }, jouable: 'series' }, { id: 'acteurs', nom: { fr: 'Acteurs', en: 'Actors' }, jouable: 'acteurs' }, j('studios', 'Disney, Pixar, Marvel… : le studio', 'Disney, Pixar, Marvel…: studio'), j('studios-annee', 'Films d’animation et super-héros : l’année', 'Animation & superhero films: year'), j('oscars', 'Oscars du meilleur film', 'Best Picture Oscars'), j('affiches', 'Affiches de films', 'Film posters')],
+    subs: [{ id: 'films', nom: { fr: 'Films et réalisateurs', en: 'Films & directors' }, jouable: 'films' }, { id: 'films-annee', nom: { fr: 'Films : année de sortie', en: 'Films: release year' }, jouable: 'films-annee' }, { id: 'series', nom: { fr: 'Séries', en: 'TV shows' }, jouable: 'series' }, { id: 'acteurs', nom: { fr: 'Acteurs', en: 'Actors' }, jouable: 'acteurs' }, j('studios', 'Disney, Pixar, Marvel… : le studio', 'Disney, Pixar, Marvel…: studio'), j('studios-annee', 'Films d’animation et super-héros : l’année', 'Animation & superhero films: year'), j('oscars', 'Oscars du meilleur film', 'Best Picture Oscars'), j('affiches', 'Affiches de films', 'Film posters'), j('emissions', 'Émissions télé françaises', 'French TV shows')],
   },
   {
     k: 'mus', nom: { fr: 'Musique', en: 'Music' },
@@ -89,7 +89,7 @@ export const FAMILLES: { k: Famille; nom: Record<Lang, string>; icon: string; mo
     k: 'spo', nom: { fr: 'Sport', en: 'Sport' },
     icon: 'M12 3.5a8.5 8.5 0 1 0 0 17a8.5 8.5 0 1 0 0-17ZM12 3.5v4l3.5 2.5-1.3 4h-4.4L8.5 10 12 7.5M15.5 10l4.5-1M8.5 10 4 9M9.8 14l-2.3 4.5M14.2 14l2.3 4.5',
     motif: 'M10 70h100M20 70V30M100 70V30M20 30h80M60 30v40M40 50a20 20 0 0 1 40 0',
-    subs: [j('sportifs', 'Sportifs', 'Athletes'), j('sportifs-sport', 'Quel sport ?', 'Which sport?'), j('clubs', 'Clubs de football', 'Football clubs'), j('stades', 'Stades', 'Stadiums'), j('sports-photo', 'Sports en photo', 'Sports in pictures'), j('balles', 'Ballons et balles', 'Sports balls')],
+    subs: [j('sportifs', 'Sportifs', 'Athletes'), j('sportifs-sport', 'Quel sport ?', 'Which sport?'), j('clubs', 'Clubs de football', 'Football clubs'), j('stades', 'Stades', 'Stadiums'), j('sports-photo', 'Sports en photo', 'Sports in pictures'), j('balles', 'Ballons et balles', 'Sports balls'), j('ballon-or', 'Ballons d’or', 'Ballon d’Or winners'), j('coupe-monde', 'Coupes du monde : le vainqueur', 'World Cups: winner')],
   },
   {
     k: 'lit', nom: { fr: 'Littérature & BD', en: 'Books & comics' },
@@ -125,7 +125,7 @@ export const FAMILLES: { k: Famille; nom: Record<Lang, string>; icon: string; mo
     k: 'cui', nom: { fr: 'Cuisine & saveurs', en: 'Food & flavours' },
     icon: 'M7 3.5v6.5M5 3.5V8a2 2 0 0 0 4 0V3.5M7 10v10.5M17 3.5c-1.8 1.3-2.8 3.6-2.8 6.4V13H17v7.5',
     motif: 'M30 10v30M22 10v18a8 8 0 0 0 16 0V10M30 40v34M86 10c-8 6-12 16-12 28v12h12v24',
-    subs: [j('fruits', 'Fruits', 'Fruits'), j('legumes', 'Légumes', 'Vegetables'), j('desserts', 'Desserts et pâtisseries', 'Desserts & pastries'), j('epices', 'Épices et herbes', 'Spices & herbs'), j('fromages', 'Fromages du monde', 'World cheeses'), j('plats-photo', 'Plats du monde en photo', 'World dishes in pictures')],
+    subs: [j('fruits', 'Fruits', 'Fruits'), j('legumes', 'Légumes', 'Vegetables'), j('desserts', 'Desserts et pâtisseries', 'Desserts & pastries'), j('epices', 'Épices et herbes', 'Spices & herbs'), j('fromages', 'Fromages du monde', 'World cheeses'), j('plats-photo', 'Plats du monde en photo', 'World dishes in pictures'), j('telephones', 'Téléphones cultes', 'Iconic phones')],
   },
   {
     k: 'mot', nom: { fr: 'Mots & curiosités', en: 'Words & curiosities' },
