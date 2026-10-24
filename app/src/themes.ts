@@ -142,13 +142,7 @@ export const FAMILLES: { k: Famille; nom: Record<Lang, string>; icon: string; mo
     k: 'mot', nom: { fr: 'Mots & curiosités', en: 'Words & curiosities' },
     icon: 'M4.5 5h15A1.5 1.5 0 0 1 21 6.5v9a1.5 1.5 0 0 1-1.5 1.5H10l-4.5 3.5V17h-1A1.5 1.5 0 0 1 3 15.5v-9A1.5 1.5 0 0 1 4.5 5ZM8 10h8M8 13h5',
     motif: 'M14 14h92v44H50l-20 16V58H14ZM30 30h60M30 42h36',
-    subs: [j('devinettes', 'Devinettes : qui suis-je ?', 'Riddles'), j('suites-logiques', 'Suites logiques', 'Logic sequences'), j('idees-recues', 'Idées reçues : vrai ou faux ?', 'Myths: true or false?'), j('expressions', 'Expressions françaises', 'French expressions'), j('gentiles', 'Habitants des villes', 'What locals are called'), j('phobies', 'Phobies', 'Phobias'), j('cris', 'Cris des animaux', 'Animal sounds'), j('sigles', 'Sigles et acronymes', 'Acronyms')],
-  },
-  {
-    k: 'mot', nom: { fr: 'Mots & curiosités', en: 'Words & curiosities' },
-    icon: 'M4 6.5h16M4 12h10M4 17.5h13M18 15l2 2.5-2 2.5',
-    motif: 'M20 20h80M20 40h50M20 60h65',
-    subs: [j('verlan', 'Verlan et argot', 'French slang'), j('proverbes', 'Proverbes à compléter', 'Proverbs'), j('citations', 'Qui a dit ça ?', 'Who said it?'), j('petits-animaux', 'Petits des animaux', 'Baby animals'), j('groupes-animaux', 'Groupes d’animaux', 'Animal groups'), j('surnoms-villes', 'Surnoms de villes', 'City nicknames')],
+    subs: [j('devinettes', 'Devinettes : qui suis-je ?', 'Riddles'), j('suites-logiques', 'Suites logiques', 'Logic sequences'), j('idees-recues', 'Idées reçues : vrai ou faux ?', 'Myths: true or false?'), j('expressions', 'Expressions françaises', 'French expressions'), j('gentiles', 'Habitants des villes', 'What locals are called'), j('phobies', 'Phobies', 'Phobias'), j('cris', 'Cris des animaux', 'Animal sounds'), j('sigles', 'Sigles et acronymes', 'Acronyms'), j('verlan', 'Verlan et argot', 'French slang'), j('proverbes', 'Proverbes à compléter', 'Proverbs'), j('citations', 'Qui a dit ça ?', 'Who said it?'), j('petits-animaux', 'Petits des animaux', 'Baby animals'), j('groupes-animaux', 'Groupes d’animaux', 'Animal groups'), j('surnoms-villes', 'Surnoms de villes', 'City nicknames')],
   },
   {
     k: 'tec', nom: { fr: 'Tech & Internet', en: 'Tech & Internet' },

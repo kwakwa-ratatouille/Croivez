@@ -1,3 +1,4 @@
+import { appliquerMiniJeu, type MiniJeu } from '../quiz/formats'
 import { memoriser, vuesRecemment } from '../quiz/memoire'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
@@ -12,6 +13,16 @@ import Extrait from '../components/Extrait'
 import Img from '../components/Img'
 import CarteQuiz from '../components/CarteQuiz'
 import { retourFin, retourReponse } from '../retour'
+
+// Applique le type de quiz choisi (vrai ou faux, flash…) avec un hasard reproductible : mêmes questions pour les deux
+function avecMiniJeu(qs: Question[], mj: string | undefined, seed: number, lang: 'fr' | 'en'): Question[] {
+  if (!mj || mj === 'qcm') return qs
+  let a = seed | 0
+  const alea = () => { a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296 }
+  const vrai = Math.random
+  Math.random = alea
+  try { return qs.map((q) => appliquerMiniJeu(q, mj as MiniJeu, lang)) } finally { Math.random = vrai }
+}
 
 export default function Duel() {
   const { id = '' } = useParams()
@@ -34,7 +45,7 @@ export default function Duel() {
   const exclus = duel?.etat === 'jeu' ? Object.values(duel.exclus ?? {}).flat().join(',') : null
   useEffect(() => {
     if (!seed || !theme || exclus === null) return
-    genererPartie({ exclus: exclus ? exclus.split(',') : undefined, sousTheme: theme, seed, nombre: duel?.n ?? QUESTIONS_DUEL, difficulte: (duel?.d ?? 2) as 2, mode: 'qcm', lang }).then((q) => { setQuestions(q); setDebut(Date.now()) })
+    genererPartie({ exclus: exclus ? exclus.split(',') : undefined, sousTheme: theme, seed, nombre: duel?.n ?? QUESTIONS_DUEL, difficulte: (duel?.d ?? 2) as 2, mode: 'qcm', lang }).then((q) => { setQuestions(avecMiniJeu(q, duel?.mj, seed, lang)); setDebut(Date.now()) })
   }, [seed, theme, lang, exclus]) // eslint-disable-line react-hooks/exhaustive-deps
   // Départ commun quand les deux ont dit « prêt »
   useEffect(() => { if (duel?.etat === 'jeu' && duel.debut) setDebut(Math.max(Date.now(), duel.debut)) }, [duel?.etat, duel?.debut])
@@ -157,7 +168,8 @@ export default function Duel() {
       {q && (
         <section key={i} className="rise" style={{ width: '100%', maxWidth: 1040, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20 }}>
           <h1 className="t" style={{ fontSize: 28, fontWeight: 900, textAlign: 'center' }}>{q.enonce}</h1>
-          {q.image && <Img src={q.image} alt="" style={{ height: 180, maxWidth: '100%', borderRadius: 16, border: '1px solid var(--line)', objectFit: 'contain' }} />}
+          {q.format === 'vf' && <p className="t" style={{ fontSize: 22, fontWeight: 900, textAlign: 'center' }}>{q.propose} ?</p>}
+          {q.image && <Img src={q.image} alt="" className={`question-image${q.flou && !maReponse ? ' image-floue' : ''}${q.effet && !maReponse ? ` image-${q.effet}` : ''}`} style={{ height: 180, maxWidth: '100%', borderRadius: 16, border: '1px solid var(--line)', objectFit: 'contain' }} />}
           {q.carte && <CarteQuiz carte={q.carte} repondu={!!maReponse} onClic={() => {}} />}
           {q.audio && <Extrait id={q.audio} />}
           <div style={{ width: '100%', display: 'grid', gridTemplateColumns: q.imagesOnly ? 'repeat(auto-fit, minmax(180px, 1fr))' : 'repeat(2, minmax(0, 1fr))', gap: 12 }}>

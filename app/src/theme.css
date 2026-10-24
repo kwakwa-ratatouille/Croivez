@@ -1544,3 +1544,6 @@ button.rang-palier[aria-pressed="true"] { background: color-mix(in srgb, var(--r
 .avatar.cadre-teinte.cadre-vague::before { animation: tourne 6s linear infinite, teinte-cadre 6s linear infinite; }
 @keyframes teinte-cadre { to { filter: hue-rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { .avatar.cadre-teinte::before { animation: none !important; } }
+
+.choix-theme { height: min(86vh, 720px); }
+.choix-theme-grille { flex: 1; align-content: start; }

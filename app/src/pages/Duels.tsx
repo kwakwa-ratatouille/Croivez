@@ -1,3 +1,4 @@
+import { MINI_JEUX } from '../quiz/formats'
 import ChoixTheme from '../components/ChoixTheme'
 import { legendeOuverte } from '../progression'
 import { useEffect, useState } from 'react'
@@ -35,6 +36,7 @@ export default function Duels() {
   const [nbDuel, setNbDuel] = useState(10)
   const [secDuel, setSecDuel] = useState(15)
   const [diffDuel, setDiffDuel] = useState(2)
+  const [mjDuel, setMjDuel] = useState('qcm')
   const moi = profile?.pseudo ?? '?'
 
   useEffect(() => { profilsDe(profile?.amis ?? []).then(setAmis).catch(console.error) }, [profile?.amis])
@@ -66,7 +68,7 @@ export default function Duels() {
     )
   }
 
-  const defier = async (ami: string) => setAttenteAmi(await inviter(uid, moi, ami, themeDuel === 'mix' ? undefined : themeDuel as SousThemeId, legendeDuel ? 5 : diffDuel, nbDuel, secDuel))
+  const defier = async (ami: string) => setAttenteAmi(await inviter(uid, moi, ami, themeDuel === 'mix' ? undefined : themeDuel as SousThemeId, legendeDuel ? 5 : diffDuel, nbDuel, secDuel, mjDuel))
 
   return (
     <>
@@ -118,6 +120,8 @@ export default function Duels() {
             {[[1, fr ? 'Facile' : 'Easy'], [2, fr ? 'Moyen' : 'Medium'], [3, fr ? 'Difficile' : 'Hard'], [4, 'Expert']].map(([v, l]) => <button key={v} type="button" className="pill" aria-pressed={!legendeDuel && diffDuel === v} onClick={() => { setLegendeDuel(false); setDiffDuel(v as number) }}>{l}</button>)}
             <button type="button" className="pill pill-legende" aria-pressed={legendeDuel} disabled={!aLegende} title={aLegende ? '' : (fr ? 'Débloque une Légende pour l’utiliser' : 'Unlock a Legend first')} onClick={() => setLegendeDuel(true)}>{aLegende ? '👑' : '🔒'} Légende</button>
           </div>
+          <span>{fr ? 'Type' : 'Type'}</span>
+          <div className="multi-duel-choix">{MINI_JEUX.filter((x) => ['qcm', 'vf', 'duo', 'eclair', 'flash', 'zoom', 'flou'].includes(x.v)).map((x) => <button key={x.v} type="button" className="pill" aria-pressed={mjDuel === x.v} title={x.desc[lang]} onClick={() => { setMjDuel(x.v); if (x.chrono) setSecDuel(x.chrono) }}>{x.icone} {x.nom[lang]}</button>)}</div>
           <span>{fr ? 'Questions' : 'Questions'}</span>
           <div className="multi-duel-choix">{[5, 10, 15, 20].map((n) => <button key={n} type="button" className="pill" aria-pressed={nbDuel === n} onClick={() => setNbDuel(n)}>{n}</button>)}</div>
           <span>{fr ? 'Temps' : 'Time'}</span>

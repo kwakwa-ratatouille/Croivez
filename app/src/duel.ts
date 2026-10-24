@@ -8,6 +8,7 @@ export type Duel = {
   etat: 'attente' | 'pret' | 'jeu' | 'fini' // pret : les deux joueurs sont là, chacun doit confirmer
   d?: number // difficulté (5 = Légende)
   secondes?: number // temps par question
+  mj?: string // type de quiz : qcm, vf, duo, eclair, flash, zoom, flou
   debut?: number // heure de départ commune
   exclus?: Record<string, string[]> // questions vues récemment par chaque joueur (évitées dans ce duel)
   createur: string
@@ -24,19 +25,19 @@ export const SECONDES_DUEL = 15
 const THEMES: SousThemeId[] = ['drapeaux', 'capitales', 'drapeaux-inverse', 'capitales-inverse', 'pays-carte', 'acteurs', 'films', 'artistes', 'logos', 'animaux', 'personnalites', 'monuments', 'elements', 'extraits', 'plats', 'films-annee', 'personnalites-pays', 'tableaux', 'monnaies']
 
 // Thème choisi par celui qui invite, ou au hasard
-function nouveauDuel(uid: string, pseudo: string, invite?: string, theme?: SousThemeId, d = 2, n = QUESTIONS_DUEL, secondes = SECONDES_DUEL): Duel {
+function nouveauDuel(uid: string, pseudo: string, invite?: string, theme?: SousThemeId, d = 2, n = QUESTIONS_DUEL, secondes = SECONDES_DUEL, mj = 'qcm'): Duel {
   return {
     etat: 'attente', createur: uid, s: theme ?? THEMES[Math.floor(Math.random() * THEMES.length)],
-    seed: Math.floor(Math.random() * 2 ** 31), n, secondes,
+    seed: Math.floor(Math.random() * 2 ** 31), n, secondes, mj,
     joueurs: { [uid]: { pseudo, score: 0 } }, cree: Date.now(),
     ...(invite ? { invite } : {}), d,
   }
 }
 
 // Invitation d'un ami : le duel attend, l'ami le voit dans ses invitations
-export async function inviter(uid: string, pseudo: string, ami: string, theme?: SousThemeId, d = 2, n = QUESTIONS_DUEL, secondes = SECONDES_DUEL) {
+export async function inviter(uid: string, pseudo: string, ami: string, theme?: SousThemeId, d = 2, n = QUESTIONS_DUEL, secondes = SECONDES_DUEL, mj = 'qcm') {
   const r = push(ref(rtdb, 'duels'))
-  await set(r, nouveauDuel(uid, pseudo, ami, theme, d, n, secondes))
+  await set(r, nouveauDuel(uid, pseudo, ami, theme, d, n, secondes, mj))
   await set(ref(rtdb, `invitations/${ami}/${r.key}`), { de: pseudo, uid, t: serverTimestamp() })
   return r.key!
 }
