@@ -144,16 +144,16 @@ export default function Profil() {
 
   return (
     <>
-      <CarteJoueur p={pub} moi />
       {/* Raccourcis du profil : la boutique en grand, puis amis, album, stats, saison, réglages */}
       <nav className="profil-raccourcis" aria-label={fr ? 'Raccourcis du profil' : 'Profile shortcuts'}>
-        <Link to="/boutique" className="raccourci grand" style={{ ['--c' as string]: '#E3A72F' }}><span>🛍️</span><strong>{fr ? 'Boutique' : 'Shop'}</strong><small>{fr ? 'Avatars, cadres, titres' : 'Avatars, frames, titles'}</small></Link>
+        <Link to="/boutique" className="raccourci grand" style={{ ['--c' as string]: '#E3A72F' }}><span>🛍️</span><strong>{fr ? 'Boutique' : 'Shop'}</strong><small>{fr ? 'Avatars, cadres et titres · plein d’objets gratuits à débloquer' : 'Avatars, frames, titles · lots of free items'}</small><em className="raccourci-badge">{fr ? 'Nouveautés' : 'New'}</em></Link>
         <Link to="/amis" className="raccourci" style={{ ['--c' as string]: '#5B8DEF' }}><span>👋</span><strong>{fr ? 'Amis' : 'Friends'}</strong><small>{profile.amis?.length ?? 0}</small></Link>
         <Link to="/album" className="raccourci" style={{ ['--c' as string]: '#A35BE0' }}><span>🃏</span><strong>Album</strong><small>{Object.values(profile.album ?? {}).reduce((n, l) => n + l.length, 0)} {fr ? 'cartes' : 'cards'}</small></Link>
         <Link to="/stats" className="raccourci" style={{ ['--c' as string]: '#4FAE6A' }}><span>📊</span><strong>Stats</strong><small>{profile.parties ?? 0} {fr ? 'parties' : 'games'}</small></Link>
         <Link to="/saison" className="raccourci" style={{ ['--c' as string]: '#E86AA6' }}><span>🎟️</span><strong>{fr ? 'Saison' : 'Season'}</strong><small>{fr ? 'Passe de combat' : 'Battle pass'}</small></Link>
         <Link to="/parametres" className="raccourci" style={{ ['--c' as string]: '#64748B' }}><span>⚙️</span><strong>{fr ? 'Réglages' : 'Settings'}</strong><small>{fr ? 'Taille, sons…' : 'Size, sounds…'}</small></Link>
       </nav>
+      <CarteJoueur p={pub} moi />
       <Vitrine p={pub} moi onModifier={() => setEdition((e) => !e)} />
       {edition && (
         <section className="card rise" style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>

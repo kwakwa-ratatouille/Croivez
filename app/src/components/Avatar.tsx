@@ -17,6 +17,7 @@ export default function Avatar({ pseudo, avatar, cadre, taille = 40, anime = fal
       <span className="t" style={{ position: 'relative', zIndex: 1, width: '100%', height: '100%', borderRadius: '50%', overflow: 'hidden', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', fontWeight: 800, fontSize: taille * 0.42, background: a?.emoji ? 'linear-gradient(135deg, var(--mus-t), var(--pop-t))' : perso ? 'var(--surface2)' : a?.k ? `var(--${a.k}-t)` : 'var(--sci-t)', color: 'var(--sci-i)' }}>
         {animal ? <Animal a={animal} taille={taille - (c ? bord * 2 : 0)} /> : a?.emoji ? <span style={{ alignSelf: 'center', fontSize: taille * 0.58, lineHeight: 1 }}>{a.emoji}</span> : perso ? <Bonhomme p={perso} taille={taille - (c ? bord * 2 : 0)} anime={anime} /> : a?.k ? <span style={{ alignSelf: 'center' }}><Illustration k={a.k} taille={taille * 1.35} fond={false} /></span> : <span style={{ alignSelf: 'center' }}>{pseudo?.[0]?.toUpperCase() ?? '?'}</span>}
       </span>
+      {c?.orbite && (anime || taille >= 64) && <span className="orbite" aria-hidden="true" style={{ ['--t' as string]: `${taille}px` }}>{c.orbite.map((e, i) => <span key={i} style={{ ['--i' as string]: i, ['--n' as string]: c.orbite!.length }}>{e}</span>)}</span>}
     </span>
   )
 }

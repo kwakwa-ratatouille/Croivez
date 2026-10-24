@@ -20,10 +20,11 @@ export type Mode = 'qcm' | 'libre'
 export type Difficulte = 0 | 1 | 2 | 3 | 4 | 5 // 0 = tout (toutes débloquées mélangées) ; 5 = Légende
 export const LEGENDE = 5
 // Légende : 6 propositions au lieu de 4, toutes piégeuses
-const nbLeurres = (d: Difficulte) => (d === LEGENDE ? 5 : 3)
+// Nombre de mauvaises réponses : 2 choix en Facile, 3 en Moyen, 4 en Difficile, 5 en Expert, 6 en Légende (4 en « tout »)
+const nbLeurres = (d: Difficulte) => (d === LEGENDE ? 5 : d >= 1 && d <= 4 ? d : 3)
 export type Palier = 1 | 2 | 3 | 4
 
-export type SousThemeId = 'drapeaux' | 'drapeaux-inverse' | 'capitales' | 'capitales-inverse' | 'villes-fr' | 'villes-monde' | 'pays-carte' | 'logos-vrai' | CultureId
+export type SousThemeId = 'drapeaux' | 'drapeaux-europe' | 'drapeaux-afrique' | 'drapeaux-asie' | 'drapeaux-ameriques' | 'drapeaux-oceanie' | 'drapeaux-inverse' | 'capitales' | 'capitales-inverse' | 'villes-fr' | 'villes-monde' | 'pays-carte' | 'logos-vrai' | CultureId
 
 // Thèmes générés depuis Wikidata (scripts/build-culture.mjs)
 type Texte = Record<Lang, string>
@@ -344,7 +345,7 @@ function fichePays(p: Pays, tous: Pays[], lang: Lang): Fiche {
 }
 
 // Plus un pays est peuplé, plus il est « connu »
-const POOL_PAYS = { 1: 40, 2: 90, 3: 150, 4: Infinity } as const
+const POOL_PAYS = { 1: 25, 2: 70, 3: 140, 4: Infinity } as const
 // Paliers de population des villes
 const MIN_FR = { 1: 80_000, 2: 20_000, 3: 5_000, 4: 0 } as const
 const MIN_MONDE = { 1: 1_500_000, 2: 400_000, 3: 100_000, 4: 15_000 } as const
@@ -442,8 +443,14 @@ export async function genererPartie(o: Opts): Promise<Question[]> {
   return questionsPays(o, tous)
 }
 
-function questionsPays(o: Opts, tous: Pays[]): Question[] {
-  const { sousTheme, mode: modeChoisi, lang } = o
+// Continent visé par les quiz « drapeaux-<continent> »
+const CONTINENTS: Record<string, string[]> = { europe: ['Europe'], afrique: ['Afrique'], asie: ['Asie'], ameriques: ['Amérique du Nord', 'Amérique du Sud'], oceanie: ['Océanie'] }
+
+function questionsPays(o: Opts, tousMonde: Pays[]): Question[] {
+  const continent = CONTINENTS[o.sousTheme.replace('drapeaux-', '')]
+  const tous = continent ? tousMonde.filter((p) => continent.includes(p.region.fr)) : tousMonde
+  const sousTheme = (continent ? 'drapeaux' : o.sousTheme) as SousThemeId
+  const { mode: modeChoisi, lang } = o
   const avecCapitale = sousTheme.startsWith('capitales')
   const avecCarte = sousTheme === 'pays-carte'
   const valides = tous.filter((p) => (!avecCapitale || p.capitale) && (!avecCarte || p.num))
@@ -565,7 +572,7 @@ export function fauxJumeau(s: string): string | null {
 }
 
 // Les éléments sont triés du plus connu au moins connu (nombre d'articles Wikipédia)
-const POOL_CULTURE = { 1: 60, 2: 150, 3: 300, 4: Infinity } as const
+const POOL_CULTURE = { 1: 40, 2: 120, 3: 300, 4: Infinity } as const
 const texte = (v: string | Texte | undefined, lang: Lang) => (v === undefined ? '' : typeof v === 'string' ? v : v[lang])
 
 function culture(o: Opts, tousItems: ItemCulture[]): Question[] {

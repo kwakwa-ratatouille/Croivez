@@ -1,5 +1,41 @@
 [
  {
+  "id": "2026-10-24h",
+  "titre": "Plus simple, plus beau, plus complet",
+  "points": [
+   [
+    "📱",
+    "Écran de jeu épuré",
+    "Indices et bonus rangés derrière 💡, grande image, et le bouton Suivant toujours sous le pouce. Le « ? » ouvre la fiche."
+   ],
+   [
+    "📈",
+    "Difficulté progressive",
+    "2 choix en Facile, puis 3, 4, 5 et 6 en Légende. Le Facile ne pose que les plus connus."
+   ],
+   [
+    "🏳️",
+    "Drapeaux par continent",
+    "Europe, Afrique, Asie, Amériques, Océanie, ou tout le monde."
+   ],
+   [
+    "🗺️",
+    "Mode histoire XXL",
+    "8 mondes et 64 étapes : sommets, studios de cinéma, grande scène…"
+   ],
+   [
+    "🃏",
+    "Albums",
+    "Glisse pour tourner les pages, touche une carte pour sa fiche Wikipédia, nouvelle rareté Exotique."
+   ],
+   [
+    "🪐",
+    "Cadres",
+    "Des planètes et des décors qui tournent autour de ton avatar, un cadre et un titre par Légende de famille, et des récompenses du mode histoire."
+   ]
+  ]
+ },
+ {
   "id": "2026-10-24g",
   "titre": "Grosse refonte : histoire, passe de combat, amis",
   "points": [

@@ -5,6 +5,9 @@ import { usePrefs } from '../i18n'
 import { FAMILLES, type Famille } from '../themes'
 import { chargerPays, drapeau, estCulture, packCulture, type ItemCulture } from '../quiz/engine'
 import { RARETES, type Rarete } from '../progression'
+
+type RareteCarte = Rarete | 'exotique'
+const RARETES_CARTE: Record<RareteCarte, { nom: { fr: string; en: string }; couleur: string }> = { ...RARETES, exotique: { nom: { fr: 'Exotique', en: 'Exotic' }, couleur: '#FF4FD8' } }
 import { useCouverture } from '../components/CarteCouverture'
 import Img from '../components/Img'
 import Illustration from '../components/Illustration'
@@ -26,9 +29,9 @@ async function cartesDe(s: string, lang: 'fr' | 'en'): Promise<Carte[]> {
 }
 
 // Rareté d'une carte selon son rang de notoriété : les plus célèbres sont les plus précieuses
-const rareteCarte = (i: number, total: number): Rarete => {
+const rareteCarte = (i: number, total: number): RareteCarte => {
   const r = i / Math.max(1, total)
-  return r < 0.05 ? 'legendaire' : r < 0.2 ? 'epique' : r < 0.5 ? 'rare' : 'commun'
+  return r < 0.01 ? 'exotique' : r < 0.05 ? 'legendaire' : r < 0.2 ? 'epique' : r < 0.5 ? 'rare' : 'commun'
 }
 
 // Couverture d'un album (une famille) : photo, nom, cartes obtenues
@@ -51,14 +54,36 @@ function CouvertureAlbum({ k, onOuvrir }: { k: Famille; onOuvrir: () => void }) 
 }
 
 // Une carte à collectionner : photo, numéro, nom, liseré de rareté ; manquante = emplacement numéroté
-function CarteAlbum({ c, n, rarete, eue }: { c: Carte; n: number; rarete: Rarete; eue: boolean }) {
-  const r = RARETES[rarete]
+function CarteAlbum({ c, n, rarete, eue, onOuvrir }: { c: Carte; n: number; rarete: RareteCarte; eue: boolean; onOuvrir: () => void }) {
+  const r = RARETES_CARTE[rarete]
   if (!eue) return <div className="album-carte vide"><span>#{n}</span></div>
   return (
-    <div className={`album-carte ${rarete}`} style={{ ['--r' as string]: r.couleur }}>
+    <button type="button" onClick={onOuvrir} className={`album-carte ${rarete}`} style={{ ['--r' as string]: r.couleur }}>
       <span className="album-carte-photo">{c.img ? <Img src={c.img} alt="" loading="lazy" /> : null}</span>
       <span className="album-carte-nom">{c.nom}</span>
       <span className="album-carte-pied"><span>#{n}</span><span>{r.nom.fr}</span></span>
+    </button>
+  )
+}
+
+function FicheCarte({ c, rarete, onFermer }: { c: Carte; rarete: RareteCarte; onFermer: () => void }) {
+  const { lang } = usePrefs()
+  const [w, setW] = useState<{ texte: string; lien: string } | null>(null)
+  useEffect(() => {
+    fetch(`https://${lang}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(c.nom)}`).then((r) => (r.ok ? r.json() : null))
+      .then((j) => setW({ texte: j?.extract ?? '', lien: j?.content_urls?.desktop?.page ?? `https://${lang}.wikipedia.org/wiki/${encodeURIComponent(c.nom)}` })).catch(() => setW({ texte: '', lien: '' }))
+  }, [c.nom, lang])
+  const r = RARETES_CARTE[rarete]
+  return (
+    <div className="fiche-voile" onClick={onFermer}>
+      <div className={`card album-fiche ${rarete}`} style={{ ['--r' as string]: r.couleur }} onClick={(e) => e.stopPropagation()}>
+        <button type="button" className="btn btn-g fiche-fermer" aria-label={lang === 'fr' ? 'Fermer' : 'Close'} onClick={onFermer}><Icon d={ICONS.close} size={18} /></button>
+        {c.img && <Img src={c.img} alt="" className="album-fiche-img" />}
+        <span className="album-fiche-rarete">{r.nom[lang]}</span>
+        <h2 className="t">{c.nom}</h2>
+        <p>{w === null ? '…' : w.texte || (lang === 'fr' ? 'Pas de résumé disponible.' : 'No summary available.')}</p>
+        {w?.lien && <a href={w.lien} target="_blank" rel="noreferrer" className="btn btn-s"><Icon d={ICONS.link} size={16} />Wikipédia</a>}
+      </div>
     </div>
   )
 }
@@ -74,6 +99,7 @@ export default function Album() {
   const [page, setPage] = useState(0)
   const [sens, setSens] = useState<'g' | 'd'>('d')
   const toucher = useRef(0)
+  const [ouverte, setOuverte] = useState<{ c: Carte; r: RareteCarte } | null>(null)
   const [large, setLarge] = useState(() => window.matchMedia('(min-width: 900px)').matches)
   useEffect(() => { const m = window.matchMedia('(min-width: 900px)'); const h = () => setLarge(m.matches); m.addEventListener('change', h); return () => m.removeEventListener('change', h) }, [])
 
@@ -98,17 +124,19 @@ export default function Album() {
   const pages = Math.max(1, Math.ceil(liste.length / PAR_PAGE))
   const pas = large ? 2 : 1
   const tourner = (d: number) => { const p = Math.min(pages - 1, Math.max(0, page + d * pas)); const q = large ? p - (p % 2) : p; if (q !== page) { setSens(d > 0 ? 'd' : 'g'); setPage(q) } }
-  const pageCartes = (p: number) => liste.slice(p * PAR_PAGE, p * PAR_PAGE + PAR_PAGE).map((c, j) => { const i = p * PAR_PAGE + j; return <CarteAlbum key={c.id} c={c} n={i + 1} rarete={rareteCarte(i, liste.length)} eue={eues.has(c.id)} /> })
+  const pageCartes = (p: number) => liste.slice(p * PAR_PAGE, p * PAR_PAGE + PAR_PAGE).map((c, j) => { const i = p * PAR_PAGE + j; const rr = rareteCarte(i, liste.length); return <CarteAlbum key={c.id} c={c} n={i + 1} rarete={rr} eue={eues.has(c.id)} onOuvrir={() => setOuverte({ c, r: rr })} /> })
 
   // ——— Un album ouvert : onglets des quiz, pages de 9 cartes qu'on feuillette ———
   return (
+    <>
+    {ouverte && <FicheCarte c={ouverte.c} rarete={ouverte.r} onFermer={() => setOuverte(null)} />}
     <div className="album" style={{ ['--k' as string]: `var(--${famille})`, ['--ki' as string]: `var(--${famille}-i)`, ['--kt' as string]: `var(--${famille}-t)` }}>
       <button type="button" onClick={() => setFamille(null)} className="mag-retour"><Icon d={ICONS.arrowL} />{fr ? 'Mes albums' : 'My albums'}</button>
       <h1 className="t" style={{ fontSize: 26, fontWeight: 900, color: 'var(--ki)' }}>{f.nom[lang]}</h1>
       <div className="album-onglets">
         {subs.map((s) => <button key={s.id} type="button" className="pill" aria-pressed={quiz === s.id} onClick={() => setQuiz(s.id)}>{s.nom[lang]} <small>{album[s.id]?.length ?? 0}</small></button>)}
       </div>
-      <div className="album-classeur" onTouchStart={(e) => { toucher.current = e.touches[0].clientX }} onTouchEnd={(e) => { const dx = e.changedTouches[0].clientX - toucher.current; if (Math.abs(dx) > 50) tourner(dx < 0 ? 1 : -1) }}>
+      <div className="album-classeur" onPointerDown={(e) => { toucher.current = e.clientX }} onPointerUp={(e) => { const dx = e.clientX - toucher.current; if (Math.abs(dx) > 60) { tourner(dx < 0 ? 1 : -1); toucher.current = -1e9 } }} onClickCapture={(e) => { if (toucher.current === -1e9) { e.stopPropagation(); toucher.current = 0 } }}>
         {!cartes && <p style={{ color: 'var(--muted)', padding: 30 }}>…</p>}
         {cartes && liste.length === 0 && <p style={{ color: 'var(--muted)', padding: 30 }}>{fr ? 'Pas de cartes pour ce quiz.' : 'No cards for this quiz.'}</p>}
         {cartes && liste.length > 0 && (
@@ -126,5 +154,6 @@ export default function Album() {
         </div>
       )}
     </div>
+    </>
   )
 }

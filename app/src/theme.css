@@ -851,7 +851,7 @@ body.glisse-en-cours { user-select: none; }
 .histoire-tete { display: flex; flex-direction: column; gap: 6px; }
 .histoire-tete h1 { font-size: 30px; font-weight: 900; }
 .histoire-tete p, .histoire-tete small { color: var(--muted); font-size: 14px; }
-.carte-region { position: relative; height: 690px; border-radius: 28px; overflow: hidden; box-shadow: inset 0 0 0 3px rgba(255,255,255,.35), 0 10px 26px rgba(0,0,0,.12); }
+.carte-region { position: relative; height: 870px; border-radius: 28px; overflow: hidden; box-shadow: inset 0 0 0 3px rgba(255,255,255,.35), 0 10px 26px rgba(0,0,0,.12); }
 .carte-region.fermee { filter: grayscale(.7) brightness(.9); }
 .carte-region-titre { position: absolute; top: 14px; left: 16px; z-index: 2; font-size: 19px; font-weight: 900; padding: 6px 12px; border-radius: 14px; background: rgba(255,255,255,.25); backdrop-filter: blur(6px); }
 .carte-deco { position: absolute; font-size: 30px; opacity: .55; transform: translate(-50%, -50%); pointer-events: none; }
@@ -932,3 +932,63 @@ body.glisse-en-cours { user-select: none; }
 .raccourci.grand span { font-size: 44px; }
 .raccourci.grand strong { font-size: 22px; }
 @media (max-width: 560px) { .profil-raccourcis { grid-template-columns: repeat(3, minmax(0, 1fr)); } .raccourci.grand { grid-column: span 3; grid-row: auto; flex-direction: row; align-items: center; gap: 10px; } .raccourci.grand small { margin-left: auto; } }
+
+/* Question : outils cachés, verdict en bas, fiche par-dessus */
+.bonus-barre { display: none !important; }
+.outils { position: fixed; left: 14px; bottom: calc(14px + env(safe-area-inset-bottom)); z-index: 20; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+.outils-bouton { width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); color: var(--his-i); box-shadow: var(--shadow); display: flex; align-items: center; justify-content: center; cursor: pointer; opacity: .75; }
+.outils.ouvert .outils-bouton, .outils-bouton:hover { opacity: 1; }
+.outils-menu { display: flex; flex-direction: column; min-width: 230px; padding: 6px; border-radius: 16px; background: var(--surface); border: 1px solid var(--line); box-shadow: 0 12px 30px rgba(0,0,0,.18); }
+.outils-menu button, .outils-info { display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 10px; border: 0; border-radius: 10px; background: none; font: 600 15px 'DM Sans', sans-serif; color: var(--text); cursor: pointer; text-align: left; }
+.outils-menu button:hover { background: var(--surface2); }
+.outils-menu button span { margin-left: auto; display: inline-flex; align-items: center; gap: 3px; font-weight: 800; color: var(--his-i); }
+.barre-suivant { display: none !important; }
+.barre-verdict { position: fixed; left: 0; right: 0; bottom: 0; z-index: 25; display: flex; align-items: center; gap: 10px; padding: 12px 16px calc(12px + env(safe-area-inset-bottom)); background: var(--surface); border-top: 3px solid var(--ok); box-shadow: 0 -8px 24px rgba(0,0,0,.08); animation: rise .2s ease-out; }
+.barre-verdict.juste { background: var(--ok-t); }
+.barre-verdict.faux { background: var(--ko-t); border-top-color: var(--ko); }
+.barre-verdict-texte { flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px; }
+.barre-verdict-texte > span { display: flex; flex-direction: column; min-width: 0; }
+.barre-verdict-texte strong { font: 900 18px Nunito, sans-serif; }
+.barre-verdict-texte small { font-size: 14px; font-weight: 600; overflow-wrap: anywhere; }
+.barre-verdict-info { width: 46px; min-width: 46px; height: 46px; padding: 0; border-radius: 50%; font: 900 20px Nunito, sans-serif; background: var(--surface); border: 1px solid var(--line); }
+.barre-verdict-suivant { min-width: 150px; }
+.fiche-voile { position: fixed; inset: 0; z-index: 40; display: flex; align-items: flex-end; justify-content: center; padding: 16px; background: rgba(12, 14, 20, .45); animation: rise .2s ease-out; }
+@media (min-width: 761px) { .fiche-voile { align-items: center; } }
+.fiche-savoir { max-height: 80vh; overflow-y: auto; }
+.fiche-fermer { position: absolute; top: 10px; right: 10px; min-height: 38px; padding: 0 10px; }
+.partie { padding-bottom: 110px !important; }
+@media (max-width: 760px) {
+  .partie h1.t { font-size: 22px !important; overflow-wrap: anywhere; }
+  .question-image { height: min(46vh, 380px) !important; }
+  .barre-verdict { padding: 10px 12px calc(10px + env(safe-area-inset-bottom)); gap: 8px; }
+  .barre-verdict-suivant { min-width: 0; flex: 0 0 auto; padding: 0 18px; }
+  .barre-verdict-texte strong { font-size: 16px; }
+  .fiche-savoir { padding: 18px !important; gap: 14px !important; }
+  .fiche-savoir .btn-suivant-fiche { width: 100%; }
+  .grille-reponses > button span { overflow-wrap: anywhere; line-height: 1.2; }
+}
+
+/* Album : tout tient dans l'écran (PC), glisser pour tourner, fiche de carte, rareté Exotique */
+.album-classeur { touch-action: pan-y; user-select: none; cursor: grab; }
+.album-carte { border: 0; padding: 0; font: inherit; color: inherit; text-align: left; cursor: pointer; }
+.album-carte.exotique { box-shadow: 0 0 0 3px transparent, 0 4px 10px rgba(0,0,0,.12); background: linear-gradient(var(--surface), var(--surface)) padding-box, conic-gradient(#FF4FD8, #5B8DEF, #4FAE6A, #FFE08A, #FF4FD8) border-box; border: 3px solid transparent; }
+.album-carte.exotique::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(115deg, transparent 35%, rgba(255,79,216,.35) 50%, transparent 65%); background-size: 250% 100%; animation: brille 2.4s ease-in-out infinite; }
+@media (min-width: 900px) {
+  .album-double .album-page { grid-template-columns: repeat(3, auto); justify-content: center; }
+  .album-double .album-carte, .album-double .album-carte.vide { width: min(150px, calc((100vh - 330px) / 3 * 5 / 7)); }
+}
+.album-fiche { position: relative; width: 100%; max-width: 440px; padding: 20px; display: flex; flex-direction: column; gap: 10px; align-items: center; text-align: center; box-shadow: 0 0 0 3px var(--r), 0 20px 40px rgba(0,0,0,.3); max-height: 85vh; overflow-y: auto; }
+.album-fiche-img { width: 100%; max-height: 260px; object-fit: contain; border-radius: 14px; background: var(--surface2); }
+.album-fiche-rarete { font: 900 12px Nunito, sans-serif; letter-spacing: .15em; text-transform: uppercase; color: var(--r); }
+.album-fiche h2 { font-size: 24px; font-weight: 900; }
+.album-fiche p { font-size: 14.5px; line-height: 1.5; color: var(--muted); text-align: left; }
+
+/* Boutique bien visible : fond sombre contrasté */
+.raccourci.grand { position: relative; background: radial-gradient(circle at 85% 15%, #FFE08A 0, transparent 40%), linear-gradient(140deg, #2B2560, #6D28D9) !important; color: #fff !important; box-shadow: 0 10px 24px rgba(80, 40, 160, .35); }
+.raccourci.grand small { opacity: .9; }
+.raccourci-badge { position: absolute; top: 10px; right: 10px; font: 800 11px Nunito, sans-serif; font-style: normal; padding: 3px 8px; border-radius: 999px; background: #FFE08A; color: #3A2A00; }
+
+/* Décors en orbite autour de l'avatar (GPU : une seule rotation par avatar) */
+.orbite { position: absolute; inset: -14%; z-index: 3; pointer-events: none; animation: tourne 9s linear infinite; }
+.orbite > span { position: absolute; left: 50%; top: 50%; font-size: calc(var(--t) * .26); line-height: 1; transform: rotate(calc(360deg / var(--n) * var(--i))) translateY(calc(var(--t) * -.62)) rotate(calc(-360deg / var(--n) * var(--i))); margin: calc(var(--t) * -.13) 0 0 calc(var(--t) * -.13); }
+@media (prefers-reduced-motion: reduce) { .orbite { animation: none; } }

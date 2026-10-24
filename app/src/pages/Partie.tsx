@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom'
 import { ETAPES, seuilEtape, validerEtape } from '../aventure'
 import { publierScoreJour } from '../jour'
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react'
@@ -70,6 +71,8 @@ export default function Partie() {
   const [i, setI] = useState(0)
   const [reponses, setReponses] = useState<Reponse[]>([])
   const [saisie, setSaisie] = useState('')
+  const [outils, setOutils] = useState(false)
+  const [ficheOuverte, setFicheOuverte] = useState(false)
   const [restant, setRestant] = useState(chrono)
   const [combo, setCombo] = useState(0)
   const [comboMax, setComboMax] = useState(0)
@@ -132,6 +135,7 @@ export default function Partie() {
   useEffect(() => demarrer(params.get('ids')?.split(',')), [])
 
   const q = questions?.[i]
+  useEffect(() => { setOutils(false); setFicheOuverte(false) }, [i])
   const courante = reponses[i] as Reponse | undefined
 
   const enregistrer = useCallback((r: Omit<Reponse, 'q'>) => {
@@ -313,7 +317,6 @@ export default function Partie() {
       </header>
       {chrono > 0 && <BarreChrono restant={restant} total={chrono} actif={!courante} />}
       {infoMj && <span className="chip mini-jeu-chip">{infoMj.icone} {infoMj.nom[lang]}</span>}
-      {!infoMj && q.jeu && <span key={i} className="chip mini-jeu-chip rise">{q.jeu === 'libre' ? (lang === 'fr' ? '✍️ Saisie libre' : '✍️ Free typing') : `${infoMiniJeu(q.jeu)?.icone} ${infoMiniJeu(q.jeu)?.nom[lang]}`}</span>}
 
       <section key={i} className="rise" style={{ width: '100%', maxWidth: 1040, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 24 }}>
         {q.boss && <span className="chip boss rise">{lang === 'fr' ? 'Question boss · +30 pièces' : 'Boss question · +30 coins'}</span>}
@@ -377,24 +380,27 @@ export default function Partie() {
           </form>
         )}
 
-        {/* Bonus : 15 pièces chacun (pas en Légende) */}
-        {!courante && !legende && prefs.bonus && (
-          <div className="bonus-barre">
-            {chrono > 0 && <button type="button" className="btn btn-s" onClick={() => acheterBonus(() => setRestant((r) => r + 10))} title="+10 s">⏱️<span className="bonus-txt">+10 s</span> <Piece size={15} />{PRIX_BONUS}</button>}
-            <button type="button" className="btn btn-s" onClick={() => acheterBonus(() => enregistrer({ donnee: lang === 'fr' ? '(passée)' : '(skipped)', juste: true }))} title={lang === 'fr' ? 'Passer' : 'Skip'}>⏭️<span className="bonus-txt">{lang === 'fr' ? 'Passer' : 'Skip'}</span> <Piece size={15} />{PRIX_BONUS}</button>
-            {q.options.length > 0 && secondeChance !== i && <button type="button" className="btn btn-s" onClick={() => acheterBonus(() => setSecondeChance(i))} title={lang === 'fr' ? 'Seconde chance' : 'Second chance'}>🔁<span className="bonus-txt">{lang === 'fr' ? 'Seconde chance' : 'Second chance'}</span> <Piece size={15} />{PRIX_BONUS}</button>}
-            {!double && <button type="button" className="btn btn-s" onClick={() => acheterBonus(() => setDouble(true))} title="Points ×2">✖️2<span className="bonus-txt">Points ×2</span> <Piece size={15} />{PRIX_BONUS}</button>}
-          </div>
+        {/* Bonus et indice : cachés dans un petit menu, pour laisser toute la place à la question */}
+        {!courante && !legende && createPortal(
+          <div className={`outils${outils ? ' ouvert' : ''}`}>
+            {outils && (
+              <div className="outils-menu rise" role="menu">
+                {!q.carte && (indice?.i === i
+                  ? indice.lettre && <span className="outils-info"><Icon d={ICONS.bulb} size={16} />{indice.lettre}</span>
+                  : <button type="button" role="menuitem" onClick={() => { demanderIndice(); setOutils(false) }}><Icon d={ICONS.bulb} size={16} />{q.options.length ? (lang === 'fr' ? 'Indice 50/50' : '50/50 hint') : (lang === 'fr' ? 'Première lettre' : 'First letter')}<span><Piece size={14} />{PRIX_INDICE}</span></button>)}
+                {prefs.bonus && <>
+                  {chrono > 0 && <button type="button" role="menuitem" onClick={() => { acheterBonus(() => setRestant((r) => r + 10)); setOutils(false) }}>{lang === 'fr' ? '+10 secondes' : '+10 seconds'}<span><Piece size={14} />{PRIX_BONUS}</span></button>}
+                  <button type="button" role="menuitem" onClick={() => { acheterBonus(() => enregistrer({ donnee: lang === 'fr' ? '(passée)' : '(skipped)', juste: true })); setOutils(false) }}>{lang === 'fr' ? 'Passer (comptée juste)' : 'Skip (counts as right)'}<span><Piece size={14} />{PRIX_BONUS}</span></button>
+                  {q.options.length > 0 && secondeChance !== i && <button type="button" role="menuitem" onClick={() => { acheterBonus(() => setSecondeChance(i)); setOutils(false) }}>{lang === 'fr' ? 'Seconde chance' : 'Second chance'}<span><Piece size={14} />{PRIX_BONUS}</span></button>}
+                  {!double && <button type="button" role="menuitem" onClick={() => { acheterBonus(() => setDouble(true)); setOutils(false) }}>{lang === 'fr' ? 'Points ×2' : 'Points ×2'}<span><Piece size={14} />{PRIX_BONUS}</span></button>}
+                </>}
+              </div>
+            )}
+            <button type="button" className="outils-bouton" aria-label={lang === 'fr' ? 'Indices et bonus' : 'Hints and boosts'} aria-expanded={outils} onClick={() => setOutils((o) => !o)}><Icon d={outils ? ICONS.close : ICONS.bulb} size={20} /></button>
+          </div>, document.body
         )}
         {bonusMsg && <p role="status" style={{ fontSize: 14, fontWeight: 600, color: 'var(--mus-i)' }}>{bonusMsg}</p>}
-        {/* Indice payant : 50/50 en QCM, première lettre en saisie libre */}
-        {!courante && !q.carte && !legende && (indice?.i === i ? (
-          indice.lettre && <p className="rise" style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 700, color: 'var(--his-i)' }}><Icon d={ICONS.bulb} size={20} />{indice.lettre}</p>
-        ) : (
-          <button type="button" className="btn btn-s" onClick={demanderIndice} style={{ minHeight: 44, gap: 8 }}>
-            <Icon d={ICONS.bulb} size={18} />{q.options.length ? (lang === 'fr' ? 'Indice 50/50' : '50/50 hint') : (lang === 'fr' ? 'Indice' : 'Hint')} · <Piece size={16} />{PRIX_INDICE}
-          </button>
-        ))}
+        {indice?.i === i && indice.lettre && !courante && <p className="rise" style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 700, color: 'var(--his-i)' }}><Icon d={ICONS.bulb} size={20} />{indice.lettre}</p>}
         {msgIndice && !courante && <p role="status" style={{ fontSize: 14, color: 'var(--ko-i)' }}>{msgIndice}</p>}
 
         {courante && rapide && (
@@ -403,12 +409,17 @@ export default function Partie() {
             {courante.juste ? t('q.right') : `${t('q.answerWas')} ${courante.q.reponse}`}
           </p>
         )}
-        {courante && !rapide && <Fiche r={courante} onNext={suivant} dernier={i + 1 >= questions.length} k={k} />}
-        {/* Sur téléphone : bouton Suivant toujours à portée de pouce, la fiche reste à lire en faisant défiler */}
-        {courante && !rapide && (
-          <div className="barre-suivant">
-            <button className="btn btn-p btn-lg" onClick={suivant} style={{ width: '100%' }}>{i + 1 >= questions.length ? t('res.title') : t('q.next')}<Icon d={ICONS.arrowR} /></button>
-          </div>
+        {courante && !rapide && ficheOuverte && createPortal(<div className="fiche-voile" onClick={() => setFicheOuverte(false)}><div onClick={(e) => e.stopPropagation()} style={{ width: '100%', maxWidth: 760 }}><Fiche r={courante} onNext={() => { setFicheOuverte(false); suivant() }} dernier={i + 1 >= questions.length} k={k} onFermer={() => setFicheOuverte(false)} /></div></div>, document.body)}
+        {/* Après la réponse : le verdict, « ? » pour en savoir plus, et Suivant toujours sous le pouce */}
+        {courante && !rapide && createPortal(
+          <div className={`barre-verdict ${courante.juste ? 'juste' : 'faux'}`}>
+            <span className="barre-verdict-texte">
+              {courante.juste ? <Coche size={26} anim={false} /> : <Croix size={22} />}
+              <span><strong>{courante.juste ? t('q.right') : t('q.wrong')}</strong>{!courante.juste && courante.km === undefined && <small>{t('q.answerWas')} {courante.q.reponse}</small>}{courante.km !== undefined && <small>{lang === 'fr' ? `à ${courante.km} km` : `${courante.km} km away`}</small>}</span>
+            </span>
+            <button type="button" className="btn barre-verdict-info" aria-label={lang === 'fr' ? 'En savoir plus' : 'Learn more'} onClick={() => setFicheOuverte(true)}>?</button>
+            <button className="btn btn-p btn-lg barre-verdict-suivant" onClick={suivant} autoFocus>{i + 1 >= questions.length ? t('res.title') : t('q.next')}<Icon d={ICONS.arrowR} /></button>
+          </div>, document.body
         )}
       </section>
     </div>
@@ -435,7 +446,7 @@ function IntroMiniJeu({ info, total, onGo }: { info: InfoMiniJeu; total: number;
   )
 }
 
-function Fiche({ r, onNext, dernier, k }: { r: Reponse; onNext: () => void; dernier: boolean; k: string }) {
+function Fiche({ r, onNext, dernier, k, onFermer }: { r: Reponse; onNext: () => void; dernier: boolean; k: string; onFermer?: () => void }) {
   const { t, lang } = usePrefs()
   const f = r.q.fiche
   const seuil = r.q.carte?.seuilKm
@@ -444,7 +455,8 @@ function Fiche({ r, onNext, dernier, k }: { r: Reponse; onNext: () => void; dern
   const resume = useResume(f.wiki, faible)
   const saviez = faible && resume ? resume : f.saviez
   return (
-    <div className="card rise" role="status" style={{ width: '100%', padding: 28, display: 'flex', gap: 28, flexWrap: 'wrap', alignItems: 'center', borderColor: r.juste ? 'var(--ok)' : 'var(--ko)', borderWidth: 2 }}>
+    <div className="card rise fiche-savoir" role="dialog" style={{ position: 'relative', width: '100%', padding: 28, display: 'flex', gap: 28, flexWrap: 'wrap', alignItems: 'center', borderColor: r.juste ? 'var(--ok)' : 'var(--ko)', borderWidth: 2 }}>
+      {onFermer && <button type="button" className="btn btn-g fiche-fermer" aria-label="Fermer" onClick={onFermer}><Icon d={ICONS.close} size={18} /></button>}
       {f.image ? <Img src={f.image} alt="" style={{ width: 160, borderRadius: 12, border: '1px solid var(--line)', flex: 'none' }} /> : <ImageWiki wiki={f.wiki} />}
       <div style={{ flex: '1 1 340px', display: 'flex', flexDirection: 'column', gap: 12 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>

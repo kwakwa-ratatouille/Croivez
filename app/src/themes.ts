@@ -15,7 +15,8 @@ export const FAMILLES: { k: Famille; nom: Record<Lang, string>; icon: string; mo
     icon: 'M12 3.5a8.5 8.5 0 1 0 0 17a8.5 8.5 0 1 0 0-17ZM3.5 12h17M12 3.5c2.4 2.6 3.5 5.4 3.5 8.5s-1.1 5.9-3.5 8.5c-2.4-2.6-3.5-5.4-3.5-8.5s1.1-5.9 3.5-8.5Z',
     motif: 'M0 20 Q30 0 60 20 T120 20 M0 42 Q30 22 60 42 T120 42 M0 64 Q30 44 60 64 T120 64',
     subs: [
-      { id: 'drapeaux', nom: { fr: 'Drapeaux', en: 'Flags' }, jouable: 'drapeaux' },
+      { id: 'drapeaux', nom: { fr: 'Drapeaux du monde', en: 'World flags' }, jouable: 'drapeaux' },
+      j('drapeaux-europe', 'Drapeaux d’Europe', 'European flags'), j('drapeaux-afrique', 'Drapeaux d’Afrique', 'African flags'), j('drapeaux-asie', 'Drapeaux d’Asie', 'Asian flags'), j('drapeaux-ameriques', 'Drapeaux des Amériques', 'Flags of the Americas'), j('drapeaux-oceanie', 'Drapeaux d’Océanie', 'Oceania flags'),
       { id: 'drapeaux-inverse', nom: { fr: 'Trouver le drapeau', en: 'Find the flag' }, jouable: 'drapeaux-inverse' },
       { id: 'capitales', nom: { fr: 'Capitales', en: 'Capitals' }, jouable: 'capitales' },
       { id: 'capitales-inverse', nom: { fr: 'Capitale → pays', en: 'Capital → country' }, jouable: 'capitales-inverse' },

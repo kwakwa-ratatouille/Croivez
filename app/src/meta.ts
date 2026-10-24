@@ -91,6 +91,7 @@ export type Objet = {
   id: string; type: 'avatar' | 'cadre' | 'titre'; nom: Record<Lang, string>; prix: number
   categorie?: 'metier' | 'animal' | 'fun' | 'famille'
   k?: Famille; couleur?: string; perso?: string; animal?: string; emoji?: string; anim?: string
+  orbite?: string[] // petits éléments qui tournent autour de l'avatar (planètes, notes, feuilles…)
   condition?: { desc: Record<Lang, string>; test: (p: Profile) => boolean }
 }
 const NOMS_PERSOS: Record<string, [string, string]> = {
@@ -171,8 +172,8 @@ export const BOUTIQUE: Objet[] = [
   { id: 'cadre-bronze', type: 'cadre', nom: { fr: 'Cadre bronze', en: 'Bronze frame' }, prix: 80, couleur: '#C98B5A' },
   { id: 'cadre-argent', type: 'cadre', nom: { fr: 'Cadre argent', en: 'Silver frame' }, prix: 200, couleur: '#9AA3AD' },
   { id: 'cadre-or', type: 'cadre', nom: { fr: 'Cadre or', en: 'Gold frame' }, prix: 400, couleur: '#D8B04A' },
-  { id: 'cadre-bonbon', type: 'cadre', nom: { fr: 'Bonbon', en: 'Candy' }, prix: 300, couleur: 'repeating-conic-gradient(#FF8FB1 0 20deg, #fff 20deg 40deg)', anim: 'tourne' },
-  { id: 'cadre-ocean', type: 'cadre', nom: { fr: 'Océan', en: 'Ocean' }, prix: 500, couleur: 'conic-gradient(#0EA5E9, #22D3EE, #6366F1, #0EA5E9)', anim: 'vague' },
+  { id: 'cadre-bonbon', type: 'cadre', nom: { fr: 'Bonbon', en: 'Candy' }, prix: 300, couleur: 'repeating-conic-gradient(#FF8FB1 0 20deg, #fff 20deg 40deg)', anim: 'tourne', orbite: ['🍬', '🍭', '🍬'] },
+  { id: 'cadre-ocean', type: 'cadre', nom: { fr: 'Océan', en: 'Ocean' }, prix: 500, couleur: 'conic-gradient(#0EA5E9, #22D3EE, #6366F1, #0EA5E9)', anim: 'vague', orbite: ['🫧', '🐟', '🫧'] },
   { id: 'cadre-arcenciel', type: 'cadre', nom: { fr: 'Arc-en-ciel', en: 'Rainbow' }, prix: 800, couleur: 'conic-gradient(#E0997A, #DDB65E, #8FD3B6, #6BB8C4, #B3A3DB, #E0997A)', anim: 'tourne' },
   { id: 'cadre-aurore', type: 'cadre', nom: { fr: 'Aurore boréale', en: 'Aurora' }, prix: 1500, couleur: 'conic-gradient(#34D399, #22D3EE, #A78BFA, #F472B6, #34D399)', anim: 'tourne holo' },
   // Cadres de compétence : gratuits mais gagnés, de plus en plus spectaculaires
@@ -187,11 +188,11 @@ export const BOUTIQUE: Objet[] = [
   { id: 'cadre-neon', type: 'cadre', nom: { fr: 'Néon', en: 'Neon' }, prix: 0, couleur: 'conic-gradient(#FF00E5, #00F0FF, #FF00E5)', anim: 'neon', condition: EXPLOITS.tv5 },
   { id: 'cadre-givre', type: 'cadre', nom: { fr: 'Givre', en: 'Frost' }, prix: 0, couleur: 'conic-gradient(#E0F2FE, #7DD3FC, #FFFFFF, #38BDF8, #E0F2FE)', anim: 'brille glace', condition: EXPLOITS.survie25 },
   { id: 'cadre-foudre', type: 'cadre', nom: { fr: 'Foudre', en: 'Thunder' }, prix: 0, couleur: 'conic-gradient(#FACC15, #1E1B4B, #FACC15, #1E1B4B, #FACC15)', anim: 'eclair', condition: EXPLOITS.express30 },
-  { id: 'cadre-lave', type: 'cadre', nom: { fr: 'Lave', en: 'Lava' }, prix: 0, couleur: 'conic-gradient(#7F1D1D, #F97316, #7F1D1D, #FACC15, #7F1D1D)', anim: 'vague feu', condition: EXPLOITS.duels5 },
+  { id: 'cadre-lave', type: 'cadre', nom: { fr: 'Magma', en: 'Magma' }, prix: 0, couleur: 'repeating-conic-gradient(#160700 0 14deg, #FF3D00 14deg 18deg, #160700 18deg 31deg, #FFB000 31deg 33deg)', anim: 'tourne', orbite: ['🔥', '🪨', '🔥'], condition: EXPLOITS.duels5 },
   { id: 'cadre-holo', type: 'cadre', nom: { fr: 'Holographique', en: 'Holographic' }, prix: 0, couleur: 'conic-gradient(#F0ABFC, #A5F3FC, #FDE68A, #A7F3D0, #F0ABFC)', anim: 'tourne holo', condition: EXPLOITS.miniJeux },
-  { id: 'cadre-galaxie', type: 'cadre', nom: { fr: 'Galaxie', en: 'Galaxy' }, prix: 0, couleur: 'conic-gradient(#0F0C29, #6D28D9, #DB2777, #0F0C29, #2563EB, #0F0C29)', anim: 'tourne etoiles', condition: EXPLOITS.erud2000 },
+  { id: 'cadre-galaxie', type: 'cadre', nom: { fr: 'Galaxie', en: 'Galaxy' }, prix: 0, couleur: 'conic-gradient(#0F0C29, #6D28D9, #DB2777, #0F0C29, #2563EB, #0F0C29)', anim: 'tourne etoiles', orbite: ['🪐', '🌍', '🌕'], condition: EXPLOITS.erud2000 },
   { id: 'cadre-pixel', type: 'cadre', nom: { fr: 'Pixel', en: 'Pixel' }, prix: 0, couleur: 'repeating-conic-gradient(#22C55E 0 15deg, #3B82F6 15deg 30deg, #EF4444 30deg 45deg, #FACC15 45deg 60deg)', anim: 'tourne', condition: EXPLOITS.jv },
-  { id: 'cadre-seve', type: 'cadre', nom: { fr: 'Sève', en: 'Sap' }, prix: 0, couleur: 'conic-gradient(#14532D, #4ADE80, #A3E635, #14532D)', anim: 'vague', condition: EXPLOITS.nat },
+  { id: 'cadre-seve', type: 'cadre', nom: { fr: 'Sève', en: 'Sap' }, prix: 0, couleur: 'conic-gradient(#14532D, #4ADE80, #A3E635, #14532D)', anim: 'vague', orbite: ['🍃', '🌸', '🍃'], condition: EXPLOITS.nat },
 
   // Titres : affichés sous le pseudo, tous gagnés
   ...([
@@ -227,6 +228,27 @@ export const BOUTIQUE: Objet[] = [
   // Pass de saison : palier 10 (titre) et palier 20 (cadre animé)
   { id: 'titre-saison', type: 'titre', nom: { fr: 'De la saison', en: 'Of the season' }, prix: 0, condition: { desc: { fr: 'Pass de saison : palier 10', en: 'Season pass tier 10' }, test: (p) => !!p.possede?.includes('titre-saison') } },
   { id: 'cadre-saison', type: 'cadre', nom: { fr: 'Saison', en: 'Season' }, prix: 0, couleur: 'conic-gradient(#8E8CD8, #6BB8C4, #F29BB0, #8E8CD8)', anim: 'tourne brille', condition: { desc: { fr: 'Pass de saison : palier 20', en: 'Season pass tier 20' }, test: (p) => !!p.possede?.includes('cadre-saison') } },
+  // ——— Récompenses de sections : chaque famille dont on ouvre la Légende donne un cadre animé et un titre ———
+  ...FAMILLES.flatMap((f): Objet[] => {
+    const orb = ({"geo":["🌍","🧭","🗺️"],"cine":["🎬","🍿","⭐"],"mus":["🎵","🎸","🎶"],"nat":["🍃","🦋","🌸"],"sci":["⚛️","🧪","🔭"],"his":["🏛️","👑","📜"],"brd":["🏷️","💎","🛍️"],"spo":["⚽","🏀","🏆"],"lit":["📚","✒️","📖"],"jv":["🎮","👾","🕹️"],"ani":["⭐","🍥","🗡️"],"vie":["🏠","🚗","🧀"],"mot":["🔤","💬","📝"],"tec":["💻","📱","⚡"],"esp":["🪐","🚀","🌙"],"cui":["🍳","🥐","🍝"],"pop":["📺","🎤","✨"]} as Record<string, string[]>)[f.k] ?? ['✨', '⭐', '✨']
+    const titre = ({"geo":"Globe-trotteur","cine":"Cinéphile absolu","mus":"Oreille d’or","nat":"Âme de la nature","sci":"Génie","his":"Mémoire vivante","brd":"Marketeur","spo":"Champion·ne","lit":"Rat de bibliothèque","jv":"Pro gamer","ani":"Otaku","vie":"Débrouillard·e","mot":"Maître des mots","tec":"Hacker","esp":"Astronaute","cui":"Chef étoilé","pop":"Star de la pop culture"} as Record<string, string>)[f.k] ?? `Maître : ${f.nom.fr}`
+    const cond = { desc: { fr: `Ouvrir la Légende : ${f.nom.fr}`, en: `Unlock the Legend: ${f.nom.en}` }, test: (p: Profile) => legendeOuverte(f.k, p) }
+    return [
+      { id: `cadre-maitre-${f.k}`, type: 'cadre', nom: { fr: `Maître · ${f.nom.fr}`, en: `Master · ${f.nom.en}` }, prix: 0, couleur: `conic-gradient(var(--${f.k}), #FFE08A, var(--${f.k}-i), var(--${f.k}))`, anim: 'tourne brille', orbite: orb, condition: cond },
+      { id: `titre-maitre-${f.k}`, type: 'titre', nom: { fr: titre, en: titre }, prix: 0, condition: cond },
+    ]
+  }),
+  // ——— Mode histoire terminé ———
+  { id: 'cadre-tour-du-monde', type: 'cadre', nom: { fr: 'Tour du monde', en: 'World tour' }, prix: 0, couleur: 'conic-gradient(#4FAE6A, #3A86C8, #E3A72F, #8E4FC4, #4FAE6A)', anim: 'tourne holo', orbite: ['🌍', '✈️', '🗺️'], condition: { desc: { fr: 'Finir le mode histoire', en: 'Finish story mode' }, test: (p: Profile) => (p.aventure ?? 0) >= 64 } },
+  { id: 'cadre-mi-parcours', type: 'cadre', nom: { fr: 'Voyageur', en: 'Traveller' }, prix: 0, couleur: 'conic-gradient(#3A86C8, #8ED3F0, #3A86C8)', anim: 'vague', orbite: ['🧭', '🎒'], condition: { desc: { fr: 'Atteindre le 4ᵉ monde du mode histoire', en: 'Reach story world 4' }, test: (p: Profile) => (p.aventure ?? 0) >= 24 } },
+  { id: 'titre-tour-du-monde', type: 'titre', nom: { fr: 'Aventurier·ère du monde', en: 'World adventurer' }, prix: 0, condition: { desc: { fr: 'Finir le mode histoire', en: 'Finish story mode' }, test: (p: Profile) => (p.aventure ?? 0) >= 64 } },
+  { id: 'titre-premier-boss', type: 'titre', nom: { fr: 'Tueur de boss', en: 'Boss slayer' }, prix: 0, condition: { desc: { fr: 'Battre le premier boss du mode histoire', en: 'Beat the first story boss' }, test: (p: Profile) => (p.aventure ?? 0) >= 8 } },
+  { id: 'perso-astronaute-or', type: 'avatar', nom: { fr: 'Explorateur·rice doré·e', en: 'Golden explorer' }, prix: 0, perso: 'astronaute', categorie: 'metier', condition: { desc: { fr: 'Finir le mode histoire', en: 'Finish story mode' }, test: (p: Profile) => (p.aventure ?? 0) >= 64 } },
+  { id: 'avatar-boss', type: 'avatar', nom: { fr: 'Boss', en: 'Boss' }, prix: 0, emoji: '👑', categorie: 'fun', condition: { desc: { fr: 'Battre 4 boss du mode histoire', en: 'Beat 4 story bosses' }, test: (p: Profile) => (p.aventure ?? 0) >= 32 } },
+  { id: 'cadre-rare-saison', type: 'cadre', nom: { fr: 'Étoile filante', en: 'Shooting star' }, prix: 1200, couleur: 'conic-gradient(#0F172A, #1E3A8A, #0F172A)', anim: 'tourne etoiles', orbite: ['☄️', '⭐', '✨'] },
+  { id: 'cadre-coeurs', type: 'cadre', nom: { fr: 'Cœurs', en: 'Hearts' }, prix: 600, couleur: 'conic-gradient(#F472B6, #FB7185, #F472B6)', anim: 'pulse', orbite: ['💖', '💕', '💗'] },
+  { id: 'cadre-musique', type: 'cadre', nom: { fr: 'Mélodie', en: 'Melody' }, prix: 700, couleur: 'conic-gradient(#6D28D9, #DB2777, #6D28D9)', anim: 'tourne', orbite: ['🎵', '🎶', '🎵'] },
+  { id: 'cadre-hiver', type: 'cadre', nom: { fr: 'Hiver', en: 'Winter' }, prix: 700, couleur: 'conic-gradient(#E0F2FE, #93C5FD, #E0F2FE)', anim: 'brille glace', orbite: ['❄️', '⛄', '❄️'] },
 ]
 export const possede = (p: Profile | null | undefined, o: Objet) => (o.condition ? !!p && o.condition.test(p) : o.prix === 0 || !!p?.possede?.includes(o.id))
 
