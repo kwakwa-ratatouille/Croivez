@@ -3,6 +3,7 @@ import { signOut } from 'firebase/auth'
 import { auth, natif } from '../firebase'
 import { App } from '@capacitor/app'
 import { CapacitorUpdater } from '@capgo/capacitor-updater'
+import { appliquerMaintenant, verifierMiseAJour } from '../components/MiseAJour'
 import { useAuth } from '../auth'
 import { usePrefs } from '../i18n'
 import { FAMILLES } from '../themes'
@@ -23,6 +24,22 @@ export default function Parametres() {
 
   const majTaille = () => tailleCache().then(setTaille)
   useEffect(() => { majTaille() }, [])
+
+  // Diagnostic : chaque étape de la mise à jour, avec l'erreur exacte en cas d'échec
+  const [journal, setJournal] = useState<string[]>([])
+  const [pret, setPret] = useState<string | null>(null)
+  async function verifier() {
+    const lignes: string[] = []
+    const noter = (l: string) => { lignes.push(l); setJournal([...lignes]) }
+    setPret(null)
+    try {
+      const r = await verifierMiseAJour(noter)
+      if (r.type === 'pret') setPret(r.id)
+      if (r.type === 'ipa') noter(`Nouvelle version native ${r.version} à installer via SideStore.`)
+    } catch (e) {
+      noter(`ERREUR : ${String((e as Error)?.message ?? e)}`)
+    }
+  }
 
   // Versions installées : utile pour comprendre une mise à jour qui n'arrive pas
   const [versions, setVersions] = useState('')
@@ -89,6 +106,15 @@ export default function Parametres() {
             <span className="t" style={titre}>{t('set.account')}</span>
             <span style={{ color: 'var(--muted)' }}>{profile?.pseudo} · {user?.email}</span>
             <span style={{ color: 'var(--muted)', fontSize: 13 }}>Version : {versions}</span>
+            {natif && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 6 }}>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  <button className="btn btn-s" style={{ minHeight: 40 }} onClick={verifier}>{fr ? 'Vérifier les mises à jour' : 'Check for updates'}</button>
+                  {pret && <button className="btn btn-p" style={{ minHeight: 40 }} onClick={() => appliquerMaintenant(pret)}>{fr ? 'Redémarrer' : 'Restart'}</button>}
+                </div>
+                {journal.length > 0 && <pre style={{ margin: 0, padding: 10, borderRadius: 12, background: 'var(--surface2)', fontSize: 12, whiteSpace: 'pre-wrap', color: 'var(--text)' }}>{journal.join('\n')}</pre>}
+              </div>
+            )}
           </div>
           <button className="btn btn-g" onClick={() => signOut(auth)}>{t('set.logout')}</button>
         </div>

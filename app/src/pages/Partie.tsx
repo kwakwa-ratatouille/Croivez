@@ -409,7 +409,7 @@ function Resultat({ reponses, xp, pieces, score, comboMax, k, onReplay }: { repo
             {score.toLocaleString(lang === 'fr' ? 'fr-FR' : 'en-GB')} pts
             {comboMax >= 3 && <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--muted)' }}> · {lang === 'fr' ? `meilleur combo ${comboMax}` : `best combo ${comboMax}`}</span>}
           </p>
-          <div style={{ display: 'flex', gap: 40, position: 'relative' }}>
+          <div className="res-stats" style={{ display: 'flex', gap: 28, position: 'relative', flexWrap: 'wrap', justifyContent: 'center' }}>
             <div><div className="t" style={{ fontSize: 44, fontWeight: 900 }}>{bonnes}/{reponses.length}</div><div style={{ color: 'var(--muted)' }}>{t('res.score')}</div></div>
             <div><div className="t" style={{ fontSize: 44, fontWeight: 900, color: 'var(--ok-i)' }}>+{xp}</div><div style={{ color: 'var(--muted)' }}>{t('res.xp')}</div></div>
             <div><div className="t" style={{ fontSize: 44, fontWeight: 900, color: 'var(--his-i)', display: 'flex', alignItems: 'center', gap: 8 }}><Piece size={36} />+{pieces}</div><div style={{ color: 'var(--muted)' }}>{lang === 'fr' ? 'pièces' : 'coins'}</div></div>

@@ -158,3 +158,11 @@ button { font-family: inherit; }
 .chip.boss { background: linear-gradient(90deg, var(--his-t), var(--ko-t)); color: var(--ko-i); font-size: 14px; padding: 0 16px; min-height: 34px; }
 .bonus-barre { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
 .bonus-barre .btn { min-height: 40px; padding: 0 12px; font-size: 14px; gap: 5px; }
+
+/* Résultat : les trois chiffres tiennent sur un écran de téléphone */
+@media (max-width: 760px) {
+  .res-stats { gap: 14px 20px !important; }
+  .res-stats .t { font-size: 32px !important; }
+  .res-stats svg { width: 26px; height: 26px; }
+  .partie .card { padding: 24px 16px !important; }
+}
