@@ -1,7 +1,7 @@
 // Chromecast : le téléphone (Android, ou un ordi avec Chrome) lance le récepteur Croivez sur la télé (public/cast.html),
 // qui crée une partie en mode télé et renvoie son code ; le téléphone rejoint alors la partie tout seul.
 // L'identifiant vient de la console Google Cast (application « Custom Receiver » pointant vers cast.html).
-export const CAST_APP_ID = ''
+export const CAST_APP_ID = '93E135C6'
 export const NS_CAST = 'urn:x-cast:fr.croivez.tv'
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
