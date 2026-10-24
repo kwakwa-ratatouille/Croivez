@@ -17,7 +17,7 @@ type Carte = { id: string; nom: string; img?: string }
 const PAR_PAGE = 9
 
 // Contenu d'un quiz pour l'album (les cartes possibles, des plus connues aux plus pointues)
-async function cartesDe(s: string, lang: 'fr' | 'en'): Promise<Carte[]> {
+export async function cartesDe(s: string, lang: 'fr' | 'en'): Promise<Carte[]> {
   if (estCulture(s)) {
     const items = (await (await fetch(`./packs/culture/${packCulture(s)}.json`)).json()) as ItemCulture[]
     return items.map((it) => ({ id: it.id, nom: it.n[lang], img: it.img }))

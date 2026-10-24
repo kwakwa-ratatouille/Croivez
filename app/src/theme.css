@@ -1504,3 +1504,36 @@ button.rang-palier[aria-pressed="true"] { background: color-mix(in srgb, var(--r
 .choix-vignette-img img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .choix-vignette.choisi .choix-vignette-img { box-shadow: 0 0 0 3px var(--mus); }
 .choix-vignette.hasard .choix-vignette-img { background: linear-gradient(135deg, #7B5CF0, #E25FA8); }
+
+/* Duel : tableau de scores en bandeau */
+.duel-tableau { position: relative; width: 100%; max-width: 1040px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: stretch; border-radius: 22px; overflow: hidden; box-shadow: 0 10px 26px rgba(0,0,0,.15); }
+.duel-quitter { position: absolute; top: 6px; left: 6px; z-index: 2; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,.25); color: #fff; }
+.duel-joueur { min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 12px 10px 10px; color: #fff; text-decoration: none; }
+.duel-joueur.moi { background: linear-gradient(135deg, #3B82F6, #1D4ED8); padding-left: 34px; }
+.duel-joueur.autre { background: linear-gradient(225deg, #F43F5E, #BE123C); }
+.duel-nom { max-width: 100%; font: 800 13px Nunito, sans-serif; opacity: .95; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.duel-pts { font-size: 30px; font-weight: 900; line-height: 1.05; text-shadow: 0 2px 8px rgba(0,0,0,.25); }
+.duel-pastilles { display: flex; gap: 3px; flex-wrap: wrap; justify-content: center; max-width: 100%; }
+.duel-pastilles i { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,.3); }
+.duel-pastilles i.ok { background: #86EFAC; }
+.duel-pastilles i.ko { background: #1F2937; }
+.duel-pastilles i.ici { background: #fff; box-shadow: 0 0 0 2px rgba(255,255,255,.4); }
+.duel-vs { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0 10px; background: #111827; color: #FACC15; }
+.duel-vs span { font-size: 18px; font-weight: 900; }
+.duel-vs small { font-size: 11px; color: #E5E7EB; font-weight: 700; }
+@media (max-width: 480px) { .duel-pts { font-size: 24px; } .duel-pastilles i { width: 6px; height: 6px; } }
+
+/* Vitrine : collection exposée, familles et thèmes préférés */
+.vitrine-ligne { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+.vitrine-cartes { display: flex; gap: 10px; }
+.vitrine-carte { width: 96px; aspect-ratio: 5 / 7; border-radius: 12px; overflow: hidden; background: rgba(255,255,255,.18); display: flex; flex-direction: column; box-shadow: 0 0 0 2px rgba(255,255,255,.6), 0 8px 18px rgba(0,0,0,.25); }
+.vitrine-carte img { flex: 1; width: 100%; object-fit: cover; min-height: 0; }
+.vitrine-carte strong { padding: 4px 6px; font: 800 11px/1.15 Nunito, sans-serif; color: #fff; background: rgba(0,0,0,.35); }
+.vitrine-familles { display: flex; gap: 6px; flex-wrap: wrap; }
+.vitrine-famille { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 999px; background: rgba(255,255,255,.22); color: #fff; font: 800 12.5px Nunito, sans-serif; }
+.vitrine-quiz { display: flex; gap: 8px; overflow-x: auto; }
+.choix-cartes { display: grid; grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)); gap: 6px; max-height: 280px; overflow-y: auto; }
+.choix-carte { display: flex; flex-direction: column; gap: 2px; padding: 0; border: 0; background: none; cursor: pointer; font: inherit; color: var(--text); }
+.choix-carte img, .choix-carte > span { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 10px; background: var(--surface2); box-shadow: 0 0 0 2px transparent; }
+.choix-carte.choisi img { box-shadow: 0 0 0 3px var(--mus); }
+.choix-carte small { font-size: 10.5px; line-height: 1.15; }

@@ -31,7 +31,9 @@ type Reponse = { q: Question; donnee: string; juste: boolean; clic?: Clic; km?: 
 
 // Combo : bonnes réponses d'affilée → multiplicateur de points
 const multiplicateur = (combo: number) => (combo >= 8 ? 3 : combo >= 5 ? 2 : combo >= 3 ? 1.5 : 1)
-const PRIX_BONUS = 15
+// Plus le bonus est fort, plus il coûte : +10 s < seconde chance < points ×2 < passer (comptée juste)
+const PRIX = { temps: 10, seconde: 20, double: 30, passer: 45 } as const
+type Bonus = keyof typeof PRIX
 
 // Quitter une partie ramène d'où l'on vient : mode histoire, révision, quiz du jour, ou la famille du quiz
 function retourVers(p: URLSearchParams) {
@@ -309,10 +311,10 @@ export default function Partie() {
     if (dx < -70 && Math.abs(dy) < 50) suivant()
   }
 
-  async function acheterBonus(appliquer: () => void) {
+  async function acheterBonus(appliquer: () => void, b: Bonus) {
     if (!user) return
     setBonusMsg('')
-    if (!(await payerPieces(user.uid, PRIX_BONUS).catch(() => false))) { setBonusMsg(lang === 'fr' ? 'Pas assez de pièces.' : 'Not enough coins.'); return }
+    if (!(await payerPieces(user.uid, PRIX[b]).catch(() => false))) { setBonusMsg(lang === 'fr' ? 'Pas assez de pièces.' : 'Not enough coins.'); return }
     appliquer()
   }
 
@@ -420,10 +422,10 @@ export default function Partie() {
                   ? indice.lettre && <span className="outils-info"><Icon d={ICONS.bulb} size={16} />{indice.lettre}</span>
                   : <button type="button" role="menuitem" onClick={() => { demanderIndice(); setOutils(false) }}><Icon d={ICONS.bulb} size={16} />{q.options.length ? (lang === 'fr' ? 'Indice 50/50' : '50/50 hint') : (lang === 'fr' ? 'Première lettre' : 'First letter')}<span><Piece size={14} />{PRIX_INDICE}</span></button>)}
                 {prefs.bonus && <>
-                  {chrono > 0 && <button type="button" role="menuitem" onClick={() => { acheterBonus(() => setRestant((r) => r + 10)); setOutils(false) }}>{lang === 'fr' ? '+10 secondes' : '+10 seconds'}<span><Piece size={14} />{PRIX_BONUS}</span></button>}
-                  <button type="button" role="menuitem" onClick={() => { acheterBonus(() => enregistrer({ donnee: lang === 'fr' ? '(passée)' : '(skipped)', juste: true })); setOutils(false) }}>{lang === 'fr' ? 'Passer (comptée juste)' : 'Skip (counts as right)'}<span><Piece size={14} />{PRIX_BONUS}</span></button>
-                  {q.options.length > 0 && secondeChance !== i && <button type="button" role="menuitem" onClick={() => { acheterBonus(() => setSecondeChance(i)); setOutils(false) }}>{lang === 'fr' ? 'Seconde chance' : 'Second chance'}<span><Piece size={14} />{PRIX_BONUS}</span></button>}
-                  {!double && <button type="button" role="menuitem" onClick={() => { acheterBonus(() => setDouble(true)); setOutils(false) }}>{lang === 'fr' ? 'Points ×2' : 'Points ×2'}<span><Piece size={14} />{PRIX_BONUS}</span></button>}
+                  {chrono > 0 && <button type="button" role="menuitem" onClick={() => { acheterBonus(() => setRestant((r) => r + 10), 'temps'); setOutils(false) }}>{lang === 'fr' ? '+10 secondes' : '+10 seconds'}<span><Piece size={14} />{PRIX.temps}</span></button>}
+                  <button type="button" role="menuitem" onClick={() => { acheterBonus(() => enregistrer({ donnee: lang === 'fr' ? '(passée)' : '(skipped)', juste: true }), 'passer'); setOutils(false) }}>{lang === 'fr' ? 'Passer (comptée juste)' : 'Skip (counts as right)'}<span><Piece size={14} />{PRIX.passer}</span></button>
+                  {q.options.length > 0 && secondeChance !== i && <button type="button" role="menuitem" onClick={() => { acheterBonus(() => setSecondeChance(i), 'seconde'); setOutils(false) }}>{lang === 'fr' ? 'Seconde chance' : 'Second chance'}<span><Piece size={14} />{PRIX.seconde}</span></button>}
+                  {!double && <button type="button" role="menuitem" onClick={() => { acheterBonus(() => setDouble(true), 'double'); setOutils(false) }}>{lang === 'fr' ? 'Points ×2' : 'Points ×2'}<span><Piece size={14} />{PRIX.double}</span></button>}
                 </>}
               </div>
             )}

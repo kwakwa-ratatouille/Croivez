@@ -11,6 +11,7 @@ import { avancerQuetes, type EtatQuetes, type StatsPartie } from './quetes'
 import { secretsObtenus } from './meta'
 import { evenementActif } from './evenements'
 
+export type CarteVitrine = { s: string; id: string; nom: string; img?: string }
 export type Profile = {
   pseudo: string
   xp: number
@@ -26,6 +27,9 @@ export type Profile = {
   revision?: Record<string, CarteRevision>
   amis?: string[]
   vitrine?: string[] // jusqu'à 3 badges mis en avant
+  vitrineCartes?: CarteVitrine[] // jusqu'à 3 cartes d'album exposées
+  famillesFav?: string[] // jusqu'à 3 familles préférées
+  quizFav?: string[] // jusqu'à 3 thèmes préférés
   favori?: string // sous-thème favori
   pieces?: number
   familles?: string[] // familles choisies au départ (entièrement ouvertes) ; absent = ancien compte, tout ouvert

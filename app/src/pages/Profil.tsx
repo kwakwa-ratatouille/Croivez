@@ -1,3 +1,6 @@
+import Img from '../components/Img'
+import { cartesDe } from './Album'
+import ChoixTheme from '../components/ChoixTheme'
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { niveau, useAuth, xpPourNiveau } from '../auth'
@@ -118,14 +121,49 @@ function Vitrine({ p, moi, onModifier }: { p: ProfilPublic; moi: boolean; onModi
           <div><strong className="t">{p.meilleureSerie ?? 0}</strong><span>{fr ? 'jours de série max' : 'best streak'}</span></div>
           <div><strong className="t">{fmt.format(p.bonnes ?? 0)}</strong><span>{fr ? 'bonnes réponses' : 'correct answers'}</span></div>
         </div>
-        {p.favori && (
-          <div className="vitrine-favori">
-            <span className="eyebrow" style={{ color: 'rgba(255,255,255,.85)' }}>{fr ? 'Thème favori' : 'Favourite'}</span>
-            <CarteCouverture id={p.favori} largeur={150} />
-          </div>
-        )}
       </div>
+      {/* Cartes d'album exposées */}
+      {!!p.vitrineCartes?.length && (
+        <div className="vitrine-ligne">
+          <span className="eyebrow" style={{ color: 'rgba(255,255,255,.85)' }}>{fr ? 'Ma collection' : 'My collection'}</span>
+          <div className="vitrine-cartes">{p.vitrineCartes.map((c) => <div key={c.s + c.id} className="vitrine-carte">{c.img ? <Img src={c.img} alt="" /> : <span />}<strong>{c.nom}</strong></div>)}</div>
+        </div>
+      )}
+      {/* Familles et thèmes préférés */}
+      {(!!p.famillesFav?.length || !!(p.quizFav?.length || p.favori)) && (
+        <div className="vitrine-ligne">
+          <span className="eyebrow" style={{ color: 'rgba(255,255,255,.85)' }}>{fr ? 'Ce que j’adore' : 'What I love'}</span>
+          {!!p.famillesFav?.length && <div className="vitrine-familles">{p.famillesFav.map((k) => { const f = FAMILLES.find((x) => x.k === k); return f && <span key={k} className="vitrine-famille"><Icon d={f.icon} size={14} />{f.nom[lang]}</span> })}</div>}
+          <div className="vitrine-quiz">{(p.quizFav?.length ? p.quizFav : p.favori ? [p.favori] : []).map((id) => <CarteCouverture key={id} id={id} largeur={130} />)}</div>
+        </div>
+      )}
     </section>
+  )
+}
+
+// Choisir des cartes d'album à exposer : un quiz, puis ses cartes obtenues
+function ChoixCartes() {
+  const { lang } = usePrefs()
+  const fr = lang === 'fr'
+  const { user, profile } = useAuth()
+  const [quiz, setQuiz] = useState('mix')
+  const [cartes, setCartes] = useState<{ id: string; nom: string; img?: string }[]>([])
+  const album = profile?.album ?? {}
+  useEffect(() => { if (quiz !== 'mix') cartesDe(quiz, lang).then((l) => setCartes(l.filter((c) => album[quiz]?.includes(c.id)))).catch(() => setCartes([])) }, [quiz, lang]) // eslint-disable-line react-hooks/exhaustive-deps
+  if (!user || !profile) return null
+  const expo = profile.vitrineCartes ?? []
+  const basculer = (c: { id: string; nom: string; img?: string }) => {
+    const deja = expo.some((x) => x.s === quiz && x.id === c.id)
+    publierVitrine(user.uid, profile, { vitrineCartes: deja ? expo.filter((x) => !(x.s === quiz && x.id === c.id)) : [...expo, { s: quiz, id: c.id, nom: c.nom, ...(c.img ? { img: c.img } : {}) }].slice(-3) })
+  }
+  const quizAvecCartes = Object.keys(album).filter((s) => album[s]?.length)
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      {expo.length > 0 && <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>{expo.map((c) => <button key={c.s + c.id} type="button" className="pill" aria-pressed onClick={() => publierVitrine(user.uid, profile, { vitrineCartes: expo.filter((x) => x !== c) })}>{c.nom} ✕</button>)}</div>}
+      {quizAvecCartes.length === 0 ? <span style={{ color: 'var(--muted)', fontSize: 14 }}>{fr ? 'Joue pour gagner des cartes d’album, puis expose les plus belles ici.' : 'Play to collect cards first.'}</span>
+        : <ChoixTheme valeur={quiz} quiz={quizAvecCartes} onChange={setQuiz} />}
+      {quiz !== 'mix' && <div className="choix-cartes">{cartes.slice(0, 60).map((c) => <button key={c.id} type="button" className={`choix-carte${expo.some((x) => x.s === quiz && x.id === c.id) ? ' choisi' : ''}`} onClick={() => basculer(c)}>{c.img ? <Img src={c.img} alt="" loading="lazy" /> : <span />}<small>{c.nom}</small></button>)}</div>}
+    </div>
   )
 }
 
@@ -172,12 +210,17 @@ export default function Profil() {
           <label style={{ display: 'flex', flexDirection: 'column', gap: 6, fontWeight: 600 }}>{fr ? 'Ta phrase (60 caractères)' : 'Your line (60 chars)'}
             <input className="input" maxLength={60} defaultValue={profile.bio ?? ''} placeholder={fr ? 'Ex. : Imbattable sur les drapeaux 🌍' : 'e.g. Unbeatable on flags'} onBlur={(e) => publierVitrine(user.uid, profile, { bio: e.target.value.trim().slice(0, 60) })} />
           </label>
-          <label style={{ display: 'flex', alignItems: 'center', gap: 10, fontWeight: 600 }}>{fr ? 'Thème favori' : 'Favourite'}
-            <select className="input" style={{ flex: 1, minHeight: 44 }} value={profile.favori ?? ''} onChange={(e) => publierVitrine(user.uid, profile, { favori: e.target.value })}>
-              <option value="">—</option>
-              {possedes.map((s) => <option key={s.id} value={s.id}>{s.nom[lang]}</option>)}
-            </select>
-          </label>
+          <strong>{fr ? 'Familles préférées (3 max)' : 'Favourite families (max 3)'}</strong>
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+            {FAMILLES.map((f) => { const l = profile.famillesFav ?? []; const on = l.includes(f.k); return <button key={f.k} type="button" className="pill" aria-pressed={on} onClick={() => publierVitrine(user.uid, profile, { famillesFav: on ? l.filter((x) => x !== f.k) : [...l, f.k].slice(-3) })}>{f.nom[lang].split(/ [&,]/)[0]}</button> })}
+          </div>
+          <strong>{fr ? 'Thèmes favoris (3 max)' : 'Favourite topics (max 3)'}</strong>
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
+            {(profile.quizFav ?? (profile.favori ? [profile.favori] : [])).map((id) => <button key={id} type="button" className="pill" aria-pressed onClick={() => publierVitrine(user.uid, profile, { quizFav: (profile.quizFav ?? [profile.favori ?? '']).filter((x) => x && x !== id) })}>{possedes.find((s) => s.id === id)?.nom[lang] ?? id} ✕</button>)}
+            {(profile.quizFav?.length ?? (profile.favori ? 1 : 0)) < 3 && <div style={{ flex: '1 1 220px' }}><ChoixTheme valeur="mix" quiz={possedes.map((s) => s.id)} onChange={(id) => { if (id !== 'mix') publierVitrine(user.uid, profile, { quizFav: [...new Set([...(profile.quizFav ?? (profile.favori ? [profile.favori] : [])), id])].slice(-3) }) }} /></div>}
+          </div>
+          <strong>{fr ? 'Cartes d’album à exposer (3 max)' : 'Album cards to show (max 3)'}</strong>
+          <ChoixCartes />
         </section>
       )}
 

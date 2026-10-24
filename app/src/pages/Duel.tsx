@@ -133,11 +133,20 @@ export default function Duel() {
 
   return (
     <div className="partie duel-page" style={{ minHeight: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '28px 40px 48px', gap: 20 }}>
-      <header className="duel-entete" style={{ width: '100%', maxWidth: 1040, display: 'flex', alignItems: 'center', gap: 12 }}>
-        <Link to="/duels" className="btn btn-g" aria-label={fr ? 'Quitter' : 'Quit'} style={{ minHeight: 44, padding: '0 14px' }}><Icon d={ICONS.close} /></Link>
-        <Score j={moi} moiAussi />
-        <span className="t" style={{ fontWeight: 900, color: 'var(--muted)' }}>VS</span>
-        {autreId ? <Link to={`/joueur/${autreId}`} style={{ flex: 1, minWidth: 0, display: 'flex', color: 'inherit', textDecoration: 'none' }}><Score j={autre} /></Link> : <Score j={autre} />}
+      {/* Tableau de scores : toi (bleu) contre l'adversaire (rouge), VS au centre, une pastille par question */}
+      <header className="duel-tableau">
+        <Link to="/duels" className="duel-quitter" aria-label={fr ? 'Quitter' : 'Quit'}><Icon d={ICONS.close} size={18} /></Link>
+        <div className="duel-joueur moi">
+          <span className="duel-nom">{moi.pseudo}</span>
+          <strong className="t duel-pts">{moi.score}</strong>
+          <span className="duel-pastilles">{questions.map((_, n) => <i key={n} className={moi.r?.[n] ? (moi.r[n].j ? 'ok' : 'ko') : n === i ? 'ici' : ''} />)}</span>
+        </div>
+        <div className="duel-vs"><span className="t">VS</span><small>{Math.min(i + 1, questions.length)}/{questions.length}</small></div>
+        <Link to={autreId ? `/joueur/${autreId}` : '#'} className="duel-joueur autre">
+          <span className="duel-nom">{autre?.pseudo ?? '…'}</span>
+          <strong className="t duel-pts">{autre?.score ?? 0}</strong>
+          <span className="duel-pastilles">{questions.map((_, n) => <i key={n} className={autre?.r?.[n] ? (autre.r[n].j ? 'ok' : 'ko') : n === i ? 'ici' : ''} />)}</span>
+        </Link>
       </header>
       <div style={{ width: '100%', maxWidth: 1040, display: 'flex', alignItems: 'center', gap: 12 }}>
         <span style={{ fontWeight: 600, color: 'var(--muted)', whiteSpace: 'nowrap' }}>{i + 1} / {questions.length}</span>
