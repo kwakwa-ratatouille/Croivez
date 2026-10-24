@@ -9,7 +9,7 @@ import { Coche, ICONS, Icon, Piece } from '../components/ui'
 import { etatDuJour, quetesDuJour, recupererQuete } from '../quetes'
 import { evenementDeLaSemaine } from '../meta'
 import Illustration from '../components/Illustration'
-import { ouvrirFiche } from '../components/FicheLancement'
+import CarteCouverture from '../components/CarteCouverture'
 
 // Derniers quiz joués sur cet appareil (d'après la mémoire des questions), du plus récent au plus ancien
 function quizRecents(): string[] {
@@ -26,15 +26,8 @@ function quizRecents(): string[] {
 }
 
 // Carte compacte d'un quiz dans un carrousel : un appui ouvre la fiche de lancement
-function CarteQuiz({ s, k, pct }: { s: SousTheme; k: Famille; pct: number }) {
-  const { lang } = usePrefs()
-  return (
-    <button type="button" onClick={() => ouvrirFiche(s.id)} className="famille" style={{ width: 168, padding: '10px 12px 14px', borderRadius: 22, border: 0, cursor: 'pointer', textAlign: 'left', font: 'inherit', background: `var(--${k}-t)`, color: `var(--${k}-i)`, display: 'flex', flexDirection: 'column', gap: 6 }}>
-      <Illustration k={k} taille={144} fond={false} />
-      <span className="t" style={{ fontWeight: 800, fontSize: 15, lineHeight: 1.25, minHeight: 38 }}>{s.nom[lang]}</span>
-      <div className="bar" style={{ height: 6, background: 'var(--surface)' }}><span style={{ width: `${pct}%`, background: `var(--${k})` }} /></div>
-    </button>
-  )
+function CarteQuiz({ s, pct }: { s: SousTheme; k: Famille; pct: number }) {
+  return <CarteCouverture id={s.id} pct={pct} largeur={172} />
 }
 
 function Rangee({ titre, lien, children }: { titre: string; lien?: { to: string; label: string }; children: React.ReactNode }) {

@@ -9,6 +9,7 @@ import Caisse from '../components/Caisse'
 import { evenementDeLaSemaine } from '../meta'
 import { ouvrirFiche } from '../components/FicheLancement'
 import Illustration from '../components/Illustration'
+import CarteCouverture from '../components/CarteCouverture'
 import { normaliser } from '../quiz/match'
 
 const pctFamille = (subs: SousTheme[], maitrise: Record<string, number> = {}) => {
@@ -17,27 +18,16 @@ const pctFamille = (subs: SousTheme[], maitrise: Record<string, number> = {}) =>
 }
 
 // Tuile d'un quiz : nom, maîtrise, et un appui pour lancer
-function Tuile({ s, k, pct, verrou = false }: { s: SousTheme; k: string; pct: number; verrou?: boolean }) {
+function Tuile({ s, pct, verrou = false }: { s: SousTheme; k: string; pct: number; verrou?: boolean }) {
   const { lang } = usePrefs()
-  if (!s.jouable || verrou) {
+  if (!s.jouable) {
     return (
       <div style={{ padding: 18, borderRadius: 20, border: '1.5px dashed var(--line)', color: 'var(--muted)', display: 'flex', alignItems: 'center', gap: 10, fontWeight: 600 }}>
-        <Icon d={verrou ? ICONS.lock : ICONS.timer} size={18} />{s.nom[lang]}{verrou ? '' : ` · ${lang === 'fr' ? 'bientôt' : 'soon'}`}
+        <Icon d={ICONS.timer} size={18} />{s.nom[lang]} · {lang === 'fr' ? 'bientôt' : 'soon'}
       </div>
     )
   }
-  return (
-    <button type="button" onClick={() => ouvrirFiche(s.id)} className="card tuile" style={{ font: 'inherit', color: 'inherit', textAlign: 'left', cursor: 'pointer', padding: 18, display: 'flex', flexDirection: 'column', gap: 12, textDecoration: 'none', boxShadow: 'none' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
-        <span className="t" style={{ fontSize: 17, fontWeight: 800, lineHeight: 1.25 }}>{s.nom[lang]}</span>
-        <span style={{ width: 36, height: 36, borderRadius: 12, flex: 'none', background: `var(--${k}-t)`, color: `var(--${k}-i)`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon d={ICONS.arrowR} size={18} /></span>
-      </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-        <div className="bar" style={{ flex: 1, height: 6 }}><span style={{ width: `${pct}%`, background: `var(--${k})` }} /></div>
-        <span style={{ fontSize: 13, color: 'var(--muted)', fontWeight: 600, minWidth: 34, textAlign: 'right' }}>{pct} %</span>
-      </div>
-    </button>
-  )
+  return <CarteCouverture id={s.id} pct={pct} verrou={verrou} />
 }
 
 // Carte de progression : un chemin d'étapes (un quiz = une étape), validée à 60 % de maîtrise
@@ -124,7 +114,7 @@ export default function Themes() {
           </div>
         </header>
         <CheminProgression subs={jouables} k={famille.k} m={m} ouvert={(id) => accesQuiz(id, profile)} />
-        <section style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))', gap: 14 }}>
+        <section style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(165px, 1fr))', gap: 14 }}>
           {famille.subs.map((s) => <Tuile key={s.id} s={s} k={famille.k} pct={m[s.id] ?? 0} verrou={!accesQuiz(s.id, profile)} />)}
         </section>
       </>
@@ -152,7 +142,7 @@ export default function Themes() {
       </header>
 
       {n ? (
-        <section style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))', gap: 14 }}>
+        <section style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(165px, 1fr))', gap: 14 }}>
           {resultats.length === 0 && <p style={{ color: 'var(--muted)' }}>{fr ? 'Aucun quiz ne correspond.' : 'No quiz matches.'}</p>}
           {resultats.map(({ s, k: fk }) => <Tuile key={s.id} s={s} k={fk} pct={m[s.id] ?? 0} verrou={!accesQuiz(s.id, profile)} />)}
         </section>

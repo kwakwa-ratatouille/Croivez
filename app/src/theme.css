@@ -92,6 +92,18 @@ button { font-family: inherit; }
 .pill-legende { border-color: var(--his) !important; color: var(--his-i) !important; }
 @media (min-width: 761px) { .fiche-fond { align-items: center; } .fiche { border-radius: 28px; } }
 
+/* Carte de quiz avec vraie photo : photo en haut, bandeau aux couleurs de la famille */
+.couverture { display: flex; flex-direction: column; padding: 0; border: 0; border-radius: 22px; overflow: hidden; cursor: pointer; text-align: left; font: inherit; color: var(--ki); background: var(--kt); box-shadow: 0 6px 18px rgba(80, 62, 35, .08); }
+.couverture:disabled { cursor: default; }
+.couverture-photo { position: relative; display: block; aspect-ratio: 4 / 3; overflow: hidden; background: var(--surface2); flex: none; }
+/* Photo recadrée au format de la carte, quelle que soit sa forme d'origine */
+.couverture-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+.couverture-photo::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 55%, color-mix(in srgb, var(--kt) 85%, transparent)); pointer-events: none; }
+.couverture-famille { position: absolute; top: 8px; left: 8px; z-index: 1; display: inline-flex; align-items: center; gap: 5px; padding: 4px 9px; border-radius: 999px; background: var(--k); color: var(--surface); font: 700 11.5px 'DM Sans', sans-serif; box-shadow: 0 2px 6px rgba(0,0,0,.12); }
+.couverture-verrou { position: absolute; inset: 0; z-index: 1; display: flex; align-items: center; justify-content: center; background: rgba(30, 30, 30, .45); color: #fff; }
+.couverture-bas { display: flex; flex-direction: column; gap: 8px; padding: 10px 12px 12px; }
+.couverture-titre { font-weight: 800; font-size: 15px; line-height: 1.25; min-height: 38px; }
+
 /* Carrousels : rangées qui défilent horizontalement */
 .carrousel { display: flex; gap: 14px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; margin: 0 -56px; padding: 4px 56px 8px; }
 .carrousel::-webkit-scrollbar { display: none; }

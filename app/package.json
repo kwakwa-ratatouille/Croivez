@@ -12,6 +12,7 @@
     "data": "node scripts/build-pays.mjs",
     "data:villes": "node scripts/build-villes.mjs",
     "data:culture": "node scripts/build-culture.mjs",
+    "data:couvertures": "node scripts/build-couvertures.mjs",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
