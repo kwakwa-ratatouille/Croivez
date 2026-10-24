@@ -224,6 +224,16 @@ const CULTURE = {
   'records-monde': { type: 'attribut', q: { fr: (n) => n, en: (n) => n } },
   'mascottes': { type: 'attribut', q: { fr: (n) => n, en: (n) => n } },
   'fast-food': { type: 'attribut', q: { fr: (n) => n, en: (n) => n } },
+  // Écologie & planète (scripts/build-ecologie.mjs) : l'élément est la question elle-même
+  'eco-eau': { type: 'attribut', q: { fr: (n) => n, en: (n) => n } },
+  'eco-electricite': { type: 'attribut', q: { fr: (n) => n, en: (n) => n } },
+  'eco-co2': { type: 'attribut', q: { fr: (n) => n, en: (n) => n } },
+  'eco-decomposition': { type: 'attribut', q: { fr: (n) => n, en: (n) => n } },
+  'eco-tri': { type: 'attribut', q: { fr: (n) => n, en: (n) => n } },
+  'eco-saison': { type: 'attribut', q: { fr: (n) => n, en: (n) => n } },
+  'eco-energies': { type: 'attribut', q: { fr: (n) => n, en: (n) => n } },
+  'eco-dates': { type: 'attribut', q: { fr: (n) => n, en: (n) => n } },
+  'eco-vf': { type: 'attribut', grand: true, fixe: true, q: { fr: () => 'Écologie : vrai ou faux ?', en: () => 'Ecology: true or false?' } },
   'idees-recues': { type: 'attribut', grand: true, fixe: true, q: { fr: () => 'Vrai ou faux ?', en: () => 'True or false?' } },
   'persos-univers': { type: 'attribut', pack: 'persos-jeu', montrer: true, groupe: 'genre', q: { fr: (n) => `De quel jeu vient ce personnage : ${n} ?`, en: (n) => `Which game is ${n} from?` } },
 } satisfies Record<string, { type: TypeCulture; montrer?: boolean; pack?: string; champ?: string; grand?: boolean; fixe?: boolean; groupe?: string; q: Record<Lang, (nom: string, genre?: string) => string> }>

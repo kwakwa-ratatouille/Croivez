@@ -4,7 +4,7 @@ import { evenementActif, prochainEvenement } from './evenements'
 
 const quizEvenementAffiche = () => evenementActif()?.quiz ?? prochainEvenement()?.e.quiz
 
-export type Famille = 'pho' | 'tec' | 'esp' | 'mot' | 'geo' | 'cine' | 'mus' | 'nat' | 'sci' | 'his' | 'brd' | 'spo' | 'lit' | 'jv' | 'ani' | 'vie' | 'pop' | 'cui' | 'mot' | 'evt'
+export type Famille = 'pho' | 'tec' | 'esp' | 'mot' | 'geo' | 'cine' | 'mus' | 'nat' | 'sci' | 'his' | 'brd' | 'spo' | 'lit' | 'jv' | 'ani' | 'vie' | 'pop' | 'cui' | 'mot' | 'evt' | 'eco'
 
 export type SousTheme = { id: string; nom: Record<Lang, string>; jouable?: SousThemeId }
 
@@ -137,6 +137,12 @@ export const FAMILLES: { k: Famille; nom: Record<Lang, string>; icon: string; mo
     icon: 'M7 3.5v6.5M5 3.5V8a2 2 0 0 0 4 0V3.5M7 10v10.5M17 3.5c-1.8 1.3-2.8 3.6-2.8 6.4V13H17v7.5',
     motif: 'M30 10v30M22 10v18a8 8 0 0 0 16 0V10M30 40v34M86 10c-8 6-12 16-12 28v12h12v24',
     subs: [j('fast-food', 'Fast-food et chaînes', 'Fast food'), j('fruits', 'Fruits', 'Fruits'), j('legumes', 'Légumes', 'Vegetables'), j('desserts', 'Desserts et pâtisseries', 'Desserts & pastries'), j('epices', 'Épices et herbes', 'Spices & herbs'), j('fromages', 'Fromages du monde', 'World cheeses'), j('plats-photo', 'Plats du monde en photo', 'World dishes in pictures')],
+  },
+  {
+    k: 'eco', nom: { fr: 'Écologie & planète', en: 'Ecology & planet' },
+    icon: 'M5 19c0-8 6-14 15-14 0 9-6 15-14 15M5 19l8-8',
+    motif: 'M20 100c0-46 34-80 86-80 0 52-34 86-80 86M20 100l46-46',
+    subs: [j('eco-eau', 'Eau cachée : combien de litres ?', 'Hidden water'), j('eco-electricite', 'Électricité des appareils', 'Appliance power'), j('eco-co2', 'Empreinte carbone', 'Carbon footprint'), j('eco-decomposition', 'Temps de décomposition', 'Decomposition time'), j('eco-tri', 'Le tri des déchets', 'Waste sorting'), j('eco-saison', 'Fruits et légumes de saison', 'Seasonal produce'), j('eco-energies', 'Les énergies', 'Energy sources'), j('eco-dates', 'Dates clés de l’écologie', 'Ecology milestones'), j('eco-vf', 'Écologie : vrai ou faux ?', 'Ecology: true or false?')],
   },
   {
     k: 'mot', nom: { fr: 'Mots & curiosités', en: 'Words & curiosities' },
