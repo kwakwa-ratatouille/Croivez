@@ -14,7 +14,7 @@ export default function MenuTest({ onFermer }: { onFermer: () => void }) {
           <h2 className="t" style={{ fontSize: 22, fontWeight: 900 }}>Mode test</h2>
           <button className="btn btn-g" aria-label="Fermer" onClick={onFermer} style={{ minHeight: 40, padding: '0 10px' }}><Icon d={ICONS.close} size={18} /></button>
         </div>
-        <button className="btn btn-p" onClick={action(() => testToutDebloquer(user.uid))}>Tout débloquer</button>
+        <button className="btn btn-p" onClick={action(() => testToutDebloquer(user.uid))}>Tout débloquer (Légendes comprises)</button>
         <button className="btn btn-s" onClick={action(() => testReinitialiser(user.uid))}>Réinitialiser (choix des 6 quiz, 50 pièces)</button>
         <button className="btn btn-s" onClick={action(() => testPieces(user.uid, 500))}>+500 pièces</button>
         <button className="btn btn-g" onClick={action(async () => { Object.keys(localStorage).filter((k) => k.startsWith('memoire:')).forEach((k) => localStorage.removeItem(k)) })}>Effacer la mémoire des questions</button>

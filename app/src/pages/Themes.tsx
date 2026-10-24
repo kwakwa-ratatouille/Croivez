@@ -4,9 +4,8 @@ import { useAuth } from '../auth'
 import { usePrefs } from '../i18n'
 import { FAMILLES, type SousTheme } from '../themes'
 import { ICONS, Icon, Piece } from '../components/ui'
-import { PRIX_CAISSE, accesQuiz, legendeOuverte, progresFamille } from '../progression'
+import { PRIX_CAISSE, accesQuiz, legendeOuverte, progresFamille, progresLegende } from '../progression'
 import { evenementDeLaSemaine } from '../meta'
-import Illustration from '../components/Illustration'
 import CarteCouverture, { proposerCaisse, useCouverture } from '../components/CarteCouverture'
 import Img from '../components/Img'
 import { normaliser } from '../quiz/match'
@@ -15,47 +14,38 @@ const pctFamille = (subs: SousTheme[], maitrise: Record<string, number> = {}) =>
   const j = subs.filter((s) => s.jouable)
   return j.length ? Math.round(j.reduce((a, s) => a + (maitrise[s.id] ?? 0), 0) / j.length) : 0
 }
+type Filtre = 'tous' | 'ouverts' | 'fermes'
 
-// Tuile d'un quiz : nom, maîtrise, et un appui pour lancer
-function Tuile({ s, pct, verrou = false }: { s: SousTheme; k: string; pct: number; verrou?: boolean }) {
-  const { lang } = usePrefs()
-  if (!s.jouable) {
-    return (
-      <div style={{ padding: 18, borderRadius: 20, border: '1.5px dashed var(--line)', color: 'var(--muted)', display: 'flex', alignItems: 'center', gap: 10, fontWeight: 600 }}>
-        <Icon d={ICONS.timer} size={18} />{s.nom[lang]} · {lang === 'fr' ? 'bientôt' : 'soon'}
-      </div>
-    )
-  }
-  return <CarteCouverture id={s.id} pct={pct} verrou={verrou} />
-}
-
-// Carte d'une famille : mosaïque de vraies photos de ses quiz, progression, Légende
-function CarteFamille({ f, i }: { f: (typeof FAMILLES)[number]; i: number }) {
+// Une famille sur la page d'index : en-tête coloré + ses quiz qui défilent (débloqués d'abord)
+function RangeeFamille({ f, filtre }: { f: (typeof FAMILLES)[number]; filtre: Filtre }) {
   const { lang } = usePrefs()
   const fr = lang === 'fr'
   const { profile } = useAuth()
-  const jouables = f.subs.filter((s) => s.jouable)
-  const photos = [useCouverture(jouables[0]?.id ?? ''), useCouverture(jouables[1]?.id ?? ''), useCouverture(jouables[2]?.id ?? '')]
+  const m = profile?.maitrise ?? {}
   const { possedes, total } = progresFamille(f.k, profile)
-  const pct = pctFamille(f.subs, profile?.maitrise)
-  const leg = legendeOuverte(f.k, profile)
+  const quiz = f.subs.filter((s) => s.jouable)
+    .filter((s) => filtre === 'tous' || (filtre === 'ouverts') === accesQuiz(s.id, profile))
+    .sort((a, b) => Number(!accesQuiz(a.id, profile)) - Number(!accesQuiz(b.id, profile)))
+  if (!quiz.length) return null
+  const event = evenementDeLaSemaine().k === f.k
   return (
-    <Link to={`/themes/${f.k}`} className="carte-famille rise" style={{ animationDelay: `${i * 40}ms`, ['--k' as string]: `var(--${f.k})`, ['--kt' as string]: `var(--${f.k}-t)`, ['--ki' as string]: `var(--${f.k}-i)` }}>
-      <span className="carte-famille-mosaique">
-        {photos.map((p, n) => <span key={n}>{p ? <Img src={p} alt="" loading="lazy" /> : null}</span>)}
-      </span>
-      <span className="carte-famille-voile" />
-      {evenementDeLaSemaine().k === f.k && <span className="chip carte-famille-event">×2</span>}
-      {leg && <span className="chip carte-famille-legende">{fr ? 'Légende' : 'Legend'}</span>}
-      <span className="carte-famille-bas">
-        <span className="carte-famille-icone"><Icon d={f.icon} size={20} /></span>
+    <section className="rangee-famille" style={{ ['--k' as string]: `var(--${f.k})`, ['--kt' as string]: `var(--${f.k}-t)`, ['--ki' as string]: `var(--${f.k}-i)` }}>
+      <Link to={`/themes/${f.k}`} className="rangee-famille-tete">
+        <span className="rangee-famille-icone"><Icon d={f.icon} size={22} /></span>
         <span style={{ flex: 1, minWidth: 0 }}>
           <strong className="t">{f.nom[lang]}</strong>
-          <span className="carte-famille-stats">{possedes < total && <Icon d={ICONS.lock} size={12} />}{possedes}/{total} quiz · {pct} %</span>
-          <span className="bar" style={{ height: 5, background: 'rgba(255,255,255,.35)' }}><span style={{ width: `${(possedes / Math.max(1, total)) * 100}%`, background: '#fff' }} /></span>
+          <span className="rangee-famille-stats">
+            {possedes}/{total} quiz · {pctFamille(f.subs, m)} % {fr ? 'maîtrisé' : 'mastered'}
+            {legendeOuverte(f.k, profile) && <span className="chip mini-legende">{fr ? 'Légende' : 'Legend'}</span>}
+            {event && <span className="chip mini-event">×2</span>}
+          </span>
         </span>
-      </span>
-    </Link>
+        <span className="lien-voir">{fr ? 'Voir' : 'See'}<Icon d={ICONS.arrowR} size={15} /></span>
+      </Link>
+      <div className="carrousel">
+        {quiz.map((s) => <CarteCouverture key={s.id} id={s.id} pct={m[s.id] ?? 0} verrou={!accesQuiz(s.id, profile)} largeur={156} />)}
+      </div>
+    </section>
   )
 }
 
@@ -65,29 +55,57 @@ export default function Themes() {
   const fr = lang === 'fr'
   const { profile } = useAuth()
   const [q, setQ] = useState('')
+  const [filtre, setFiltre] = useState<Filtre>('tous')
   const m = profile?.maitrise ?? {}
   const famille = FAMILLES.find((f) => f.k === k)
+  const banniere = useCouverture(famille?.subs.find((s) => s.jouable)?.id ?? '')
+
   // ——— Page d'une famille ———
   if (famille) {
-    const jouables = famille.subs.filter((s) => s.jouable)
     const { possedes, total } = progresFamille(famille.k, profile)
-    // Débloqués d'abord, puis les verrouillés du moins cher au plus cher
-    const tries = [...famille.subs].sort((x, y) => Number(!accesQuiz(x.id, profile)) - Number(!accesQuiz(y.id, profile)))
+    const pl = progresLegende(famille.k, profile)
+    const leg = legendeOuverte(famille.k, profile)
+    const pct = pctFamille(famille.subs, m)
+    const ouverts = famille.subs.filter((s) => s.jouable && accesQuiz(s.id, profile))
+    const fermes = famille.subs.filter((s) => s.jouable && !accesQuiz(s.id, profile))
     return (
       <>
-        <Link to="/themes" style={{ alignSelf: 'flex-start', display: 'inline-flex', alignItems: 'center', gap: 8, minHeight: 44, fontWeight: 600, textDecoration: 'none', color: 'var(--muted)' }}><Icon d={ICONS.arrowL} />{fr ? 'Tous les thèmes' : 'All topics'}</Link>
-        <header className="rise" style={{ display: 'flex', alignItems: 'center', gap: 24, flexWrap: 'wrap', padding: 24, borderRadius: 28, background: `var(--${famille.k}-t)`, color: `var(--${famille.k}-i)` }}>
-          <Illustration k={famille.k} taille={180} fond={false} />
-          <div style={{ flex: '1 1 220px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <h1 className="t" style={{ fontSize: 34, fontWeight: 900 }}>{famille.nom[lang]}</h1>
-            <span style={{ fontWeight: 600 }}>{jouables.length} quiz · {pctFamille(famille.subs, m)} % {fr ? 'maîtrisé' : 'mastered'}</span>
-            <div className="bar" style={{ background: 'var(--surface)', maxWidth: 320 }}><span style={{ width: `${pctFamille(famille.subs, m)}%`, background: `var(--${famille.k})` }} /></div>
-            {possedes < total && <button className="btn btn-p" style={{ alignSelf: 'flex-start' }} onClick={() => proposerCaisse(famille.k)}><Icon d={ICONS.sparkle} size={18} />{fr ? 'Ouvrir une caisse' : 'Open a crate'} · <Piece size={18} />{PRIX_CAISSE}</button>}
-            <span className="chip" style={{ alignSelf: 'flex-start', background: 'var(--surface)', color: 'inherit', fontWeight: 800 }}><Icon d={ICONS.lock} size={14} />{possedes} / {total} {fr ? 'débloqués' : 'unlocked'}</span>
+        <Link to="/themes" className="lien-retour"><Icon d={ICONS.arrowL} />{fr ? 'Tous les thèmes' : 'All topics'}</Link>
+        <header className="famille-banniere rise" style={{ ['--k' as string]: `var(--${famille.k})`, ['--kt' as string]: `var(--${famille.k}-t)`, ['--ki' as string]: `var(--${famille.k}-i)` }}>
+          {banniere && <Img src={banniere} alt="" className="famille-banniere-photo" />}
+          <div className="famille-banniere-voile" />
+          <div className="famille-banniere-contenu">
+            <span className="rangee-famille-icone" style={{ background: 'rgba(255,255,255,.22)', color: '#fff' }}><Icon d={famille.icon} size={24} /></span>
+            <h1 className="t" style={{ fontSize: 32, fontWeight: 900, lineHeight: 1.1 }}>{famille.nom[lang]}</h1>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              <span className="chip puce-verre"><Icon d={ICONS.lock} size={14} />{possedes}/{total} {fr ? 'débloqués' : 'unlocked'}</span>
+              <span className="chip puce-verre">{pct} % {fr ? 'maîtrisé' : 'mastered'}</span>
+            </div>
           </div>
         </header>
-        <section style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(165px, 1fr))', gap: 14 }}>
-          {tries.map((s) => <Tuile key={s.id} s={s} k={famille.k} pct={m[s.id] ?? 0} verrou={!accesQuiz(s.id, profile)} />)}
+
+        <div className="famille-actions">
+          {ouverts.length >= 2 && <Link className="btn btn-p" to={`/partie?jeu=mix&f=${famille.k}&d=0&m=qcm`}>🎲 {fr ? 'Jouer au hasard dans la famille' : 'Random game in this family'}</Link>}
+          {fermes.length > 0 && <button className="btn btn-s" onClick={() => proposerCaisse(famille.k)}><Icon d={ICONS.sparkle} size={18} />{fr ? 'Ouvrir une caisse' : 'Open a crate'} · <Piece size={18} />{PRIX_CAISSE}</button>}
+        </div>
+
+        {/* Légende : ce qu'il reste à faire, en clair */}
+        <section className={`card bloc-legende${leg ? ' ouverte' : ''}`}>
+          <span style={{ fontSize: 30 }} aria-hidden="true">{leg ? '👑' : '🔒'}</span>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <strong className="t" style={{ fontSize: 17 }}>{leg ? (fr ? 'Légende ouverte !' : 'Legend unlocked!') : (fr ? 'Légende : la difficulté ultime' : 'Legend: the ultimate level')}</strong>
+            <span style={{ fontSize: 13.5, color: 'var(--muted)' }}>{leg ? (fr ? '6 choix, 12 secondes, pièges partout, XP ×2. Choisis « Légende » dans la fiche d’un quiz.' : '6 choices, 12 s, XP ×2.') : (fr ? `Réussis les 4 niveaux (au sans-faute) de chaque quiz de la famille : ${pl.faits} / ${pl.total}.` : `Pass all 4 levels of every quiz: ${pl.faits} / ${pl.total}.`)}</span>
+            {!leg && <span className="bar" style={{ height: 8 }}><span style={{ width: `${(pl.faits / Math.max(1, pl.total)) * 100}%`, background: 'linear-gradient(90deg, #E3A72F, #A35BE0)' }} /></span>}
+          </div>
+        </section>
+
+        {ouverts.length > 0 && <h2 className="t titre-section">{fr ? 'Tes quiz' : 'Your quizzes'}</h2>}
+        <section className="grille-quiz">
+          {ouverts.map((s) => <CarteCouverture key={s.id} id={s.id} pct={m[s.id] ?? 0} />)}
+        </section>
+        {fermes.length > 0 && <h2 className="t titre-section">{fr ? 'À débloquer' : 'To unlock'} <span style={{ fontSize: 14, color: 'var(--muted)', fontWeight: 700 }}>· {fr ? 'en ouvrant des caisses' : 'by opening crates'}</span></h2>}
+        <section className="grille-quiz">
+          {fermes.map((s) => <CarteCouverture key={s.id} id={s.id} verrou />)}
         </section>
       </>
     )
@@ -95,35 +113,33 @@ export default function Themes() {
 
   // ——— Recherche : tous les quiz qui correspondent ———
   const n = normaliser(q)
-  const resultats = n ? FAMILLES.flatMap((f) => f.subs.filter((s) => s.jouable && (normaliser(s.nom[lang]).includes(n) || normaliser(f.nom[lang]).includes(n))).map((s) => ({ s, k: f.k }))) : []
+  const resultats = n ? FAMILLES.flatMap((f) => f.subs.filter((s) => s.jouable && (normaliser(s.nom[lang]).includes(n) || normaliser(f.nom[lang]).includes(n)))) : []
+  const nbQuiz = FAMILLES.reduce((a, f) => a + f.subs.filter((s) => s.jouable).length, 0)
+  const FILTRES: [Filtre, string][] = [['tous', fr ? 'Tous' : 'All'], ['ouverts', fr ? 'Débloqués' : 'Unlocked'], ['fermes', fr ? 'À débloquer' : 'Locked']]
 
   return (
     <>
-      <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 20, flexWrap: 'wrap' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          <h1 className="t" style={{ fontSize: 36, fontWeight: 900 }}>{fr ? 'Thèmes' : 'Topics'}</h1>
-          <p style={{ fontSize: 16, color: 'var(--muted)' }}>{FAMILLES.reduce((a, f) => a + f.subs.filter((s) => s.jouable).length, 0)} quiz {fr ? 'dans' : 'across'} {FAMILLES.length} {fr ? 'familles' : 'families'}</p>
+      <header style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <div>
+          <h1 className="t" style={{ fontSize: 34, fontWeight: 900 }}>{fr ? 'Thèmes' : 'Topics'}</h1>
+          <p style={{ color: 'var(--muted)' }}>{nbQuiz} quiz {fr ? 'dans' : 'across'} {FAMILLES.length} {fr ? 'familles' : 'families'}</p>
         </div>
-        <div style={{ flex: '1 1 300px', maxWidth: 420, display: 'flex', alignItems: 'center', gap: 12, minHeight: 52, padding: '0 18px', borderRadius: 18, background: 'var(--surface)', border: '1.5px solid var(--line)' }}>
+        <div className="recherche">
           <Icon d="M11 4a7 7 0 1 1 0 14a7 7 0 1 1 0-14ZM20 20l-3.5-3.5" style={{ color: 'var(--muted)' }} />
           <label htmlFor="th-search" className="sr">{fr ? 'Rechercher un quiz' : 'Search a quiz'}</label>
-          <input id="th-search" value={q} onChange={(e) => setQ(e.target.value)} placeholder={fr ? 'Drapeaux, mangas, préfectures…' : 'Flags, manga, capitals…'}
-            style={{ flex: 1, minWidth: 0, border: 0, outline: 0, background: 'transparent', font: "500 16px 'DM Sans', sans-serif", color: 'var(--text)' }} />
+          <input id="th-search" value={q} onChange={(e) => setQ(e.target.value)} placeholder={fr ? 'Youtubeurs, drapeaux, Pokémon…' : 'YouTubers, flags, Pokémon…'} />
           {q && <button type="button" aria-label={fr ? 'Effacer' : 'Clear'} onClick={() => setQ('')} style={{ border: 0, background: 'none', color: 'var(--muted)', cursor: 'pointer', minHeight: 44 }}><Icon d={ICONS.close} size={18} /></button>}
         </div>
+        {!n && <div role="tablist" className="onglets">{FILTRES.map(([id, l]) => <button key={id} role="tab" aria-selected={filtre === id} className="onglet" onClick={() => setFiltre(id)}>{l}</button>)}</div>}
       </header>
 
       {n ? (
-        <section style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(165px, 1fr))', gap: 14 }}>
+        <section className="grille-quiz">
           {resultats.length === 0 && <p style={{ color: 'var(--muted)' }}>{fr ? 'Aucun quiz ne correspond.' : 'No quiz matches.'}</p>}
-          {resultats.map(({ s, k: fk }) => <Tuile key={s.id} s={s} k={fk} pct={m[s.id] ?? 0} verrou={!accesQuiz(s.id, profile)} />)}
+          {resultats.map((s) => <CarteCouverture key={s.id} id={s.id} pct={m[s.id] ?? 0} verrou={!accesQuiz(s.id, profile)} />)}
         </section>
       ) : (
-        <section className="grille-familles">
-          {FAMILLES.map((f, i) => {
-            return <CarteFamille key={f.k} f={f} i={i} />
-          })}
-        </section>
+        FAMILLES.map((f) => <RangeeFamille key={f.k} f={f} filtre={filtre} />)
       )}
     </>
   )

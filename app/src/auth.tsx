@@ -38,12 +38,26 @@ export type Profile = {
   cadre?: string
   partiesJour?: number // parties jouées aujourd'hui (succès Marathonien)
   paliers?: Record<string, number[]> // difficultés réussies (sans-faute, cumulatif) par quiz : ouvre la Légende
+  toutDebloque?: boolean // menu de test : tous les quiz, toutes les difficultés et la Légende ouverts
 }
 
 type Ctx = { user: User | null; profile: Profile | null; loading: boolean }
 const AuthCtx = createContext<Ctx>({ user: null, profile: null, loading: true })
 
+// Mode aperçu (développement uniquement, « ?apercu » dans l'adresse) : profil fictif, sans connexion,
+// pour regarder les écrans en local. Absent des versions publiées (import.meta.env.DEV vaut false).
+const APERCU = import.meta.env.DEV && (location.search.includes('apercu') || sessionStorage.getItem('apercu') === '1')
+const PROFIL_APERCU: Profile = { pseudo: 'Aperçu', xp: 5400, serie: 6, dernierJour: '', maitrise: { drapeaux: 80, films: 40, youtubeurs: 10 }, pieces: 420, parties: 37, bonnes: 290, paliers: { drapeaux: [1, 2, 3] } }
+
 export function AuthProvider({ children }: { children: ReactNode }) {
+  if (APERCU) {
+    sessionStorage.setItem('apercu', '1')
+    return <AuthCtx.Provider value={{ user: { uid: 'apercu', email: 'apercu@localhost' } as User, profile: PROFIL_APERCU, loading: false }}>{children}</AuthCtx.Provider>
+  }
+  return <AuthReel>{children}</AuthReel>
+}
+
+function AuthReel({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
@@ -137,6 +151,9 @@ export async function enregistrerPartie(uid: string, profile: Profile, p: Partie
   })
 
   const defiReussi = p.defi && taux >= 0.5 && profile.defiJour !== today
+  const valide = !p.revision && p.difficulte && p.difficulte <= 4 && taux >= 1
+  // Paliers après cette partie : l'érudition publique est recalculée tout de suite
+  const nouveauxPaliers = valide ? { ...profile.paliers, [p.sousTheme]: [...new Set([...(profile.paliers?.[p.sousTheme] ?? []), ...[1, 2, 3, 4].filter((d) => d <= p.difficulte!)])] } : profile.paliers
   await setDoc(doc(db, 'users', uid), {
     xp: increment(p.xp),
     ...(p.pieces ? { pieces: increment(p.pieces) } : {}),
@@ -155,7 +172,7 @@ export async function enregistrerPartie(uid: string, profile: Profile, p: Partie
     ...(nouveauxSecrets.length ? { secrets: arrayUnion(...nouveauxSecrets) } : {}),
     ...(p.record && p.record.score > (profile.records?.[p.record.jeu] ?? 0) ? { records: { [p.record.jeu]: p.record.score } } : {}),
     // Sans-faute obligatoire ; valider un niveau valide aussi tous ceux du dessous
-    ...(!p.revision && p.difficulte && p.difficulte <= 4 && taux >= 1 ? { paliers: { [p.sousTheme]: arrayUnion(...[1, 2, 3, 4].filter((d) => d <= p.difficulte!)) } } : {}),
+    ...(valide ? { paliers: { [p.sousTheme]: arrayUnion(...[1, 2, 3, 4].filter((d) => d <= p.difficulte!)) } } : {}),
   }, { merge: true })
-  await publierXp(uid, profile.pseudo, p.xp, (profile.xp ?? 0) + p.xp, serie, { avatar: profile.avatar, cadre: profile.cadre }, resumePublic({ ...profile, parties: (profile.parties ?? 0) + 1, maitrise: p.revision ? profile.maitrise : { ...profile.maitrise, [p.sousTheme]: maitrise } })).catch(console.error)
+  await publierXp(uid, profile.pseudo, p.xp, (profile.xp ?? 0) + p.xp, serie, { avatar: profile.avatar, cadre: profile.cadre }, resumePublic({ ...profile, parties: (profile.parties ?? 0) + 1, maitrise: p.revision ? profile.maitrise : { ...profile.maitrise, [p.sousTheme]: maitrise }, paliers: nouveauxPaliers })).catch(console.error)
 }

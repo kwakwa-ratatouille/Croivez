@@ -1,12 +1,13 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { onValue, ref } from 'firebase/database'
+import { onValue, ref, remove } from 'firebase/database'
 import { rtdb } from '../firebase'
 import { useAuth } from '../auth'
 import { usePrefs } from '../i18n'
 import { ajouterAmi, profilsDe, retirerAmi, trouverParPseudo, type ProfilPublic } from '../social'
 import { annulerRecherche, chercherAdversaire, inviter, refuser, rejoindre, type Duel } from '../duel'
 import { ICONS, Icon, Logo } from '../components/ui'
+import { MAX_JOUEURS, creerSalon, normaliserCode, rejoindreSalon } from '../salon'
 
 export default function Duels() {
   const { lang } = usePrefs()
@@ -14,7 +15,9 @@ export default function Duels() {
   const { user, profile } = useAuth()
   const nav = useNavigate()
   const [amis, setAmis] = useState<ProfilPublic[]>([])
-  const [invitations, setInvitations] = useState<{ id: string; de: string }[]>([])
+  const [invitations, setInvitations] = useState<{ id: string; de: string; salon?: string }[]>([])
+  const [codeSalon, setCodeSalon] = useState('')
+  const [msgSalon, setMsgSalon] = useState('')
   const [pseudo, setPseudo] = useState('')
   const [message, setMessage] = useState('')
   const [recherche, setRecherche] = useState<string | null>(null)
@@ -25,8 +28,8 @@ export default function Duels() {
   useEffect(() => { profilsDe(profile?.amis ?? []).then(setAmis).catch(console.error) }, [profile?.amis])
 
   useEffect(() => onValue(ref(rtdb, `invitations/${uid}`), (s) => {
-    const v = (s.val() ?? {}) as Record<string, { de: string }>
-    setInvitations(Object.entries(v).map(([id, x]) => ({ id, de: x.de })))
+    const v = (s.val() ?? {}) as Record<string, { de: string; salon?: string }>
+    setInvitations(Object.entries(v).map(([id, x]) => ({ id, de: x.de, salon: x.salon })))
   }), [uid])
 
   // Dès que l'adversaire rejoint (recherche ou invitation), on part au duel
@@ -65,18 +68,42 @@ export default function Duels() {
   return (
     <>
       <header style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-        <h1 className="t" style={{ fontSize: 36, fontWeight: 900 }}>{fr ? 'Duels' : 'Duels'}</h1>
-        <p style={{ fontSize: 17, color: 'var(--muted)' }}>{fr ? '10 questions en temps réel, 15 secondes chacune. Plus vous répondez vite, plus vous marquez.' : '10 real-time questions, 15 seconds each. The faster you answer, the more you score.'}</p>
+        <h1 className="t" style={{ fontSize: 34, fontWeight: 900 }}>{fr ? 'Multijoueur' : 'Multiplayer'}</h1>
+        <p style={{ fontSize: 16, color: 'var(--muted)' }}>{fr ? 'Joue en direct avec tes amis : un salon jusqu’à 12 joueurs, ou un duel en face à face.' : 'Play live with friends: a room for up to 12, or a one-on-one duel.'}</p>
       </header>
+
+      {/* Salon : la grande nouveauté, mise en avant */}
+      <section className="card salon-accueil rise">
+        <div style={{ flex: '1 1 260px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <span className="eyebrow" style={{ color: 'inherit', opacity: .85 }}>{fr ? `Jusqu’à ${MAX_JOUEURS} joueurs` : `Up to ${MAX_JOUEURS} players`}</span>
+          <h2 className="t" style={{ fontSize: 26, fontWeight: 900 }}>{fr ? 'Salon entre amis' : 'Room with friends'}</h2>
+          <p style={{ opacity: .9 }}>{fr ? 'Crée un salon, partage le code, et tout le monde répond aux mêmes questions en même temps. Classement en direct après chaque question.' : 'Create a room, share the code, everyone answers the same questions at once.'}</p>
+          <button className="btn salon-creer" onClick={async () => { setMsgSalon(''); try { nav(`/salon/${await creerSalon({ uid, pseudo: moi, avatar: profile?.avatar, cadre: profile?.cadre })}`) } catch { setMsgSalon(fr ? 'Impossible de créer le salon (connexion ?).' : 'Could not create the room.') } }}>{fr ? 'Créer un salon' : 'Create a room'}<Icon d={ICONS.arrowR} /></button>
+        </div>
+        <form className="salon-rejoindre" onSubmit={async (e) => {
+          e.preventDefault(); setMsgSalon('')
+          const c = normaliserCode(codeSalon)
+          if (c.length !== 5) return setMsgSalon(fr ? 'Le code fait 5 caractères.' : 'Codes are 5 characters.')
+          const r = await rejoindreSalon(c, { uid, pseudo: moi, avatar: profile?.avatar, cadre: profile?.cadre })
+          if (r === 'ok') nav(`/salon/${c}`)
+          else setMsgSalon(r === 'introuvable' ? (fr ? 'Aucun salon avec ce code.' : 'No room with this code.') : r === 'plein' ? (fr ? 'Ce salon est complet.' : 'This room is full.') : (fr ? 'La partie a déjà commencé.' : 'The game has started.'))
+        }}>
+          <label htmlFor="code-salon" style={{ fontWeight: 800 }}>{fr ? 'Rejoindre avec un code' : 'Join with a code'}</label>
+          <input id="code-salon" className="input t" value={codeSalon} onChange={(e) => setCodeSalon(normaliserCode(e.target.value))} placeholder="ABCDE" autoComplete="off" autoCapitalize="characters" style={{ fontSize: 26, fontWeight: 900, letterSpacing: 8, textAlign: 'center' }} />
+          <button className="btn btn-p">{fr ? 'Rejoindre' : 'Join'}</button>
+          {msgSalon && <p role="status" style={{ fontSize: 14, fontWeight: 700 }}>{msgSalon}</p>}
+        </form>
+      </section>
+      <h2 className="t" style={{ fontSize: 22, fontWeight: 900 }}>{fr ? 'Duels en face à face' : 'One-on-one duels'}</h2>
 
       {invitations.length > 0 && (
         <section className="card rise" style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 12, background: 'var(--his-t)', borderColor: 'transparent', color: 'var(--his-i)' }}>
           <span className="eyebrow" style={{ color: 'var(--his-i)' }}>{fr ? 'Invitations' : 'Invitations'}</span>
           {invitations.map((inv) => (
             <div key={inv.id} style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-              <strong style={{ flex: 1 }}>{inv.de} {fr ? 'vous défie !' : 'challenges you!'}</strong>
-              <button className="btn btn-p" onClick={async () => { if (await rejoindre(inv.id, uid, moi)) nav(`/duel/${inv.id}`); else setMessage(fr ? 'Ce duel a été annulé.' : 'This duel was cancelled.') }}>{fr ? 'Accepter' : 'Accept'}</button>
-              <button className="btn btn-g" style={{ background: 'var(--surface)' }} onClick={() => refuser(inv.id, uid)}>{fr ? 'Refuser' : 'Decline'}</button>
+              <strong style={{ flex: 1 }}>{inv.de} {inv.salon ? (fr ? `t’invite dans son salon (${inv.salon})` : `invites you to room ${inv.salon}`) : (fr ? 'vous défie !' : 'challenges you!')}</strong>
+              <button className="btn btn-p" onClick={async () => { if (inv.salon) { await refuser(inv.id, uid).catch(() => {}); nav(`/salon/${inv.salon}`); return } if (await rejoindre(inv.id, uid, moi)) nav(`/duel/${inv.id}`); else setMessage(fr ? 'Ce duel a été annulé.' : 'This duel was cancelled.') }}>{fr ? 'Accepter' : 'Accept'}</button>
+              <button className="btn btn-g" style={{ background: 'var(--surface)' }} onClick={() => (inv.salon ? remove(ref(rtdb, `invitations/${uid}/${inv.id}`)) : refuser(inv.id, uid))}>{fr ? 'Refuser' : 'Decline'}</button>
             </div>
           ))}
         </section>

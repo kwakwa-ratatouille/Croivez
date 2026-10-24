@@ -47,6 +47,14 @@ export function retourReponse(juste: boolean) {
   vibrer(juste)
 }
 
+// Tic du chrono dans les dernières secondes : plus aigu et plus fort quand il ne reste presque rien
+export function retourTic(secondes: number) {
+  notes([secondes <= 3 ? 1320 : 990], 0.05, 'square', secondes <= 3 ? 0.05 : 0.03)
+  if (secondes <= 3 && prefsRetour.vibration) {
+    try { if (natif) Haptics.impact({ style: ImpactStyle.Light }); else navigator.vibrate?.(12) } catch { /* pas de vibreur */ }
+  }
+}
+
 export function retourFin(bon: boolean) {
   notes(bon ? [523, 659, 784, 1047] : [392, 330], 0.11)
   vibrer('fin')

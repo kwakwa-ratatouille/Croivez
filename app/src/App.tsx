@@ -18,6 +18,7 @@ import Fiches from "./pages/Fiches"
 import Profil, { Joueur } from './pages/Profil'
 import Duels from './pages/Duels'
 import Duel from './pages/Duel'
+import Salon from './pages/Salon'
 import Classements from './pages/Classements'
 import Album from './pages/Album'
 import Boutique from './pages/Boutique'
@@ -52,6 +53,7 @@ function Routeur() {
       <Routes>
         <Route path="/partie" element={<Partie />} />
         <Route path="/duel/:id" element={<Duel />} />
+        <Route path="/salon/:code" element={<Salon />} />
         <Route element={<Layout />}>
           <Route path="/" element={<Accueil />} />
           <Route path="/themes" element={<Themes />} />

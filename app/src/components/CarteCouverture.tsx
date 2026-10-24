@@ -7,6 +7,9 @@ import { ouvrirFiche } from './FicheLancement'
 import { ICONS, Icon } from './ui'
 import { RARETES, rareteDe } from '../progression'
 
+// Quiz sans photo (quiz « texte ») : une couverture en émojis, sur un dégradé aux couleurs de la famille
+const EMOJI_COUV: Record<string, string> = { 'emojis-films': '🦁👑🎬', slogans: '📣✨', expressions: '🐰💬', gentiles: '🏘️🙋', 'dessins-animes': '📺🧽' }
+
 // Photos de couverture des quiz (public/packs/couvertures.json), chargées une seule fois
 let couvertures: Promise<Record<string, string>> | null = null
 const chargerCouvertures = () => (couvertures ??= fetch('./packs/couvertures.json').then((r) => r.json()).catch(() => ({})))
@@ -33,7 +36,9 @@ export default function CarteCouverture({ id, pct = 0, verrou = false, largeur }
       <span className="couverture-photo">
         {src
           ? <Img src={src} alt="" loading="lazy" />
-          : <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%', background: 'var(--kt)' }}><Illustration k={k} taille={150} fond={false} /></span>}
+          : EMOJI_COUV[id]
+            ? <span className="couverture-emoji" aria-hidden="true">{EMOJI_COUV[id]}</span>
+            : <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%', background: 'var(--kt)' }}><Illustration k={k} taille={150} fond={false} /></span>}
         {/* Pastille de la famille, pour différencier d'un coup d'œil */}
         <span className="couverture-famille"><Icon d={t.famille.icon} size={14} />{t.famille.nom[lang].split(/[ ,&]/)[0]}</span>
         {verrou && <span className="couverture-verrou" style={{ background: RARETES[rareteDe(id)].couleur }}><Icon d={ICONS.lock} size={14} />{RARETES[rareteDe(id)].nom[lang]}</span>}

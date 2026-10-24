@@ -20,7 +20,7 @@ export async function mettreEnCache(src: string, cache?: Cache) {
   const c = cache ?? (await caches.open(NOM))
   if (await c.match(src)) return true
   try {
-    const rep = await fetch(src, { mode: 'cors' })
+    const rep = await fetch(src, { mode: 'cors', ...(src.includes('nocookie.net') ? { referrerPolicy: 'unsafe-url' as ReferrerPolicy } : {}) })
     if (!rep.ok) return false
     await c.put(src, rep)
     return true
@@ -62,5 +62,6 @@ export default function Img({ src, ...props }: ImgHTMLAttributes<HTMLImageElemen
     }).catch(() => {})
     return () => { vivant = false }
   }, [src])
-  return <img src={affiche} {...props} />
+  // Images des wikis Fandom (jeux vidéo) : refusées sans « referer », on l'envoie toujours
+  return <img src={affiche} referrerPolicy={src?.includes('nocookie.net') ? 'unsafe-url' : undefined} {...props} />
 }

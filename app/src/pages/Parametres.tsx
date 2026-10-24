@@ -11,6 +11,8 @@ import { imagesDe, type SousThemeId } from '../quiz/engine'
 import { prefsRetour, reglerRetour, retourReponse } from '../retour'
 import { tailleCache, telechargerImages, viderCache } from '../components/Img'
 import { Icon, Toggle } from '../components/ui'
+import { ecrirePrefsJeu, lirePrefsJeu, type PrefsJeu } from '../prefsJeu'
+import { FORMATS, MINI_JEUX, miniJeuxAutorises, type MiniJeu } from '../quiz/formats'
 
 export default function Parametres() {
   const { t, lang, setLang, dark, setDark } = usePrefs()
@@ -22,6 +24,15 @@ export default function Parametres() {
   const [enCours, setEnCours] = useState<{ k: string; fait: number; total: number } | null>(null)
   const [faits, setFaits] = useState<Set<string>>(() => { try { return new Set(JSON.parse(localStorage.getItem('hors-ligne') ?? '[]')) } catch { return new Set() } })
 
+  const [pj, setPj] = useState<PrefsJeu>(lirePrefsJeu)
+  const majPj = (x: Partial<PrefsJeu>) => setPj(ecrirePrefsJeu(x))
+  const [mjs, setMjs] = useState<MiniJeu[]>(miniJeuxAutorises)
+  const basculerMj = (v: MiniJeu) => {
+    const l = mjs.includes(v) ? mjs.filter((x) => x !== v) : [...mjs, v]
+    if (!l.length) return // au moins un mini-jeu
+    setMjs(l)
+    try { localStorage.setItem('miniJeux', JSON.stringify(l)) } catch { /* stockage indisponible */ }
+  }
   const majTaille = () => tailleCache().then(setTaille)
   useEffect(() => { majTaille() }, [])
 
@@ -117,6 +128,55 @@ export default function Parametres() {
             )}
           </div>
           <button className="btn btn-g" onClick={() => signOut(auth)}>{t('set.logout')}</button>
+        </div>
+      </section>
+
+      {/* Partie : réglages par défaut et confort */}
+      <section className="card" style={{ padding: 28, display: 'flex', flexDirection: 'column', gap: 18, maxWidth: 760 }}>
+        <span className="t" style={{ fontSize: 22, fontWeight: 900 }}>{fr ? 'Partie' : 'Game'}</span>
+        <div style={ligne}>
+          <span className="t" style={titre}>{fr ? 'Questions par partie' : 'Questions per game'}</span>
+          <div className="salon-choix">{[5, 10, 15, 20, 30].map((n) => <button key={n} className="pill" aria-pressed={pj.n === n} onClick={() => majPj({ n })}>{n}</button>)}</div>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <span className="t" style={titre}>{fr ? 'Format de réponse par défaut' : 'Default answer format'}</span>
+          <div className="salon-choix">{FORMATS.map((f) => <button key={f.v} className="pill" aria-pressed={pj.m === f.v} onClick={() => majPj({ m: f.v })}>{f[lang]}</button>)}</div>
+          <span style={{ fontSize: 13, color: 'var(--muted)' }}>{fr ? 'Auto : le format change à chaque question. Mini-jeu surprise : un mini-jeu tiré au hasard pour toute la série.' : 'Auto: format changes every question.'}</span>
+        </div>
+        <div style={ligne}>
+          <span className="t" style={titre}>{fr ? 'Chrono par défaut' : 'Timer by default'}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+            {pj.chrono && <div className="salon-choix">{[10, 15, 20, 30].map((n) => <button key={n} className="pill" aria-pressed={pj.duree === n} onClick={() => majPj({ duree: n })}>{n} s</button>)}</div>}
+            <Toggle on={pj.chrono} label={fr ? 'Chrono' : 'Timer'} onChange={(v) => majPj({ chrono: v })} />
+          </div>
+        </div>
+        <div style={ligne}>
+          <div><span className="t" style={titre}>{fr ? 'Mode rapide par défaut' : 'Quick mode by default'}</span><p style={{ fontSize: 13, color: 'var(--muted)' }}>{fr ? 'Question suivante automatique, sans fiche.' : 'Auto next question, no fact card.'}</p></div>
+          <Toggle on={pj.rapide} label={fr ? 'Mode rapide' : 'Quick mode'} onChange={(v) => majPj({ rapide: v })} />
+        </div>
+        <div style={ligne}>
+          <span className="t" style={titre}>{fr ? 'Bonus en partie (+10 s, passer…)' : 'In-game power-ups'}</span>
+          <Toggle on={pj.bonus} label="Bonus" onChange={(v) => majPj({ bonus: v })} />
+        </div>
+        <div style={ligne}>
+          <span className="t" style={titre}>{fr ? 'Fiche « Le saviez-vous ? »' : '“Did you know?” cards'}</span>
+          <Toggle on={pj.fiches} label={fr ? 'Fiches' : 'Cards'} onChange={(v) => majPj({ fiches: v })} />
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <span className="t" style={titre}>{fr ? 'Mini-jeux des parties aléatoires' : 'Mini-games in random games'}</span>
+          <div className="salon-choix">{MINI_JEUX.map((m) => <button key={m.v} className="pill" aria-pressed={mjs.includes(m.v)} onClick={() => basculerMj(m.v)}>{m.icone} {m.nom[lang]}</button>)}</div>
+        </div>
+        <div style={{ height: 1, background: 'var(--line)' }} />
+        <div style={ligne}>
+          <span className="t" style={titre}>{fr ? 'Taille du texte' : 'Text size'}</span>
+          <div className="salon-choix">
+            <button className="pill" aria-pressed={pj.texte === 'normal'} onClick={() => majPj({ texte: 'normal' })}>{fr ? 'Normale' : 'Normal'}</button>
+            <button className="pill" aria-pressed={pj.texte === 'grand'} onClick={() => majPj({ texte: 'grand' })}>{fr ? 'Grande' : 'Large'}</button>
+          </div>
+        </div>
+        <div style={ligne}>
+          <span className="t" style={titre}>{fr ? 'Animations réduites' : 'Reduced motion'}</span>
+          <Toggle on={pj.calme} label={fr ? 'Animations réduites' : 'Reduced motion'} onChange={(v) => majPj({ calme: v })} />
         </div>
       </section>
 

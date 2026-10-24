@@ -30,6 +30,9 @@ const RARETE: Record<string, Rarete> = {
   'livres-annee': 'commun', 'jeux-annee': 'commun', 'films-annee': 'commun', 'studios-annee': 'commun', 'personnalites-naissance': 'commun', lunes: 'commun',
   animes: 'epique', 'persos-animes': 'legendaire', doubleurs: 'rare', batailles: 'rare', attentats: 'epique', traites: 'commun', souverains: 'epique', voitures: 'epique', 'voitures-photo': 'legendaire', dieux: 'legendaire', 'dieux-mythologie': 'rare', fromages: 'rare', instruments: 'commun', oscars: 'rare', 'attentats-pays': 'commun', 'animes-studio': 'commun',
   affiches: 'legendaire',
+  // Nouveaux thèmes
+  youtubeurs: 'legendaire', 'logos-vrai': 'legendaire', 'emojis-films': 'legendaire', 'idees-recues': 'legendaire', repliques: 'epique', superheros: 'epique', 'dessins-animes': 'epique', desserts: 'epique', dinosaures: 'epique', expressions: 'epique',
+  slogans: 'rare', fruits: 'rare', legumes: 'rare', 'jeux-societe': 'rare', gentiles: 'rare', phobies: 'rare', cris: 'rare', epices: 'commun', mineraux: 'commun', sigles: 'commun',
   chevaux: 'commun', constellations: 'commun', 'artistes-genre': 'commun', fleuves: 'commun', iles: 'commun', 'etats-us': 'commun', sagas: 'commun', stades: 'commun',
 }
 export const rareteDe = (id: string): Rarete => RARETE[id] ?? 'rare'
@@ -83,7 +86,7 @@ export function progresLegende(k: Famille, p?: Profile | null) {
   const faits = quiz.reduce((n, s) => n + [1, 2, 3, 4].filter((d) => p?.paliers?.[s.id]?.includes(d)).length, 0)
   return { faits, total: quiz.length * 4 }
 }
-export const legendeOuverte = (k: Famille, p?: Profile | null) => { const { faits, total } = progresLegende(k, p); return total > 0 && faits >= total }
+export const legendeOuverte = (k: Famille, p?: Profile | null) => { if (p?.toutDebloque) return true; const { faits, total } = progresLegende(k, p); return total > 0 && faits >= total }
 
 // Dépense atomique : refusée si le solde ne suffit pas (pas de solde négatif, même avec deux appareils)
 async function depenser(uid: string, montant: number, maj: Record<string, unknown> = {}) {
@@ -116,7 +119,8 @@ export const payerIndice = (uid: string) => depenser(uid, PRIX_INDICE)
 export const payerPieces = (uid: string, n: number) => depenser(uid, n)
 
 // ——— Menu de test (3 appuis sur le logo) ———
-export const testToutDebloquer = (uid: string) => setDoc(doc(db, 'users', uid), { familles: deleteField(), quiz: deleteField(), choixFait: deleteField() }, { merge: true })
+// Tout débloquer ouvre aussi la Légende de chaque famille (drapeau toutDebloque)
+export const testToutDebloquer = (uid: string) => setDoc(doc(db, 'users', uid), { familles: deleteField(), quiz: deleteField(), choixFait: deleteField(), toutDebloque: true }, { merge: true })
 // Repartir de zéro côté progression : choix des 6 sous-thèmes, 50 pièces (XP et stats conservés)
-export const testReinitialiser = (uid: string) => setDoc(doc(db, 'users', uid), { familles: deleteField(), quiz: [], choixFait: false, sauts: deleteField(), pieces: 50 }, { merge: true })
+export const testReinitialiser = (uid: string) => setDoc(doc(db, 'users', uid), { familles: deleteField(), quiz: [], choixFait: false, sauts: deleteField(), toutDebloque: deleteField(), pieces: 50 }, { merge: true })
 export const testPieces = (uid: string, n: number) => setDoc(doc(db, 'users', uid), { pieces: increment(n) }, { merge: true })

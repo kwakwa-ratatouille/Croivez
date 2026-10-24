@@ -4,7 +4,23 @@ import { niveau, type Profile } from './auth'
 import { FAMILLES } from './themes'
 
 // Profil public (lisible par tous les joueurs connectés) : sert aux classements et à la recherche d'amis
-export type ProfilPublic = { uid: string; pseudo: string; xp: number; niveau: number; serie: number; avatar?: string; cadre?: string; vitrine?: string[]; favori?: string; familles?: Record<string, number>; parties?: number; bonnes?: number; meilleureSerie?: number }
+export type ProfilPublic = { uid: string; pseudo: string; xp: number; niveau: number; serie: number; avatar?: string; cadre?: string; vitrine?: string[]; favori?: string; familles?: Record<string, number>; parties?: number; bonnes?: number; meilleureSerie?: number; erudition?: number }
+
+// ——— Érudition : le classement global récompense le savoir, pas le temps passé ———
+// Chaque niveau réussi au sans-faute rapporte des points (les niveaux sautés en payant ne comptent pas),
+// chaque Légende ouverte en vrai rapporte un gros bonus. Jouer beaucoup sans progresser ne fait pas monter.
+export const POINTS_NIVEAU: Record<number, number> = { 1: 10, 2: 20, 3: 35, 4: 50 }
+export const BONUS_LEGENDE = 250
+export function erudition(p: Pick<Profile, 'paliers'>) {
+  const paliers = p.paliers ?? {}
+  let n = 0
+  for (const l of Object.values(paliers)) for (const d of new Set(l)) n += POINTS_NIVEAU[d] ?? 0
+  for (const f of FAMILLES) {
+    const j = f.subs.filter((s) => s.jouable)
+    if (j.length && j.every((s) => [1, 2, 3, 4].every((d) => paliers[s.id]?.includes(d)))) n += BONUS_LEGENDE
+  }
+  return n
+}
 
 // Ce que les autres voient : maîtrise moyenne par famille (pas par quiz, trop nombreux), vitrine, thème favori, stats
 export function resumePublic(p: Profile) {
@@ -13,7 +29,7 @@ export function resumePublic(p: Profile) {
     const j = f.subs.filter((s) => s.jouable)
     familles[f.k] = j.length ? Math.round(j.reduce((a, s) => a + (p.maitrise?.[s.id] ?? 0), 0) / j.length) : 0
   }
-  return { familles, vitrine: p.vitrine ?? [], favori: p.favori ?? '', parties: p.parties ?? 0, bonnes: p.bonnes ?? 0, meilleureSerie: p.meilleureSerie ?? p.serie ?? 0 }
+  return { familles, vitrine: p.vitrine ?? [], favori: p.favori ?? '', parties: p.parties ?? 0, bonnes: p.bonnes ?? 0, meilleureSerie: p.meilleureSerie ?? p.serie ?? 0, erudition: erudition(p) }
 }
 export const publierVitrine = (uid: string, p: Profile, maj: { vitrine?: string[]; favori?: string }) => Promise.all([
   setDoc(doc(db, 'users', uid), maj, { merge: true }),
@@ -90,8 +106,14 @@ export async function profilsDe(uids: string[]): Promise<ProfilPublic[]> {
 }
 
 export async function classementGlobal(): Promise<ProfilPublic[]> {
-  const snap = await getDocs(query(collection(db, 'profils'), orderBy('xp', 'desc'), limit(50)))
+  const snap = await getDocs(query(collection(db, 'profils'), orderBy('erudition', 'desc'), limit(50)))
   return snap.docs.map((d) => ({ uid: d.id, ...d.data() } as ProfilPublic))
+}
+
+// XP gagnée cette semaine (ligue hebdomadaire)
+export async function monXpSemaine(uid: string) {
+  const d = await getDoc(doc(db, 'semaines', semaine(), 'scores', uid))
+  return (d.data()?.xp as number | undefined) ?? 0
 }
 
 export async function classementSemaine(): Promise<{ uid: string; pseudo: string; xp: number; avatar?: string; cadre?: string }[]> {

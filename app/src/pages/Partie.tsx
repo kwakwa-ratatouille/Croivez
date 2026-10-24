@@ -3,11 +3,14 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { enregistrerPartie, jour, useAuth } from '../auth'
 import { usePrefs } from '../i18n'
 import { trouverSousTheme } from '../themes'
-import { calculerXp, distanceKm, genererMix, genererPartie, type Difficulte, type Mode, type Question, type SousThemeId } from '../quiz/engine'
+import { calculerXp, distanceKm, genererMix, genererPartie, natureQuiz, type Difficulte, type Mode, type Question, type SousThemeId } from '../quiz/engine'
 import { estCorrect, normaliser } from '../quiz/match'
-import { appliquerFormat, type Format } from '../quiz/formats'
+import { appliquerFormat, appliquerMiniJeu, infoMiniJeu, tirerMiniJeu, type Format, type InfoMiniJeu, type MiniJeu } from '../quiz/formats'
 import { memoriser } from '../quiz/memoire'
-import { retourFin, retourReponse } from '../retour'
+import { retourFin, retourReponse, retourTic } from '../retour'
+import Chrono, { BarreChrono } from '../components/Chrono'
+import { lirePrefsJeu } from '../prefsJeu'
+import { saviezFaible, useResume } from '../quiz/resume'
 import { PRIX_INDICE, accesQuiz, payerIndice, payerPieces, piecesGagnees, plafonner } from '../progression'
 import { FAMILLES } from '../themes'
 import { bonusEvenement } from '../meta'
@@ -36,19 +39,25 @@ export default function Partie() {
   const sousTheme = (params.get('s') ?? (jeu ? 'mix' : 'drapeaux')) as SousThemeId
   const format = (params.get('m') ?? 'qcm') as Format
   const mode: Mode = format === 'libre' ? 'libre' : 'qcm' // le moteur fait un QCM, transformé ensuite
-  const nombre = Number(params.get('n') ?? 10)
+  // Mini-jeu : imposé par le lien, ou tiré au hasard (partie aléatoire, format « surprise ») — le même pour toute la série
+  const [mj, setMj] = useState<MiniJeu | null>(() => (params.get('mj') as MiniJeu | null) ?? (jeu === 'mix' ? tirerMiniJeu() : format === 'surprise' ? tirerMiniJeu(params.get('s') ?? undefined) : null))
+  const infoMj = infoMiniJeu(mj)
+  const [intro, setIntro] = useState(!!mj)
+  const prefs = lirePrefsJeu()
+  const nombre = Number(params.get('n') ?? prefs.n)
   const diffChoisie = Number(params.get('d') ?? 0) as Difficulte
   const legende = Number(params.get('d') ?? 0) === 5
   // Légende : chrono de 12 s imposé
-  const chrono = legende ? 12 : Number(params.get('t') ?? 0)
+  // Éclair et Pile ou face imposent leur propre chrono
+  const chrono = legende ? 12 : infoMj?.chrono ?? Number(params.get('t') ?? 0)
   const defi = params.get('defi') === '1'
   const revision = params.get('rev') === '1'
   // Mode rapide : pas de fiche, question suivante automatique (toujours en Express et Survie)
-  const rapide = params.get('r') === '1' || jeu === 'express' || jeu === 'survie'
+  const rapide = params.get('r') === '1' || jeu === 'express' || jeu === 'survie' || !prefs.fiches
   const seed = defi ? Number(jour().replace(/-/g, '')) : undefined
   const difficulte = diffChoisie // 0 = tout mélangé
   const max = plafonner(4, profile, sousTheme) // difficulté la plus haute débloquée
-  const k = trouverSousTheme(sousTheme)?.famille.k ?? (jeu ? 'jv' : 'geo')
+  const k = trouverSousTheme(sousTheme)?.famille.k ?? (params.get('f') as Famille | null) ?? (jeu ? 'jv' : 'geo')
   const EXPRESS_MS = 60_000
   const [finExpress, setFinExpress] = useState(0)
   const [vies, setVies] = useState(3)
@@ -80,11 +89,18 @@ export default function Partie() {
     setVies(3)
     if (jeu) {
       // Tous les quiz débloqués ; Survie monte en difficulté par blocs de 6 questions
-      const quiz = FAMILLES.flatMap((f) => f.subs.filter((x) => x.jouable && accesQuiz(x.id, profile)).map((x) => x.jouable as SousThemeId))
+      // f= : partie aléatoire limitée à une famille
+      const tous = FAMILLES.filter((f) => !params.get('f') || f.k === params.get('f')).flatMap((f) => f.subs.filter((x) => x.jouable && accesQuiz(x.id, profile)).map((x) => x.jouable as SousThemeId))
+      // Mini-jeu réservé à un type de quiz (photo floue, avant / après) : seulement les quiz compatibles
+      const nature = infoMj?.nature
+      const compatibles = nature ? tous.filter((s) => natureQuiz(s) === nature) : tous
+      const quiz = compatibles.length >= 2 ? compatibles : tous
+      const regle: MiniJeu | null = compatibles.length >= 2 ? mj : mj && 'qcm'
+      if (regle !== mj) setMj(regle)
       const difficultes: Difficulte[] = jeu === 'survie'
         ? Array.from({ length: 36 }, (_, n) => Math.min(max, 1 + Math.floor(n / 6)) as Difficulte)
         : Array.from({ length: jeu === 'express' ? 40 : nombre }, () => difficulte)
-      genererMix({ quiz, difficultes, lang, max }).then((qs) => { setQuestions(qs); if (jeu === 'express') setFinExpress(Date.now() + EXPRESS_MS) })
+      genererMix({ quiz, difficultes, lang, max }).then((qs) => { setQuestions(regle ? qs.map((x) => appliquerMiniJeu(x, regle, lang)) : qs); if (jeu === 'express') setFinExpress(Date.now() + EXPRESS_MS) })
       return
     }
     setCombo(0); setComboMax(0); setDouble(false); setSecondeChance(null)
@@ -102,10 +118,10 @@ export default function Partie() {
         const boss = candidats.find((c) => !qs.some((x) => x.id === c.id))
         if (boss) qs = [...qs, { ...boss, boss: true }]
       }
-      setQuestions(qs.map((x) => appliquerFormat(x, format, difficulte, lang)))
+      setQuestions(qs.map((x) => (mj ? appliquerMiniJeu(x, mj, lang) : appliquerFormat(x, format, difficulte, lang))))
       debutQuestion.current = Date.now()
     })
-  }, [sousTheme, difficulte, max, nombre, mode, lang, chrono, seed, jeu, profile])
+  }, [sousTheme, difficulte, max, nombre, mode, lang, chrono, seed, jeu, profile, mj, infoMj, format, defi, legende, revision])
 
   // Une partie est générée une seule fois, à l'ouverture
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -164,12 +180,16 @@ export default function Partie() {
   }, [i, questions, chrono, reponses, jeu, vies])
 
   // Chrono : à zéro, la question compte comme ratée
+  const dernierTic = useRef(0)
   useEffect(() => {
-    if (!chrono || courante || fini || !q) return
+    if (!chrono || courante || fini || !q || intro) return
     if (restant <= 0) { enregistrer({ donnee: '', juste: false }); return }
+    // Tic sonore à chaque seconde des 5 dernières
+    const s = Math.ceil(restant)
+    if (s <= 5 && s !== dernierTic.current) { dernierTic.current = s; retourTic(s) }
     const id = setTimeout(() => setRestant((r) => r - 0.1), 100)
     return () => clearTimeout(id)
-  }, [chrono, restant, courante, fini, q, enregistrer])
+  }, [chrono, restant, courante, fini, q, enregistrer, intro])
 
   useEffect(() => { if (q && !q.options.length && !q.carte && !courante) inputRef.current?.focus() }, [q, courante])
 
@@ -217,6 +237,8 @@ export default function Partie() {
   }, [fini, user, profile, sousTheme, xp, pieces, defi, revision, reponses, questions])
 
   if (!questions) return <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center' }}><Logo width={72} /></div>
+  // Écran d'annonce du mini-jeu : on sait à quoi on joue avant que le chrono parte
+  if (intro && infoMj && q) return <IntroMiniJeu info={infoMj} total={questions.length} onGo={() => { setIntro(false); setRestant(chrono); debutQuestion.current = Date.now() }} />
   if (!q) return <div style={{ padding: 48, textAlign: 'center' }}><p>{lang === 'fr' ? 'Aucune question disponible.' : 'No questions available.'}</p><Link className="btn btn-p" to="/">{t('res.home')}</Link></div>
 
   if (fini) return <Resultat reponses={reponses} xp={xp} pieces={pieces} score={score} comboMax={comboMax} k={k} onReplay={(ids) => {
@@ -270,35 +292,32 @@ export default function Partie() {
           : jeu === 'survie'
             ? <span style={{ fontWeight: 800, whiteSpace: 'nowrap', letterSpacing: 2, color: 'var(--ko-i)' }} aria-label={`${vies} vies`}>{'♥'.repeat(Math.max(0, vies))}<span style={{ opacity: .25 }}>{'♥'.repeat(Math.max(0, 3 - vies))}</span> · {bonnes}</span>
             : <span style={{ fontWeight: 600, color: 'var(--muted)', whiteSpace: 'nowrap' }}>{i + 1} {t('q.of')} {questions.length}</span>}
-        {chrono > 0 && (
-          <span aria-label={`${Math.ceil(restant)} s`} style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 700, minWidth: 64, color: restant <= 5 && !courante ? 'var(--ko-i)' : 'var(--text)', transition: 'color .3s ease-out' }}>
-            <Icon d={ICONS.timer} size={20} />{Math.max(0, Math.ceil(restant))} s
-          </span>
-        )}
+        {chrono > 0 && <Chrono restant={restant} total={chrono} actif={!courante} />}
       </header>
-      {chrono > 0 && (
-        <div style={{ width: '100%', maxWidth: 1040, height: 4, borderRadius: 4, background: 'var(--surface2)', marginTop: -16, overflow: 'hidden' }}>
-          <span style={{ display: 'block', height: '100%', width: `${(Math.max(0, restant) / chrono) * 100}%`, background: restant <= 5 ? 'var(--ko)' : `var(--${k})`, transition: 'width .1s linear, background-color .3s ease-out' }} />
-        </div>
-      )}
+      {chrono > 0 && <BarreChrono restant={restant} total={chrono} actif={!courante} />}
+      {infoMj && <span className="chip mini-jeu-chip">{infoMj.icone} {infoMj.nom[lang]}</span>}
+      {!infoMj && q.jeu && <span key={i} className="chip mini-jeu-chip rise">{q.jeu === 'libre' ? (lang === 'fr' ? '✍️ Saisie libre' : '✍️ Free typing') : `${infoMiniJeu(q.jeu)?.icone} ${infoMiniJeu(q.jeu)?.nom[lang]}`}</span>}
 
       <section key={i} className="rise" style={{ width: '100%', maxWidth: 1040, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 24 }}>
         {q.boss && <span className="chip boss rise">{lang === 'fr' ? 'Question boss · +30 pièces' : 'Boss question · +30 coins'}</span>}
         <h1 className="t" style={{ fontSize: 30, fontWeight: 900, textAlign: 'center', maxWidth: 760 }}>{q.enonce}</h1>
+        {/* Émojis, réplique, slogan, expression… : en gros, c'est le cœur de la question */}
+        {q.grand && <p className={`t enonce-grand${/^[^\p{L}\d]+$/u.test(q.grand) ? ' emojis' : ''}`}>{q.grand}</p>}
         <div className="jauge-combo" aria-label={`Score ${score}, combo ${combo}`}>
           <span className="t" style={{ fontWeight: 900 }}>{score.toLocaleString(lang === 'fr' ? 'fr-FR' : 'en-GB')} pts</span>
           {combo >= 2 && <span key={combo} className={`chip combo combo-${multiplicateur(combo) >= 3 ? 3 : multiplicateur(combo) >= 2 ? 2 : multiplicateur(combo) > 1 ? 1 : 0}`}>{combo} {lang === 'fr' ? 'd’affilée' : 'in a row'}{multiplicateur(combo) > 1 ? ` · ×${multiplicateur(combo)}` : ''}</span>}
           {double && <span className="chip" style={{ background: 'var(--mus-t)', color: 'var(--mus-i)' }}>{lang === 'fr' ? '×2 actif' : '×2 on'}</span>}
         </div>
         {q.image && (
-          <Img src={q.image} alt="" style={{ height: 220, maxWidth: '100%', borderRadius: 18, boxShadow: 'var(--shadow)', border: '1px solid var(--line)', objectFit: 'contain', background: 'var(--surface)' }} />
+          <Img src={q.image} alt="" className={q.flou && !courante ? 'image-floue' : undefined} style={{ height: 220, maxWidth: '100%', borderRadius: 18, boxShadow: 'var(--shadow)', border: '1px solid var(--line)', objectFit: 'contain', background: q.fondGris ? 'var(--fond-logo)' : 'var(--surface)', padding: q.fondGris ? 14 : 0 }} />
         )}
         {/* Question sans image : illustration de la famille pour garder l'écran vivant (sans dévoiler la réponse) */}
-        {!q.image && !q.carte && !q.audio && <div className="illus-question"><Illustration k={k as Famille} taille={170} /></div>}
+        {!q.image && !q.carte && !q.audio && !q.grand && <div className="illus-question"><Illustration k={k as Famille} taille={170} /></div>}
         {q.carte && <CarteQuiz carte={q.carte} clic={courante?.clic} repondu={!!courante} onClic={repondreCarte} />}
         {q.audio && <Extrait id={q.audio} />}
 
         {q.format === 'vf' && <p className="t" style={{ fontSize: 24, fontWeight: 900, textAlign: 'center' }}>{q.propose} ?{courante && !courante.juste && <span style={{ display: 'block', fontSize: 16, color: 'var(--ok-i)' }}>→ {q.vraie}</span>}</p>}
+        {q.vraie && q.format !== 'vf' && courante && <p className="t" style={{ fontSize: 20, fontWeight: 900, color: courante.juste ? 'var(--ok-i)' : 'var(--ko-i)' }}>{lang === 'fr' ? 'C’était' : 'It was'} {q.vraie}</p>}
         {q.format === 'lettres' && !courante && <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, justifyContent: 'center' }}>{q.lettres?.map((l, n) => <span key={n} className="kbd" style={{ fontSize: 18, minWidth: 34 }}>{l}</span>)}</div>}
         {q.options.length > 0 ? (
           <div style={{ width: '100%', display: 'grid', gridTemplateColumns: q.imagesOnly ? 'repeat(auto-fit, minmax(200px, 1fr))' : 'repeat(2, minmax(0, 1fr))', gap: 14 }}>
@@ -318,7 +337,7 @@ export default function Partie() {
                     opacity: etat === 'dim' ? .55 : 1, transition: 'all .2s ease-out',
                   }}>
                   <span className="kbd" style={{ flex: 'none' }}>{n + 1}</span>
-                  {o.image && <Img src={o.image} alt="" style={{ width: '100%', aspectRatio: '3 / 2', objectFit: 'contain', borderRadius: 10 }} />}
+                  {o.image && <Img src={o.image} alt="" style={{ width: '100%', aspectRatio: '3 / 2', objectFit: 'contain', borderRadius: 10, padding: q.fondGris ? 10 : 0, background: q.fondGris ? 'var(--fond-logo)' : undefined, ...o.effet }} />}
                   {(!q.imagesOnly || courante) && <span style={{ flex: 1 }}>{o.label}</span>}
                   {etat === 'ok' && <Coche />}
                   {etat === 'ko' && <Croix />}
@@ -342,7 +361,7 @@ export default function Partie() {
         )}
 
         {/* Bonus : 15 pièces chacun (pas en Légende) */}
-        {!courante && !legende && (
+        {!courante && !legende && prefs.bonus && (
           <div className="bonus-barre">
             {chrono > 0 && <button type="button" className="btn btn-s" onClick={() => acheterBonus(() => setRestant((r) => r + 10))}>+10 s · <Piece size={15} />{PRIX_BONUS}</button>}
             <button type="button" className="btn btn-s" onClick={() => acheterBonus(() => enregistrer({ donnee: lang === 'fr' ? '(passée)' : '(skipped)', juste: true }))}>{lang === 'fr' ? 'Passer' : 'Skip'} · <Piece size={15} />{PRIX_BONUS}</button>
@@ -379,10 +398,34 @@ export default function Partie() {
   )
 }
 
+function IntroMiniJeu({ info, total, onGo }: { info: InfoMiniJeu; total: number; onGo: () => void }) {
+  const { lang } = usePrefs()
+  const fr = lang === 'fr'
+  return (
+    <div className="partie" style={{ minHeight: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+      <section className="card intro-mj rise">
+        <span className="eyebrow">{fr ? 'Mini-jeu de la série' : 'This round’s mini-game'}</span>
+        <span className="intro-mj-icone" aria-hidden="true">{info.icone}</span>
+        <h1 className="t" style={{ fontSize: 34, fontWeight: 900 }}>{info.nom[lang]}</h1>
+        <p style={{ fontSize: 17, color: 'var(--muted)', maxWidth: 420 }}>{info.desc[lang]}</p>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}>
+          <span className="chip" style={{ background: 'var(--surface2)' }}>{total} questions</span>
+          {info.chrono && <span className="chip" style={{ background: 'var(--ko-t)', color: 'var(--ko-i)' }}>⏱ {info.chrono} s</span>}
+        </div>
+        <button className="btn btn-p btn-lg" onClick={onGo} autoFocus style={{ minWidth: 220 }}>{fr ? 'C’est parti !' : 'Let’s go!'}<Icon d={ICONS.arrowR} /></button>
+      </section>
+    </div>
+  )
+}
+
 function Fiche({ r, onNext, dernier, k }: { r: Reponse; onNext: () => void; dernier: boolean; k: string }) {
   const { t, lang } = usePrefs()
   const f = r.q.fiche
   const seuil = r.q.carte?.seuilKm
+  // Anecdote trop pauvre (juste le nom) : résumé de l'article Wikipédia à la place
+  const faible = saviezFaible(f.saviez, r.q.reponse)
+  const resume = useResume(f.wiki, faible)
+  const saviez = faible && resume ? resume : f.saviez
   return (
     <div className="card rise" role="status" style={{ width: '100%', padding: 28, display: 'flex', gap: 28, flexWrap: 'wrap', alignItems: 'center', borderColor: r.juste ? 'var(--ok)' : 'var(--ko)', borderWidth: 2 }}>
       {f.image ? <Img src={f.image} alt="" style={{ width: 160, borderRadius: 12, border: '1px solid var(--line)', flex: 'none' }} /> : <ImageWiki wiki={f.wiki} />}
@@ -397,7 +440,7 @@ function Fiche({ r, onNext, dernier, k }: { r: Reponse; onNext: () => void; dern
         <div style={{ display: 'flex', gap: 22, flexWrap: 'wrap' }}>
           {f.faits.map((x) => <div key={x.l} style={{ display: 'flex', flexDirection: 'column' }}><span className="eyebrow" style={{ fontSize: 11 }}>{x.l}</span><span style={{ fontWeight: 700 }}>{x.v}</span></div>)}
         </div>
-        <p style={{ fontSize: 15, color: `var(--${k}-i)`, background: `var(--${k}-t)`, padding: '10px 14px', borderRadius: 12 }}><strong>{t('q.didyouknow')}</strong> {f.saviez}</p>
+        <p style={{ fontSize: 15, color: `var(--${k}-i)`, background: `var(--${k}-t)`, padding: '10px 14px', borderRadius: 12 }}><strong>{t('q.didyouknow')}</strong> {saviez}</p>
         <a href={f.wiki} target="_blank" rel="noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontWeight: 600, fontSize: 14, color: 'var(--muted)', alignSelf: 'flex-start', minHeight: 32 }}>
           <Icon d={ICONS.link} size={16} />{t('q.more')}
         </a>

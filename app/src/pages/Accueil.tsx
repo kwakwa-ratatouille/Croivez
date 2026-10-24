@@ -1,5 +1,6 @@
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { useAuth } from '../auth'
+import { niveau, useAuth } from '../auth'
 import { usePrefs } from '../i18n'
 import { FAMILLES, type Famille, type SousTheme } from '../themes'
 import { defiDuJour } from '../quiz/defi'
@@ -7,9 +8,10 @@ import { aReviser } from '../quiz/revision'
 import { accesQuiz } from '../progression'
 import { Coche, ICONS, Icon, Piece } from '../components/ui'
 import { etatDuJour, quetesDuJour, recupererQuete } from '../quetes'
-import { evenementDeLaSemaine } from '../meta'
-import Illustration from '../components/Illustration'
+import { evenementDeLaSemaine, ligueDe, ligueSuivante } from '../meta'
+import { monXpSemaine } from '../social'
 import CarteCouverture from '../components/CarteCouverture'
+import Avatar from '../components/Avatar'
 
 // Derniers quiz joués sur cet appareil (d'après la mémoire des questions), du plus récent au plus ancien
 function quizRecents(): string[] {
@@ -25,17 +27,18 @@ function quizRecents(): string[] {
   } catch { return [] }
 }
 
-// Carte compacte d'un quiz dans un carrousel : un appui ouvre la fiche de lancement
-function CarteQuiz({ s, pct }: { s: SousTheme; k: Famille; pct: number }) {
-  return <CarteCouverture id={s.id} pct={pct} largeur={172} />
-}
+// Les nouveautés mises en avant (nouveaux thèmes)
+const NOUVEAUTES = ['youtubeurs', 'emojis-films', 'idees-recues', 'logos-vrai', 'repliques', 'fruits', 'desserts', 'superheros', 'dinosaures', 'jeux-societe', 'dessins-animes', 'persos-univers', 'lieux-jeux', 'expressions', 'slogans', 'legumes', 'mineraux', 'phobies', 'gentiles', 'cris', 'sigles', 'epices']
 
-function Rangee({ titre, lien, children }: { titre: string; lien?: { to: string; label: string }; children: React.ReactNode }) {
+function Rangee({ titre, sous, lien, children }: { titre: string; sous?: string; lien?: { to: string; label: string }; children: React.ReactNode }) {
   return (
     <section style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12 }}>
-        <h2 className="t" style={{ fontSize: 20, fontWeight: 900 }}>{titre}</h2>
-        {lien && <Link to={lien.to} style={{ fontWeight: 600, fontSize: 14, minHeight: 44, display: 'inline-flex', alignItems: 'center', color: 'var(--muted)' }}>{lien.label}</Link>}
+      <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 12 }}>
+        <div>
+          <h2 className="t" style={{ fontSize: 21, fontWeight: 900 }}>{titre}</h2>
+          {sous && <p style={{ fontSize: 13.5, color: 'var(--muted)' }}>{sous}</p>}
+        </div>
+        {lien && <Link to={lien.to} className="lien-voir">{lien.label}<Icon d={ICONS.arrowR} size={15} /></Link>}
       </div>
       <div className="carrousel">{children}</div>
     </section>
@@ -43,65 +46,87 @@ function Rangee({ titre, lien, children }: { titre: string; lien?: { to: string;
 }
 
 export default function Accueil() {
-  const { t, lang } = usePrefs()
+  const { lang } = usePrefs()
   const fr = lang === 'fr'
   const { user, profile } = useAuth()
   const etatQuetes = etatDuJour(profile?.quetes)
   const evenement = evenementDeLaSemaine()
-  const serie = profile?.serie ?? 0
   const today = new Date().toLocaleDateString('sv')
   const defi = defiDuJour(today)
   const m = profile?.maitrise ?? {}
   const dues = aReviser(profile?.revision).length
+  const [xpSemaine, setXpSemaine] = useState<number | null>(null)
+  useEffect(() => { if (user) monXpSemaine(user.uid).then(setXpSemaine).catch(() => setXpSemaine(0)) }, [user, profile?.xp])
+  const ligue = ligueDe(xpSemaine ?? 0)
+  const suivante = ligueSuivante(xpSemaine ?? 0)
 
-  const tous = FAMILLES.flatMap((f) => f.subs.filter((s) => s.jouable && accesQuiz(s.id, profile)).map((s) => ({ s, k: f.k })))
-  const recents = quizRecents().map((id) => tous.find((x) => x.s.id === id)).filter((x): x is { s: SousTheme; k: Famille } => !!x).slice(0, 10)
+  const tous = FAMILLES.flatMap((f) => f.subs.filter((s) => s.jouable).map((s) => ({ s, k: f.k })))
+  const ouverts = tous.filter((x) => accesQuiz(x.s.id, profile))
+  const recents = quizRecents().map((id) => ouverts.find((x) => x.s.id === id)).filter((x): x is { s: SousTheme; k: Famille } => !!x).slice(0, 10)
+  const nouveautes = NOUVEAUTES.map((id) => tous.find((x) => x.s.id === id)).filter((x): x is { s: SousTheme; k: Famille } => !!x)
   // À découvrir : quiz ouverts jamais joués
-  const nouveaux = tous.filter((x) => !(m[x.s.id] > 0) && !recents.some((r) => r.s.id === x.s.id)).sort(() => Math.random() - 0.5).slice(0, 10)
-
-  const MODES = [
-    { jeu: 'mix', titre: 'Mix', texte: fr ? '10 questions, tous thèmes' : '10 questions, all topics', k: 'jv' as Famille, record: undefined },
-    { jeu: 'express', titre: 'Express', texte: fr ? 'Le max en 1 minute' : 'Most in 1 minute', k: 'cine' as Famille, record: profile?.records?.express },
-    { jeu: 'survie', titre: fr ? 'Survie' : 'Survival', texte: fr ? '3 vies, de plus en plus dur' : '3 lives, ever harder', k: 'nat' as Famille, record: profile?.records?.survie },
-  ]
+  const decouvrir = ouverts.filter((x) => !(m[x.s.id] > 0) && !recents.some((r) => r.s.id === x.s.id) && !NOUVEAUTES.includes(x.s.id)).sort(() => Math.random() - 0.5).slice(0, 10)
+  const queteFinies = quetesDuJour().filter((q) => etatQuetes.recues.includes(q.id)).length
 
   return (
     <>
-      <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-          <h1 className="t" style={{ fontSize: 32, fontWeight: 900 }}>{t('home.hello')} {profile?.pseudo}</h1>
-          <p style={{ fontSize: 16, color: 'var(--muted)' }}>{t('home.sub')}</p>
+      {/* En-tête : qui je suis, où j'en suis (série, pièces, niveau, ligue) */}
+      <header className="accueil-tete rise">
+        <Link to="/profil" style={{ display: 'flex' }}><Avatar pseudo={profile?.pseudo ?? '?'} avatar={profile?.avatar} cadre={profile?.cadre} taille={58} /></Link>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <p style={{ color: 'var(--muted)', fontWeight: 600, fontSize: 14 }}>{fr ? 'Salut' : 'Hi'} 👋</p>
+          <h1 className="t" style={{ fontSize: 28, fontWeight: 900, lineHeight: 1.1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{profile?.pseudo}</h1>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 14px', borderRadius: 999, background: 'var(--surface)', border: '1px solid var(--line)' }}>
-          <Icon d={ICONS.flame} style={{ color: 'var(--cine-i)' }} /><span style={{ fontWeight: 800 }}>{serie}</span><span style={{ color: 'var(--muted)', fontSize: 14 }}>{t('home.streak')}</span>
+        <div className="accueil-puces">
+          <span className="puce" title={fr ? 'Série de jours' : 'Day streak'}><Icon d={ICONS.flame} size={17} style={{ color: '#E8742E' }} />{profile?.serie ?? 0}</span>
+          <span className="puce">{fr ? 'Niv.' : 'Lv.'} {niveau(profile?.xp ?? 0)}</span>
         </div>
       </header>
 
-      {/* Événement de la semaine : une famille à l'honneur */}
-      <Link to={`/themes/${evenement.k}`} className="famille rise" style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '10px 16px', borderRadius: 22, textDecoration: 'none', background: `linear-gradient(100deg, var(--${evenement.k}-t), var(--his-t))`, color: `var(--${evenement.k}-i)` }}>
-        <Illustration k={evenement.k} taille={86} fond={false} />
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <span className="eyebrow" style={{ color: 'inherit' }}>{evenement.reel ? (fr ? 'Événement en cours' : 'Live event') : (fr ? 'Famille de la semaine' : 'Family of the week')}</span>
-          <strong className="t" style={{ display: 'block', fontSize: 18 }}>{evenement.nom[lang]} · XP {fr ? 'et pièces' : '& coins'} ×2{evenement.quiz ? (fr ? ` sur ${evenement.quiz.length} quiz` : ` on ${evenement.quiz.length} quizzes`) : ''}</strong>
-        </div>
-        <Icon d={ICONS.arrowR} />
+      {/* Le gros bouton : une partie aléatoire avec un mini-jeu surprise */}
+      <Link to="/partie?jeu=mix&d=0&m=qcm" className="accueil-jouer rise">
+        <span className="accueil-jouer-des" aria-hidden="true">🎲</span>
+        <span style={{ flex: 1, minWidth: 0 }}>
+          <span className="eyebrow" style={{ color: 'rgba(255,255,255,.85)' }}>{fr ? 'Partie rapide' : 'Quick game'}</span>
+          <strong className="t" style={{ display: 'block', fontSize: 26, lineHeight: 1.1 }}>{fr ? 'Jouer au hasard' : 'Random game'}</strong>
+          <span style={{ fontSize: 14, opacity: .92 }}>{fr ? 'Des thèmes mélangés et un mini-jeu surprise : vrai ou faux, photo floue, éclair…' : 'Mixed topics and a surprise mini-game.'}</span>
+        </span>
+        <span className="accueil-jouer-bouton"><Icon d={ICONS.arrowR} size={26} /></span>
       </Link>
 
-      {/* Modes de jeu : un appui, la partie démarre */}
-      <section style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 10 }}>
-        {MODES.map((x) => (
-          <Link key={x.jeu} to={`/partie?jeu=${x.jeu}&d=0&m=qcm`} className="famille" style={{ padding: '14px 12px', borderRadius: 22, textDecoration: 'none', background: `var(--${x.k}-t)`, color: `var(--${x.k}-i)`, display: 'flex', flexDirection: 'column', gap: 4, minWidth: 0 }}>
-            <span className="t" style={{ fontSize: 20, fontWeight: 900 }}>{x.titre}</span>
-            <span style={{ fontSize: 12.5, fontWeight: 600, lineHeight: 1.3 }}>{x.texte}</span>
-            {x.record !== undefined && <span style={{ fontSize: 12, fontWeight: 800, marginTop: 2 }}>{fr ? 'Record' : 'Best'} : {x.record}</span>}
-          </Link>
-        ))}
+      {/* Les autres façons de jouer */}
+      <section className="accueil-modes">
+        <Link to="/duels" className="mode-tuile" style={{ ['--k' as string]: 'var(--pop)', ['--kt' as string]: 'var(--pop-t)', ['--ki' as string]: 'var(--pop-i)' }}>
+          <span className="mode-emoji">👥</span><strong className="t">{fr ? 'Multijoueur' : 'Multiplayer'}</strong><span>{fr ? 'Salon entre amis, jusqu’à 12' : 'Rooms up to 12'}</span>
+        </Link>
+        <Link to="/partie?jeu=express&d=0&m=qcm" className="mode-tuile" style={{ ['--k' as string]: 'var(--cine)', ['--kt' as string]: 'var(--cine-t)', ['--ki' as string]: 'var(--cine-i)' }}>
+          <span className="mode-emoji">⚡</span><strong className="t">Express</strong><span>{fr ? 'Le max en 1 minute' : 'Most in 1 minute'}{profile?.records?.express ? ` · ${fr ? 'record' : 'best'} ${profile.records.express}` : ''}</span>
+        </Link>
+        <Link to="/partie?jeu=survie&d=0&m=qcm" className="mode-tuile" style={{ ['--k' as string]: 'var(--nat)', ['--kt' as string]: 'var(--nat-t)', ['--ki' as string]: 'var(--nat-i)' }}>
+          <span className="mode-emoji">❤️</span><strong className="t">{fr ? 'Survie' : 'Survival'}</strong><span>{fr ? '3 vies, de plus en plus dur' : '3 lives, ever harder'}{profile?.records?.survie ? ` · ${fr ? 'record' : 'best'} ${profile.records.survie}` : ''}</span>
+        </Link>
+        {profile?.defiJour === today
+          ? <div className="mode-tuile" style={{ ['--k' as string]: 'var(--his)', ['--kt' as string]: 'var(--his-t)', ['--ki' as string]: 'var(--his-i)' }}><span className="mode-emoji">✅</span><strong className="t">{fr ? 'Défi réussi' : 'Challenge done'}</strong><span>{fr ? 'Reviens demain !' : 'Come back tomorrow!'}</span></div>
+          : <Link to={defi.url} className="mode-tuile" style={{ ['--k' as string]: 'var(--his)', ['--kt' as string]: 'var(--his-t)', ['--ki' as string]: 'var(--his-i)' }}><span className="mode-emoji">🏆</span><strong className="t">{fr ? 'Défi du jour' : 'Daily challenge'}</strong><span>{defi.titre[lang]} · XP ×2</span></Link>}
       </section>
 
-      {/* Défi du jour, quêtes, révision */}
-      <section className="carrousel">
-        <div className="card" style={{ width: 320, padding: 18, display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <span className="eyebrow">{fr ? 'Quêtes du jour' : 'Daily quests'}</span>
+      {/* Ma semaine : ligue, quêtes, révision, événement */}
+      <section className="accueil-semaine">
+        <Link to="/classements" className="card bloc-ligue" style={{ ['--lc' as string]: ligue.couleur }}>
+          <span className="ligue-blason" style={{ width: 52, height: 52 }}><Icon d={ICONS.sparkle} size={26} /></span>
+          <span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <span className="eyebrow">{fr ? 'Ta ligue de la semaine' : 'Your weekly league'}</span>
+            <strong className="t" style={{ fontSize: 20 }}>{fr ? 'Ligue' : 'League'} {ligue.nom[lang]}</strong>
+            <span style={{ fontSize: 13, color: 'var(--muted)' }}>{xpSemaine === null ? '…' : suivante ? (fr ? `${xpSemaine} XP · encore ${suivante.min - xpSemaine} pour ${suivante.nom.fr}` : `${xpSemaine} XP · ${suivante.min - xpSemaine} to ${suivante.nom.en}`) : `${xpSemaine} XP · ${fr ? 'tout en haut !' : 'top league!'}`}</span>
+            {suivante && xpSemaine !== null && <span className="bar" style={{ height: 6 }}><span style={{ width: `${((xpSemaine - ligue.min) / (suivante.min - ligue.min)) * 100}%`, background: suivante.couleur }} /></span>}
+          </span>
+        </Link>
+
+        <div className="card" style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span className="eyebrow">{fr ? 'Quêtes du jour' : 'Daily quests'}</span>
+            <span style={{ fontSize: 13, fontWeight: 800, color: 'var(--muted)' }}>{queteFinies}/{quetesDuJour().length}</span>
+          </div>
           {quetesDuJour().map((qu) => {
             const v = etatQuetes.prog[qu.id] ?? 0
             const fini = v >= qu.objectif
@@ -121,41 +146,47 @@ export default function Accueil() {
             )
           })}
         </div>
-        <div className="card" style={{ width: 300, padding: 20, display: 'flex', flexDirection: 'column', gap: 10, background: 'var(--his-t)', borderColor: 'transparent', color: 'var(--his-i)' }}>
-          <span className="eyebrow" style={{ color: 'var(--his-i)' }}>{t('home.daily')} · XP ×2</span>
-          <strong className="t" style={{ fontSize: 18 }}>{defi.titre[lang]}</strong>
-          {profile?.defiJour === today
-            ? <span style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 700, color: 'var(--ok-i)' }}><Coche size={20} anim={false} />{fr ? 'Réussi, à demain !' : 'Done, see you tomorrow!'}</span>
-            : <Link className="btn" to={defi.url} style={{ alignSelf: 'flex-start', minHeight: 44, background: 'var(--surface)', color: 'var(--his-i)' }}>{t('home.dailyGo')}<Icon d={ICONS.arrowR} size={18} /></Link>}
-        </div>
+
+        <Link to={`/themes/${evenement.k}`} className="card bloc-evenement" style={{ background: `linear-gradient(135deg, var(--${evenement.k}-t), var(--surface))`, color: `var(--${evenement.k}-i)` }}>
+          <span className="eyebrow" style={{ color: 'inherit' }}>{evenement.reel ? (fr ? 'Événement en cours' : 'Live event') : (fr ? 'Famille de la semaine' : 'Family of the week')}</span>
+          <strong className="t" style={{ fontSize: 19 }}>{evenement.nom[lang]}</strong>
+          <span style={{ fontWeight: 700, fontSize: 14 }}>XP {fr ? 'et pièces' : '& coins'} ×2{evenement.quiz ? (fr ? ` sur ${evenement.quiz.length} quiz` : ` on ${evenement.quiz.length} quizzes`) : ''}</span>
+        </Link>
+
         {dues > 0 && (
-          <Link to="/revision" className="card" style={{ width: 240, padding: 20, display: 'flex', flexDirection: 'column', gap: 8, textDecoration: 'none', background: 'var(--ko-t)', borderColor: 'transparent', color: 'var(--ko-i)' }}>
-            <span className="eyebrow" style={{ color: 'var(--ko-i)' }}>{fr ? 'À revoir' : 'To review'}</span>
-            <strong className="t" style={{ fontSize: 30 }}>{dues}</strong>
-            <span style={{ fontWeight: 600 }}>{fr ? 'questions ratées reviennent' : 'missed questions are back'}</span>
+          <Link to="/revision" className="card bloc-revision">
+            <strong className="t" style={{ fontSize: 34 }}>{dues}</strong>
+            <span style={{ fontWeight: 700 }}>{fr ? 'erreurs à revoir' : 'mistakes to review'}</span>
+            <span style={{ fontSize: 13 }}>{fr ? 'Un petit tour en révision ?' : 'Quick review?'}</span>
           </Link>
         )}
       </section>
 
       {recents.length > 0 && (
         <Rangee titre={fr ? 'Reprendre' : 'Continue'}>
-          {recents.map(({ s, k }) => <CarteQuiz key={s.id} s={s} k={k} pct={m[s.id] ?? 0} />)}
+          {recents.map(({ s }) => <CarteCouverture key={s.id} id={s.id} pct={m[s.id] ?? 0} largeur={168} />)}
         </Rangee>
       )}
-      {nouveaux.length > 0 && (
-        <Rangee titre={fr ? 'À découvrir' : 'Discover'} lien={{ to: '/themes', label: fr ? 'Tous les thèmes' : 'All topics' }}>
-          {nouveaux.map(({ s, k }) => <CarteQuiz key={s.id} s={s} k={k} pct={m[s.id] ?? 0} />)}
+      <Rangee titre={fr ? 'Nouveaux thèmes ✨' : 'New topics ✨'} sous={fr ? 'Youtubeurs, films en émojis, faux logos, vrai ou faux…' : 'YouTubers, emoji films, fake logos…'}>
+        {nouveautes.map(({ s }) => <CarteCouverture key={s.id} id={s.id} pct={m[s.id] ?? 0} largeur={168} verrou={!accesQuiz(s.id, profile)} />)}
+      </Rangee>
+      {decouvrir.length > 0 && (
+        <Rangee titre={fr ? 'À découvrir' : 'Discover'} sous={fr ? 'Des quiz que tu n’as jamais lancés' : 'Quizzes you’ve never played'} lien={{ to: '/themes', label: fr ? 'Tous les thèmes' : 'All topics' }}>
+          {decouvrir.map(({ s }) => <CarteCouverture key={s.id} id={s.id} pct={0} largeur={168} />)}
         </Rangee>
       )}
-      {FAMILLES.map((f) => {
-        const quiz = f.subs.filter((s) => s.jouable && accesQuiz(s.id, profile))
-        if (!quiz.length) return null
-        return (
-          <Rangee key={f.k} titre={f.nom[lang]} lien={{ to: `/themes/${f.k}`, label: fr ? 'Voir tout' : 'See all' }}>
-            {quiz.map((s) => <CarteQuiz key={s.id} s={s} k={f.k} pct={m[s.id] ?? 0} />)}
-          </Rangee>
-        )
-      })}
+
+      {/* Toutes les familles, d'un coup d'œil */}
+      <section style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <h2 className="t" style={{ fontSize: 21, fontWeight: 900 }}>{fr ? 'Explorer' : 'Explore'}</h2>
+        <div className="familles-puces">
+          {FAMILLES.map((f) => (
+            <Link key={f.k} to={`/themes/${f.k}`} className="famille-puce" style={{ ['--k' as string]: `var(--${f.k})`, ['--kt' as string]: `var(--${f.k}-t)`, ['--ki' as string]: `var(--${f.k}-i)` }}>
+              <span className="famille-puce-icone"><Icon d={f.icon} size={18} /></span>{f.nom[lang]}
+            </Link>
+          ))}
+        </div>
+      </section>
     </>
   )
 }

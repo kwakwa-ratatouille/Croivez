@@ -23,12 +23,15 @@ export const LEGENDE = 5
 const nbLeurres = (d: Difficulte) => (d === LEGENDE ? 5 : 3)
 export type Palier = 1 | 2 | 3 | 4
 
-export type SousThemeId = 'drapeaux' | 'drapeaux-inverse' | 'capitales' | 'capitales-inverse' | 'villes-fr' | 'villes-monde' | 'pays-carte' | CultureId
+export type SousThemeId = 'drapeaux' | 'drapeaux-inverse' | 'capitales' | 'capitales-inverse' | 'villes-fr' | 'villes-monde' | 'pays-carte' | 'logos-vrai' | CultureId
 
 // Thèmes générés depuis Wikidata (scripts/build-culture.mjs)
 type Texte = Record<Lang, string>
 export type ItemCulture = { id: string; n: Texte; d?: Texte; img?: string; r?: string | Texte; g?: string; alt?: Texte[]; x?: Record<string, string | Texte | undefined>; f?: [Texte, string | Texte | undefined][] }
 type TypeCulture = 'image' | 'attribut' | 'annee' | 'audio'
+const minuscule = (n: string) => n.charAt(0).toLowerCase() + n.slice(1)
+// « de Paris », « du Havre », « de la Rochelle », « d’Angers »
+const deVille = (n: string) => n.startsWith('Le ') ? `du ${n.slice(3)}` : n.startsWith('Les ') ? `des ${n.slice(4)}` : n.startsWith('La ') ? `de la ${n.slice(3)}` : /^[AEIOUYÉÈÂH]/i.test(n) ? `d’${n}` : `de ${n}`
 const CULTURE = {
   films: { type: 'attribut', q: { fr: (n) => `Qui a réalisé « ${n} » ?`, en: (n) => `Who directed “${n}”?` } },
   series: { type: 'annee', q: { fr: (n) => `En quelle année a débuté la série « ${n} » ?`, en: (n) => `In what year did “${n}” first air?` } },
@@ -79,7 +82,8 @@ const CULTURE = {
   lunes: { type: 'attribut', q: { fr: (n) => `Autour de quel astre tourne ${n} ?`, en: (n) => `What does ${n} orbit?` } },
   jeux: { type: 'attribut', q: { fr: (n) => `Quel studio a développé « ${n} » ?`, en: (n) => `Which studio developed “${n}”?` } },
   'jeux-annee': { type: 'annee', pack: 'jeux', champ: 'annee', q: { fr: (n) => `En quelle année est sorti « ${n} » ?`, en: (n) => `In what year was “${n}” released?` } },
-  'persos-jeux': { type: 'image', q: { fr: () => 'Quel est ce personnage de jeu vidéo ?', en: () => 'Which video game character is this?' } },
+  // Personnages : pack écrit à la main (scripts/build-jeux.mjs), des stars aux seconds rôles obscurs, image du wiki du jeu
+  'persos-jeux': { type: 'image', pack: 'persos-jeu', q: { fr: () => 'Qui est ce personnage de jeu vidéo ?', en: () => 'Which video game character is this?' } },
   consoles: { type: 'attribut', montrer: true, q: { fr: (n) => `Qui fabrique la console « ${n} » ?`, en: (n) => `Who makes the “${n}” console?` } },
   'departements-numero': { type: 'annee', pack: 'departements', champ: 'numero', q: { fr: (n) => `Quel est le numéro du département : ${n} ?`, en: (n) => `What is the number of the department ${n}?` } },
   'departements-prefecture': { type: 'attribut', pack: 'departements', champ: 'prefecture', q: { fr: (n) => `Quelle est la préfecture de ce département : ${n} ?`, en: (n) => `What is the prefecture of ${n}?` } },
@@ -124,16 +128,84 @@ const CULTURE = {
   instruments: { type: 'image', q: { fr: () => 'Quel est cet instrument ?', en: () => 'Which instrument is this?' } },
   oscars: { type: 'annee', champ: 'annee', q: { fr: (n) => `En quelle année est sorti « ${n} » (Oscar du meilleur film) ?`, en: (n) => `In what year was “${n}” released?` } },
   affiches: { type: 'image', q: { fr: () => 'De quel film est cette affiche ?', en: () => 'Which film is this poster from?' } },
-  'lieux-jeux': { type: 'attribut', q: { fr: (n) => `Dans quel jeu trouve-t-on : ${n} ?`, en: (n) => `Which game features ${n}?` } },
-  sagas: { type: 'attribut', montrer: true, q: { fr: (n) => `Quel éditeur publie la saga « ${n} » ?`, en: (n) => `Who publishes the “${n}” series?` } },
-  'persos-univers': { type: 'attribut', pack: 'persos-jeux', champ: 'univers', montrer: true, q: { fr: (n) => `De quel univers vient ${n} ?`, en: (n) => `Which franchise is ${n} from?` } },
-} satisfies Record<string, { type: TypeCulture; montrer?: boolean; pack?: string; champ?: string; q: Record<Lang, (nom: string, genre?: string) => string> }>
+  'lieux-jeux': { type: 'attribut', montrer: true, groupe: 'genre', q: { fr: (n) => `De quel jeu vient ce lieu : ${n} ?`, en: (n) => `Which game is ${n} from?` } },
+  sagas: { type: 'attribut', q: { fr: (n) => `Quel studio ou éditeur est derrière « ${n} » ?`, en: (n) => `Which studio or publisher is behind “${n}”?` } },
+  // ——— Nouveaux thèmes ———
+  youtubeurs: { type: 'image', q: { fr: (_, g) => (g === 'f' ? 'Qui est cette vidéaste ?' : 'Qui est ce vidéaste ?'), en: () => 'Who is this content creator?' } },
+  fruits: { type: 'image', q: { fr: () => 'Quel est ce fruit ?', en: () => 'What is this fruit?' } },
+  legumes: { type: 'image', q: { fr: () => 'Quel est ce légume ?', en: () => 'What is this vegetable?' } },
+  epices: { type: 'image', q: { fr: () => 'Quelle est cette épice ou herbe ?', en: () => 'What is this spice or herb?' } },
+  desserts: { type: 'image', q: { fr: () => 'Quelle est cette douceur ?', en: () => 'What is this sweet treat?' } },
+  dinosaures: { type: 'image', q: { fr: () => 'Quel est cet animal préhistorique ?', en: () => 'What is this prehistoric animal?' } },
+  mineraux: { type: 'image', q: { fr: () => 'Quelle est cette pierre ?', en: () => 'What is this stone?' } },
+  'jeux-societe': { type: 'image', q: { fr: () => 'Quel est ce jeu ?', en: () => 'What is this game?' } },
+  // Énoncé « en grand » : les émojis, la réplique, le slogan… s'affichent en gros sous la question
+  'emojis-films': { type: 'attribut', grand: true, q: { fr: () => 'Quel film se cache derrière ces émojis ?', en: () => 'Which film do these emojis describe?' } },
+  repliques: { type: 'attribut', grand: true, q: { fr: () => 'De quel film ou série vient cette réplique ?', en: () => 'Which film or show is this line from?' } },
+  superheros: { type: 'attribut', q: { fr: (n) => `Quelle est l’identité secrète de ${n} ?`, en: (n) => `What is ${n}’s secret identity?` } },
+  slogans: { type: 'attribut', grand: true, q: { fr: () => 'À quelle marque appartient ce slogan ?', en: () => 'Which brand uses this slogan?' } },
+  'dessins-animes': { type: 'attribut', q: { fr: (n) => `De quel dessin animé vient : ${n} ?`, en: (n) => `Which cartoon is ${n} from?` } },
+  expressions: { type: 'attribut', grand: true, q: { fr: () => 'Que signifie cette expression ?', en: () => 'What does this French expression mean?' } },
+  gentiles: { type: 'attribut', q: { fr: (n) => `Comment appelle-t-on les habitants ${deVille(n)} ?`, en: (n) => `What are the people of ${n} called?` } },
+  phobies: { type: 'attribut', q: { fr: (n) => `De quoi a peur une personne atteinte de ${minuscule(n)} ?`, en: (n) => `What does someone with ${minuscule(n)} fear?` } },
+  cris: { type: 'attribut', q: { fr: (n) => `Comment crie ${minuscule(n)} ?`, en: (n) => `What sound does ${minuscule(n)} make?` } },
+  sigles: { type: 'attribut', grand: true, q: { fr: () => 'Que signifie ce sigle ?', en: () => 'What does this acronym stand for?' } },
+  // Vrai ou faux : deux réponses seulement, jamais transformé en un autre format
+  'idees-recues': { type: 'attribut', grand: true, fixe: true, q: { fr: () => 'Vrai ou faux ?', en: () => 'True or false?' } },
+  'persos-univers': { type: 'attribut', pack: 'persos-jeu', montrer: true, groupe: 'genre', q: { fr: (n) => `De quel jeu vient ce personnage : ${n} ?`, en: (n) => `Which game is ${n} from?` } },
+} satisfies Record<string, { type: TypeCulture; montrer?: boolean; pack?: string; champ?: string; grand?: boolean; fixe?: boolean; groupe?: string; q: Record<Lang, (nom: string, genre?: string) => string> }>
 const TRAHIT = new Set(['albums', 'livres', 'livres-annee', 'jeux', 'jeux-annee', 'studios', 'studios-annee', 'logos', 'bd'])
 export type CultureId = keyof typeof CULTURE
 export const estCulture = (s: string): s is CultureId => s in CULTURE
 export const packCulture = (s: CultureId) => (CULTURE[s] as { pack?: string }).pack ?? s
+// Nature d'un quiz : sert aux mini-jeux (photo floue → quiz en images, avant / après → quiz d'années)
+export function natureQuiz(s: string): 'image' | 'annee' | 'texte' | 'audio' | 'carte' {
+  if (s === 'villes-fr' || s === 'villes-monde' || s === 'pays-carte') return 'carte'
+  if (s === 'drapeaux') return 'image'
+  if (!estCulture(s)) return 'texte'
+  const t = CULTURE[s].type
+  return t === 'attribut' ? 'texte' : t
+}
 
-export type Option = { label: string; image?: string }
+// ——— La réponse ne doit jamais se lire dans la question ———
+// Années : on retire les dates de l'énoncé (« Attaque du 29 mai 2018 à Liège » → « Attaque à Liège »).
+// Autres : les mots de la réponse sont masqués (« la Peugeot 208 » → « la ___ 208 ») ;
+// s'il ne reste rien de lisible, la question est écartée (null).
+const MOIS = 'janvier|février|mars|avril|mai|juin|juillet|août|septembre|octobre|novembre|décembre|january|february|march|april|may|june|july|august|september|october|november|december'
+const DATE_INTRODUITE = new RegExp(`\\s*,?\\s*(?:(?:du|le|en|de|depuis|of|in|on|since)\\s+(?:\\d{1,2}(?:er)?\\s+)?(?:(?:${MOIS})\\s+)?|(?:\\d{1,2}(?:er)?\\s+)?(?:${MOIS})\\s+)\\d{4}(?![\\w])(?:\\s*[-–]\\s*\\d{2,4})?`, 'gi')
+const sansAccent = (s: string) => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+const VIDES = new Set(['les', 'des', 'the', 'and', 'une', 'pour', 'dans', 'avec', 'sur', 'par', 'saga', 'serie', 'group', 'groupe', 'games', 'game', 'company', 'studio', 'studios', 'entertainment'])
+export function masquer(nom: string, reponse: string, annee: boolean): string | null {
+  if (annee) {
+    const sans = nom
+      // Parenthèses qui contiennent une année : « (série télévisée de 2026) »
+      .replace(/\s*\([^)]*\d{4}[^)]*\)/g, '')
+      // Date introduite par « de », « du », « en »… ou par un mois : « du 13 novembre 2015 », « de 1870 »
+      .replace(DATE_INTRODUITE, '')
+      // L'année de la réponse où qu'elle soit ; un titre comme « Cosmos 1999 » (sorti en 1975) reste intact
+      .replace(new RegExp(`\\s*(?<![\\w-])${reponse}(?![\\w])`, 'g'), '')
+      .replace(/\s{2,}/g, ' ').trim()
+    if (sans === nom.trim()) return nom
+    // Il faut qu'il reste de quoi deviner (« Attentats » tout seul ne suffit pas)
+    if (sans.split(/\s+/).filter((m) => m.replace(/[^\p{L}]/gu, '').length >= 3).length < 2) return null
+    return sans
+  }
+  const mots = sansAccent(reponse).split(/[^a-z0-9]+/).filter((m) => m.length >= 4 && !VIDES.has(m))
+  if (!mots.length) return nom
+  let touche = false
+  const masque = nom.split(/(\s+)/).map((m) => {
+    const brut = sansAccent(m).replace(/[^a-z0-9]/g, '')
+    if (brut.length >= 3 && mots.some((r) => brut === r || (brut.length >= 4 && (brut.includes(r) || r.includes(brut))))) { touche = true; return '___' }
+    return m
+  }).join('')
+  if (!touche) return nom
+  // Il doit rester au moins un vrai mot à lire
+  return masque.split(/\s+/).some((m) => m !== '___' && (m.replace(/[^\p{L}\p{N}]/gu, '').length >= 4 || /\d/.test(m))) ? masque : null
+}
+export const quizFixe = (s: string) => estCulture(s) && !!(CULTURE[s] as { fixe?: boolean }).fixe
+
+// effet : retouche CSS de l'image (faux logos : couleurs décalées, inversé, écrasé…)
+export type Option = { label: string; image?: string; effet?: { filter?: string; transform?: string } }
 export type Fiche = { image?: string; faits: { l: string; v: string }[]; saviez: string; wiki: string }
 export type Carte = {
   vue: 'france' | 'monde'
@@ -161,6 +233,11 @@ export type Question = {
   vraie?: string // vrai / faux : la vraie réponse
   leurres?: string[] // saisie assistée : suggestions pièges
   lettres?: string[] // lettres mélangées
+  grand?: string // texte à afficher en gros (émojis, réplique, slogan…)
+  fixe?: boolean // format imposé (vrai / faux) : pas de transformation
+  flou?: boolean // mini-jeu Photo floue : l'image se dévoile peu à peu
+  jeu?: string // format tiré en mode Auto (pastille affichée sur la question)
+  fondGris?: boolean // logos : fond gris pour voir aussi les logos blancs
 }
 
 export const drapeau = (id: string, w = 320) => `https://flagcdn.com/w${w}/${id}.png`
@@ -296,10 +373,11 @@ export async function genererMix(o: { quiz: SousThemeId[]; difficultes: Difficul
 
 export async function genererPartie(o: Opts): Promise<Question[]> {
   const tous = await chargerPays()
-  await (o.sousTheme === 'villes-fr' ? pack('villes-fr.json') : o.sousTheme === 'villes-monde' ? pack('villes-monde.json') : null)
+  await (o.sousTheme === 'villes-fr' ? pack('villes-fr.json') : o.sousTheme === 'villes-monde' ? pack('villes-monde.json') : o.sousTheme === 'logos-vrai' ? pack('culture/logos.json') : null)
   if (estCulture(o.sousTheme)) await pack(`culture/${packCulture(o.sousTheme)}.json`)
   // Packs chargés avant de fixer la graine : la génération qui suit est synchrone, donc reproductible
   rand = o.seed ? mulberry32(o.seed) : Math.random
+  if (o.sousTheme === 'logos-vrai') return logosVrai(o, await pack<ItemCulture[]>('culture/logos.json'))
   if (estCulture(o.sousTheme)) return culture(o, await pack<ItemCulture[]>(`culture/${packCulture(o.sousTheme)}.json`))
   if (o.sousTheme === 'villes-fr') return villesFrance(o)
   if (o.sousTheme === 'villes-monde') return villesMonde(o, tous)
@@ -397,14 +475,17 @@ const texte = (v: string | Texte | undefined, lang: Lang) => (v === undefined ? 
 function culture(o: Opts, tousItems: ItemCulture[]): Question[] {
   const { sousTheme, mode, lang } = o
   const difficulte = palierDe(o.difficulte)
-  const cfg = CULTURE[sousTheme as CultureId] as { type: TypeCulture; montrer?: boolean; champ?: string; q: Record<Lang, (nom: string, genre?: string) => string> }
+  const cfg = CULTURE[sousTheme as CultureId] as { type: TypeCulture; montrer?: boolean; champ?: string; grand?: boolean; fixe?: boolean; groupe?: string; q: Record<Lang, (nom: string, genre?: string) => string> }
   // Question dérivée (année d'un film, pays d'une personnalité…) : la réponse vient d'un champ annexe
   // Champ « nom » : le nom lui-même ; « f:Libellé » : un fait de la fiche ; sinon un attribut x (ou la réponse r)
   const champ = (cfg as { champ?: string }).champ
   const val = (it: ItemCulture) => (champ === 'nom' ? it.n : champ?.startsWith('f:') ? it.f?.find(([l]) => l.fr === champ.slice(2))?.[1] : champ ? it.x?.[champ] : it.r)
   // Traduction identique au mot français (« sari » → « sari ») : question sans intérêt, on l'écarte
   const simple = (v: string) => v.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
-  const items = cfg.type === 'image' ? tousItems : tousItems.filter((it) => val(it) && !(sousTheme.startsWith('traduction') && simple(texte(val(it), 'fr')) === simple(it.n.fr)))
+  const avecTexte = cfg.type === 'attribut' || cfg.type === 'annee'
+  const items = cfg.type === 'image' ? tousItems : tousItems.filter((it) => val(it) && !(sousTheme.startsWith('traduction') && simple(texte(val(it), 'fr')) === simple(it.n.fr))
+    // Question où la réponse se lit dans l'énoncé et ne peut pas être masquée : écartée
+    && (!avecTexte || masquer(it.n.fr, texte(val(it), 'fr'), cfg.type === 'annee') !== null))
   const { cibles, pool } = tirer(items, (d) => Math.min(items.length, POOL_CULTURE[d]), o, (it) => it.id)
   // Années proposées autour de la bonne : à 1 ou 2 ans près en difficile
   // Légende : toutes les années à 1, 2 ou 3 ans près
@@ -415,6 +496,8 @@ function culture(o: Opts, tousItems: ItemCulture[]): Question[] {
   return cibles.map((it): Question => {
     const nom = it.n[lang]
     const reponse = cfg.type === 'image' ? nom : texte(val(it), lang)
+    // Énoncé sans la réponse dedans (dates retirées, mots de la réponse masqués)
+    const nomQ = avecTexte ? masquer(nom, reponse, cfg.type === 'annee') ?? nom : nom
     const acceptees = cfg.type === 'image' ? [it.n.fr, it.n.en] : [val(it)!, ...(cfg.champ ? [] : it.alt ?? [])].flatMap((v) => (typeof v === 'string' ? [v] : [v.fr, v.en]))
 
     let options: Option[] = []
@@ -435,8 +518,16 @@ function culture(o: Opts, tousItems: ItemCulture[]): Question[] {
         }
       } else {
         // Distracteurs du même groupe d'abord (même genre, même classe d'animaux…)
-        const memes = melanger((o.difficulte === LEGENDE ? items : pool).filter((x) => x.g && x.g === it.g))
-        const cand = [...memes, ...melanger(pool.length >= 4 ? pool : items)]
+        // Voitures en photo : à partir de Difficile, uniquement des modèles de la même marque ;
+        // en Facile et Moyen, au contraire, d'autres marques (on reconnaît au moins le logo)
+        const marque = (x: ItemCulture) => texte(x.r, 'fr')
+        const memeMarque = sousTheme === 'voitures-photo' ? (o.difficulte === LEGENDE || difficulte >= 3 ? 'meme' : 'autre') : null
+        const memes = memeMarque === 'meme'
+          ? melanger(items.filter((x) => x.id !== it.id && marque(x) === marque(it)))
+          // groupe : un champ annexe sert de famille (jeux : même genre de jeu → propositions crédibles)
+          : melanger((o.difficulte === LEGENDE || cfg.groupe ? items : pool).filter((x) => (cfg.groupe ? texte(x.x?.[cfg.groupe], 'fr') === texte(it.x?.[cfg.groupe], 'fr') : x.g && x.g === it.g)))
+        const autresMarques = (l: ItemCulture[]) => (memeMarque === 'autre' ? l.filter((x) => marque(x) !== marque(it)) : l)
+        const cand = [...memes, ...melanger(autresMarques(pool.length >= 4 ? pool : items))]
         for (const x of cand) {
           const v = cfg.type === 'image' ? x.n[lang] : texte(val(x), lang)
           if (v && !vus.has(v)) { vus.add(v); autres.push(v) }
@@ -450,7 +541,10 @@ function culture(o: Opts, tousItems: ItemCulture[]): Question[] {
     const desc = it.d?.[lang]
     return {
       id: it.id,
-      enonce: cfg.q[lang](nom, it.g),
+      enonce: cfg.q[lang](nomQ, it.g),
+      ...(cfg.grand ? { grand: nomQ } : {}),
+      ...(cfg.fixe ? { fixe: true } : {}),
+      ...(sousTheme === 'logos' ? { fondGris: true } : {}),
       // Photo du sujet dès qu'elle existe, sauf si elle trahit la réponse (pochette, couverture, extrait audio)
       image: cfg.type === 'image' || cfg.montrer || (cfg.type !== 'audio' && !TRAHIT.has(sousTheme)) ? it.img : undefined,
       audio: cfg.type === 'audio' ? it.id : undefined,
@@ -461,15 +555,49 @@ function culture(o: Opts, tousItems: ItemCulture[]): Question[] {
       fiche: {
         image: it.img,
         faits: cfg.type === 'image' ? faits : [{ l: lang === 'fr' ? 'Réponse' : 'Answer', v: reponse }, ...faits],
-        saviez: desc ? `${nom} : ${desc}.` : nom,
-        wiki: wiki(nom, lang),
+        saviez: desc ? (cfg.grand ? `${desc}.` : `${nom} : ${desc}.`) : nom,
+        // Lien propre à l'élément (page du wiki du jeu…), sinon l'article Wikipédia du nom
+        wiki: texte(it.x?.lien, lang) || wiki(nom, lang),
       },
+    }
+  })
+}
+
+// ——— Le vrai logo : le nom de la marque, le vrai logo et des faux tirés de lui ———
+// Plus c'est dur, plus les retouches sont fines (Facile : couleurs inversées ; Expert : quelques degrés de teinte).
+// Index de force : 0 = Facile … 3 = Expert / Légende
+const RETOUCHES: { l: Record<Lang, string>; effet: (f: number) => { filter?: string; transform?: string }; facileSeulement?: boolean }[] = [
+  { l: { fr: 'Faux : couleurs changées', en: 'Fake: colours changed' }, effet: (f) => ({ filter: `hue-rotate(${[160, 90, 45, 24][f]}deg)` }) },
+  { l: { fr: 'Faux : à l’envers', en: 'Fake: mirrored' }, effet: () => ({ transform: 'scaleX(-1)' }), facileSeulement: true },
+  { l: { fr: 'Faux : écrasé', en: 'Fake: squashed' }, effet: (f) => ({ transform: `scaleX(${[0.7, 0.8, 0.88, 0.93][f]})` }) },
+  { l: { fr: 'Faux : étiré', en: 'Fake: stretched' }, effet: (f) => ({ transform: `scaleY(${[0.65, 0.78, 0.87, 0.92][f]})` }) },
+  { l: { fr: 'Faux : penché', en: 'Fake: tilted' }, effet: (f) => ({ transform: `rotate(${[14, 9, 5, 3][f]}deg)` }) },
+  { l: { fr: 'Faux : délavé', en: 'Fake: faded' }, effet: (f) => ({ filter: `saturate(${[0.05, 0.3, 0.5, 0.62][f]})` }) },
+  { l: { fr: 'Faux : trop foncé', en: 'Fake: too dark' }, effet: (f) => ({ filter: `brightness(${[0.35, 0.6, 0.75, 0.84][f]})` }) },
+  { l: { fr: 'Faux : teinte et forme', en: 'Fake: hue and shape' }, effet: (f) => ({ filter: `hue-rotate(${[120, 60, 30, 16][f]}deg)`, transform: `scaleX(${[0.8, 0.88, 0.93, 0.96][f]})` }) },
+]
+function logosVrai(o: Opts, tous: ItemCulture[]): Question[] {
+  const items = tous.filter((it) => it.img)
+  const { cibles } = tirer(items, (d) => Math.min(items.length, POOL_CULTURE[d]), o, (it) => it.id)
+  const force = o.difficulte === LEGENDE ? 3 : Math.max(0, palierDe(o.difficulte) - 1)
+  const nbFaux = nbLeurres(o.difficulte)
+  return cibles.map((it): Question => {
+    const nom = it.n[o.lang]
+    const possibles = RETOUCHES.filter((r) => !r.facileSeulement || force <= 1)
+    const faux = melanger(possibles).slice(0, nbFaux).map((r) => ({ label: r.l[o.lang], image: it.img, effet: r.effet(force) }))
+    const vrai = o.lang === 'fr' ? 'Le vrai logo' : 'The real logo'
+    return {
+      id: it.id, enonce: o.lang === 'fr' ? `Quel est le vrai logo de ${nom} ?` : `Which is the real ${nom} logo?`,
+      reponse: vrai, acceptees: [vrai], imagesOnly: true, fondGris: true,
+      options: melanger([{ label: vrai, image: it.img }, ...faux]),
+      fiche: { image: it.img, faits: [{ l: o.lang === 'fr' ? 'Marque' : 'Brand', v: nom }], saviez: it.d?.[o.lang] ? `${nom} : ${it.d[o.lang]}.` : nom, wiki: wiki(nom, o.lang) },
     }
   })
 }
 
 // Toutes les images d'un sous-thème (pour le téléchargement hors ligne)
 export async function imagesDe(s: SousThemeId): Promise<string[]> {
+  if (s === 'logos-vrai') return imagesDe('logos')
   if (estCulture(s)) return (await pack<ItemCulture[]>(`culture/${packCulture(s)}.json`)).map((it) => it.img).filter((x): x is string => !!x)
   if (s.startsWith('drapeaux') || s.startsWith('capitales') || s === 'villes-monde') {
     const tous = await chargerPays()

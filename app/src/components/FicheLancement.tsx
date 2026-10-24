@@ -6,13 +6,15 @@ import { trouverSousTheme } from '../themes'
 import { PRIX_SAUT, difficulteOuverte, legendeOuverte, plafonner, progresLegende, reussie, sauterDifficulte } from '../progression'
 import type { Difficulte } from '../quiz/engine'
 import { FORMATS, type Format } from '../quiz/formats'
+import { lirePrefsJeu } from '../prefsJeu'
 
 import Illustration from './Illustration'
 import { ICONS, Icon, Piece, Toggle } from './ui'
 
 // Derniers réglages : la fiche se rouvre comme on l'a laissée
 type Reglages = { d: Difficulte; m: Format; rapide: boolean; chrono: boolean }
-const lire = (): Omit<Reglages, 'd'> => { const def = { m: 'auto' as Format, rapide: false, chrono: false }; try { const v = { ...def, ...JSON.parse(localStorage.getItem('reglages') ?? '{}') }; return { m: FORMATS.some((x) => x.v === v.m) ? v.m : 'auto', rapide: v.rapide, chrono: v.chrono } } catch { return def } }
+// Par défaut : les réglages de Paramètres → Partie
+const lire = (): Omit<Reglages, 'd'> => { const p = lirePrefsJeu(); const def = { m: p.m, rapide: p.rapide, chrono: p.chrono }; try { const v = { ...def, ...JSON.parse(localStorage.getItem('reglages') ?? '{}') }; return { m: FORMATS.some((x) => x.v === v.m) ? v.m : 'auto', rapide: v.rapide, chrono: v.chrono } } catch { return def } }
 
 // Fiche rapide : un quiz se lance en deux appuis (le quiz, puis « Jouer »), réglages à portée de pouce
 export default function FicheLancement({ id, onFermer }: { id: string; onFermer: () => void }) {
@@ -43,7 +45,8 @@ export default function FicheLancement({ id, onFermer }: { id: string; onFermer:
     try { localStorage.setItem('reglages', JSON.stringify(r)) } catch { /* stockage indisponible */ }
     const m = carte ? 'libre' : qcmSeul ? 'qcm' : r.m
     const d = difficulteOuverte(r.d, profile, id) ? r.d : 0
-    nav(`/partie?s=${id}&m=${m}&n=10&d=${d}&t=${r.chrono ? 15 : 0}${r.rapide ? '&r=1' : ''}`)
+    const p = lirePrefsJeu()
+    nav(`/partie?s=${id}&m=${m}&n=${p.n}&d=${d}&t=${r.chrono ? p.duree : 0}${r.rapide ? '&r=1' : ''}`)
   }
 
   return (
