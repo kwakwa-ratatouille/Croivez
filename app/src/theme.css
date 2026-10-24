@@ -1302,3 +1302,7 @@ button.rang-palier[aria-pressed="true"] { background: color-mix(in srgb, var(--r
 .solde-jetons { display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px; border-radius: 999px; background: #EDE9FE; color: #4C1D95; font: 900 15px Nunito, sans-serif; }
 .prix-jetons { font-weight: 900; color: #6D28D9; }
 .jetons-rang { font-size: 13px; font-weight: 700; color: #6D28D9; }
+
+.tv-telecommande { font-size: 20px; text-align: center; padding: 10px 16px; border-radius: 16px; background: rgba(255,255,255,.12); }
+
+.gains-multi { font-weight: 800; padding: 10px 16px; border-radius: 999px; background: #FEF3C7; color: #78350F; text-align: center; }

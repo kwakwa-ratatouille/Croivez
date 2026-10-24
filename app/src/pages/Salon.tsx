@@ -70,12 +70,16 @@ export default function Salon() {
   const hote = salon.tv ? salon.hote : salon.joueurs?.[salon.hote] && !salon.joueurs[salon.hote].parti ? salon.hote : [...actifs].sort((a, b) => a[1].rejoint - b[1].rejoint)[0]?.[0]
   const suisHote = hote === uid
   const ecranTv = !!salon.tv && suisHote
+  // Mode télé (Chromecast : on ne peut pas toucher la télé) : le premier joueur arrivé a la télécommande,
+  // il choisit le thème et les règles, lance et relance depuis son téléphone
+  const telecommande = salon.tv ? [...actifs].sort((a, b) => a[1].rejoint - b[1].rejoint)[0]?.[0] : undefined
+  const pilote = suisHote || (!!salon.tv && telecommande === uid)
   const quitter = async () => { if (!ecranTv) await quitterSalon(code, uid); nav(sortie) }
 
   if (salon.etat === 'attente') return ecranTv
-    ? <LobbyTv code={code} salon={salon} onQuitter={quitter} />
-    : <Lobby code={code} salon={salon} suisHote={suisHote} hote={hote} onQuitter={quitter} moi={moi} />
-  return <Jeu code={code} salon={salon} suisHote={suisHote} ecranTv={ecranTv} maintenant={maintenant + decalage} onQuitter={quitter} />
+    ? <LobbyTv code={code} salon={salon} onQuitter={quitter} telecommande={telecommande} />
+    : <Lobby code={code} salon={salon} suisHote={pilote} hote={hote} onQuitter={quitter} moi={moi} />
+  return <Jeu code={code} salon={salon} suisHote={suisHote} pilote={pilote} ecranTv={ecranTv} maintenant={maintenant + decalage} onQuitter={quitter} />
 }
 
 function Centre({ children }: { children: React.ReactNode }) {
@@ -220,7 +224,7 @@ function Lobby({ code, salon, suisHote, hote, onQuitter, moi }: { code: string; 
 }
 
 // ——— Écran télé : grand QR code, joueurs qui arrivent, règles ———
-function LobbyTv({ code, salon, onQuitter }: { code: string; salon: SalonT; onQuitter: () => void }) {
+function LobbyTv({ code, salon, onQuitter, telecommande }: { code: string; salon: SalonT; onQuitter: () => void; telecommande?: string }) {
   const { lang } = usePrefs()
   const fr = lang === 'fr'
   const [qr, setQr] = useState('')
@@ -260,6 +264,7 @@ function LobbyTv({ code, salon, onQuitter }: { code: string; salon: SalonT; onQu
               <button className="btn btn-g" style={{ gridColumn: '1 / -1' }} onClick={() => repartirEquipes(code, salon)}>🎲 {fr ? 'Répartir au hasard' : 'Shuffle teams'}</button>
             </div>
           )}
+          {telecommande && salon.joueurs?.[telecommande] && <p className="tv-telecommande">📱 <strong>{salon.joueurs[telecommande].pseudo}</strong> {fr ? 'a la télécommande : choix du thème et lancement depuis son téléphone' : 'has the remote: pick the topic and start from their phone'}</p>}
           <div className="card tv-regles"><Regles code={code} salon={salon} modifiable /></div>
           <button className="btn btn-lg tv-lancer" disabled={!joueurs.length} onClick={() => lancerSalon(code, salon)}>{fr ? 'C’est parti !' : 'Let’s go!'}<Icon d={ICONS.arrowR} /></button>
         </section>
@@ -313,7 +318,11 @@ function Podium({ classement }: { classement: Classe }) {
   )
 }
 
-function Jeu({ code, salon, suisHote, ecranTv, maintenant, onQuitter }: { code: string; salon: SalonT; suisHote: boolean; ecranTv: boolean; maintenant: number; onQuitter: () => void }) {
+// Récompenses d'une partie en salon / mode télé : 20 pièces pour avoir joué, plus le podium (s'il y a au moins 2 joueurs)
+const piecesSalon = (rang: number, nb: number) => 20 + (nb > 1 ? [40, 20, 10][rang] ?? 0 : 0)
+const xpSalon = (rang: number, nb: number, bonnes: number) => 30 + bonnes * 8 + (nb > 1 ? [60, 35, 20][rang] ?? 0 : 0)
+
+function Jeu({ code, salon, suisHote, pilote, ecranTv, maintenant, onQuitter }: { code: string; salon: SalonT; suisHote: boolean; pilote: boolean; ecranTv: boolean; maintenant: number; onQuitter: () => void }) {
   const { lang } = usePrefs()
   const fr = lang === 'fr'
   const { user, profile } = useAuth()
@@ -348,7 +357,7 @@ function Jeu({ code, salon, suisHote, ecranTv, maintenant, onQuitter }: { code: 
     if (!profile || !moiJ) return // invité ou écran télé : rien à enregistrer
     const resultats = questions.slice(0, n).map((qq, k) => ({ id: qq.id, juste: !!moiJ.r?.[k]?.j, s: qq.s ?? r.s }))
     const bonnes = resultats.filter((x) => x.juste).length
-    enregistrerPartie(uid, profile, { sousTheme: (r.s === 'mix' ? 'mix' : r.s) as SousThemeId, xp: Math.round((20 + bonnes * 6 + (classement.length > 1 ? [50, 30, 15][rang] ?? 0 : 0)) * facteurXp(profile, salon.tv ? 'tv' : 'salon', false)), cleFarm: salon.tv ? 'tv' : 'salon', pieces: classement.length > 1 && rang === 0 ? 30 : 10, resultats, revision: true, sansRevision: true, multi: { mode: salon.tv ? 'tv' : 'salon', gagne: classement.length > 1 && rang === 0 }, miniJeu: r.mj }).catch(console.error)
+    enregistrerPartie(uid, profile, { sousTheme: (r.s === 'mix' ? 'mix' : r.s) as SousThemeId, xp: Math.round(xpSalon(rang, classement.length, bonnes) * facteurXp(profile, salon.tv ? 'tv' : 'salon', false)), cleFarm: salon.tv ? 'tv' : 'salon', pieces: piecesSalon(rang, classement.length), resultats, revision: true, sansRevision: true, multi: { mode: salon.tv ? 'tv' : 'salon', gagne: classement.length > 1 && rang === 0 }, miniJeu: r.mj }).catch(console.error)
   }, [salon.etat, profile, questions, moiJ, classement, uid, n, r.s, r.mj, ecranTv, salon.tv])
 
   // ——— Fin de partie ———
@@ -359,6 +368,9 @@ function Jeu({ code, salon, suisHote, ecranTv, maintenant, onQuitter }: { code: 
         <h1 className="t" style={{ fontSize: ecranTv ? 56 : 34, fontWeight: 900, textAlign: 'center' }}>
           {ecranTv ? `🏆 ${classement[0]?.pseudo ?? ''} ${fr ? 'gagne !' : 'wins!'}` : rang === 1 ? (fr ? 'Tu gagnes ! 🏆' : 'You win! 🏆') : (fr ? `Tu finis ${rang}${rang === 1 ? 'er' : 'e'}` : `You finished #${rang}`)}
         </h1>
+        {!ecranTv && rang > 0 && (profile
+          ? <p className="gains-multi rise">🎁 +{piecesSalon(rang - 1, classement.length)} {fr ? 'pièces' : 'coins'} · +XP · {fr ? 'points de rang' : 'rank points'}</p>
+          : <p className="gains-multi rise">{fr ? '🎁 Avec un compte Croivez, cette partie t’aurait rapporté des pièces et de l’XP.' : 'With an account you would earn coins and XP.'}</p>)}
         {r.equipes && (() => {
           const sc = scoresEquipes(classement, r.nbEquipes)
           const ordre = listeEquipes(r.nbEquipes).filter((e) => sc[e].n).sort((x, y) => sc[y].moyenne - sc[x].moyenne)
@@ -377,8 +389,8 @@ function Jeu({ code, salon, suisHote, ecranTv, maintenant, onQuitter }: { code: 
           </section>
         )}
         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center' }}>
-          {suisHote && <button className={`btn btn-lg ${ecranTv ? 'tv-lancer' : 'btn-p'}`} onClick={() => rejouerSalon(code)}>{fr ? 'On rejoue !' : 'Play again!'}<Icon d={ICONS.review} /></button>}
-          {!suisHote && <p style={{ color: 'var(--muted)', alignSelf: 'center' }}>{fr ? 'L’hôte peut relancer une partie.' : 'The host can start another game.'}</p>}
+          {pilote && <button className={`btn btn-lg ${ecranTv ? 'tv-lancer' : 'btn-p'}`} onClick={() => rejouerSalon(code)}>{fr ? 'On rejoue !' : 'Play again!'}<Icon d={ICONS.review} /></button>}
+          {!pilote && <p style={{ color: 'var(--muted)', alignSelf: 'center' }}>{fr ? 'L’hôte peut relancer une partie.' : 'The host can start another game.'}</p>}
           <button className={`btn ${ecranTv ? 'tv-secondaire' : 'btn-g'}`} onClick={onQuitter}>{fr ? 'Quitter' : 'Leave'}</button>
         </div>
       </div>

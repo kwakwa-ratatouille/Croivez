@@ -1,4 +1,18 @@
 import { useEffect, useState, type ImgHTMLAttributes } from 'react'
+import { md5 } from '../md5'
+
+// Liens « Special:FilePath » de Wikimedia : chaque image passait par une redirection lente, souvent refusée (trop de requêtes).
+// On vise directement la miniature 500 px déjà en cache chez Wikimedia ; l'ancien lien reste en secours si elle n'existe pas.
+const RE_FILEPATH = /^https?:\/\/commons\.wikimedia\.org\/wiki\/Special:FilePath\/([^?#]+)/i
+export function directe(src?: string) {
+  const m = src?.match(RE_FILEPATH)
+  if (!m) return src
+  const nom = decodeURIComponent(m[1]).replace(/ /g, '_')
+  if (/\.(tiff?|pdf|djvu|webm|ogv)$/i.test(nom)) return src
+  const h = md5(nom)
+  const e = encodeURIComponent(nom)
+  return `https://upload.wikimedia.org/wikipedia/commons/thumb/${h[0]}/${h.slice(0, 2)}/${e}/500px-${e}${/\.svg$/i.test(nom) ? '.png' : ''}`
+}
 
 // Cache d'images hors ligne (Cache Storage) : chaque image vue est gardée, et un thème peut être
 // téléchargé d'avance depuis les paramètres. Sans réseau, l'image vient du cache.
@@ -33,7 +47,8 @@ export async function mettreEnCache(src: string, cache?: Cache) {
 // elles s'affichent donc tout de suite à la question suivante (et partent aussi dans le cache hors ligne)
 const prechargees = new Set<string>()
 export function prechargerImages(srcs: (string | undefined)[]) {
-  for (const src of srcs) {
+  for (const brut of srcs) {
+    const src = directe(brut)
     if (!src || prechargees.has(src) || urls.has(src)) continue
     prechargees.add(src)
     const im = new Image()
@@ -46,7 +61,7 @@ export function prechargerImages(srcs: (string | undefined)[]) {
 
 // Attend que des images soient chargées (avant un défi chronométré), avec un délai maximum
 export function chargerImages(srcs: (string | undefined)[], progres: (fait: number, total: number) => void, maxMs = 10000) {
-  const liste = [...new Set(srcs.filter((s): s is string => !!s))]
+  const liste = [...new Set(srcs.map(directe).filter((s): s is string => !!s))]
   let fait = 0
   progres(0, liste.length)
   const une = (src: string) => new Promise<void>((ok) => {
@@ -63,7 +78,7 @@ export function chargerImages(srcs: (string | undefined)[], progres: (fait: numb
 export async function telechargerImages(srcs: string[], progres: (fait: number) => void, parallele = 6) {
   const c = await caches.open(NOM)
   let fait = 0
-  const file = [...srcs]
+  const file = srcs.map((s) => directe(s) ?? s) // mêmes adresses directes que l'affichage
   // Plusieurs téléchargements en parallèle (6 par défaut : rapide sans saturer la connexion)
   await Promise.all(Array.from({ length: parallele }, async () => {
     while (file.length) {
@@ -81,8 +96,11 @@ export async function tailleCache() {
 
 export const viderCache = () => caches.delete(NOM)
 
-export default function Img({ src, ...props }: ImgHTMLAttributes<HTMLImageElement> & { src?: string }) {
+export default function Img({ src: brut, onError, ...props }: ImgHTMLAttributes<HTMLImageElement> & { src?: string }) {
+  const src = directe(brut)
   const [affiche, setAffiche] = useState(src)
+  const [secours, setSecours] = useState(false)
+  useEffect(() => setSecours(false), [brut])
   useEffect(() => {
     if (!src) return
     let vivant = true
@@ -94,5 +112,5 @@ export default function Img({ src, ...props }: ImgHTMLAttributes<HTMLImageElemen
     return () => { vivant = false }
   }, [src])
   // Images des wikis Fandom (jeux vidéo) : refusées sans « referer », on l'envoie toujours
-  return <img src={affiche} referrerPolicy={src?.includes('nocookie.net') ? 'unsafe-url' : undefined} {...props} />
+  return <img src={secours ? brut : affiche} referrerPolicy={src?.includes('nocookie.net') ? 'unsafe-url' : undefined} onError={(e) => { if (!secours && src !== brut) setSecours(true); onError?.(e) }} {...props} />
 }

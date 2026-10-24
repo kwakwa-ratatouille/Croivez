@@ -5,7 +5,7 @@ import { natureQuiz, type Question } from './engine'
 // « surprise » : un mini-jeu tiré au hasard, le même pour toute la série
 export type Format = 'qcm' | 'libre' | 'assistee' | 'vf' | 'lettres' | 'auto' | 'surprise'
 export const FORMATS: { v: Format; fr: string; en: string }[] = [
-  { v: 'auto', fr: 'Auto', en: 'Auto' }, { v: 'surprise', fr: 'Mini-jeu surprise', en: 'Surprise mini-game' }, { v: 'qcm', fr: 'QCM', en: 'Choices' }, { v: 'vf', fr: 'Vrai / faux', en: 'True / false' },
+  { v: 'qcm', fr: 'QCM', en: 'Choices' }, { v: 'auto', fr: 'Auto', en: 'Auto' }, { v: 'surprise', fr: 'Mini-jeu surprise', en: 'Surprise mini-game' }, { v: 'vf', fr: 'Vrai / faux', en: 'True / false' },
   { v: 'assistee', fr: 'Assistée', en: 'Assisted' }, { v: 'lettres', fr: 'Lettres', en: 'Letters' }, { v: 'libre', fr: 'Libre', en: 'Free' },
 ]
 

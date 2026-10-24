@@ -1,5 +1,8 @@
 import type { Lang } from './i18n'
 import type { SousThemeId } from './quiz/engine'
+import { evenementActif, prochainEvenement } from './evenements'
+
+const quizEvenementAffiche = () => evenementActif()?.quiz ?? prochainEvenement()?.e.quiz
 
 export type Famille = 'pho' | 'tec' | 'esp' | 'mot' | 'geo' | 'cine' | 'mus' | 'nat' | 'sci' | 'his' | 'brd' | 'spo' | 'lit' | 'jv' | 'ani' | 'vie' | 'pop' | 'cui' | 'mot' | 'evt'
 
@@ -14,7 +17,8 @@ export const FAMILLES: { k: Famille; nom: Record<Lang, string>; icon: string; mo
     k: 'evt', nom: { fr: 'Événements', en: 'Events' },
     icon: 'M12 3.5l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 15.9l-4.8 2.5.9-5.4-3.9-3.8 5.4-.8ZM5 20.5h14',
     motif: 'M60 10l10 20 22 3-16 15 4 22-20-10-20 10 4-22-16-15 22-3Z',
-    subs: [j('evt-halloween', '🎃 Halloween', 'Halloween'), j('evt-noel', '🎄 Noël', 'Christmas'), j('evt-nouvel-an', '🎆 Nouvel An', 'New Year'), j('evt-saint-valentin', '💝 Saint-Valentin', 'Valentine’s Day'), j('evt-paques', '🐣 Pâques', 'Easter'), j('evt-musique', '🎶 Fête de la musique', 'Music Day'), j('evt-ete', '🏖️ Vacances d’été', 'Summer'), j('evt-rentree', '🎒 Rentrée', 'Back to school')],
+    // Seulement l'événement en cours, ou à défaut le prochain (les autres reviennent à leur date)
+    subs: [j('evt-halloween', '🎃 Halloween', 'Halloween'), j('evt-noel', '🎄 Noël', 'Christmas'), j('evt-nouvel-an', '🎆 Nouvel An', 'New Year'), j('evt-saint-valentin', '💝 Saint-Valentin', 'Valentine’s Day'), j('evt-paques', '🐣 Pâques', 'Easter'), j('evt-musique', '🎶 Fête de la musique', 'Music Day'), j('evt-ete', '🏖️ Vacances d’été', 'Summer'), j('evt-rentree', '🎒 Rentrée', 'Back to school')].filter((x) => x.id === quizEvenementAffiche()),
   },
   {
     k: 'geo', nom: { fr: 'Géographie', en: 'Geography' },

@@ -13,10 +13,15 @@ export type PrefsJeu = {
   texte: 'normal' | 'grand'
   calme: boolean // animations réduites
 }
-const DEFAUT: PrefsJeu = { n: 10, m: 'auto', chrono: false, duree: 15, rapide: false, bonus: true, fiches: true, texte: 'normal', calme: false }
+const DEFAUT: PrefsJeu = { n: 10, m: 'qcm', chrono: false, duree: 15, rapide: false, bonus: true, fiches: true, texte: 'normal', calme: false }
 
 export function lirePrefsJeu(): PrefsJeu {
-  try { return { ...DEFAUT, ...JSON.parse(localStorage.getItem('prefsJeu') ?? '{}') } } catch { return DEFAUT }
+  try {
+    const p = { ...DEFAUT, ...JSON.parse(localStorage.getItem('prefsJeu') ?? '{}') }
+    // Le QCM devient le format par défaut (le plus simple) : l'ancien « Auto » par défaut est remplacé une fois
+    if (!localStorage.getItem('qcmDefaut')) { localStorage.setItem('qcmDefaut', '1'); if (p.m === 'auto') { p.m = 'qcm'; localStorage.setItem('prefsJeu', JSON.stringify(p)) } }
+    return p
+  } catch { return DEFAUT }
 }
 export function ecrirePrefsJeu(maj: Partial<PrefsJeu>) {
   const p = { ...lirePrefsJeu(), ...maj }

@@ -19,6 +19,8 @@ import { telechargerEnFond, surveillerWifi } from '../telechargementFond'
 import { familleOuverte } from '../progression'
 import type { Famille } from '../themes'
 
+// Sur téléphone, la barre du bas garde 5 onglets (Histoire et Révision sont sur l'accueil, Amis dans Profil et Multi)
+const PC_SEULEMENT = ['/aventure', '/revision', '/amis', '/parametres']
 const LIENS: { to: string; k: Key; icon: string }[] = [
   { to: '/', k: 'nav.home', icon: ICONS.home },
   { to: '/themes', k: 'nav.themes', icon: ICONS.themes },
@@ -85,7 +87,7 @@ export default function Layout() {
           <Logo /><Wordmark size={24} />
         </NavLink>
         {LIENS.map((l) => (
-          <NavLink key={l.to} to={l.to} end={l.to === '/'} className={({ isActive }) => `nav${isActive ? ' active' : ''}${l.to === '/parametres' ? ' nav-pc' : ''}`}>
+          <NavLink key={l.to} to={l.to} end={l.to === '/'} className={({ isActive }) => `nav${isActive ? ' active' : ''}${PC_SEULEMENT.includes(l.to) ? ' nav-pc' : ''}`}>
             <Icon d={l.icon} />{t(l.k)}
             {l.to === '/revision' && dues > 0 && <span className="chip" style={{ marginLeft: 'auto', minHeight: 22, padding: '0 8px', background: 'var(--his-t)', color: 'var(--his-i)' }}>{dues}</span>}
           </NavLink>

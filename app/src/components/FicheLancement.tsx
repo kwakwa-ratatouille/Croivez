@@ -14,7 +14,7 @@ import { ICONS, Icon, Piece, Toggle } from './ui'
 // Derniers réglages : la fiche se rouvre comme on l'a laissée
 type Reglages = { d: Difficulte; m: Format; rapide: boolean; chrono: boolean }
 // Par défaut : les réglages de Paramètres → Partie
-const lire = (): Omit<Reglages, 'd'> => { const p = lirePrefsJeu(); const def = { m: p.m, rapide: p.rapide, chrono: p.chrono }; try { const v = { ...def, ...JSON.parse(localStorage.getItem('reglages') ?? '{}') }; return { m: FORMATS.some((x) => x.v === v.m) ? v.m : 'auto', rapide: v.rapide, chrono: v.chrono } } catch { return def } }
+const lire = (): Omit<Reglages, 'd'> => { const p = lirePrefsJeu(); try { if (!localStorage.getItem('qcmFiche')) { localStorage.setItem('qcmFiche', '1'); const r = JSON.parse(localStorage.getItem('reglages') ?? '{}'); if (r.m === 'auto') localStorage.setItem('reglages', JSON.stringify({ ...r, m: 'qcm' })) } } catch { /* stockage indisponible */ } const def = { m: p.m, rapide: p.rapide, chrono: p.chrono }; try { const v = { ...def, ...JSON.parse(localStorage.getItem('reglages') ?? '{}') }; return { m: FORMATS.some((x) => x.v === v.m) ? v.m : 'qcm', rapide: v.rapide, chrono: v.chrono } } catch { return def } }
 
 // Fiche rapide : un quiz se lance en deux appuis (le quiz, puis « Jouer »), réglages à portée de pouce
 export default function FicheLancement({ id, onFermer }: { id: string; onFermer: () => void }) {

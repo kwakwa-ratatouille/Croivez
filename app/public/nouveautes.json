@@ -1,5 +1,41 @@
 [
  {
+  "id": "2026-10-24q",
+  "titre": "Plus rapide, plus simple",
+  "points": [
+   [
+    "⚡",
+    "Images bien plus rapides",
+    "Les photos (volcans, monuments, montagnes…) se chargent directement, sans détour : fini les longues attentes."
+   ],
+   [
+    "📱",
+    "Menu du bas allégé",
+    "5 onglets : Accueil, Thèmes, Multi, Classements, Profil. Histoire et Révision sont sur l’accueil, Amis dans le profil."
+   ],
+   [
+    "🎯",
+    "QCM par défaut",
+    "Le format le plus simple est maintenant celui par défaut (tu peux toujours changer)."
+   ],
+   [
+    "📡",
+    "Chromecast prêt",
+    "Le premier joueur arrivé a la télécommande : il choisit le thème (tous les thèmes sont ouverts) et lance depuis son téléphone."
+   ],
+   [
+    "🎁",
+    "Multijoueur récompensé",
+    "20 pièces par partie en salon ou à la télé, jusqu’à 60 pour le gagnant, plus de l’XP et des points de rang. Duel : 50 pièces si tu gagnes."
+   ],
+   [
+    "🎃",
+    "Événements",
+    "Seul l’événement en cours (ou le prochain) est affiché dans les thèmes."
+   ]
+  ]
+ },
+ {
   "id": "2026-10-24p",
   "titre": "Avatars vivants et boutique des rangs",
   "points": [
