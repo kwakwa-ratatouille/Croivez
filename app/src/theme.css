@@ -1256,3 +1256,10 @@ button.rang-palier[aria-pressed="true"] { background: color-mix(in srgb, var(--r
 .cast-carte { background: linear-gradient(120deg, #1E3A8A, #4F46E5) !important; }
 .caster .caster-note { max-width: 560px; text-align: center; font-size: 18px; opacity: .9; }
 .caster .caster-lien { color: inherit; opacity: .8; font-weight: 700; }
+
+/* Rejoindre : ouvrir l'appli ou jouer sur le web */
+.choix-appli { display: flex; flex-direction: column; gap: 8px; align-items: stretch; text-align: center; padding-bottom: 6px; border-bottom: 1px solid var(--line); }
+.choix-appli small { color: var(--muted); }
+
+/* Anneau façon Saturne : derrière l'avatar, en couleur claire (il ne barre plus le visage) */
+.fx-anneau { z-index: -1; border-color: color-mix(in srgb, var(--fx) 45%, #fff); box-shadow: 0 0 10px color-mix(in srgb, var(--fx) 70%, transparent); }

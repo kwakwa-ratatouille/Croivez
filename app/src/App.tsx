@@ -28,6 +28,7 @@ import Salon from './pages/Salon'
 import Rejoindre from './pages/Rejoindre'
 import Tv from './pages/Tv'
 import Caster from './pages/Caster'
+import LiensAppli from './components/LiensAppli'
 import Classements from './pages/Classements'
 import Album from './pages/Album'
 import Boutique from './pages/Boutique'
@@ -61,6 +62,7 @@ function Routeur() {
   const pageInvite = /^#\/(rejoindre|tv|salon)/.test(location.hash)
   if ((!user && pageInvite) || user?.isAnonymous) return (
     <HashRouter>
+      <LiensAppli />
       <Routes>
         <Route path="/rejoindre" element={<Rejoindre />} />
         <Route path="/rejoindre/:code" element={<Rejoindre />} />
@@ -76,6 +78,7 @@ function Routeur() {
   if (choixAFaire(profile)) return <ChoixFamilles />
   return (
     <HashRouter>
+      <LiensAppli />
       <Routes>
         <Route path="/partie" element={<PartieCle />} />
         <Route path="/duel/:id" element={<Duel />} />
