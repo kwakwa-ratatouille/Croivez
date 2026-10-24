@@ -128,7 +128,7 @@ const CULTURE = {
   sagas: { type: 'attribut', montrer: true, q: { fr: (n) => `Quel éditeur publie la saga « ${n} » ?`, en: (n) => `Who publishes the “${n}” series?` } },
   'persos-univers': { type: 'attribut', pack: 'persos-jeux', champ: 'univers', montrer: true, q: { fr: (n) => `De quel univers vient ${n} ?`, en: (n) => `Which franchise is ${n} from?` } },
 } satisfies Record<string, { type: TypeCulture; montrer?: boolean; pack?: string; champ?: string; q: Record<Lang, (nom: string, genre?: string) => string> }>
-const TRAHIT = new Set(['albums', 'livres', 'livres-annee', 'films', 'films-annee', 'jeux', 'jeux-annee', 'studios', 'studios-annee', 'oscars', 'logos', 'bd'])
+const TRAHIT = new Set(['albums', 'livres', 'livres-annee', 'jeux', 'jeux-annee', 'studios', 'studios-annee', 'logos', 'bd'])
 export type CultureId = keyof typeof CULTURE
 export const estCulture = (s: string): s is CultureId => s in CULTURE
 export const packCulture = (s: CultureId) => (CULTURE[s] as { pack?: string }).pack ?? s
