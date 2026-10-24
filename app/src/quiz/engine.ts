@@ -105,6 +105,12 @@ const CULTURE = {
   extraits: { type: 'audio', q: { fr: () => 'Qui interprète ce titre ?', en: () => 'Who performs this song?' } },
   // Blind tests : mêmes extraits, on demande le titre ou l'album
   'blind-titre': { type: 'audio', pack: 'extraits', champ: 'nom', q: { fr: () => 'Quel est le titre de ce morceau ?', en: () => 'What is the title of this song?' } },
+  // Blind tests rap et animés (scripts/build-deezer.mjs)
+  'rap-fr': { type: 'audio', q: { fr: () => 'Qui rappe sur ce morceau ?', en: () => 'Who is rapping on this track?' } },
+  'rap-us': { type: 'audio', q: { fr: () => 'Qui rappe sur ce morceau ?', en: () => 'Who is rapping on this track?' } },
+  'rap-titre': { type: 'audio', pack: 'rap-fr', champ: 'nom', q: { fr: () => 'Quel est le titre de ce son ?', en: () => 'What is this track called?' } },
+  openings: { type: 'audio', q: { fr: () => 'De quel animé vient cet opening ?', en: () => 'Which anime is this opening from?' } },
+  generiques: { type: 'audio', q: { fr: () => 'De quel dessin animé vient ce générique ?', en: () => 'Which cartoon is this theme song from?' } },
   'blind-album': { type: 'audio', pack: 'extraits', champ: 'f:Album', q: { fr: () => 'De quel album vient ce morceau ?', en: () => 'Which album is this song from?' } },
   'artistes-genre': { type: 'attribut', pack: 'artistes', champ: 'genre', montrer: true, q: { fr: (n) => `Quel est le genre musical de ${n} ?`, en: (n) => `What music genre is ${n} known for?` } },
   studios: { type: 'attribut', q: { fr: (n) => `Quel studio a produit « ${n} » ?`, en: (n) => `Which studio produced “${n}”?` } },
@@ -113,7 +119,10 @@ const CULTURE = {
   stades: { type: 'attribut', montrer: true, q: { fr: (n) => `Dans quelle ville se trouve : ${n} ?`, en: (n) => `Which city is ${n} in?` } },
   animes: { type: 'annee', champ: 'annee', montrer: true, q: { fr: (n) => `En quelle année a débuté l’animé « ${n} » ?`, en: (n) => `In what year did “${n}” first air?` } },
   'animes-studio': { type: 'attribut', pack: 'animes', montrer: true, q: { fr: (n) => `Quel studio a produit l’animé « ${n} » ?`, en: (n) => `Which studio made “${n}”?` } },
-  'persos-animes': { type: 'attribut', q: { fr: (n) => `De quel animé vient ${n} ?`, en: (n) => `Which anime is ${n} from?` } },
+  'persos-animes': { type: 'attribut', montrer: true, groupe: 'genre', q: { fr: (n) => `De quel animé vient ce personnage : ${n} ?`, en: (n) => `Which anime is ${n} from?` } },
+  'lieux-animes': { type: 'attribut', montrer: true, groupe: 'genre', q: { fr: (n) => `De quel animé vient ce lieu : ${n} ?`, en: (n) => `Which anime is ${n} from?` } },
+  mechants: { type: 'attribut', montrer: true, groupe: 'genre', q: { fr: (n) => `De quelle œuvre vient ce méchant : ${n} ?`, en: (n) => `Which work is the villain ${n} from?` } },
+  'mechants-photo': { type: 'image', pack: 'mechants', q: { fr: () => 'Qui est ce méchant ?', en: () => 'Who is this villain?' } },
   doubleurs: { type: 'image', q: { fr: (_, g) => (g === 'f' ? 'Qui est cette comédienne de doublage ?' : 'Qui est ce comédien de doublage ?'), en: () => 'Who is this voice actor?' } },
   batailles: { type: 'annee', champ: 'annee', montrer: true, q: { fr: (n) => `En quelle année a eu lieu : ${n} ?`, en: (n) => `In what year was the ${n}?` } },
   attentats: { type: 'annee', champ: 'annee', montrer: true, q: { fr: (n) => `En quelle année a eu lieu : ${n} ?`, en: (n) => `In what year did this happen: ${n}?` } },
@@ -144,7 +153,8 @@ const CULTURE = {
   repliques: { type: 'attribut', grand: true, q: { fr: () => 'De quel film ou série vient cette réplique ?', en: () => 'Which film or show is this line from?' } },
   superheros: { type: 'attribut', q: { fr: (n) => `Quelle est l’identité secrète de ${n} ?`, en: (n) => `What is ${n}’s secret identity?` } },
   slogans: { type: 'attribut', grand: true, q: { fr: () => 'À quelle marque appartient ce slogan ?', en: () => 'Which brand uses this slogan?' } },
-  'dessins-animes': { type: 'attribut', q: { fr: (n) => `De quel dessin animé vient : ${n} ?`, en: (n) => `Which cartoon is ${n} from?` } },
+  'dessins-animes': { type: 'attribut', montrer: true, groupe: 'genre', q: { fr: (n) => `De quel dessin animé vient ce personnage : ${n} ?`, en: (n) => `Which cartoon is ${n} from?` } },
+  'dessins-animes-photo': { type: 'image', pack: 'dessins-animes', q: { fr: () => 'Qui est ce personnage de dessin animé ?', en: () => 'Which cartoon character is this?' } },
   expressions: { type: 'attribut', grand: true, q: { fr: () => 'Que signifie cette expression ?', en: () => 'What does this French expression mean?' } },
   gentiles: { type: 'attribut', q: { fr: (n) => `Comment appelle-t-on les habitants ${deVille(n)} ?`, en: (n) => `What are the people of ${n} called?` } },
   phobies: { type: 'attribut', q: { fr: (n) => `De quoi a peur une personne atteinte de ${minuscule(n)} ?`, en: (n) => `What does someone with ${minuscule(n)} fear?` } },
@@ -512,7 +522,9 @@ function culture(o: Opts, tousItems: ItemCulture[]): Question[] {
   // Traduction identique au mot français (« sari » → « sari ») : question sans intérêt, on l'écarte
   const simple = (v: string) => v.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
   const avecTexte = cfg.type === 'attribut' || cfg.type === 'annee'
-  const items = cfg.type === 'image' ? tousItems : tousItems.filter((it) => val(it) && !(sousTheme.startsWith('traduction') && simple(texte(val(it), 'fr')) === simple(it.n.fr))
+  // Quiz en image : on écarte les images où la réponse est écrite (repérées par scripts/ocr-tout.sh)
+  const lisibles = tousItems.filter((it) => !it.x?.nomVisible)
+  const items = cfg.type === 'image' ? (lisibles.length >= 30 ? lisibles : tousItems) : tousItems.filter((it) => val(it) && !(sousTheme.startsWith('traduction') && simple(texte(val(it), 'fr')) === simple(it.n.fr))
     // Question où la réponse se lit dans l'énoncé et ne peut pas être masquée : écartée
     && (!avecTexte || masquer(it.n.fr, texte(val(it), 'fr'), cfg.type === 'annee') !== null))
   const { cibles, pool } = tirer(items, (d) => Math.min(items.length, POOL_CULTURE[d]), o, (it) => it.id)

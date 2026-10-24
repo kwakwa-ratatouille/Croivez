@@ -62,6 +62,49 @@ export const LISTES = {
     'Tourmaline', 'Péridot', 'Onyx', 'Agate', 'Jaspe', 'Fluorite', 'Hématite', 'Soufre', 'Graphite', 'Calcite',
     'Gypse', 'Galène', 'Mica', 'Talc', 'Azurite', 'Labradorite', 'Rhodochrosite', 'Œil-de-tigre', 'Cinabre', 'Tanzanite',
   ],
+  // Objets du sport : la réponse est le sport (le nom de l'objet n'est pas montré)
+  balles: [
+    ['Ballon de football', { r: 'Football' }], ['Ballon de rugby', { r: 'Rugby' }], ['Ballon de basket-ball', { r: 'Basket-ball' }], ['Balle de tennis', { r: 'Tennis' }], ['Balle de golf', { r: 'Golf' }],
+    ['Ballon de volley-ball', { r: 'Volley-ball' }], ['Ballon de handball', { r: 'Handball' }], ['Balle de baseball', { r: 'Baseball' }], ['Ballon de football américain', { r: 'Football américain' }], ['Volant (badminton)', { r: 'Badminton' }],
+    ['Balle de tennis de table', { r: 'Tennis de table' }], ['Palet (hockey sur glace)', { r: 'Hockey sur glace' }], ['Boule de pétanque', { r: 'Pétanque' }], ['Boule de bowling', { r: 'Bowling' }], ['Boule de billard', { r: 'Billard' }],
+    ['Balle de cricket', { r: 'Cricket' }], ['Ballon de water-polo', { r: 'Water-polo' }], ['Balle de squash', { r: 'Squash' }], ['Pierre de curling', { r: 'Curling' }], ['Fleuret', { r: 'Escrime' }],
+    ['Batte de baseball', { r: 'Baseball' }], ['Crosse de hockey sur glace', { r: 'Hockey sur glace' }], ['Club de golf', { r: 'Golf' }], ['Gant de boxe', { r: 'Boxe' }], ['Javelot', { r: 'Athlétisme' }],
+    ['Disque (athlétisme)', { r: 'Athlétisme' }], ['Haie (athlétisme)', { r: 'Athlétisme' }], ['Planche à roulettes', { r: 'Skateboard' }], ['Planche de surf', { r: 'Surf' }], ['Arc (arme)', { r: 'Tir à l’arc' }],
+    ['Kimono de judo', { r: 'Judo' }], ['Raquette de tennis', { r: 'Tennis' }], ['Haltère', { r: 'Haltérophilie' }], ['Cheval d\'arçons', { r: 'Gymnastique' }], ['Crosse de lacrosse', { r: 'Crosse' }],
+    ['Pelote basque', { r: 'Pelote basque' }], ['Ballon de netball', { r: 'Netball' }], ['Frisbee', { r: 'Ultimate' }], ['Mailloche', { r: 'Croquet' }], ['Patin à glace', { r: 'Patinage' }],
+  ],
+  'sports-photo': [
+    'Football', 'Rugby à XV', 'Basket-ball', 'Tennis', 'Natation (sport)', 'Cyclisme sur route', 'Ski alpin', 'Handball', 'Volley-ball', 'Judo',
+    'Boxe anglaise', 'Golf', 'Formule 1', 'Équitation', 'Escrime', 'Gymnastique artistique', 'Patinage artistique', 'Snowboard', 'Surf', 'Escalade',
+    'Hockey sur glace', 'Baseball', 'Football américain', 'Badminton', 'Tennis de table', 'Aviron', 'Canoë-kayak', 'Tir à l\'arc', 'Plongeon', 'Water-polo',
+    'Beach-volley', 'Karaté', 'Taekwondo', 'Haltérophilie', 'Lutte', 'Triathlon', 'BMX', 'Skateboard', 'Curling', 'Biathlon',
+    'Bobsleigh', 'Saut à ski', 'Luge (sport)', 'Skeleton (sport)', 'Polo (sport)', 'Cricket', 'Hockey sur gazon', 'Crosse (sport)', 'Sumo', 'Kitesurf',
+    'Natation synchronisée', 'Pentathlon moderne', 'Pelote basque', 'Sepak takraw', 'Kabaddi', 'Football australien', 'Hurling', 'Roller derby', 'Breaking (danse)', 'Parkour',
+  ],
+  'plats-photo': [
+    'Pizza', 'Sushi', 'Hamburger', 'Paella', 'Couscous', 'Lasagnes', 'Tacos', 'Croque-monsieur', 'Ratatouille', 'Bœuf bourguignon',
+    'Raclette', 'Fondue savoyarde', 'Tartiflette', 'Hot-dog', 'Ramen', 'Kebab', 'Quiche lorraine', 'Moules-frites', 'Fish and chips', 'Cassoulet',
+    'Choucroute garnie', 'Tajine', 'Pad thaï', 'Burrito', 'Spaghetti à la bolognaise', 'Pâtes à la carbonara', 'Risotto', 'Gnocchi', 'Falafel', 'Houmous',
+    'Poutine', 'Hachis parmentier', 'Gratin dauphinois', 'Pot-au-feu', 'Blanquette de veau', 'Bouillabaisse', 'Steak tartare', 'Escargots de Bourgogne', 'Foie gras', 'Nem',
+    'Phở', 'Bibimbap', 'Dim sum', 'Canard laqué de Pékin', 'Biryani', 'Moussaka', 'Gyros', 'Goulache', 'Pierogi', 'Bortsch',
+    'Ceviche', 'Feijoada', 'Chili con carne', 'Nachos', 'Fajitas', 'Gaspacho', 'Samoussa', 'Chakchouka', 'Tempura', 'Okonomiyaki',
+    'Takoyaki', 'Kimchi', 'Arepa', 'Empanada', 'Mac and cheese', 'Club sandwich', 'Bagel', 'Mafé', 'Poulet yassa', 'Bobotie',
+  ],
+  politiques: [
+    'Emmanuel Macron', ['Marine Le Pen', F], 'Jean-Luc Mélenchon', 'Gabriel Attal', 'Édouard Philippe', 'Jordan Bardella', 'Nicolas Sarkozy', 'François Hollande', 'Jacques Chirac', 'Éric Zemmour',
+    ['Élisabeth Borne', F], 'Michel Barnier', 'François Bayrou', 'Gérald Darmanin', 'Bruno Le Maire', ['Anne Hidalgo', F], ['Rachida Dati', F], 'Manuel Valls', ['Ségolène Royal', F], 'François Fillon',
+    'Alain Juppé', 'Jean Castex', 'Laurent Wauquiez', ['Valérie Pécresse', F], 'Olivier Véran', 'Sébastien Lecornu', 'Bruno Retailleau', ['Marion Maréchal', F], 'François Ruffin', 'Raphaël Glucksmann',
+    'Fabien Roussel', ['Marine Tondelier', F], ['Yaël Braun-Pivet', F], ['Christiane Taubira', F], ['Simone Veil', F], 'Jean-Marie Le Pen', 'Dominique de Villepin', 'Lionel Jospin', 'Arnaud Montebourg', 'Nicolas Hulot',
+    ['Roselyne Bachelot', F], 'Jack Lang', 'Bernard Kouchner', ['Christine Lagarde', F], 'Éric Dupond-Moretti', ['Clémentine Autain', F], ['Mathilde Panot', F], ['Sandrine Rousseau', F], 'Jean Lassalle', 'Philippe Poutou',
+    ['Nathalie Arthaud', F], 'Nicolas Dupont-Aignan', 'Georges Pompidou', 'Valéry Giscard d\'Estaing', 'François Mitterrand', 'Pierre Mendès France', 'Michel Rocard', ['Édith Cresson', F], 'Jean-Pierre Raffarin', 'Pierre Bérégovoy',
+  ],
+  dirigeants: [
+    'Donald Trump', 'Barack Obama', 'Vladimir Poutine', 'Joe Biden', 'Volodymyr Zelensky', ['Angela Merkel', F], 'Xi Jinping', 'Kim Jong-un', 'Charles III', ['Élisabeth II', F],
+    'Justin Trudeau', 'Boris Johnson', 'Narendra Modi', 'Recep Tayyip Erdoğan', ['Giorgia Meloni', F], 'Benyamin Netanyahou', 'Luiz Inácio Lula da Silva', 'Pedro Sánchez', 'Keir Starmer', 'Olaf Scholz',
+    ['Ursula von der Leyen', F], 'François (pape)', 'Léon XIV', ['Kamala Harris', F], 'Nelson Mandela', 'Javier Milei', 'Mohammed ben Salmane', 'Viktor Orbán', 'Rishi Sunak', ['Jacinda Ardern', F],
+    'Fidel Castro', 'Winston Churchill', 'John Fitzgerald Kennedy', 'Ronald Reagan', 'Mikhaïl Gorbatchev', ['Margaret Thatcher', F], 'Abraham Lincoln', 'Franklin Delano Roosevelt', 'George W. Bush', 'Bill Clinton',
+    'Hugo Chávez', 'Alexandre Loukachenko', 'Friedrich Merz', 'Mark Carney', 'Shinzo Abe', ['Indira Gandhi', F], 'Jawaharlal Nehru', 'Mao Zedong', 'Deng Xiaoping', 'Kofi Annan',
+  ],
   'jeux-societe': [
     'Monopoly', 'Échecs', 'Uno (jeu)', 'Jeu de dames', 'Puissance 4', 'Jenga', 'Cluedo', 'Trivial Pursuit', 'Dominos',
     'Backgammon', 'Jeu de go', 'Risk (jeu)', 'Les Colons de Catane', 'Mikado (jeu)', 'Jeu de l\'oie', 'Petits Chevaux', 'Bataille navale (jeu)', 'Mastermind (jeu)', 'Yahtzee',
@@ -130,6 +173,7 @@ export async function construire(id) {
       ...(desc ? { d: { fr: desc.replace(/\.$/, ''), en: desc.replace(/\.$/, '') } } : {}),
       img,
       ...(e.g ? { g: e.g } : {}),
+      ...(e.r ? { r: { fr: e.r, en: e.r } } : {}),
     })
   }
   // Doublons (deux titres qui redirigent vers le même article)

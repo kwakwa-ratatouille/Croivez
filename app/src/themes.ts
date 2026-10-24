@@ -44,7 +44,7 @@ export const FAMILLES: { k: Famille; nom: Record<Lang, string>; icon: string; mo
     k: 'mus', nom: { fr: 'Musique', en: 'Music' },
     icon: 'M9 18V6l10-2v12M9 18a2.5 2.5 0 1 1-5 0a2.5 2.5 0 1 1 5 0ZM19 16a2.5 2.5 0 1 1-5 0a2.5 2.5 0 1 1 5 0Z',
     motif: 'M30 60V20l40-8v40M30 60a8 6 0 1 1-16 0a8 6 0 1 1 16 0M70 52a8 6 0 1 1-16 0a8 6 0 1 1 16 0M96 40V14l14 6',
-    subs: [{ id: 'artistes', nom: { fr: 'Artistes', en: 'Artists' }, jouable: 'artistes' }, { id: 'extraits', nom: { fr: 'Extraits musicaux', en: 'Music clips' }, jouable: 'extraits' }, { id: 'albums', nom: { fr: 'Albums', en: 'Albums' }, jouable: 'albums' }, j('compositeurs', 'Compositeurs classiques', 'Classical composers'), j('blind-titre', 'Blind test : le titre', 'Blind test: title'), j('blind-album', 'Blind test : l’album', 'Blind test: album'), j('artistes-genre', 'Genres musicaux', 'Music genres'), j('groupes', 'Groupes', 'Bands')],
+    subs: [{ id: 'artistes', nom: { fr: 'Artistes', en: 'Artists' }, jouable: 'artistes' }, { id: 'extraits', nom: { fr: 'Extraits musicaux', en: 'Music clips' }, jouable: 'extraits' }, { id: 'albums', nom: { fr: 'Albums', en: 'Albums' }, jouable: 'albums' }, j('compositeurs', 'Compositeurs classiques', 'Classical composers'), j('blind-titre', 'Blind test : le titre', 'Blind test: title'), j('blind-album', 'Blind test : l’album', 'Blind test: album'), j('artistes-genre', 'Genres musicaux', 'Music genres'), j('groupes', 'Groupes', 'Bands'), j('rap-fr', 'Blind test rap français', 'French rap blind test'), j('rap-titre', 'Rap français : le titre', 'French rap: track title'), j('rap-us', 'Blind test rap US', 'US rap blind test'), j('generiques', 'Génériques de dessins animés', 'Cartoon theme songs')],
   },
   {
     k: 'nat', nom: { fr: 'Nature', en: 'Nature' },
@@ -107,7 +107,7 @@ export const FAMILLES: { k: Famille; nom: Record<Lang, string>; icon: string; mo
     k: 'ani', nom: { fr: 'Animés & doublage', en: 'Anime & dubbing' },
     icon: 'M12 3.5l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 15.9l-4.8 2.5.9-5.4-3.9-3.8 5.4-.8Z',
     motif: 'M60 10l10 20 22 3-16 15 4 22-20-10-20 10 4-22-16-15 22-3Z',
-    subs: [j('animes', 'Animés : l’année', 'Anime: year'), j('animes-studio', 'Animés : le studio', 'Anime: studio'), j('persos-animes', 'Personnages d’animés', 'Anime characters'), j('doubleurs', 'Voix françaises', 'French voice actors')],
+    subs: [j('animes', 'Animés : l’année', 'Anime: year'), j('animes-studio', 'Animés : le studio', 'Anime: studio'), j('persos-animes', 'Personnages : de quel animé ?', 'Anime characters'), j('lieux-animes', 'Villes et lieux d’animés', 'Anime places'), j('openings', 'Openings d’animés', 'Anime openings'), j('doubleurs', 'Voix françaises', 'French voice actors')],
   },
   {
     k: 'vie', nom: { fr: 'Vie quotidienne & mythes', en: 'Everyday life & myths' },
@@ -119,7 +119,7 @@ export const FAMILLES: { k: Famille; nom: Record<Lang, string>; icon: string; mo
     k: 'pop', nom: { fr: 'Pop culture & Internet', en: 'Pop culture & Internet' },
     icon: 'M4.5 5.5h15a1.5 1.5 0 0 1 1.5 1.5v10a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 17V7a1.5 1.5 0 0 1 1.5-1.5ZM10 9.3v5.4l4.6-2.7Z',
     motif: 'M14 14h92v52H14ZM52 28v24l20-12Z',
-    subs: [j('youtubeurs', 'Youtubeurs et streamers', 'YouTubers & streamers'), j('emojis-films', 'Films en émojis', 'Films in emojis'), j('repliques', 'Répliques cultes', 'Famous movie lines'), j('superheros', 'Super-héros : l’identité secrète', 'Superheroes: secret identity'), j('dessins-animes', 'Dessins animés', 'Cartoons'), j('slogans', 'Slogans publicitaires', 'Ad slogans')],
+    subs: [j('youtubeurs', 'Youtubeurs et streamers', 'YouTubers & streamers'), j('emojis-films', 'Films en émojis', 'Films in emojis'), j('repliques', 'Répliques cultes', 'Famous movie lines'), j('superheros', 'Super-héros : l’identité secrète', 'Superheroes: secret identity'), j('dessins-animes', 'Dessins animés : de quelle série ?', 'Cartoons: which show?'), j('dessins-animes-photo', 'Personnages de dessins animés', 'Cartoon characters'), j('mechants', 'Méchants : de quelle œuvre ?', 'Villains: which work?'), j('mechants-photo', 'Méchants en image', 'Villains in pictures'), j('slogans', 'Slogans publicitaires', 'Ad slogans')],
   },
   {
     k: 'cui', nom: { fr: 'Cuisine & saveurs', en: 'Food & flavours' },
