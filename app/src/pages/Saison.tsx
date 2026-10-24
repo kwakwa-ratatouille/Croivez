@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { useAuth } from '../auth'
+import { jour, useAuth } from '../auth'
 import { usePrefs } from '../i18n'
-import { NB_PALIERS, XP_PALIER, etatSaison, finSaison, recompense, reclamerPalier } from '../saison'
+import { NB_PALIERS, XP_JOUR_PASSE, XP_PALIER, etatSaison, finSaison, recompense, reclamerPalier } from '../saison'
 import { saisonDuMois } from '../evenements'
 import { retourFin } from '../retour'
 import Avatar from '../components/Avatar'
@@ -20,6 +20,7 @@ export default function Saison() {
   const theme = saisonDuMois()
   const cadreSaison = `cadre-s-${theme.id}`
   const mois = new Date().toLocaleDateString(fr ? 'fr-FR' : 'en-GB', { month: 'long' })
+  const xpAujourdhui = profile?.saison?.id === s.id && profile.saison.jour === jour() ? profile.saison.xpJour ?? 0 : 0
   const dansPalier = s.palier >= NB_PALIERS ? XP_PALIER : s.xp % XP_PALIER
   const aRecuperer = Array.from({ length: s.palier }, (_, i) => i + 1).filter((n) => !s.recl.includes(n))
 
@@ -47,6 +48,7 @@ export default function Saison() {
           <strong className="t bp-titre">{fr ? 'Passe de combat' : 'Battle pass'}</strong>
           <div className="bp-xp"><span style={{ width: `${(dansPalier / XP_PALIER) * 100}%` }} /></div>
           <span className="bp-info">{s.palier >= NB_PALIERS ? (fr ? 'Passe terminé, légende !' : 'Pass complete!') : `${dansPalier} / ${XP_PALIER} XP ${fr ? 'avant le niveau' : 'to tier'} ${s.palier + 1}`} · ⏳ {finSaison()} {fr ? 'jours restants' : 'days left'}</span>
+          <span className="bp-info">{fr ? `Aujourd’hui : ${xpAujourdhui} / ${XP_JOUR_PASSE} XP pour le passe${xpAujourdhui >= XP_JOUR_PASSE ? ' · reviens demain !' : ''}` : `Today: ${xpAujourdhui} / ${XP_JOUR_PASSE} pass XP`}</span>
         </div>
         <div className="bp-apercu">
           <Avatar pseudo={profile?.pseudo} avatar={profile?.avatar} cadre={cadreSaison} taille={86} anime />

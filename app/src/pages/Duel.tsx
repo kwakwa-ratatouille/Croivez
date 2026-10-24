@@ -56,13 +56,13 @@ export default function Duel() {
   useEffect(() => { if (q && !maReponse && restant <= 0) repondre(null) }, [q, maReponse, restant, repondre])
 
   // Question suivante quand les deux ont répondu (ou quand le temps de l'adversaire est écoulé aussi)
+  // (booléen : le chrono qui tourne ne doit pas relancer l'attente à chaque tic)
+  const pret = !!maReponse && (!!saReponse || restant <= 0)
   useEffect(() => {
-    if (!maReponse) return
-    const tempsFini = restant <= 0
-    if (!saReponse && !tempsFini) return
+    if (!pret) return
     const t = setTimeout(() => { setI((x) => x + 1); setDebut(Date.now()) }, 1600)
     return () => clearTimeout(t)
-  }, [maReponse, saReponse, restant])
+  }, [pret, i])
 
   useEffect(() => {
     if (!fini || enregistre.current || !profile || !moi || !questions || !theme) return

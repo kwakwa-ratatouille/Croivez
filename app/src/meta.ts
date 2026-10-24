@@ -98,6 +98,8 @@ export type Objet = {
   orbite?: string[] // petits éléments qui tournent autour de l'avatar (planètes, notes, feuilles…)
   condition?: { desc: Record<Lang, string>; test: (p: Profile) => boolean }
   evenement?: string; saison?: string // récompense d'un événement ou d'une saison
+  luxe?: 1 | 2 // 1 = cher, 2 = ultra (le plus beau de sa catégorie, très cher)
+  fondAvatar?: string // fond animé des avatars de luxe
 }
 const NOMS_PERSOS: Record<string, [string, string]> = {
   eleve: ['Élève', 'Pupil'], savante: ['Savante', 'Scientist'], explorateur: ['Explorateur', 'Explorer'], astronaute: ['Astronaute', 'Astronaut'],
@@ -173,6 +175,23 @@ export const BOUTIQUE: Objet[] = [
   ...FUN.map(([id, e, nom], i): Objet => ({ id: `fun-${id}`, type: 'avatar', categorie: 'fun', nom: { fr: nom, en: nom }, prix: 50 + (i % 4) * 25, emoji: e, ...(id === 'couronne' ? { prix: 0, condition: EXPLOITS.multi10 } : id === 'diamant' ? { prix: 0, condition: EXPLOITS.riche } : {}) })),
   ...FAMILLES.map((f, i): Objet => ({ id: `avatar-${f.k}`, type: 'avatar', categorie: 'famille', nom: f.nom, prix: i < 2 ? 0 : 100, k: f.k })),
 
+  // ——— Luxe : des objets chers, et un « ultra » hors de prix et très animé dans chaque catégorie ———
+  ...([
+    ['metier', 'luxe-commandant', '🧑‍🚀', 'Commandant spatial', 'Space commander', 2500, 1, 'linear-gradient(160deg, #020617, #1E3A8A)'],
+    ['metier', 'luxe-archimage', '🧙', 'Archimage', 'Archmage', 6000, 1, 'linear-gradient(160deg, #3B0764, #7C3AED)'],
+    ['metier', 'ultra-empereur', '🤴', 'Empereur doré', 'Golden emperor', 20000, 2, 'conic-gradient(from 0deg, #78350F, #FDE047, #B45309, #FEF3C7, #78350F)'],
+    ['animal', 'luxe-licorne', '🦄', 'Licorne étoilée', 'Starry unicorn', 2500, 1, 'linear-gradient(160deg, #F0ABFC, #A5F3FC)'],
+    ['animal', 'luxe-phenix', '🐦‍🔥', 'Phénix', 'Phoenix', 6000, 1, 'linear-gradient(0deg, #7F1D1D, #F97316, #FDE047)'],
+    ['animal', 'ultra-dragon', '🐉', 'Dragon d’or', 'Golden dragon', 20000, 2, 'conic-gradient(#7F1D1D, #F59E0B, #FDE047, #DC2626, #7F1D1D)'],
+    ['fun', 'luxe-robot', '🤖', 'Robot plaqué or', 'Gold-plated robot', 2500, 1, 'linear-gradient(160deg, #B8862E, #FFF2B8)'],
+    ['fun', 'luxe-alien', '👽', 'Roi alien', 'Alien king', 6000, 1, 'linear-gradient(160deg, #052E16, #22C55E)'],
+    ['fun', 'ultra-galaxie', '🌌', 'Galaxie vivante', 'Living galaxy', 25000, 2, 'conic-gradient(#0F0C29, #6D28D9, #DB2777, #2563EB, #0F0C29)'],
+    ['famille', 'luxe-encyclopedie', '📚', 'Encyclopédie vivante', 'Living encyclopedia', 3000, 1, 'linear-gradient(160deg, #7C2D12, #F59E0B)'],
+    ['famille', 'ultra-cerveau', '🧠', 'Cerveau suprême', 'Supreme brain', 25000, 2, 'conic-gradient(#831843, #F472B6, #6366F1, #22D3EE, #831843)'],
+  ] as const).map(([categorie, id, emoji, fr, en, prix, luxe, fondAvatar]): Objet => ({ id: "avatar-" + id, type: 'avatar', categorie, nom: { fr, en }, prix, emoji, luxe, fondAvatar })),
+  { id: 'cadre-diamant', type: 'cadre', nom: { fr: 'Diamant', en: 'Diamond' }, prix: 3000, luxe: 1, couleur: 'conic-gradient(#E0F2FE, #FFFFFF, #A5F3FC, #FFFFFF, #C7D2FE, #E0F2FE)', anim: 'tourne brille', orbite: ['💎', '✨', '💎'] },
+  { id: 'cadre-tresor', type: 'cadre', nom: { fr: 'Trésor du pharaon', en: 'Pharaoh’s treasure' }, prix: 6000, luxe: 1, couleur: 'conic-gradient(#1E3A8A, #F4C430, #1E3A8A, #F4C430, #1E3A8A)', anim: 'tourne brille', orbite: ['👑', '🪙', '🏺', '🪙'] },
+  { id: 'cadre-cosmos', type: 'cadre', nom: { fr: 'Cosmos infini', en: 'Infinite cosmos' }, prix: 25000, luxe: 2, couleur: 'conic-gradient(#0F0C29, #6D28D9, #F472B6, #FDE047, #22D3EE, #0F0C29)', anim: 'tourne holo ultra', orbite: ['🌌', '💫', '🪐', '☄️', '✨'] },
   // Cadres classiques à acheter
   { id: 'cadre-bronze', type: 'cadre', nom: { fr: 'Cadre bronze', en: 'Bronze frame' }, prix: 80, couleur: '#C98B5A' },
   { id: 'cadre-argent', type: 'cadre', nom: { fr: 'Cadre argent', en: 'Silver frame' }, prix: 200, couleur: '#9AA3AD' },
@@ -276,8 +295,11 @@ export const BOUTIQUE: Objet[] = [
   // ——— Fonds de vitrine animés et styles de pseudo (achetables ; un fond par saison au palier 15) ———
   ...FONDS_ANIMES.map((f): Objet => f.saison
     ? { id: f.id, type: 'fond', nom: f.nom, prix: 0, saison: f.saison, condition: { desc: { fr: `${SAISONS.find((s) => s.id === f.saison)?.emoji} ${f.nom.fr} : passe de combat, palier 15`, en: `${f.nom.en}: battle pass tier 15` }, test: (p) => !!p.possede?.includes(f.id) } }
-    : { id: f.id, type: 'fond', nom: f.nom, prix: f.prix }),
-  ...STYLES_PSEUDO.map((s): Objet => ({ id: s.id, type: 'pseudo', nom: s.nom, prix: s.prix })),
+    : { id: f.id, type: 'fond', nom: f.nom, prix: f.prix, luxe: f.luxe }),
+  ...STYLES_PSEUDO.map((s): Objet => ({ id: s.id, type: 'pseudo', nom: s.nom, prix: s.prix, luxe: s.luxe })),
+  { id: 'titre-mecene', type: 'titre', nom: { fr: 'Mécène', en: 'Patron' }, prix: 3000, luxe: 1 },
+  { id: 'titre-milliardaire', type: 'titre', nom: { fr: 'Milliardaire du savoir', en: 'Knowledge billionaire' }, prix: 10000, luxe: 1 },
+  { id: 'titre-empereur', type: 'titre', nom: { fr: '👑 Empereur·rice de Croivez', en: '👑 Emperor of Croivez' }, prix: 30000, luxe: 2 },
   { id: 'cadre-rare-saison', type: 'cadre', nom: { fr: 'Étoile filante', en: 'Shooting star' }, prix: 1200, couleur: 'conic-gradient(#0F172A, #1E3A8A, #0F172A)', anim: 'tourne etoiles', orbite: ['☄️', '⭐', '✨'] },
   { id: 'cadre-coeurs', type: 'cadre', nom: { fr: 'Cœurs', en: 'Hearts' }, prix: 600, couleur: 'conic-gradient(#F472B6, #FB7185, #F472B6)', anim: 'pulse', orbite: ['💖', '💕', '💗'] },
   { id: 'cadre-musique', type: 'cadre', nom: { fr: 'Mélodie', en: 'Melody' }, prix: 700, couleur: 'conic-gradient(#6D28D9, #DB2777, #6D28D9)', anim: 'tourne', orbite: ['🎵', '🎶', '🎵'] },

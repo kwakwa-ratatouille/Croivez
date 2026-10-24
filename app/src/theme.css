@@ -1094,3 +1094,56 @@ body.glisse-en-cours { user-select: none; }
 @media (max-width: 760px) {
   .question-image { max-height: clamp(260px, 50vh, 440px); min-height: 200px; }
 }
+
+/* ——— Objets de luxe ——— */
+.objet.luxe { position: relative; overflow: hidden; }
+.objet.luxe-1 { border-color: #D8B04A !important; background: linear-gradient(180deg, var(--surface), color-mix(in srgb, #F4C430 14%, var(--surface))); }
+.objet.luxe-2 { border: 2px solid transparent !important; background: linear-gradient(var(--surface), var(--surface)) padding-box, conic-gradient(from var(--angle-luxe, 0deg), #F4C430, #F472B6, #A78BFA, #22D3EE, #F4C430) border-box; animation: luxe-bord 4s linear infinite; box-shadow: 0 0 22px rgba(244, 196, 48, .35); }
+@property --angle-luxe { syntax: '<angle>'; initial-value: 0deg; inherits: false; }
+@keyframes luxe-bord { to { --angle-luxe: 360deg; } }
+.badge-luxe { position: absolute; top: 8px; left: 8px; z-index: 2; padding: 2px 8px; border-radius: 999px; font: 900 10.5px/1.6 Nunito, sans-serif; letter-spacing: .08em; color: #3B2600; background: linear-gradient(90deg, #F4C430, #FFF2B8, #F4C430); }
+.luxe-2 .badge-luxe { color: #fff; background: linear-gradient(90deg, #DB2777, #7C3AED, #2563EB); }
+.titre-ligne.luxe-1 { border-color: #D8B04A !important; }
+.titre-ligne.luxe-2 { border-color: #A78BFA !important; box-shadow: 0 0 16px rgba(167, 139, 250, .4); }
+/* Avatars de luxe : reflet qui passe ; ultra : fond qui tourne et halo pulsé */
+.avatar-luxe > span:first-child::after { content: ''; position: absolute; inset: 0; background: linear-gradient(115deg, transparent 35%, rgba(255,255,255,.55) 50%, transparent 65%); background-size: 250% 100%; animation: reflet-luxe 3.2s ease-in-out infinite; pointer-events: none; }
+@keyframes reflet-luxe { 0% { background-position: 130% 0 } 60%, 100% { background-position: -30% 0 } }
+.avatar-ultra { filter: drop-shadow(0 0 10px rgba(244, 196, 48, .7)); animation: halo-ultra 2.4s ease-in-out infinite alternate; }
+.avatar-ultra > span:first-child { background-size: 200% 200% !important; }
+@keyframes halo-ultra { from { filter: drop-shadow(0 0 6px rgba(244, 196, 48, .5)) } to { filter: drop-shadow(0 0 16px rgba(244, 114, 182, .85)) } }
+.avatar.cadre-ultra { filter: drop-shadow(0 0 12px rgba(167, 139, 250, .85)); animation: halo-ultra 2s ease-in-out infinite alternate; }
+/* Fonds de luxe : halo de couleurs qui ondule */
+.fond-halo { position: absolute; inset: -40%; background: radial-gradient(circle at 30% 40%, rgba(52, 211, 153, .45), transparent 40%), radial-gradient(circle at 70% 60%, rgba(167, 139, 250, .45), transparent 40%), radial-gradient(circle at 50% 20%, rgba(244, 196, 48, .35), transparent 35%); animation: halo-fond 9s ease-in-out infinite alternate; }
+@keyframes halo-fond { from { transform: rotate(0) scale(1) } to { transform: rotate(40deg) scale(1.15) } }
+.particules.ultra .fond-halo { animation-duration: 5s; mix-blend-mode: screen; }
+.pseudo-style.ultra { animation-duration: 2s; }
+@media (prefers-reduced-motion: reduce) { .objet.luxe-2, .avatar-ultra, .avatar.cadre-ultra, .fond-halo, .avatar-luxe > span:first-child::after { animation: none !important; } }
+
+/* Bandeau saison / événement : l'emoji décoratif reste en fond, il ne prend pas de place */
+.bandeau-evt > .bandeau-evt-emoji { position: absolute; }
+@media (max-width: 560px) {
+  .bandeau-evt { padding: 14px 16px; gap: 12px; border-radius: 22px; }
+  .bandeau-evt > .bandeau-evt-emoji { font-size: 96px; right: -6px; top: -14px; }
+  .bandeau-evt strong.t { font-size: 19px !important; }
+  .bandeau-evt > .avatar { width: 52px !important; height: 52px !important; }
+}
+
+/* ——— Styles de pseudo animés ——— */
+.pseudo-style.rapide { animation-duration: 1.6s !important; }
+.pseudo-style.holo { filter: drop-shadow(0 0 4px rgba(240, 171, 252, .7)) drop-shadow(0 0 8px rgba(165, 243, 252, .5)); }
+.pseudo-style.pulse-vert { animation: pseudo-defile 4s linear infinite, lueur-vert 1.8s ease-in-out infinite alternate; }
+.pseudo-style.pulse-violet { animation: pseudo-defile 4s linear infinite, lueur-violet 2s ease-in-out infinite alternate; }
+.pseudo-style.pulse-feu { animation: pseudo-defile 3s linear infinite, lueur-feu 1.2s ease-in-out infinite alternate; }
+.pseudo-style.pulse-glace { animation: pseudo-defile 5s linear infinite, lueur-glace 2.4s ease-in-out infinite alternate; }
+.pseudo-style.eclair { animation: pseudo-defile 2.5s linear infinite, eclair-pseudo 3s steps(1) infinite; }
+.pseudo-style.glitch { position: relative; display: inline-block; animation: glitch-pseudo 2.6s steps(1) infinite; }
+.pseudo-style.divin { animation: pseudo-defile 2.4s linear infinite, lueur-divine 1.6s ease-in-out infinite alternate; }
+@keyframes lueur-vert { from { filter: drop-shadow(0 0 2px rgba(163, 230, 53, .4)) } to { filter: drop-shadow(0 0 10px rgba(163, 230, 53, .95)) } }
+@keyframes lueur-violet { from { filter: drop-shadow(0 0 3px rgba(167, 139, 250, .4)) } to { filter: drop-shadow(0 0 12px rgba(236, 72, 153, .9)) } }
+@keyframes lueur-feu { from { filter: drop-shadow(0 0 3px rgba(249, 115, 22, .5)) } to { filter: drop-shadow(0 -2px 12px rgba(253, 224, 71, .95)) } }
+@keyframes lueur-glace { from { filter: drop-shadow(0 0 3px rgba(125, 211, 252, .5)) } to { filter: drop-shadow(0 0 12px rgba(255, 255, 255, .95)) } }
+@keyframes lueur-divine { from { filter: drop-shadow(0 0 6px rgba(244, 196, 48, .7)) drop-shadow(0 0 2px #fff) } to { filter: drop-shadow(0 0 18px rgba(255, 247, 214, 1)) drop-shadow(0 0 30px rgba(244, 114, 182, .6)) } }
+@keyframes eclair-pseudo { 0%, 100% { filter: drop-shadow(0 0 3px rgba(253, 224, 71, .5)) } 46% { filter: drop-shadow(0 0 14px #fff) drop-shadow(0 0 22px #38BDF8) } 50% { filter: drop-shadow(0 0 3px rgba(253, 224, 71, .5)) } 53% { filter: drop-shadow(0 0 16px #FDE047) } }
+@keyframes glitch-pseudo { 0%, 100% { transform: none; filter: drop-shadow(2px 0 0 rgba(244, 114, 182, .9)) drop-shadow(-2px 0 0 rgba(34, 211, 238, .9)) } 20% { transform: translate(-1px, 1px) skewX(-6deg); filter: drop-shadow(-3px 0 0 rgba(244, 114, 182, .9)) drop-shadow(3px 0 0 rgba(34, 211, 238, .9)) } 22% { transform: none } 60% { transform: translate(1px, -1px); filter: drop-shadow(3px 1px 0 rgba(244, 114, 182, .9)) drop-shadow(-3px -1px 0 rgba(34, 211, 238, .9)) } 62% { transform: none } }
+
+.pseudo-style:not(.defile):not(.brille) { background-size: 100% 100%; }

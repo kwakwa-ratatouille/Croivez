@@ -29,6 +29,21 @@ export async function mettreEnCache(src: string, cache?: Cache) {
   }
 }
 
+// Préchargement des prochaines images du quiz : le navigateur les télécharge pendant qu'on répond,
+// elles s'affichent donc tout de suite à la question suivante (et partent aussi dans le cache hors ligne)
+const prechargees = new Set<string>()
+export function prechargerImages(srcs: (string | undefined)[]) {
+  for (const src of srcs) {
+    if (!src || prechargees.has(src) || urls.has(src)) continue
+    prechargees.add(src)
+    const im = new Image()
+    if (src.includes('nocookie.net')) im.referrerPolicy = 'unsafe-url'
+    im.decoding = 'async'
+    im.src = src
+    mettreEnCache(src).catch(() => {})
+  }
+}
+
 export async function telechargerImages(srcs: string[], progres: (fait: number) => void, parallele = 6) {
   const c = await caches.open(NOM)
   let fait = 0

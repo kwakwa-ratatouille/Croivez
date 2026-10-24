@@ -3,9 +3,11 @@ import { db } from './firebase'
 import { saisonId, type Profile } from './auth'
 import { saisonDuMois } from './evenements'
 
-// Saison = un mois. L'XP gagnée pendant le mois fait avancer le pass : 20 paliers de 250 XP.
+// Saison = un mois. L'XP gagnée pendant le mois fait avancer le pass : 20 paliers de 500 XP,
+// avec au plus XP_JOUR_PASSE (450) XP par jour : il faut jouer une bonne partie du mois pour tout finir.
 // Chaque palier rapporte des pièces ; le 10ᵉ et le 20ᵉ donnent en plus un objet exclusif.
-export const XP_PALIER = 250
+export const XP_PALIER = 500
+export { XP_JOUR_PASSE } from './auth'
 export const NB_PALIERS = 20
 export type Recompense = { pieces: number; objet?: string; nom?: { fr: string; en: string } }
 // Récompenses de la saison du mois (thème : givre, cœurs, fleurs… Halloween, fêtes) : avatar, titre, cadre animé

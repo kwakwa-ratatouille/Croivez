@@ -48,7 +48,7 @@ export type Profile = {
   caisses?: number // caisses ouvertes (le prix augmente avec)
   farm?: Record<string, Record<string, number>> // parties du jour par niveau (XP dégressive), clé = date
   miniJeux?: string[] // mini-jeux déjà joués (cadre Holographique, titre Touche-à-tout)
-  saison?: { id: string; xp: number; recl: number[] } // saison en cours (un mois) : XP gagnée et paliers récupérés
+  saison?: { id: string; xp: number; recl: number[]; jour?: string; xpJour?: number } // saison en cours (un mois) : XP gagnée, paliers récupérés, XP du jour (plafonnée)
   histo?: Record<string, { p: number; b: number; t: number; xp: number }> // 30 derniers jours (statistiques)
   precision?: Record<string, { b: number; t: number }> // bonnes réponses / questions par famille
   aventure?: number // étapes du mode aventure réussies
@@ -145,6 +145,8 @@ type Partie = {
 export const halloween = (d = new Date()) => (d.getMonth() === 9 && d.getDate() >= 25) || (d.getMonth() === 10 && d.getDate() <= 1)
 
 // Identifiant de saison : le mois en cours (« 2026-10 »)
+// Passe de combat : au plus 450 XP comptées par jour (le reste compte pour le niveau, pas pour le passe)
+export const XP_JOUR_PASSE = 450
 export const saisonId = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
 
 export async function enregistrerPartie(uid: string, profile: Profile, p: Partie) {
@@ -205,7 +207,12 @@ export async function enregistrerPartie(uid: string, profile: Profile, p: Partie
     // Événement en cours (Halloween, Noël…) : le cadre dès la 1ʳᵉ partie, l'avatar et le titre à la 5ᵉ
     ...(evt ? { evenements: { [evt.id]: increment(1) }, possede: arrayUnion(evt.cadre.id, ...(partiesEvt + 1 >= 5 ? [evt.avatar.id, evt.titre.id] : [])) } : {}),
     // Saison du mois : l'XP repart de zéro à chaque nouveau mois
-    saison: profile.saison?.id === saisonId() ? { ...profile.saison, xp: profile.saison.xp + p.xp } : { id: saisonId(), xp: p.xp, recl: [] },
+    saison: (() => {
+      const s = profile.saison?.id === saisonId() ? profile.saison : { id: saisonId(), xp: 0, recl: [] as number[] }
+      const deja = s.jour === today ? s.xpJour ?? 0 : 0
+      const gain = Math.max(0, Math.min(p.xp, XP_JOUR_PASSE - deja))
+      return { ...s, xp: s.xp + gain, jour: today, xpJour: deja + gain }
+    })(),
     // Historique des 30 derniers jours et précision par famille (statistiques)
     histo: { ...Object.fromEntries(Object.keys(profile.histo ?? {}).filter((j) => j < jour(new Date(Date.now() - 30 * 864e5))).map((j) => [j, deleteField()])), [today]: { p: increment(1), b: increment(bonnes), t: increment(p.resultats.length), xp: increment(p.xp) } },
     ...(p.stats?.famille ? { precision: { [p.stats.famille]: { b: increment(bonnes), t: increment(p.resultats.length) } } } : {}),

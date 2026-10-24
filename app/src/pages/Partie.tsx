@@ -21,7 +21,7 @@ import { FAMILLES } from '../themes'
 import { bonusEvenement } from '../meta'
 import { Coche, Croix, ICONS, Icon, Logo, Piece } from '../components/ui'
 import Extrait from '../components/Extrait'
-import Img from '../components/Img'
+import Img, { prechargerImages } from '../components/Img'
 import CarteQuiz, { type Clic } from '../components/CarteQuiz'
 import Illustration from '../components/Illustration'
 import ImageWiki from '../components/ImageWiki'
@@ -146,6 +146,8 @@ export default function Partie() {
 
   const q = questions?.[i]
   useEffect(() => { setOutils(false); setFicheOuverte(false) }, [i])
+  // Les images des 3 questions suivantes se chargent pendant qu'on joue
+  useEffect(() => { if (questions) prechargerImages(questions.slice(i + 1, i + 4).flatMap((x) => [x.image, ...x.options.map((o) => o.image)])) }, [questions, i])
   const courante = reponses[i] as Reponse | undefined
 
   const enregistrer = useCallback((r: Omit<Reponse, 'q'>) => {

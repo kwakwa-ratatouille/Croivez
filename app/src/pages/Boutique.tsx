@@ -43,7 +43,8 @@ export default function Boutique() {
     const a = possede(profile, o)
     const porte = equipe(o)
     return (
-      <button type="button" onClick={() => action(o)} className={`objet${porte ? ' porte' : ''}${!a ? ' bloque' : ''}`}>
+      <button type="button" onClick={() => action(o)} className={`objet${porte ? ' porte' : ''}${!a ? ' bloque' : ''}${o.luxe ? ` luxe luxe-${o.luxe}` : ''}`}>
+        {o.luxe && <span className="badge-luxe">{o.luxe === 2 ? 'ULTRA' : (fr ? 'LUXE' : 'LUXURY')}</span>}
         {o.type === 'fond' ? (() => { const f = fondAnime(o.id)!; return <span className="apercu-fond" style={{ background: f.fond }}><Particules f={f} nb={8} /></span> })()
           : o.type === 'pseudo' ? <span className="apercu-pseudo t"><Pseudo nom={profile?.pseudo || 'Croivez'} style={o.id} /></span>
           : <Avatar pseudo={profile?.pseudo} avatar={o.type === 'avatar' ? o.id : profile?.avatar} cadre={o.type === 'cadre' ? o.id : profile?.cadre} taille={76} anime={o.type === 'cadre'} />}
@@ -114,13 +115,13 @@ export default function Boutique() {
             const a = possede(profile, o)
             const porte = equipe(o)
             return (
-              <button key={o.id} type="button" className={`titre-ligne${porte ? ' porte' : ''}${a ? '' : ' bloque'}`} onClick={() => action(o)}>
-                <span className="titre-badge">{a ? '🏅' : '🔒'}</span>
+              <button key={o.id} type="button" className={`titre-ligne${porte ? ' porte' : ''}${a ? '' : ' bloque'}${o.luxe ? ` luxe luxe-${o.luxe}` : ''}`} onClick={() => action(o)}>
+                <span className="titre-badge">{a ? '🏅' : o.condition ? '🔒' : o.luxe === 2 ? '👑' : '💰'}</span>
                 <span style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
                   <strong className="t">{o.nom[lang]}</strong>
-                  <small>{o.condition?.desc[lang]}</small>
+                  <small>{o.condition?.desc[lang] ?? (fr ? 'À acheter en boutique' : 'Buy in the shop')}</small>
                 </span>
-                <span className={`objet-etat${porte ? ' ok' : ''}`}>{porte ? (fr ? 'Équipé' : 'Equipped') : a ? (fr ? 'Équiper' : 'Equip') : ''}</span>
+                <span className={`objet-etat${porte ? ' ok' : !a && !o.condition ? ' prix' : ''}`}>{porte ? (fr ? 'Équipé' : 'Equipped') : a ? (fr ? 'Équiper' : 'Equip') : !o.condition ? <><Piece size={15} />{o.prix}</> : ''}</span>
               </button>
             )
           })}
