@@ -1,5 +1,5 @@
 import SerieHebdo from '../components/SerieHebdo'
-import { ETAPES } from '../aventure'
+import { ETAPES, REGIONS } from '../aventure'
 import { etatSaison } from '../saison'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
@@ -7,11 +7,9 @@ import { jour, niveau, useAuth } from '../auth'
 import { usePrefs } from '../i18n'
 import { FAMILLES, type Famille, type SousTheme } from '../themes'
 import { defiDuJour } from '../quiz/defi'
-import { aReviser } from '../quiz/revision'
 import { accesQuiz } from '../progression'
 import { Coche, ICONS, Icon, Piece } from '../components/ui'
 import { etatDuJour, quetesDuJour, recupererQuete } from '../quetes'
-import { evenementDeLaSemaine } from '../meta'
 import { infoRang, ptsEffectifs } from '../ligues'
 import BlasonRang from '../components/BlasonRang'
 import BandeauEvenement from '../components/BandeauEvenement'
@@ -58,11 +56,9 @@ export default function Accueil() {
   const fr = lang === 'fr'
   const { user, profile } = useAuth()
   const etatQuetes = etatDuJour(profile?.quetes)
-  const evenement = evenementDeLaSemaine()
   const today = new Date().toLocaleDateString('sv')
   const defi = defiDuJour(today)
   const m = profile?.maitrise ?? {}
-  const dues = aReviser(profile?.revision).length
   const [xpSemaine, setXpSemaine] = useState<number | null>(null)
   useEffect(() => { if (user) monXpSemaine(user.uid).then(setXpSemaine).catch(() => setXpSemaine(0)) }, [user, profile?.xp])
   const ptsRang = ptsEffectifs(profile?.ligue, jour())
@@ -92,7 +88,7 @@ export default function Accueil() {
       </header>
 
       {/* Événement en cours (ou saison du mois) */}
-      <BandeauEvenement />
+      <div className="evt-compact"><BandeauEvenement /></div>
 
       {/* Le gros bouton : une partie aléatoire avec un mini-jeu surprise */}
       <Link to="/partie?jeu=mix&d=0&m=qcm" className="accueil-jouer rise">
@@ -105,18 +101,37 @@ export default function Accueil() {
         <span className="accueil-jouer-bouton"><Icon d={ICONS.arrowR} size={26} /></span>
       </Link>
 
-      {/* Aujourd'hui : trois objectifs avec leur progression */}
+      {/* Mode histoire : le grand voyage, mis en avant */}
+      {(() => {
+        const n = Math.min(profile?.aventure ?? 0, ETAPES.length - 1)
+        const monde = REGIONS.find((r) => r.k === ETAPES[n]?.region)
+        const fini = (profile?.aventure ?? 0) >= ETAPES.length
+        return (
+          <Link to="/aventure" className="bandeau-histoire rise">
+            <span className="bandeau-histoire-deco" aria-hidden="true">🏡 🌲 🏔️ 🏛️ 🎬 🎤 🌊 🚀</span>
+            <span className="bandeau-histoire-carte" aria-hidden="true">🗺️</span>
+            <span className="bandeau-histoire-texte">
+              <span className="eyebrow">{fr ? 'Mode histoire' : 'Story mode'}</span>
+              <strong className="t">{fini ? (fr ? 'Tour du monde terminé !' : 'World tour complete!') : <>{monde?.emoji} {monde?.nom[lang]}</>}</strong>
+              <small>{fini ? (fr ? 'Bravo, légende du voyage' : 'Well done') : (fr ? `Étape ${n + 1} sur ${ETAPES.length} · ${ETAPES[n]?.nom.fr}` : `Step ${n + 1} of ${ETAPES.length}`)}</small>
+              <span className="bandeau-histoire-barre"><span style={{ width: `${((profile?.aventure ?? 0) / ETAPES.length) * 100}%` }} /></span>
+            </span>
+            <span className="bandeau-histoire-bouton">{fr ? 'Continuer' : 'Continue'}<Icon d={ICONS.arrowR} size={18} /></span>
+          </Link>
+        )
+      })()}
+
+      {/* Aujourd'hui : quiz du jour et pass de saison */}
       <section className="accueil-objectifs">
         {profile?.defiJour === today
           ? <Link to="/jour" className="objectif" style={{ ['--k' as string]: 'var(--his)', ['--kt' as string]: 'var(--his-t)', ['--ki' as string]: 'var(--his-i)' }}><span className="objectif-emoji">🏅</span><span className="objectif-texte"><strong className="t">{fr ? 'Quiz du jour fait' : 'Daily quiz done'}</strong><small>{fr ? 'Vois ton rang et défie tes potes' : 'See your rank'}</small></span><span className="objectif-barre"><span style={{ width: '100%' }} /></span></Link>
           : <Link to={defi.url} className="objectif" style={{ ['--k' as string]: 'var(--his)', ['--kt' as string]: 'var(--his-t)', ['--ki' as string]: 'var(--his-i)' }}><span className="objectif-emoji">🏆</span><span className="objectif-texte"><strong className="t">{fr ? 'Quiz du jour' : 'Daily quiz'}</strong><small>{defi.titre[lang]} · XP ×2</small></span><span className="objectif-barre"><span style={{ width: '0%' }} /></span></Link>}
-        <Link to="/aventure" className="objectif" style={{ ['--k' as string]: 'var(--esp)', ['--kt' as string]: 'var(--esp-t)', ['--ki' as string]: 'var(--esp-i)' }}><span className="objectif-emoji">🗺️</span><span className="objectif-texte"><strong className="t">{fr ? 'Mode histoire' : 'Story mode'}</strong><small>{fr ? `Étape ${Math.min(ETAPES.length, (profile?.aventure ?? 0) + 1)} sur ${ETAPES.length}` : `Step ${Math.min(ETAPES.length, (profile?.aventure ?? 0) + 1)} of ${ETAPES.length}`}</small></span><span className="objectif-barre"><span style={{ width: `${((profile?.aventure ?? 0) / ETAPES.length) * 100}%` }} /></span></Link>
         <Link to="/saison" className="objectif" style={{ ['--k' as string]: 'var(--ani)', ['--kt' as string]: 'var(--ani-t)', ['--ki' as string]: 'var(--ani-i)' }}><span className="objectif-emoji">🎟️</span><span className="objectif-texte"><strong className="t">{fr ? 'Pass de saison' : 'Season pass'}</strong><small>{fr ? `Palier ${etatSaison(profile).palier} sur 20` : `Tier ${etatSaison(profile).palier} of 20`}</small></span><span className="objectif-barre"><span style={{ width: `${(etatSaison(profile).palier / 20) * 100}%` }} /></span></Link>
       </section>
 
       <SerieHebdo />
 
-      {/* Modes de jeu (le multijoueur est dans le menu) */}
+      {/* Modes rapides (Soirée et multijoueur sont dans Multi) */}
       <section className="accueil-modes compact">
         <Link to="/partie?jeu=express&d=0&m=qcm" className="mode-tuile" style={{ ['--k' as string]: 'var(--cine)', ['--kt' as string]: 'var(--cine-t)', ['--ki' as string]: 'var(--cine-i)' }}>
           <span className="mode-emoji">⚡</span><strong className="t">Express</strong><span>{fr ? 'Le max en 1 minute' : 'Most in 1 minute'}{profile?.records?.express ? ` · ${fr ? 'record' : 'best'} ${profile.records.express}` : ''}</span>
@@ -124,7 +139,6 @@ export default function Accueil() {
         <Link to="/partie?jeu=survie&d=0&m=qcm" className="mode-tuile" style={{ ['--k' as string]: 'var(--nat)', ['--kt' as string]: 'var(--nat-t)', ['--ki' as string]: 'var(--nat-i)' }}>
           <span className="mode-emoji">❤️</span><strong className="t">{fr ? 'Survie' : 'Survival'}</strong><span>{fr ? '3 vies, de plus en plus dur' : '3 lives, ever harder'}{profile?.records?.survie ? ` · ${fr ? 'record' : 'best'} ${profile.records.survie}` : ''}</span>
         </Link>
-        <Link to="/soiree" className="mode-tuile" style={{ ['--k' as string]: 'var(--mus)', ['--kt' as string]: 'var(--mus-t)', ['--ki' as string]: 'var(--mus-i)' }}><span className="mode-emoji">🎉</span><strong className="t">{fr ? 'Soirée' : 'Party'}</strong><span>{fr ? 'Un téléphone qu’on se passe' : 'Pass the phone'}</span></Link>
       </section>
 
       {/* Ma semaine : ligue, quêtes, révision, événement */}
@@ -163,20 +177,6 @@ export default function Accueil() {
             )
           })}
         </div>
-
-        <Link to={`/themes/${evenement.k}`} className="card bloc-evenement" style={{ background: `linear-gradient(135deg, var(--${evenement.k}-t), var(--surface))`, color: `var(--${evenement.k}-i)` }}>
-          <span className="eyebrow" style={{ color: 'inherit' }}>{evenement.reel ? (fr ? 'Événement en cours' : 'Live event') : (fr ? 'Famille de la semaine' : 'Family of the week')}</span>
-          <strong className="t" style={{ fontSize: 19 }}>{evenement.nom[lang]}</strong>
-          <span style={{ fontWeight: 700, fontSize: 14 }}>XP {fr ? 'et pièces' : '& coins'} ×2{evenement.quiz ? (fr ? ` sur ${evenement.quiz.length} quiz` : ` on ${evenement.quiz.length} quizzes`) : ''}</span>
-        </Link>
-
-        {dues > 0 && (
-          <Link to="/revision" className="card bloc-revision">
-            <strong className="t" style={{ fontSize: 34 }}>{dues}</strong>
-            <span style={{ fontWeight: 700 }}>{fr ? 'erreurs à revoir' : 'mistakes to review'}</span>
-            <span style={{ fontSize: 13 }}>{fr ? 'Un petit tour en révision ?' : 'Quick review?'}</span>
-          </Link>
-        )}
       </section>
 
       {recents.length > 0 && (
@@ -193,17 +193,6 @@ export default function Accueil() {
         </Rangee>
       )}
 
-      {/* Toutes les familles, d'un coup d'œil */}
-      <section style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-        <h2 className="t" style={{ fontSize: 21, fontWeight: 900 }}>{fr ? 'Explorer' : 'Explore'}</h2>
-        <div className="familles-puces">
-          {FAMILLES.map((f) => (
-            <Link key={f.k} to={`/themes/${f.k}`} className="famille-puce" style={{ ['--k' as string]: `var(--${f.k})`, ['--kt' as string]: `var(--${f.k}-t)`, ['--ki' as string]: `var(--${f.k}-i)` }}>
-              <span className="famille-puce-icone"><Icon d={f.icon} size={18} /></span>{f.nom[lang]}
-            </Link>
-          ))}
-        </div>
-      </section>
     </>
   )
 }

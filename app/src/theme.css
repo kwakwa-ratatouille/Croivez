@@ -1558,3 +1558,42 @@ button.rang-palier[aria-pressed="true"] { background: color-mix(in srgb, var(--r
   .multi-duel-grille > span { margin-top: 4px; }
   .salon-accueil p, .tv-carte span span { font-size: 13px; }
 }
+
+/* Accueil épuré : événement compact, grand bandeau du mode histoire, 2 objectifs, 2 modes rapides */
+.evt-compact .bandeau-evt { padding: 10px 14px; gap: 10px; border-radius: 18px; box-shadow: none; }
+.evt-compact .bandeau-evt p, .evt-compact .bandeau-evt .btn, .evt-compact [class*="bandeau-evt-progres"], .evt-compact [class*="chips"] { display: none !important; }
+.evt-compact .bandeau-evt-emoji { font-size: 60px !important; }
+.evt-compact strong { font-size: 16px !important; }
+.bandeau-histoire { position: relative; overflow: hidden; display: flex; align-items: center; gap: 14px; padding: 20px; border-radius: 26px; text-decoration: none; color: #fff; background: radial-gradient(circle at 15% 120%, #4FAE6A 0, transparent 45%), radial-gradient(circle at 90% -20%, #8E4FC4 0, transparent 50%), linear-gradient(120deg, #1E3A8A, #2563EB 55%, #0EA5E9); box-shadow: 0 14px 30px rgba(37, 99, 235, .3); }
+.bandeau-histoire-deco { position: absolute; inset: auto 0 6px 0; text-align: center; font-size: 22px; letter-spacing: 10px; opacity: .25; white-space: nowrap; pointer-events: none; }
+.bandeau-histoire-carte { font-size: 52px; flex: none; animation: emoji-flotte 3s ease-in-out infinite alternate; }
+.bandeau-histoire-texte { position: relative; flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.bandeau-histoire-texte .eyebrow { color: rgba(255,255,255,.85); }
+.bandeau-histoire-texte strong { font-size: 22px; line-height: 1.15; }
+.bandeau-histoire-texte small { font-size: 13px; opacity: .9; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bandeau-histoire-barre { height: 8px; border-radius: 4px; background: rgba(255,255,255,.25); overflow: hidden; margin-top: 4px; }
+.bandeau-histoire-barre span { display: block; height: 100%; background: linear-gradient(90deg, #FFE08A, #86EFAC); border-radius: 4px; }
+.bandeau-histoire-bouton { position: relative; flex: none; display: inline-flex; align-items: center; gap: 6px; padding: 10px 16px; border-radius: 999px; background: #fff; color: #1E3A8A; font: 900 15px Nunito, sans-serif; box-shadow: 0 6px 14px rgba(0,0,0,.18); }
+.accueil-objectifs { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+.accueil-modes.compact { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+@media (max-width: 560px) { .bandeau-histoire { padding: 14px; gap: 10px; } .bandeau-histoire-carte { font-size: 38px; } .bandeau-histoire-texte strong { font-size: 18px; } .bandeau-histoire-bouton { padding: 8px 12px; font-size: 13px; } .accueil-objectifs { grid-template-columns: 1fr !important; } }
+
+/* Pastille de révision (Thèmes) */
+.pastille-revision { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 42px; height: 42px; border-radius: 50%; background: var(--surface); border: 1px solid var(--line); text-decoration: none; font-size: 20px; box-shadow: var(--shadow); }
+.pastille-revision span { position: absolute; top: -4px; right: -6px; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 999px; background: var(--ko); color: #fff; font: 900 11px/20px Nunito, sans-serif; text-align: center; }
+.soiree-carte { background: linear-gradient(120deg, #DB2777, #F97316) !important; }
+
+/* Événement compact : titre, jours restants et un petit bouton (les détails sont sur la page du quiz) */
+.evt-compact .bandeau-evt > div > span:nth-of-type(2), .evt-compact .evt-recompenses, .evt-compact .evt-apercu { display: none !important; }
+.evt-compact .bandeau-evt > div { gap: 2px !important; }
+.evt-compact .bandeau-evt strong { font-size: 18px !important; }
+.evt-compact .evt-jouer { align-self: flex-start; min-height: 34px; padding: 0 12px; font-size: 13px; margin-top: 4px; }
+/* En-tête de l'accueil sur une seule ligne : avatar, prénom, série et niveau */
+@media (max-width: 560px) {
+  .accueil-tete { flex-wrap: nowrap; gap: 10px; }
+  .accueil-tete .avatar { width: 48px !important; height: 48px !important; }
+  .accueil-tete h1 { font-size: 22px !important; }
+  .accueil-puces { width: auto; flex-wrap: nowrap; }
+  .accueil-puces .puce { padding: 4px 9px; font-size: 13px; }
+}
+.evt-compact .bandeau-evt .evt-jouer { display: inline-flex !important; }

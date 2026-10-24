@@ -1,3 +1,4 @@
+import { aReviser } from '../quiz/revision'
 import AFaire from '../components/AFaire'
 import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
@@ -59,6 +60,7 @@ function RangeeFamille({ f, filtre }: { f: (typeof FAMILLES)[number]; filtre: Fi
 }
 
 export default function Themes() {
+  const dues = aReviser(useAuth().profile?.revision).length // erreurs à revoir (pastille près du titre)
   const { k } = useParams()
   const { lang } = usePrefs()
   const fr = lang === 'fr'
@@ -130,7 +132,9 @@ export default function Themes() {
     <>
       <header style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
         <div>
-          <h1 className="t" style={{ fontSize: 34, fontWeight: 900 }}>{fr ? 'Thèmes' : 'Topics'}</h1>
+          <h1 className="t" style={{ fontSize: 34, fontWeight: 900, display: 'flex', alignItems: 'center', gap: 12 }}>{fr ? 'Thèmes' : 'Topics'}
+            {dues > 0 && <Link to="/revision" className="pastille-revision" title={fr ? `${dues} erreurs à revoir` : `${dues} to review`} aria-label={fr ? `${dues} erreurs à revoir` : `${dues} to review`}>🔔<span>{dues > 99 ? '99+' : dues}</span></Link>}
+          </h1>
           <p style={{ color: 'var(--muted)' }}>{nbQuiz} quiz {fr ? 'dans' : 'across'} {FAMILLES.length} {fr ? 'familles' : 'families'}</p>
         </div>
         <div className="recherche">

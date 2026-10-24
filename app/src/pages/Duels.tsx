@@ -163,6 +163,15 @@ export default function Duels() {
           {msgSalon && <p role="status" style={{ fontSize: 14, fontWeight: 700 }}>{msgSalon}</p>}
         </form>
       </section>
+      {/* Soirée : un seul téléphone qu'on se passe */}
+      <Link to="/soiree" className="card tv-carte soiree-carte rise">
+        <span style={{ fontSize: 42 }} aria-hidden="true">🎉</span>
+        <span style={{ flex: 1 }}>
+          <strong className="t" style={{ display: 'block', fontSize: 21 }}>{fr ? 'Mode soirée' : 'Party mode'}</strong>
+          <span style={{ fontSize: 14, opacity: .9 }}>{fr ? 'Un seul téléphone qu’on se passe à chaque question, podium à la fin.' : 'One phone passed around.'}</span>
+        </span>
+        <Icon d={ICONS.arrowR} />
+      </Link>
       {/* Mode télé : QR code sur la télé, tout le monde joue sur son téléphone, même sans compte */}
       <Link to="/tv" className="card tv-carte rise">
         <span style={{ fontSize: 42 }} aria-hidden="true">📺</span>
