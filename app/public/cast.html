@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Croivez sur la télé</title>
+  <!-- Récepteur Chromecast : la télé affiche le mode télé de Croivez (création de la partie, QR code, questions en grand).
+       Le code du salon est renvoyé au téléphone qui a lancé la diffusion, pour qu'il rejoigne tout seul. -->
+  <script src="https://www.gstatic.com/cast/sdk/libs/caf_receiver/v3/cast_receiver_framework.js"></script>
+  <style>
+    html, body { margin: 0; height: 100%; background: #FAF7F2; overflow: hidden; }
+    iframe { position: fixed; inset: 0; width: 100%; height: 100%; border: 0; }
+  </style>
+</head>
+<body>
+  <iframe id="tv" src="./#/tv?auto=1&cast=1" allow="autoplay"></iframe>
+  <script>
+    var NS = 'urn:x-cast:fr.croivez.tv'
+    var context = cast.framework.CastReceiverContext.getInstance()
+    var dernier = null
+    // Le mode télé (dans l'iframe) annonce le code du salon créé : on le transmet aux téléphones connectés
+    window.addEventListener('message', function (e) {
+      if (!e.data || e.data.croivez !== 'salon') return
+      dernier = e.data.code
+      context.sendCustomMessage(NS, undefined, { type: 'salon', code: dernier })
+    })
+    // Un téléphone qui se connecte plus tard demande le code
+    context.addCustomMessageListener(NS, function (ev) {
+      if (ev.data && ev.data.type === 'code' && dernier) context.sendCustomMessage(NS, ev.senderId, { type: 'salon', code: dernier })
+    })
+    var options = new cast.framework.CastReceiverOptions()
+    options.disableIdleTimeout = true // pas de vidéo : la télé reste allumée sur le quiz
+    options.customNamespaces = {}
+    options.customNamespaces[NS] = cast.framework.system.MessageType.JSON
+    context.start(options)
+  </script>
+</body>
+</html>

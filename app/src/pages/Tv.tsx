@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useRef, useState } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { signInAnonymously } from 'firebase/auth'
 import { auth } from '../firebase'
 import { useAuth } from '../auth'
@@ -16,17 +16,25 @@ export default function Tv() {
   const { user } = useAuth()
   const [msg, setMsg] = useState('')
   const [enCours, setEnCours] = useState(false)
+  const [params] = useSearchParams()
+  const auto = params.get('auto') === '1' // lancé par Chromecast : la partie se crée toute seule
+  const lance = useRef(false)
   const creer = async () => {
     setEnCours(true); setMsg('')
     try {
       const u = user ?? (await signInAnonymously(auth)).user
-      nav(`/salon/${await creerSalon({ uid: u.uid, pseudo: 'Télé' }, { tv: true })}`)
+      const code = await creerSalon({ uid: u.uid, pseudo: 'Télé' }, { tv: true })
+      // Sur Chromecast, la page est dans le récepteur : on lui donne le code pour le téléphone qui diffuse
+      if (window.parent !== window) window.parent.postMessage({ croivez: 'salon', code }, '*')
+      nav(`/salon/${code}`)
     } catch (e) {
       console.error(e)
       setMsg(fr ? 'Impossible de créer la partie (connexion ?).' : 'Could not create the game.')
       setEnCours(false)
     }
   }
+  useEffect(() => { if (auto && !lance.current) { lance.current = true; creer() } }, [auto]) // eslint-disable-line react-hooks/exhaustive-deps
+
   return (
     <div className="tv tv-accueil">
       {user && !user.isAnonymous && <button className="btn tv-quitter" onClick={() => nav('/duels')} aria-label={fr ? 'Retour' : 'Back'}><Icon d={ICONS.arrowL} /></button>}

@@ -9,6 +9,7 @@ import { annulerRecherche, chercherAdversaire, inviter, refuser, rejoindre, type
 import { ICONS, Icon, Logo } from '../components/ui'
 import { MAX_JOUEURS, creerSalon, normaliserCode, rejoindreSalon } from '../salon'
 import { FAMILLES } from '../themes'
+import { CAST_APP_ID, estIos } from '../cast'
 import { natureQuiz, type SousThemeId } from '../quiz/engine'
 
 export default function Duels() {
@@ -110,6 +111,17 @@ export default function Duels() {
         </span>
         <Icon d={ICONS.arrowR} />
       </Link>
+      {/* Chromecast : une seule touche depuis Android (ou Chrome sur ordinateur) */}
+      {CAST_APP_ID && !estIos() && (
+        <Link to="/cast" className="card tv-carte cast-carte rise">
+          <span style={{ fontSize: 42 }} aria-hidden="true">📡</span>
+          <span style={{ flex: 1 }}>
+            <strong className="t" style={{ display: 'block', fontSize: 21 }}>{fr ? 'Caster sur la télé (Chromecast)' : 'Cast to TV (Chromecast)'}</strong>
+            <span style={{ fontSize: 14, opacity: .9 }}>{fr ? 'Touche, choisis ta télé : la partie s’affiche toute seule et tu la rejoins directement.' : 'Tap, pick your TV, the game appears and you join.'}</span>
+          </span>
+          <Icon d={ICONS.arrowR} />
+        </Link>
+      )}
       <h2 className="t" style={{ fontSize: 22, fontWeight: 900 }}>{fr ? 'Duels en face à face' : 'One-on-one duels'}</h2>
 
       {invitations.length > 0 && (

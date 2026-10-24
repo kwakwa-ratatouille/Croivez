@@ -27,6 +27,7 @@ import Duel from './pages/Duel'
 import Salon from './pages/Salon'
 import Rejoindre from './pages/Rejoindre'
 import Tv from './pages/Tv'
+import Caster from './pages/Caster'
 import Classements from './pages/Classements'
 import Album from './pages/Album'
 import Boutique from './pages/Boutique'
@@ -64,6 +65,7 @@ function Routeur() {
         <Route path="/rejoindre" element={<Rejoindre />} />
         <Route path="/rejoindre/:code" element={<Rejoindre />} />
         <Route path="/tv" element={<Tv />} />
+        <Route path="/cast" element={<Caster />} />
         <Route path="/salon/:code" element={user ? <Salon /> : <Navigate to="/rejoindre" replace />} />
         <Route path="*" element={<Navigate to="/rejoindre" replace />} />
       </Routes>
@@ -79,6 +81,7 @@ function Routeur() {
         <Route path="/duel/:id" element={<Duel />} />
         <Route path="/salon/:code" element={<Salon />} />
         <Route path="/tv" element={<Tv />} />
+        <Route path="/cast" element={<Caster />} />
         <Route path="/rejoindre/:code" element={<Rejoindre />} />
         <Route element={<Layout />}>
           <Route path="/" element={<Accueil />} />

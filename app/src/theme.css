@@ -1251,3 +1251,8 @@ button.rang-palier[aria-pressed="true"] { background: color-mix(in srgb, var(--r
 @keyframes fx-glitch { 0%, 100% { transform: none; filter: none } 18% { transform: translate(-2px, 1px); filter: hue-rotate(90deg) } 20% { transform: translate(2px, -1px) } 22% { transform: none; filter: none } 64% { transform: translate(1px, 2px); filter: hue-rotate(-120deg) saturate(2) } 66% { transform: none; filter: none } }
 .avatar.cadre-pixel::before { animation: tourne 3s steps(8) infinite; }
 @media (prefers-reduced-motion: reduce) { .cadre-fx, .cadre-fx::before, .cadre-fx::after, .avatar.cadre-battement { animation: none !important; } }
+
+/* ——— Chromecast ——— */
+.cast-carte { background: linear-gradient(120deg, #1E3A8A, #4F46E5) !important; }
+.caster .caster-note { max-width: 560px; text-align: center; font-size: 18px; opacity: .9; }
+.caster .caster-lien { color: inherit; opacity: .8; font-weight: 700; }
