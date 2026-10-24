@@ -16,7 +16,7 @@ export const RANGS: Rang[] = [
   { id: 'diamant', nom: { fr: 'Diamant', en: 'Diamond' }, couleur: '#A5F3FC', fonce: '#0E7490', emoji: '💎' },
   { id: 'maitre', nom: { fr: 'Maître', en: 'Master' }, couleur: '#C084FC', fonce: '#4C1D95', emoji: '🔮' },
 ]
-export const ULTIME: Rang = { id: 'legende', nom: { fr: 'Légende de Croivez', en: 'Croivez Legend' }, couleur: '#F4C430', fonce: '#7C2D12', emoji: '👑' }
+export const ULTIME: Rang = { id: 'legende', nom: { fr: 'Légende', en: 'Legend' }, couleur: '#F4C430', fonce: '#7C2D12', emoji: '👑' }
 export const DIVISIONS = 4
 export const NB_PALIERS = RANGS.length * DIVISIONS // + 1 palier ultime (index NB_PALIERS)
 
