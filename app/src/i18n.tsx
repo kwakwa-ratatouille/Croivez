@@ -6,7 +6,7 @@ appliquerAffichage()
 export type Lang = 'fr' | 'en'
 
 const fr = {
-  'nav.home': 'Accueil', 'nav.themes': 'Thèmes', 'nav.review': 'Révision', 'nav.duels': 'Multi',
+  'nav.home': 'Accueil', 'nav.themes': 'Thèmes', 'nav.story': 'Histoire', 'nav.review': 'Révision', 'nav.duels': 'Multi',
   'nav.ranking': 'Classements', 'nav.profile': 'Profil', 'nav.settings': 'Paramètres',
   'level': 'Niveau', 'offline': 'Hors ligne · votre progression sera synchronisée',
   'home.hello': 'Bonjour', 'home.sub': 'Prêt·e pour quelques minutes de curiosité ?',
@@ -36,7 +36,7 @@ const fr = {
   'set.account': 'Compte',
 }
 const en: typeof fr = {
-  'nav.home': 'Home', 'nav.themes': 'Topics', 'nav.review': 'Review', 'nav.duels': 'Multi',
+  'nav.home': 'Home', 'nav.themes': 'Topics', 'nav.story': 'Story', 'nav.review': 'Review', 'nav.duels': 'Multi',
   'nav.ranking': 'Leaderboards', 'nav.profile': 'Profile', 'nav.settings': 'Settings',
   'level': 'Level', 'offline': 'Offline · your progress will sync later',
   'home.hello': 'Hello', 'home.sub': 'Ready for a few minutes of curiosity?',

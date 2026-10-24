@@ -1,3 +1,4 @@
+import { etatSaison } from '../saison'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { niveau, useAuth } from '../auth'
@@ -96,23 +97,24 @@ export default function Accueil() {
         <span className="accueil-jouer-bouton"><Icon d={ICONS.arrowR} size={26} /></span>
       </Link>
 
-      {/* Les autres façons de jouer */}
-      <section className="accueil-modes">
-        <Link to="/duels" className="mode-tuile" style={{ ['--k' as string]: 'var(--pop)', ['--kt' as string]: 'var(--pop-t)', ['--ki' as string]: 'var(--pop-i)' }}>
-          <span className="mode-emoji">👥</span><strong className="t">{fr ? 'Multijoueur' : 'Multiplayer'}</strong><span>{fr ? 'Salon entre amis, jusqu’à 20' : 'Rooms up to 20'}</span>
-        </Link>
+      {/* Aujourd'hui : trois objectifs avec leur progression */}
+      <section className="accueil-objectifs">
+        {profile?.defiJour === today
+          ? <Link to="/jour" className="objectif" style={{ ['--k' as string]: 'var(--his)', ['--kt' as string]: 'var(--his-t)', ['--ki' as string]: 'var(--his-i)' }}><span className="objectif-emoji">🏅</span><span className="objectif-texte"><strong className="t">{fr ? 'Quiz du jour fait' : 'Daily quiz done'}</strong><small>{fr ? 'Vois ton rang et défie tes potes' : 'See your rank'}</small></span><span className="objectif-barre"><span style={{ width: '100%' }} /></span></Link>
+          : <Link to={defi.url} className="objectif" style={{ ['--k' as string]: 'var(--his)', ['--kt' as string]: 'var(--his-t)', ['--ki' as string]: 'var(--his-i)' }}><span className="objectif-emoji">🏆</span><span className="objectif-texte"><strong className="t">{fr ? 'Quiz du jour' : 'Daily quiz'}</strong><small>{defi.titre[lang]} · XP ×2</small></span><span className="objectif-barre"><span style={{ width: '0%' }} /></span></Link>}
+        <Link to="/aventure" className="objectif" style={{ ['--k' as string]: 'var(--esp)', ['--kt' as string]: 'var(--esp-t)', ['--ki' as string]: 'var(--esp-i)' }}><span className="objectif-emoji">🗺️</span><span className="objectif-texte"><strong className="t">{fr ? 'Mode histoire' : 'Story mode'}</strong><small>{fr ? `Étape ${Math.min(30, (profile?.aventure ?? 0) + 1)} sur 30` : `Step ${Math.min(30, (profile?.aventure ?? 0) + 1)} of 30`}</small></span><span className="objectif-barre"><span style={{ width: `${((profile?.aventure ?? 0) / 30) * 100}%` }} /></span></Link>
+        <Link to="/saison" className="objectif" style={{ ['--k' as string]: 'var(--ani)', ['--kt' as string]: 'var(--ani-t)', ['--ki' as string]: 'var(--ani-i)' }}><span className="objectif-emoji">🎟️</span><span className="objectif-texte"><strong className="t">{fr ? 'Pass de saison' : 'Season pass'}</strong><small>{fr ? `Palier ${etatSaison(profile).palier} sur 20` : `Tier ${etatSaison(profile).palier} of 20`}</small></span><span className="objectif-barre"><span style={{ width: `${(etatSaison(profile).palier / 20) * 100}%` }} /></span></Link>
+      </section>
+
+      {/* Modes de jeu (le multijoueur est dans le menu) */}
+      <section className="accueil-modes compact">
         <Link to="/partie?jeu=express&d=0&m=qcm" className="mode-tuile" style={{ ['--k' as string]: 'var(--cine)', ['--kt' as string]: 'var(--cine-t)', ['--ki' as string]: 'var(--cine-i)' }}>
           <span className="mode-emoji">⚡</span><strong className="t">Express</strong><span>{fr ? 'Le max en 1 minute' : 'Most in 1 minute'}{profile?.records?.express ? ` · ${fr ? 'record' : 'best'} ${profile.records.express}` : ''}</span>
         </Link>
         <Link to="/partie?jeu=survie&d=0&m=qcm" className="mode-tuile" style={{ ['--k' as string]: 'var(--nat)', ['--kt' as string]: 'var(--nat-t)', ['--ki' as string]: 'var(--nat-i)' }}>
           <span className="mode-emoji">❤️</span><strong className="t">{fr ? 'Survie' : 'Survival'}</strong><span>{fr ? '3 vies, de plus en plus dur' : '3 lives, ever harder'}{profile?.records?.survie ? ` · ${fr ? 'record' : 'best'} ${profile.records.survie}` : ''}</span>
         </Link>
-        <Link to="/aventure" className="mode-tuile" style={{ ['--k' as string]: 'var(--esp)', ['--kt' as string]: 'var(--esp-t)', ['--ki' as string]: 'var(--esp-i)' }}><span className="mode-emoji">🗺️</span><strong className="t">{fr ? 'Aventure' : 'Adventure'}</strong><span>{fr ? `Étape ${Math.min(30, (profile?.aventure ?? 0) + 1)} / 30` : 'World tour'}</span></Link>
-        <Link to="/saison" className="mode-tuile" style={{ ['--k' as string]: 'var(--ani)', ['--kt' as string]: 'var(--ani-t)', ['--ki' as string]: 'var(--ani-i)' }}><span className="mode-emoji">🎟️</span><strong className="t">{fr ? 'Pass de saison' : 'Season pass'}</strong><span>{fr ? 'Récompenses du mois' : 'Monthly rewards'}</span></Link>
-        <Link to="/soiree" className="mode-tuile" style={{ ['--k' as string]: 'var(--mus)', ['--kt' as string]: 'var(--mus-t)', ['--ki' as string]: 'var(--mus-i)' }}><span className="mode-emoji">🎉</span><strong className="t">{fr ? 'Soirée' : 'Party'}</strong><span>{fr ? 'Un téléphone, plusieurs joueurs' : 'One phone, many players'}</span></Link>
-        {profile?.defiJour === today
-          ? <Link to="/jour" className="mode-tuile" style={{ ['--k' as string]: 'var(--his)', ['--kt' as string]: 'var(--his-t)', ['--ki' as string]: 'var(--his-i)' }}><span className="mode-emoji">🏅</span><strong className="t">{fr ? 'Classement du jour' : 'Today’s ranking'}</strong><span>{fr ? 'Vois ton rang et défie tes potes' : 'See your rank'}</span></Link>
-          : <Link to={defi.url} className="mode-tuile" style={{ ['--k' as string]: 'var(--his)', ['--kt' as string]: 'var(--his-t)', ['--ki' as string]: 'var(--his-i)' }}><span className="mode-emoji">🏆</span><strong className="t">{fr ? 'Quiz du jour' : 'Daily quiz'}</strong><span>{defi.titre[lang]} · XP ×2</span></Link>}
+        <Link to="/soiree" className="mode-tuile" style={{ ['--k' as string]: 'var(--mus)', ['--kt' as string]: 'var(--mus-t)', ['--ki' as string]: 'var(--mus-i)' }}><span className="mode-emoji">🎉</span><strong className="t">{fr ? 'Soirée' : 'Party'}</strong><span>{fr ? 'Un téléphone qu’on se passe' : 'Pass the phone'}</span></Link>
       </section>
 
       {/* Ma semaine : ligue, quêtes, révision, événement */}

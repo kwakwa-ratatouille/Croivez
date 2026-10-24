@@ -21,6 +21,7 @@ import type { Famille } from '../themes'
 const LIENS: { to: string; k: Key; icon: string }[] = [
   { to: '/', k: 'nav.home', icon: ICONS.home },
   { to: '/themes', k: 'nav.themes', icon: ICONS.themes },
+  { to: '/aventure', k: 'nav.story', icon: 'M9 4.5 3.5 6.5v13l5.5-2 6 2 5.5-2v-13l-5.5 2-6-2ZM9 4.5v13M15 6.5v13' },
   { to: '/revision', k: 'nav.review', icon: ICONS.review },
   { to: '/duels', k: 'nav.duels', icon: ICONS.duels },
   { to: '/classements', k: 'nav.ranking', icon: ICONS.ranking },

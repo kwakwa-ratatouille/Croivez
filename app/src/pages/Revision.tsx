@@ -3,79 +3,70 @@ import { useAuth } from '../auth'
 import { usePrefs } from '../i18n'
 import { trouverSousTheme } from '../themes'
 import { aReviser, type CarteRevision } from '../quiz/revision'
+import { useCouverture } from '../components/CarteCouverture'
+import Img from '../components/Img'
 import { Coche, ICONS, Icon } from '../components/ui'
+
+const urlMelange = (l: CarteRevision[], n: number) => `/partie?s=tout&m=qcm&n=${Math.min(n, l.length)}&d=4&rev=1&ids=${encodeURIComponent([...l].sort(() => Math.random() - 0.5).slice(0, n).map((c) => `${c.s}~${c.id}`).join(','))}`
+
+// Une ligne du carnet : photo du quiz, nom, nombre à revoir ; un appui lance la révision de ce quiz
+function LigneQuiz({ s, cartes }: { s: string; cartes: CarteRevision[] }) {
+  const { lang } = usePrefs()
+  const t = trouverSousTheme(s)
+  const src = useCouverture(s)
+  const k = t?.famille.k ?? 'geo'
+  const lot = cartes.slice(0, 20)
+  const url = `/partie?s=${s}&m=${s.startsWith('villes') ? 'libre' : 'qcm'}&n=${lot.length}&d=4&rev=1&ids=${encodeURIComponent(lot.map((c) => c.id).join(','))}`
+  return (
+    <Link to={url} className="rev-ligne" style={{ ['--k' as string]: `var(--${k})`, ['--kt' as string]: `var(--${k}-t)`, ['--ki' as string]: `var(--${k}-i)` }}>
+      <span className="rev-photo">{src ? <Img src={src} alt="" loading="lazy" /> : <Icon d={t?.famille.icon ?? ''} size={22} />}</span>
+      <span className="rev-texte"><strong>{t?.sous.nom[lang] ?? s}</strong><small>{t?.famille.nom[lang]}</small></span>
+      <span className="rev-compte">{cartes.length}</span>
+      <Icon d={ICONS.arrowR} size={18} />
+    </Link>
+  )
+}
 
 export default function Revision() {
   const { lang } = usePrefs()
+  const fr = lang === 'fr'
   const { profile } = useAuth()
   const toutes = Object.values(profile?.revision ?? {})
   const dues = aReviser(profile?.revision)
-  const parTheme = Object.entries(dues.reduce<Record<string, CarteRevision[]>>((acc, c) => ((acc[c.s] ??= []).push(c), acc), {}))
+  const parTheme = Object.entries(dues.reduce<Record<string, CarteRevision[]>>((acc, c) => ((acc[c.s] ??= []).push(c), acc), {})).sort((a, b) => b[1].length - a[1].length)
   const prochaine = toutes.filter((c) => c.due > Date.now()).sort((a, b) => a.due - b.due)[0]
+  const acquises = toutes.filter((c) => c.reps >= 3).length
 
   return (
     <>
-      <header style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-        <h1 className="t" style={{ fontSize: 36, fontWeight: 900 }}>{lang === 'fr' ? 'Révision' : 'Review'}</h1>
-        <p style={{ fontSize: 17, color: 'var(--muted)', maxWidth: 680 }}>
-          {lang === 'fr'
-            ? 'Vos erreurs reviennent au bon moment : le lendemain, puis de plus en plus espacées à chaque bonne réponse, jusqu’à être acquises.'
-            : 'Your mistakes come back at the right time: the next day, then further apart after each correct answer, until learned.'}
-        </p>
-      </header>
+      <h1 className="t" style={{ fontSize: 30, fontWeight: 900 }}>{fr ? 'Révision' : 'Review'}</h1>
 
-      <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-        {[[dues.length, lang === 'fr' ? 'à revoir maintenant' : 'due now', 'his'], [toutes.length, lang === 'fr' ? 'en cours d’apprentissage' : 'being learned', 'geo']].map(([n, l, c]) => (
-          <div key={l as string} className="card" style={{ padding: '20px 26px', display: 'flex', alignItems: 'baseline', gap: 10, background: `var(--${c}-t)`, borderColor: 'transparent', color: `var(--${c}-i)` }}>
-            <span className="t" style={{ fontSize: 36, fontWeight: 900 }}>{n}</span><span style={{ fontWeight: 600 }}>{l}</span>
+      {/* Bloc principal : combien à revoir, et un seul gros bouton */}
+      <section className={`rev-hero${dues.length ? '' : ' calme'}`}>
+        <div className="rev-anneau" style={{ ['--p' as string]: `${toutes.length ? Math.round((acquises / toutes.length) * 100) : 100}%` }}>
+          <strong className="t">{dues.length || <Coche size={34} anim={false} />}</strong>
+          <small>{dues.length ? (fr ? 'à revoir' : 'due') : (fr ? 'à jour' : 'done')}</small>
+        </div>
+        <div className="rev-hero-texte">
+          <strong className="t">{dues.length ? (fr ? 'Tes erreurs t’attendent' : 'Your mistakes are waiting') : (fr ? 'Rien d’urgent !' : 'All caught up!')}</strong>
+          <span>{dues.length
+            ? (fr ? 'Elles reviennent au bon moment, de plus en plus espacées, jusqu’à être acquises.' : 'They come back at the right time until learned.')
+            : prochaine ? (fr ? `Prochaine révision ${new Date(prochaine.due).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}.` : `Next review on ${new Date(prochaine.due).toLocaleDateString('en-GB')}.`)
+              : (fr ? 'Joue quelques parties : tes erreurs arriveront ici.' : 'Play a few games first.')}</span>
+          <span className="rev-chips"><span>🧠 {toutes.length} {fr ? 'en apprentissage' : 'learning'}</span><span>✅ {acquises} {fr ? 'presque acquises' : 'nearly learned'}</span></span>
+          <div className="rev-boutons">
+            {dues.length > 0 && <Link className="btn btn-p btn-lg" to={urlMelange(dues, 30)}>{fr ? 'Tout réviser' : 'Review all'}<Icon d={ICONS.arrowR} /></Link>}
+            {dues.length === 0 && toutes.length > 0 && <Link className="btn btn-p btn-lg" to={urlMelange(toutes, 20)}>{fr ? 'S’entraîner quand même' : 'Practice anyway'}<Icon d={ICONS.arrowR} /></Link>}
+            {dues.length === 0 && toutes.length === 0 && <Link className="btn btn-p btn-lg" to="/themes">{fr ? 'Jouer' : 'Play'}<Icon d={ICONS.arrowR} /></Link>}
+            {toutes.length > 0 && <Link className="btn btn-s btn-lg" to="/fiches">🃏 {fr ? 'Fiches' : 'Flashcards'}</Link>}
           </div>
-        ))}
-      </div>
+        </div>
+      </section>
 
-      {dues.length > 0 && (
-        <section className="card" style={{ padding: 18, display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap', background: 'var(--his-t)', borderColor: 'transparent' }}>
-          <div style={{ flex: '1 1 220px' }}>
-            <strong className="t" style={{ fontSize: 19 }}>{lang === 'fr' ? 'Tout réviser, mélangé' : 'Review everything, mixed'}</strong>
-            <p style={{ fontSize: 14, color: 'var(--muted)' }}>{lang === 'fr' ? `${Math.min(30, dues.length)} questions de tous tes quiz, dans le désordre.` : `${Math.min(30, dues.length)} questions from all your quizzes, shuffled.`}</p>
-          </div>
-          <Link className="btn btn-p btn-lg" to={`/partie?s=tout&m=qcm&n=${Math.min(30, dues.length)}&d=4&rev=1&ids=${encodeURIComponent([...dues].sort(() => Math.random() - 0.5).slice(0, 30).map((c) => `${c.s}~${c.id}`).join(','))}`}>{lang === 'fr' ? 'Lancer' : 'Start'}<Icon d={ICONS.arrowR} /></Link>
-          <Link className="btn btn-s btn-lg" to="/fiches">{lang === 'fr' ? 'Fiches à retourner' : 'Flashcards'}</Link>
-        </section>
-      )}
-
-      {parTheme.length === 0 ? (
-        <section className="card" style={{ padding: 40, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, textAlign: 'center' }}>
-          <Coche size={56} />
-          <h2 className="t" style={{ fontSize: 24, fontWeight: 800 }}>{lang === 'fr' ? 'Carnet d’erreurs vide' : 'Nothing to review right now'}</h2>
-          <p style={{ color: 'var(--muted)' }}>
-            {prochaine
-              ? (lang === 'fr' ? `Prochaine révision le ${new Date(prochaine.due).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}.` : `Next review on ${new Date(prochaine.due).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}.`)
-              : (lang === 'fr' ? 'Jouez quelques parties : vos erreurs apparaîtront ici.' : 'Play a few games: your mistakes will show up here.')}
-          </p>
-          {/* Rien d'urgent : on peut quand même s'entraîner sur ses erreurs en cours */}
-          {toutes.length > 0
-            ? <Link className="btn btn-p" to={`/partie?s=tout&m=qcm&n=${Math.min(20, toutes.length)}&d=4&rev=1&ids=${encodeURIComponent([...toutes].sort((a, b) => a.due - b.due).slice(0, 20).map((c) => `${c.s}~${c.id}`).join(','))}`}>{lang === 'fr' ? `S’entraîner quand même (${Math.min(20, toutes.length)} erreurs)` : 'Practice anyway'}<Icon d={ICONS.arrowR} /></Link>
-            : <Link className="btn btn-p" to="/themes">{lang === 'fr' ? 'Jouer' : 'Play'}<Icon d={ICONS.arrowR} /></Link>}
-        </section>
-      ) : (
-        <section className="grid-auto">
-          {parTheme.map(([s, cartes]) => {
-            const t = trouverSousTheme(s)
-            const k = t?.famille.k ?? 'geo'
-            const lot = cartes!.slice(0, 20)
-            // Les villes se placent sur la carte ; le reste en QCM pour réviser vite
-            const url = `/partie?s=${s}&m=${s.startsWith('villes') ? 'libre' : 'qcm'}&n=${lot.length}&d=4&rev=1&ids=${encodeURIComponent(lot.map((c) => c.id).join(','))}`
-            return (
-              <article key={s} className="card" style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 14 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                  <div style={{ width: 52, height: 52, borderRadius: 16, background: `var(--${k}-t)`, color: `var(--${k}-i)`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon d={t?.famille.icon ?? ''} size={26} /></div>
-                  <div><h2 className="t" style={{ fontSize: 20, fontWeight: 800 }}>{t?.sous.nom[lang] ?? s}</h2><span style={{ color: 'var(--muted)', fontSize: 14 }}>{cartes!.length} {lang === 'fr' ? 'à revoir' : 'to review'}</span></div>
-                </div>
-                <p style={{ fontSize: 14, color: 'var(--muted)' }}>{/^Q\d+$/.test(lot[0].id) ? '' : lot.slice(0, 5).map((c) => (c.id.length === 2 ? c.id.toUpperCase() : c.id.split('|')[0])).join(' · ') + (cartes!.length > 5 ? ' …' : '')}</p>
-                <Link className="btn btn-p" to={url} style={{ alignSelf: 'flex-start' }}>{lang === 'fr' ? 'Réviser' : 'Review'}<Icon d={ICONS.arrowR} /></Link>
-              </article>
-            )
-          })}
+      {parTheme.length > 0 && (
+        <section style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <h2 className="t" style={{ fontSize: 17, fontWeight: 900 }}>{fr ? 'Par quiz' : 'By quiz'}</h2>
+          <div className="rev-liste">{parTheme.map(([s, cartes]) => <LigneQuiz key={s} s={s} cartes={cartes} />)}</div>
         </section>
       )}
     </>

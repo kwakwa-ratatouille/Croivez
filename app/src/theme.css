@@ -774,3 +774,98 @@ body.glisse-en-cours { user-select: none; }
 .aventure-nom { display: flex; flex-direction: column; font-weight: 700; font-size: 14px; line-height: 1.2; }
 .aventure-nom small { color: var(--esp-i); font-size: 11.5px; }
 @keyframes pulse-etape { to { box-shadow: 0 0 0 6px color-mix(in srgb, var(--esp) 15%, transparent); } }
+
+/* Révision : bloc d'action + liste compacte */
+.rev-hero { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; padding: 22px; border-radius: 26px; background: linear-gradient(135deg, var(--his-t), var(--mus-t)); }
+.rev-hero.calme { background: linear-gradient(135deg, var(--ok-t), var(--geo-t)); }
+.rev-anneau { width: 118px; height: 118px; flex: none; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; background: radial-gradient(closest-side, var(--surface) 78%, transparent 80%), conic-gradient(var(--ok) var(--p), color-mix(in srgb, var(--text) 10%, transparent) 0); }
+.rev-anneau strong { font-size: 38px; font-weight: 900; line-height: 1; }
+.rev-anneau small { font-size: 12px; font-weight: 700; color: var(--muted); }
+.rev-hero-texte { flex: 1 1 240px; display: flex; flex-direction: column; gap: 8px; }
+.rev-hero-texte > strong { font-size: 22px; font-weight: 900; }
+.rev-hero-texte > span:first-of-type { color: var(--muted); font-size: 14px; line-height: 1.45; }
+.rev-chips { display: flex; gap: 8px; flex-wrap: wrap; font-size: 13px; font-weight: 700; }
+.rev-chips span { padding: 4px 10px; border-radius: 999px; background: color-mix(in srgb, var(--surface) 70%, transparent); }
+.rev-boutons { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
+.rev-liste { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 8px; }
+.rev-ligne { display: flex; align-items: center; gap: 12px; padding: 8px 12px 8px 8px; border-radius: 18px; background: var(--surface); border: 1px solid var(--line); text-decoration: none; color: inherit; transition: transform .15s; }
+.rev-ligne:hover { transform: translateY(-2px); }
+.rev-photo { position: relative; width: 52px; height: 52px; flex: none; border-radius: 14px; overflow: hidden; display: flex; align-items: center; justify-content: center; background: var(--kt); color: var(--ki); }
+.rev-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.rev-texte { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.rev-texte strong { font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rev-texte small { font-size: 12px; color: var(--muted); }
+.rev-compte { min-width: 30px; height: 30px; padding: 0 8px; border-radius: 999px; display: flex; align-items: center; justify-content: center; background: var(--k); color: #fff; font: 900 14px Nunito, sans-serif; }
+@media (max-width: 560px) { .rev-hero { padding: 16px; gap: 14px; } .rev-anneau { width: 92px; height: 92px; } .rev-anneau strong { font-size: 30px; } .rev-hero-texte > strong { font-size: 19px; } .rev-boutons .btn { flex: 1; } }
+
+/* Accueil : objectifs du jour */
+.accueil-objectifs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.objectif { position: relative; display: flex; align-items: center; gap: 10px; padding: 12px 14px 18px; border-radius: 20px; background: var(--kt); color: var(--ki); text-decoration: none; overflow: hidden; transition: transform .15s; }
+.objectif:hover { transform: translateY(-2px); }
+.objectif-emoji { font-size: 28px; flex: none; }
+.objectif-texte { display: flex; flex-direction: column; min-width: 0; }
+.objectif-texte strong { font-size: 16px; }
+.objectif-texte small { font-size: 12.5px; font-weight: 600; opacity: .85; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.objectif-barre { position: absolute; left: 14px; right: 14px; bottom: 8px; height: 5px; border-radius: 3px; background: color-mix(in srgb, var(--ki) 15%, transparent); overflow: hidden; }
+.objectif-barre span { display: block; height: 100%; background: var(--k); border-radius: 3px; }
+.accueil-modes.compact { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+@media (max-width: 640px) { .accueil-objectifs { grid-template-columns: 1fr; } .accueil-modes.compact .mode-tuile span:not(.mode-emoji) { display: none; } }
+
+/* Passe de combat (pass de saison) */
+.bp { display: flex; flex-direction: column; gap: 14px; }
+.bp-retour { align-self: flex-start; display: inline-flex; align-items: center; gap: 8px; min-height: 44px; font-weight: 600; text-decoration: none; color: var(--muted); }
+.bp-bandeau { position: relative; overflow: hidden; display: flex; align-items: center; gap: 18px; padding: 22px; border-radius: 26px; color: #fff; background: radial-gradient(circle at 85% 20%, #F29BB0 0, transparent 45%), radial-gradient(circle at 10% 90%, #6BB8C4 0, transparent 50%), linear-gradient(135deg, #2B2560, #5B3FA8 60%, #8E4FC4); box-shadow: 0 14px 34px rgba(60, 40, 140, .35); }
+.bp-bandeau::after { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(115deg, rgba(255,255,255,.05) 0 14px, transparent 14px 28px); pointer-events: none; }
+.bp-niveau { width: 88px; height: 88px; flex: none; display: flex; flex-direction: column; align-items: center; justify-content: center; clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%); background: linear-gradient(160deg, #FFE08A, #E3A72F); color: #3A2A00; }
+.bp-niveau small { font: 900 10px Nunito, sans-serif; letter-spacing: .12em; }
+.bp-niveau strong { font-size: 36px; line-height: 1; font-weight: 900; }
+.bp-saison { font: 800 11px 'DM Sans', sans-serif; letter-spacing: .2em; opacity: .85; }
+.bp-titre { font-size: 26px; font-weight: 900; text-transform: uppercase; letter-spacing: .02em; text-shadow: 0 2px 10px rgba(0,0,0,.25); }
+.bp-xp { height: 12px; border-radius: 6px; background: rgba(255,255,255,.2); overflow: hidden; }
+.bp-xp span { display: block; height: 100%; border-radius: 6px; background: linear-gradient(90deg, #FFE08A, #F29BB0); box-shadow: 0 0 12px #FFE08A; }
+.bp-info { font-size: 13px; font-weight: 700; opacity: .92; }
+.bp-apercu { display: flex; flex-direction: column; align-items: center; gap: 4px; position: relative; z-index: 1; }
+.bp-apercu small { font: 800 11px 'DM Sans', sans-serif; opacity: .85; }
+.bp-tout { align-self: flex-start; }
+.bp-piste { display: flex; gap: 10px; overflow-x: auto; padding: 8px 4px 14px; scroll-snap-type: x proximity; }
+.bp-carte { flex: none; width: 138px; scroll-snap-align: center; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 10px 10px 12px; border-radius: 18px; background: var(--surface); border: 2px solid var(--line); opacity: .65; position: relative; }
+.bp-carte.atteint { opacity: 1; border-color: #8E8CD8; }
+.bp-carte.rare { background: linear-gradient(170deg, color-mix(in srgb, #A35BE0 22%, var(--surface)), var(--surface)); border-color: #A35BE0; }
+.bp-carte.actuelle { opacity: 1; border-color: #E3A72F; box-shadow: 0 0 0 3px color-mix(in srgb, #E3A72F 35%, transparent); transform: translateY(-4px); }
+.bp-carte.pris { opacity: .75; }
+.bp-num { align-self: flex-start; min-width: 28px; height: 28px; padding: 0 6px; border-radius: 9px; display: flex; align-items: center; justify-content: center; background: var(--surface2); font-weight: 900; font-size: 13px; }
+.bp-carte.atteint .bp-num { background: #5B3FA8; color: #fff; }
+.bp-lot { height: 70px; display: flex; align-items: center; justify-content: center; }
+.bp-gros { font-size: 40px; display: flex; }
+.bp-nom { font-size: 13px; text-align: center; line-height: 1.2; min-height: 32px; }
+.bp-plus { font-size: 11px; color: var(--muted); font-weight: 700; margin-top: -4px; }
+.bp-pied { min-height: 36px; display: flex; align-items: center; }
+.bp-pied .btn { min-height: 34px; padding: 0 12px; font-size: 13px; }
+.bp-ok { color: var(--ok-i); font-weight: 800; font-size: 13px; }
+.bp-verrou { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 700; color: var(--muted); }
+.bp-aide { font-size: 13px; color: var(--muted); }
+@media (max-width: 560px) { .bp-bandeau { flex-wrap: wrap; padding: 16px; gap: 12px; } .bp-niveau { width: 70px; height: 70px; } .bp-niveau strong { font-size: 28px; } .bp-titre { font-size: 20px; } .bp-apercu { display: none; } }
+
+/* Mode histoire : carte du monde par régions */
+.histoire { display: flex; flex-direction: column; gap: 14px; max-width: 620px; width: 100%; margin: 0 auto; }
+.histoire-tete { display: flex; flex-direction: column; gap: 6px; }
+.histoire-tete h1 { font-size: 30px; font-weight: 900; }
+.histoire-tete p, .histoire-tete small { color: var(--muted); font-size: 14px; }
+.carte-region { position: relative; height: 690px; border-radius: 28px; overflow: hidden; box-shadow: inset 0 0 0 3px rgba(255,255,255,.35), 0 10px 26px rgba(0,0,0,.12); }
+.carte-region.fermee { filter: grayscale(.7) brightness(.9); }
+.carte-region-titre { position: absolute; top: 14px; left: 16px; z-index: 2; font-size: 19px; font-weight: 900; padding: 6px 12px; border-radius: 14px; background: rgba(255,255,255,.25); backdrop-filter: blur(6px); }
+.carte-deco { position: absolute; font-size: 30px; opacity: .55; transform: translate(-50%, -50%); pointer-events: none; }
+.carte-chemin { position: absolute; inset: 0; width: 100%; height: 100%; }
+.carte-chemin path { fill: none; stroke: rgba(255,255,255,.85); stroke-width: 1.4; stroke-dasharray: 2 3; vector-effect: non-scaling-stroke; stroke-linecap: round; }
+.carte-region .carte-chemin path { stroke-width: 5px; }
+.carte-etape { position: absolute; z-index: 1; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; gap: 4px; text-decoration: none; color: inherit; }
+.carte-pastille { width: 54px; height: 54px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font: 900 18px Nunito, sans-serif; background: #fff; color: #555; box-shadow: 0 5px 0 rgba(0,0,0,.18), 0 8px 16px rgba(0,0,0,.18); border: 4px solid #fff; }
+.carte-pastille.boss { width: 66px; height: 66px; font-size: 26px; background: linear-gradient(160deg, #FFE08A, #E3A72F); }
+.carte-etape.faite .carte-pastille { background: #4FAE6A; color: #fff; }
+.carte-etape.actuelle .carte-pastille { background: #8E4FC4; color: #fff; animation: pastille 1.2s ease-in-out infinite alternate; }
+.carte-etape.fermee .carte-pastille { background: rgba(255,255,255,.6); color: #888; }
+@keyframes pastille { to { transform: scale(1.1); box-shadow: 0 5px 0 rgba(0,0,0,.18), 0 0 0 10px rgba(255,255,255,.25); } }
+.carte-moi { position: absolute; top: -40px; animation: flotte 1.1s ease-in-out infinite alternate; }
+.carte-libelle { max-width: 130px; text-align: center; font: 800 12.5px/1.2 Nunito, sans-serif; padding: 3px 8px; border-radius: 10px; background: rgba(0,0,0,.28); color: #fff; display: flex; flex-direction: column; }
+.carte-libelle small { color: #FFE08A; font-size: 11px; }
+.carte-voile { position: absolute; inset: auto 0 0 0; z-index: 3; padding: 14px; text-align: center; font-weight: 800; color: #fff; background: linear-gradient(transparent, rgba(0,0,0,.55)); }
