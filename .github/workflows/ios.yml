@@ -63,6 +63,8 @@ jobs:
         run: |
           TAG="ios-${{ steps.v.outputs.version }}-${{ github.run_number }}"
           gh release create "$TAG" app/Croivez.ipa --target main --title "Croivez ${{ steps.v.outputs.version }} (build ${{ github.run_number }})" --notes "Build iOS automatique, à installer avec SideStore."
+          # Ménage : on garde les 2 dernières versions ios-* (la release fixe « android » n'est pas concernée)
+          gh release list --limit 100 --json tagName,createdAt --jq 'sort_by(.createdAt) | reverse | .[].tagName' | grep '^ios-' | tail -n +3 | while read t; do gh release delete "$t" --yes --cleanup-tag; done || true
           echo "TAG=$TAG" >> "$GITHUB_ENV"
 
       - name: Mettre à jour la source SideStore

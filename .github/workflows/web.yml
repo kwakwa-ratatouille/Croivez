@@ -54,6 +54,8 @@ jobs:
           printf '{\n  "web": %s,\n  "url": "https://github.com/%s/releases/download/web-%s/web.zip",\n  "checksum": "%s",\n  "natifMin": %s,\n  "natifMinAndroid": %s\n}\n' "$WEB" "${{ github.repository }}" "$WEB" "$SUM" "$NATIF_MIN" "$NATIF_MIN_ANDROID" > sidestore/web.json
           git config user.name "github-actions"
           git config user.email "github-actions@users.noreply.github.com"
+          # Ménage : on ne garde que les 6 derniers paquets web (les versions iOS / Android ne sont pas touchées)
+          gh release list --limit 100 --json tagName --jq '.[].tagName' | grep '^web-' | sort -t- -k2 -n -r | tail -n +7 | while read t; do gh release delete "$t" --yes --cleanup-tag; done || true
           git add sidestore/web.json
           git commit -m "Contenu web $WEB"
           git pull --rebase --autostash origin main

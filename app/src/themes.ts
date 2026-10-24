@@ -1,7 +1,7 @@
 import type { Lang } from './i18n'
 import type { SousThemeId } from './quiz/engine'
 
-export type Famille = 'mot' | 'geo' | 'cine' | 'mus' | 'nat' | 'sci' | 'his' | 'brd' | 'spo' | 'lit' | 'jv' | 'ani' | 'vie' | 'pop' | 'cui' | 'mot'
+export type Famille = 'tec' | 'esp' | 'mot' | 'geo' | 'cine' | 'mus' | 'nat' | 'sci' | 'his' | 'brd' | 'spo' | 'lit' | 'jv' | 'ani' | 'vie' | 'pop' | 'cui' | 'mot'
 
 export type SousTheme = { id: string; nom: Record<Lang, string>; jouable?: SousThemeId }
 
@@ -71,7 +71,7 @@ export const FAMILLES: { k: Famille; nom: Record<Lang, string>; icon: string; mo
     k: 'sci', nom: { fr: 'Corps humain & sciences', en: 'Human body & science' },
     icon: 'M9.5 3.5h5M10.5 3.5v5.5L5.2 18.3a1.5 1.5 0 0 0 1.3 2.2h11a1.5 1.5 0 0 0 1.3-2.2L13.5 9V3.5M7.5 15h9',
     motif: 'M40 40a10 10 0 1 1-20 0a10 10 0 1 1 20 0M80 20a8 8 0 1 1-16 0a8 8 0 1 1 16 0M100 56a10 10 0 1 1-20 0a10 10 0 1 1 20 0M40 36l26-12M76 26l12 22',
-    subs: [{ id: 'corps', nom: { fr: 'Corps humain', en: 'Human body' }, jouable: 'corps' }, { id: 'elements', nom: { fr: 'Éléments chimiques', en: 'Chemical elements' }, jouable: 'elements' }, j('scientifiques', 'Scientifiques', 'Scientists'), j('inventions', 'Inventions et découvertes', 'Inventions & discoveries'), j('constellations', 'Constellations', 'Constellations'), j('lunes', 'Planètes et lunes', 'Planets & moons'), j('mineraux', 'Pierres précieuses et minéraux', 'Gems & minerals'), j('unites', 'Unités de mesure', 'Units'), j('formules', 'Formules et symboles', 'Formulas'), j('pourcentages', 'Pourcentages surprenants', 'Surprising percentages'), j('maladies', 'Maladies', 'Diseases'), j('troubles', 'Troubles mentaux et dys', 'Mental disorders')],
+    subs: [{ id: 'corps', nom: { fr: 'Corps humain', en: 'Human body' }, jouable: 'corps' }, { id: 'elements', nom: { fr: 'Éléments chimiques', en: 'Chemical elements' }, jouable: 'elements' }, j('scientifiques', 'Scientifiques', 'Scientists'), j('inventions', 'Inventions et découvertes', 'Inventions & discoveries'), j('mineraux', 'Pierres précieuses et minéraux', 'Gems & minerals'), j('unites', 'Unités de mesure', 'Units'), j('formules', 'Formules et symboles', 'Formulas'), j('pourcentages', 'Pourcentages surprenants', 'Surprising percentages'), j('maladies', 'Maladies', 'Diseases'), j('troubles', 'Troubles mentaux et dys', 'Mental disorders')],
   },
   {
     k: 'his', nom: { fr: 'Histoire, personnalités & arts', en: 'History, people & arts' },
@@ -83,7 +83,7 @@ export const FAMILLES: { k: Famille; nom: Record<Lang, string>; icon: string; mo
     k: 'brd', nom: { fr: 'Marques & logos', en: 'Brands & logos' },
     icon: 'M3.5 12.6V4.5a1 1 0 0 1 1-1h8.1l8 8-9 9ZM10 8.5a1.5 1.5 0 1 1-3 0a1.5 1.5 0 1 1 3 0Z',
     motif: 'M20 44V14h30l34 34-30 30ZM40 30a5 5 0 1 1-10 0a5 5 0 1 1 10 0',
-    subs: [{ id: 'logos', nom: { fr: 'Logos', en: 'Logos' }, jouable: 'logos' }, j('logos-vrai', 'Le vrai logo (repère les faux)', 'The real logo (spot the fakes)'), { id: 'marques', nom: { fr: 'Marques et pays', en: 'Brands & countries' }, jouable: 'marques' }, j('marques-mode', 'Marques de mode', 'Fashion brands'), j('applis', 'Applis et logos d’applis', 'Apps')],
+    subs: [{ id: 'logos', nom: { fr: 'Logos', en: 'Logos' }, jouable: 'logos' }, j('logos-vrai', 'Le vrai logo (repère les faux)', 'The real logo (spot the fakes)'), { id: 'marques', nom: { fr: 'Marques et pays', en: 'Brands & countries' }, jouable: 'marques' }, j('marques-mode', 'Marques de mode', 'Fashion brands')],
   },
   {
     k: 'spo', nom: { fr: 'Sport', en: 'Sport' },
@@ -125,7 +125,7 @@ export const FAMILLES: { k: Famille; nom: Record<Lang, string>; icon: string; mo
     k: 'cui', nom: { fr: 'Cuisine & saveurs', en: 'Food & flavours' },
     icon: 'M7 3.5v6.5M5 3.5V8a2 2 0 0 0 4 0V3.5M7 10v10.5M17 3.5c-1.8 1.3-2.8 3.6-2.8 6.4V13H17v7.5',
     motif: 'M30 10v30M22 10v18a8 8 0 0 0 16 0V10M30 40v34M86 10c-8 6-12 16-12 28v12h12v24',
-    subs: [j('fruits', 'Fruits', 'Fruits'), j('legumes', 'Légumes', 'Vegetables'), j('desserts', 'Desserts et pâtisseries', 'Desserts & pastries'), j('epices', 'Épices et herbes', 'Spices & herbs'), j('fromages', 'Fromages du monde', 'World cheeses'), j('plats-photo', 'Plats du monde en photo', 'World dishes in pictures'), j('telephones', 'Téléphones cultes', 'Iconic phones')],
+    subs: [j('fruits', 'Fruits', 'Fruits'), j('legumes', 'Légumes', 'Vegetables'), j('desserts', 'Desserts et pâtisseries', 'Desserts & pastries'), j('epices', 'Épices et herbes', 'Spices & herbs'), j('fromages', 'Fromages du monde', 'World cheeses'), j('plats-photo', 'Plats du monde en photo', 'World dishes in pictures')],
   },
   {
     k: 'mot', nom: { fr: 'Mots & curiosités', en: 'Words & curiosities' },
@@ -138,6 +138,18 @@ export const FAMILLES: { k: Famille; nom: Record<Lang, string>; icon: string; mo
     icon: 'M4 6.5h16M4 12h10M4 17.5h13M18 15l2 2.5-2 2.5',
     motif: 'M20 20h80M20 40h50M20 60h65',
     subs: [j('verlan', 'Verlan et argot', 'French slang'), j('proverbes', 'Proverbes à compléter', 'Proverbs'), j('citations', 'Qui a dit ça ?', 'Who said it?'), j('petits-animaux', 'Petits des animaux', 'Baby animals'), j('groupes-animaux', 'Groupes d’animaux', 'Animal groups'), j('surnoms-villes', 'Surnoms de villes', 'City nicknames')],
+  },
+  {
+    k: 'tec', nom: { fr: 'Tech & Internet', en: 'Tech & Internet' },
+    icon: 'M4 5.5h16v10H4ZM9 19.5h6M12 15.5v4',
+    motif: 'M20 14h80v46H20ZM44 74h32M60 60v14',
+    subs: [j('logos-tech', 'Logos tech', 'Tech logos'), j('reseaux', 'Réseaux sociaux et applis', 'Social networks'), j('fondateurs', 'Fondateurs d’entreprises tech', 'Tech founders'), j('sigles-tech', 'Sigles du numérique', 'Tech acronyms'), j('applis', 'Applis', 'Apps'), j('telephones', 'Téléphones cultes', 'Iconic phones')],
+  },
+  {
+    k: 'esp', nom: { fr: 'Espace', en: 'Space' },
+    icon: 'M12 8.5a3.5 3.5 0 1 0 0 7a3.5 3.5 0 1 0 0-7ZM3.5 14c3-3.5 13-7 17-6.5M18.5 4.5l.7 1.6 1.6.7-1.6.7-.7 1.6-.7-1.6-1.6-.7 1.6-.7Z',
+    motif: 'M60 30a14 14 0 1 0 0 28a14 14 0 1 0 0-28M20 52c14-14 56-26 80-24',
+    subs: [j('planetes', 'Planètes et astres', 'Planets & stars'), j('missions', 'Missions spatiales : l’année', 'Space missions: year'), j('astronautes', 'Astronautes', 'Astronauts'), j('constellations', 'Constellations', 'Constellations'), j('lunes', 'Planètes et lunes', 'Planets & moons')],
   },
 ]
 

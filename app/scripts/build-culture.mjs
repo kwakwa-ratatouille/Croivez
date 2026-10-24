@@ -421,6 +421,17 @@ SELECT ?item ?sl ?nFr ?nEn ?dFr ?dEn ?img WHERE {
     .then((l) => finaliser(l, (b) => ({ ...base(b), img: image(b) }))),
   catastrophes: () => sparql(req('VALUES ?t { wd:Q7944 wd:Q8070 wd:Q7692360 wd:Q8092 wd:Q168247 wd:Q906512 wd:Q744913 } ?item wdt:P31 ?t; wdt:P585 ?date. OPTIONAL { ?item wdt:P18 ?img }', { sl: 20, select: '?date' }))
     .then((l) => finaliser(l, (b) => annee(b) && ({ ...base(b), img: image(b), x: { annee: annee(b) }, g: annee(b)?.slice(0, 3) }))),
+
+  // ——— Tech & Internet ———
+  'logos-tech': () => sparql(req('VALUES ?ind { wd:Q880371 wd:Q11661 wd:Q1662512 wd:Q2385804 wd:Q19354 } ?item wdt:P452 ?ind; wdt:P154 ?img.', { sl: 25 }))
+    .then((l) => finaliser(l, (b) => ({ ...base(b), img: image(b) }))),
+  fondateurs: () => sparql(req('VALUES ?ind { wd:Q880371 wd:Q11661 wd:Q1662512 wd:Q2385804 wd:Q19354 } ?item wdt:P452 ?ind; wdt:P112 ?x. OPTIONAL { ?item wdt:P154 ?img }', { sl: 25, select: libSelect('x'), extra: lib('x') }))
+    .then((l) => finaliser(l, (b) => paire(b, 'x') && ({ ...base(b), img: image(b), r: paire(b, 'x') }))),
+  // ——— Espace ———
+  missions: () => sparql(req('VALUES ?t { wd:Q2133344 wd:Q752783 wd:Q26529 wd:Q5916 } ?item wdt:P31/wdt:P279? ?t; wdt:P619 ?date. OPTIONAL { ?item wdt:P18 ?img }', { sl: 20, select: '?date' }))
+    .then((l) => finaliser(l, (b) => annee(b) && ({ ...base(b), img: image(b), x: { annee: annee(b) }, g: annee(b)?.slice(0, 3) }))),
+  astronautes: () => sparql(req('?item wdt:P106 wd:Q11631; wdt:P18 ?img; wdt:P21 ?genre.', { sl: 25, select: '?genre' }))
+    .then((l) => finaliser(l, (b) => ({ ...base(b), img: image(b), g: GENRES[b.genre.value.split('/').pop()] }))),
   // Licences : films des grands studios (Pixar, Disney, Marvel, DreamWorks, Ghibli, Illumination, Lucasfilm)
   studios: () => sparql(req('VALUES ?x { wd:Q127552 wd:Q1047410 wd:Q367466 wd:Q238557 wd:Q182950 wd:Q1136155 wd:Q242446 } ?item wdt:P31/wdt:P279* wd:Q11424; wdt:P272 ?x. OPTIONAL { ?item wdt:P577 ?date }', { sl: 20, select: `?date ${libSelect('x')}`, extra: lib('x') }))
     .then((l) => finaliser(l, (b) => paire(b, 'x') && ({ ...base(b), r: paire(b, 'x'), x: { annee: annee(b) }, ...(annee(b) ? { f: [[{ fr: 'Sortie', en: 'Released' }, annee(b)]] } : {}) }))),

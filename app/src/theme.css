@@ -9,7 +9,7 @@
   --ko:#E0997A;--ko-t:#FBE9E1;--ko-i:#97482A;
   /* Familles ajoutées : même douceur que les couleurs de la DA */
   --spo:#7FC8A9;--spo-t:#E4F4EC;--spo-i:#245E47;--lit:#D9A07E;--lit-t:#F8EADF;--lit-i:#7D4424;
-  --jv:#C8A2D6;--jv-t:#F4EAF7;--jv-i:#6B3E7C;--lan:#C7B47E;--lan-t:#F4EEDD;--lan-i:#66552A;--mot:#E8B86A;--mot-t:#FBF1DE;--mot-i:#7A5212;--ani:#F29BB0;--ani-t:#FCE9EE;--ani-i:#8A2F49;--vie:#9CC28A;--vie-t:#EAF3E4;--vie-i:#3F6230;
+  --jv:#C8A2D6;--jv-t:#F4EAF7;--jv-i:#6B3E7C;--lan:#C7B47E;--lan-t:#F4EEDD;--lan-i:#66552A;--tec:#7FB3D5;--tec-t:#E6F1F8;--tec-i:#22506E;--esp:#8E8CD8;--esp-t:#ECEBFA;--esp-i:#3A3780;--mot:#E8B86A;--mot-t:#FBF1DE;--mot-i:#7A5212;--ani:#F29BB0;--ani-t:#FCE9EE;--ani-i:#8A2F49;--vie:#9CC28A;--vie-t:#EAF3E4;--vie-i:#3F6230;
   --pop:#F07FA8;--pop-t:#FDE6EF;--pop-i:#8C2450;--cui:#EBA64F;--cui-t:#FCEEDB;--cui-i:#7F4A0E;--mot:#7FA6E8;--mot-t:#E5EEFC;--mot-i:#294F8F;
   --fond-logo:#D9D4CB;
   color-scheme: light;
@@ -23,7 +23,7 @@
   --brd:#9DADDA;--brd-t:#232F50;--brd-i:#BFCBEF;--ok:#93D9BB;--ok-t:#1D3B35;--ok-i:#A8E6CB;
   --ko:#E9A585;--ko-t:#3E2C29;--ko-i:#F3BCA2;
   --spo:#8ED6B7;--spo-t:#1C3B32;--spo-i:#A9E6CC;--lit:#E6B293;--lit-t:#3D2D27;--lit-i:#F2C8AE;
-  --jv:#D4B2E1;--jv-t:#33283F;--jv-i:#E4CCED;--lan:#D6C590;--lan-t:#36311F;--lan-i:#E8DAAE;--mot:#EBC47F;--mot-t:#3A3020;--mot-i:#F2D9A8;--ani:#F4AFC0;--ani-t:#3E2730;--ani-i:#F8CBD6;--vie:#AFD09F;--vie-t:#283523;--vie-i:#CFE5C4;
+  --jv:#D4B2E1;--jv-t:#33283F;--jv-i:#E4CCED;--lan:#D6C590;--lan-t:#36311F;--lan-i:#E8DAAE;--tec:#93C1DF;--tec-t:#1F2E38;--tec-i:#C4DDEE;--esp:#A3A1E2;--esp-t:#25243D;--esp-i:#D1D0F2;--mot:#EBC47F;--mot-t:#3A3020;--mot-i:#F2D9A8;--ani:#F4AFC0;--ani-t:#3E2730;--ani-i:#F8CBD6;--vie:#AFD09F;--vie-t:#283523;--vie-i:#CFE5C4;
   --pop:#F59BBC;--pop-t:#3E2433;--pop-i:#F9C3D7;--cui:#F0BA72;--cui-t:#3B2E1E;--cui-i:#F6D3A2;--mot:#9DBCF0;--mot-t:#1F2D48;--mot-i:#C3D6F6;
   color-scheme: dark;
 }

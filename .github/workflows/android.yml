@@ -61,6 +61,8 @@ jobs:
         run: |
           TAG="android-${{ steps.v.outputs.version }}-${{ github.run_number }}"
           gh release create "$TAG" app/Croivez.apk --target main --title "Croivez Android ${{ steps.v.outputs.version }} (build ${{ github.run_number }})" --notes "APK Android, s'installe par-dessus la précédente." --latest=false
+          # Ménage : on garde les 1 dernières versions android-* (la release fixe « android » n'est pas concernée)
+          gh release list --limit 100 --json tagName,createdAt --jq 'sort_by(.createdAt) | reverse | .[].tagName' | grep '^android-' | tail -n +2 | while read t; do gh release delete "$t" --yes --cleanup-tag; done || true
           # Lien fixe toujours vers la dernière APK (pour le QR code et le README)
           gh release view android >/dev/null 2>&1 || gh release create android --target main --title "Croivez Android (dernière version)" --notes "Téléchargez Croivez.apk." --latest=false
           gh release upload android app/Croivez.apk --clobber
