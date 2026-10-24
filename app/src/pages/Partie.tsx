@@ -3,11 +3,12 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { enregistrerPartie, jour, useAuth } from '../auth'
 import { usePrefs } from '../i18n'
 import { trouverSousTheme } from '../themes'
-import { calculerXp, distanceKm, genererPartie, type Difficulte, type Mode, type Question, type SousThemeId } from '../quiz/engine'
+import { calculerXp, distanceKm, genererMix, genererPartie, type Difficulte, type Mode, type Question, type SousThemeId } from '../quiz/engine'
 import { estCorrect } from '../quiz/match'
 import { memoriser } from '../quiz/memoire'
 import { retourFin, retourReponse } from '../retour'
-import { PRIX_INDICE, payerIndice, piecesGagnees, plafonner } from '../progression'
+import { PRIX_INDICE, accesQuiz, payerIndice, piecesGagnees, plafonner } from '../progression'
+import { FAMILLES } from '../themes'
 import { Coche, Croix, ICONS, Icon, Logo, Piece } from '../components/ui'
 import Extrait from '../components/Extrait'
 import Img from '../components/Img'
@@ -24,7 +25,9 @@ export default function Partie() {
   const { t, lang } = usePrefs()
   const { user, profile } = useAuth()
 
-  const sousTheme = (params.get('s') ?? 'drapeaux') as SousThemeId
+  // Modes de jeu : quiz classique, ou Mix / Express (1 min) / Survie (3 vies) sur des thèmes variés
+  const jeu = params.get('jeu') as 'mix' | 'express' | 'survie' | null
+  const sousTheme = (params.get('s') ?? (jeu ? 'mix' : 'drapeaux')) as SousThemeId
   const mode = (params.get('m') ?? 'qcm') as Mode
   const nombre = Number(params.get('n') ?? 10)
   const diffChoisie = Number(params.get('d') ?? 0) as Difficulte
@@ -33,11 +36,15 @@ export default function Partie() {
   const chrono = legende ? 12 : Number(params.get('t') ?? 0)
   const defi = params.get('defi') === '1'
   const revision = params.get('rev') === '1'
-  const rapide = params.get('r') === '1' // mode rapide : pas de fiche, question suivante automatique
+  // Mode rapide : pas de fiche, question suivante automatique (toujours en Express et Survie)
+  const rapide = params.get('r') === '1' || jeu === 'express' || jeu === 'survie'
   const seed = defi ? Number(jour().replace(/-/g, '')) : undefined
   const difficulte = diffChoisie // 0 = tout mélangé
   const max = plafonner(4, profile) // difficulté la plus haute débloquée
-  const k = trouverSousTheme(sousTheme)?.famille.k ?? 'geo'
+  const k = trouverSousTheme(sousTheme)?.famille.k ?? (jeu ? 'jv' : 'geo')
+  const EXPRESS_MS = 60_000
+  const [finExpress, setFinExpress] = useState(0)
+  const [vies, setVies] = useState(3)
 
   const [questions, setQuestions] = useState<Question[] | null>(null)
   const [i, setI] = useState(0)
@@ -57,8 +64,18 @@ export default function Partie() {
     setSaisie('')
     setRestant(chrono)
     setFini(false)
+    setVies(3)
+    if (jeu) {
+      // Tous les quiz débloqués ; Survie monte en difficulté par blocs de 6 questions
+      const quiz = FAMILLES.flatMap((f) => f.subs.filter((x) => x.jouable && accesQuiz(x.id, profile)).map((x) => x.jouable as SousThemeId))
+      const difficultes: Difficulte[] = jeu === 'survie'
+        ? Array.from({ length: 36 }, (_, n) => Math.min(max, 1 + Math.floor(n / 6)) as Difficulte)
+        : Array.from({ length: jeu === 'express' ? 40 : nombre }, () => difficulte)
+      genererMix({ quiz, difficultes, lang, max }).then((qs) => { setQuestions(qs); if (jeu === 'express') setFinExpress(Date.now() + EXPRESS_MS) })
+      return
+    }
     genererPartie({ sousTheme, difficulte, max, nombre, mode, lang, ids, seed: ids ? undefined : seed }).then(setQuestions)
-  }, [sousTheme, difficulte, max, nombre, mode, lang, chrono, seed])
+  }, [sousTheme, difficulte, max, nombre, mode, lang, chrono, seed, jeu, profile])
 
   // Une partie est générée une seule fois, à l'ouverture
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -71,8 +88,9 @@ export default function Partie() {
     if (!q || reponses[i]) return
     setReponses((prev) => [...prev, { q, ...r }])
     retourReponse(r.juste)
-    memoriser(sousTheme, q.id, r.juste) // ratée : reviendra ; réussie plusieurs fois : mise de côté un temps
-  }, [q, i, reponses, sousTheme])
+    memoriser(q.s ?? sousTheme, q.id, r.juste) // ratée : reviendra ; réussie plusieurs fois : mise de côté un temps
+    if (jeu === 'survie' && !r.juste) setVies((v) => v - 1)
+  }, [q, i, reponses, sousTheme, jeu])
 
   const repondre = useCallback((donnee: string) => {
     if (!q) return
@@ -92,11 +110,11 @@ export default function Partie() {
 
   const suivant = useCallback(() => {
     if (!questions) return
-    if (i + 1 >= questions.length) { setFini(true); retourFin(reponses.filter((x) => x.juste).length >= questions.length / 2); return }
+    if (i + 1 >= questions.length || (jeu === 'survie' && vies <= 0)) { setFini(true); retourFin(reponses.filter((x) => x.juste).length >= questions.length / 2); return }
     setI(i + 1)
     setSaisie('')
     setRestant(chrono)
-  }, [i, questions, chrono, reponses])
+  }, [i, questions, chrono, reponses, jeu, vies])
 
   // Chrono : à zéro, la question compte comme ratée
   useEffect(() => {
@@ -107,6 +125,15 @@ export default function Partie() {
   }, [chrono, restant, courante, fini, q, enregistrer])
 
   useEffect(() => { if (q && !q.options.length && !q.carte && !courante) inputRef.current?.focus() }, [q, courante])
+
+  // Express : la partie s'arrête au bout d'une minute, où qu'on en soit
+  useEffect(() => {
+    if (jeu !== 'express' || !finExpress || fini) return
+    const t = setTimeout(() => { setFini(true); retourFin(true) }, Math.max(0, finExpress - Date.now()))
+    return () => clearTimeout(t)
+  }, [jeu, finExpress, fini])
+  const [, rafraichir] = useState(0)
+  useEffect(() => { if (jeu !== 'express' || fini) return; const t = setInterval(() => rafraichir((x) => x + 1), 250); return () => clearInterval(t) }, [jeu, fini])
 
   // Mode rapide : on laisse juste le temps de voir ✓ ou ✗ (un peu plus en cas d'erreur, pour lire la bonne réponse)
   useEffect(() => {
@@ -136,7 +163,7 @@ export default function Partie() {
   useEffect(() => {
     if (!fini || enregistre.current || !user || !profile || !questions) return
     enregistre.current = true
-    enregistrerPartie(user.uid, profile, { sousTheme, xp, pieces, defi, revision, difficulte, resultats: reponses.map((r) => ({ id: r.q.id, juste: r.juste })) }).catch(console.error)
+    enregistrerPartie(user.uid, profile, { sousTheme, xp, pieces, defi, revision: revision || !!jeu, sansRevision: !!jeu, record: jeu && jeu !== 'mix' ? { jeu, score: bonnes } : undefined, difficulte: jeu ? undefined : difficulte, resultats: reponses.map((r) => ({ id: r.q.id, juste: r.juste })) }).catch(console.error)
   }, [fini, user, profile, sousTheme, xp, pieces, defi, revision, reponses, questions])
 
   if (!questions) return <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center' }}><Logo width={72} /></div>
@@ -181,7 +208,11 @@ export default function Partie() {
       <header style={{ width: '100%', maxWidth: 1040, display: 'flex', alignItems: 'center', gap: 20 }}>
         <Link to="/" className="btn btn-g" aria-label={t('q.quit')} style={{ minHeight: 44, padding: '0 14px' }}><Icon d={ICONS.close} /></Link>
         <div className="bar" style={{ flex: 1 }}><span style={{ width: `${((i + (courante ? 1 : 0)) / questions.length) * 100}%`, background: `var(--${k})` }} /></div>
-        <span style={{ fontWeight: 600, color: 'var(--muted)', whiteSpace: 'nowrap' }}>{i + 1} {t('q.of')} {questions.length}</span>
+        {jeu === 'express'
+          ? <span className="t" style={{ fontWeight: 900, fontSize: 20, whiteSpace: 'nowrap', color: finExpress - Date.now() < 10_000 ? 'var(--ko-i)' : 'var(--text)' }}>{Math.max(0, Math.ceil((finExpress - Date.now()) / 1000))} s · {bonnes} ✓</span>
+          : jeu === 'survie'
+            ? <span style={{ fontWeight: 800, whiteSpace: 'nowrap', letterSpacing: 2, color: 'var(--ko-i)' }} aria-label={`${vies} vies`}>{'♥'.repeat(Math.max(0, vies))}<span style={{ opacity: .25 }}>{'♥'.repeat(Math.max(0, 3 - vies))}</span> · {bonnes}</span>
+            : <span style={{ fontWeight: 600, color: 'var(--muted)', whiteSpace: 'nowrap' }}>{i + 1} {t('q.of')} {questions.length}</span>}
         {chrono > 0 && (
           <span aria-label={`${Math.ceil(restant)} s`} style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 700, minWidth: 64, color: restant <= 5 && !courante ? 'var(--ko-i)' : 'var(--text)', transition: 'color .3s ease-out' }}>
             <Icon d={ICONS.timer} size={20} />{Math.max(0, Math.ceil(restant))} s

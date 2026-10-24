@@ -1,11 +1,28 @@
 import { useEffect, useState } from 'react'
 
 export function Logo({ width = 42 }: { width?: number }) {
+  // Deux cartes-réponses : le ✗ derrière, le ✓ devant (voir logo/croivez-planche-logo.png)
+  const petit = width < 60
   return (
-    <svg viewBox="0 0 116 72" width={width} aria-hidden="true">
-      <path className="lx" d="M16 16 Q33 36 50 58 M50 16 Q32 37 16 58" style={{ strokeWidth: 14 }} />
-      <path className="lv" d="M44 40 Q52 49 60 58 Q77 32 102 12" style={{ strokeWidth: 14 }} />
+    <svg viewBox="22 42 368 250" width={width} aria-hidden="true" style={{ overflow: 'visible' }}>
+      <g transform="rotate(-9 130 170)">
+        <rect x="35" y="75" width="190" height="190" rx="52" style={{ fill: 'var(--ko-t)', stroke: 'var(--lx)', strokeWidth: petit ? 14 : 6 }} />
+        <path className="lx" d="M92 132 L168 208 M168 132 L92 208" style={{ strokeWidth: petit ? 40 : 30 }} />
+      </g>
+      <g transform="rotate(7 265 160)">
+        <rect x="170" y="60" width="200" height="200" rx="56" style={{ fill: 'var(--ok-t)', stroke: 'var(--lv)', strokeWidth: petit ? 14 : 6 }} />
+        <path className="lv" d="M222 166 L256 202 L320 116" style={{ strokeWidth: petit ? 42 : 32 }} />
+      </g>
     </svg>
+  )
+}
+
+// « Croivez » : le point du i est un petit ✗, le v est vert comme le ✓
+export function Wordmark({ size = 24 }: { size?: number }) {
+  return (
+    <span className="t" style={{ fontSize: size, fontWeight: 900, letterSpacing: '-0.015em', lineHeight: 1 }}>
+      Cro<span style={{ position: 'relative', display: 'inline-block' }}>ı<svg viewBox="0 0 24 24" aria-hidden="true" style={{ position: 'absolute', left: '50%', top: '0.075em', width: '0.22em', height: '0.22em', transform: 'translateX(-50%) rotate(-6deg)', overflow: 'visible' }}><path d="M5 5 L19 19 M19 5 L5 19" style={{ fill: 'none', stroke: 'var(--lx)', strokeWidth: 6.2, strokeLinecap: 'round' }} /></svg></span><span style={{ color: 'var(--lv)' }}>v</span>ez
+    </span>
   )
 }
 

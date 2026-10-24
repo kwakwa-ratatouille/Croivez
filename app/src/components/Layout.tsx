@@ -1,11 +1,12 @@
 import { NavLink, Outlet } from 'react-router-dom'
 import { useAuth, niveau } from '../auth'
 import { usePrefs, type Key } from '../i18n'
-import { ICONS, Icon, Logo, Piece, Pieces, useOnline } from './ui'
+import { ICONS, Icon, Logo, Piece, Pieces, useOnline, Wordmark } from './ui'
 import { aReviser } from '../quiz/revision'
 import MiseAJour from './MiseAJour'
 import { useEffect, useRef, useState } from 'react'
 import MenuTest from './MenuTest'
+import FicheLancement from './FicheLancement'
 import { telechargerEnFond, surveillerWifi } from '../telechargementFond'
 import { familleOuverte } from '../progression'
 import type { Famille } from '../themes'
@@ -29,6 +30,12 @@ export default function Layout() {
 
   // 3 appuis rapides sur le logo : menu de test
   const [test, setTest] = useState(false)
+  const [fiche, setFiche] = useState<string | null>(null)
+  useEffect(() => {
+    const h = (e: Event) => setFiche((e as CustomEvent<string>).detail)
+    window.addEventListener('croivez:fiche', h)
+    return () => window.removeEventListener('croivez:fiche', h)
+  }, [])
   const appuis = useRef<number[]>([])
   const appuiLogo = (e: React.MouseEvent) => {
     const t = Date.now()
@@ -51,9 +58,10 @@ export default function Layout() {
   return (
     <div className="shell">
       {test && <MenuTest onFermer={() => setTest(false)} />}
+      {fiche && <FicheLancement id={fiche} onFermer={() => setFiche(null)} />}
       <nav className="side" aria-label="Navigation principale">
         <NavLink to="/" aria-label="Croivez" className="side-logo" onClick={appuiLogo} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '4px 12px 28px', textDecoration: 'none' }}>
-          <Logo /><span className="t" style={{ fontSize: 24, fontWeight: 900 }}>Croivez</span>
+          <Logo /><Wordmark size={24} />
         </NavLink>
         {LIENS.map((l) => (
           <NavLink key={l.to} to={l.to} end={l.to === '/'} className={({ isActive }) => `nav${isActive ? ' active' : ''}${l.to === '/parametres' ? ' nav-pc' : ''}`}>
@@ -78,7 +86,7 @@ export default function Layout() {
       </nav>
       <main className="main">
         <div className="entete-mobile" style={{ justifyContent: 'space-between' }}>
-          <NavLink to="/" aria-label="Croivez" onClick={appuiLogo} style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}><Logo width={34} /><span className="t" style={{ fontSize: 20, fontWeight: 900 }}>Croivez</span></NavLink>
+          <NavLink to="/" aria-label="Croivez" onClick={appuiLogo} style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}><Logo width={34} /><Wordmark size={20} /></NavLink>
           <Pieces n={profile?.pieces ?? 0} />
         </div>
         <MiseAJour />

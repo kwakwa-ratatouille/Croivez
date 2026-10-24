@@ -1,7 +1,7 @@
 import type { Lang } from './i18n'
 import type { SousThemeId } from './quiz/engine'
 
-export type Famille = 'geo' | 'cine' | 'mus' | 'nat' | 'sci' | 'his' | 'brd' | 'spo' | 'lit' | 'jv' | 'lan'
+export type Famille = 'geo' | 'cine' | 'mus' | 'nat' | 'sci' | 'his' | 'brd' | 'spo' | 'lit' | 'jv'
 
 export type SousTheme = { id: string; nom: Record<Lang, string>; jouable?: SousThemeId }
 
@@ -51,7 +51,22 @@ export const FAMILLES: { k: Famille; nom: Record<Lang, string>; icon: string; mo
     k: 'nat', nom: { fr: 'Nature', en: 'Nature' },
     icon: 'M5 19.5C5 11 10 5 20 4.5c0 9.5-6 15-15 15ZM5 19.5c3-4.5 6.5-7.5 10-9',
     motif: 'M20 70C20 40 40 18 80 16c0 36-24 54-60 54M20 70c12-16 26-28 40-34M80 60c0-14 10-24 30-26 0 18-12 26-30 26',
-    subs: [{ id: 'animaux', nom: { fr: 'Animaux', en: 'Animals' }, jouable: 'animaux' }, { id: 'insectes', nom: { fr: 'Insectes', en: 'Insects' }, jouable: 'insectes' }, { id: 'plantes', nom: { fr: 'Plantes', en: 'Plants' }, jouable: 'plantes' }],
+    subs: [
+      j('animaux', 'Tous les animaux', 'All animals'),
+      j('mammiferes', 'Mammifères', 'Mammals'),
+      j('oiseaux', 'Oiseaux', 'Birds'),
+      j('poissons', 'Poissons et requins', 'Fish & sharks'),
+      j('reptiles', 'Reptiles et amphibiens', 'Reptiles & amphibians'),
+      j('insectes', 'Insectes', 'Insects'),
+      j('papillons', 'Papillons', 'Butterflies & moths'),
+      j('araignees', 'Araignées', 'Spiders'),
+      j('plantes', 'Plantes et arbres', 'Plants & trees'),
+      j('champignons', 'Champignons', 'Mushrooms'),
+      j('chiens', 'Races de chiens', 'Dog breeds'),
+      j('chats', 'Races de chats', 'Cat breeds'),
+      j('chevaux', 'Races de chevaux', 'Horse breeds'),
+      j('noms-scientifiques', 'Noms scientifiques', 'Scientific names'),
+    ],
   },
   {
     k: 'sci', nom: { fr: 'Corps humain & sciences', en: 'Human body & science' },
@@ -88,12 +103,6 @@ export const FAMILLES: { k: Famille; nom: Record<Lang, string>; icon: string; mo
     icon: 'M7 8h10a4 4 0 0 1 4 4v2.5a3 3 0 0 1-5.4 1.8L14.5 15h-5l-1.1 1.3A3 3 0 0 1 3 14.5V12a4 4 0 0 1 4-4ZM7.5 10.5v3M6 12h3M15.5 11.5h.01M17.5 13h.01',
     motif: 'M30 24h60a20 20 0 0 1 20 20v10a14 14 0 0 1-25 8l-6-6H41l-6 6a14 14 0 0 1-25-8V44a20 20 0 0 1 20-20Z',
     subs: [j('jeux', 'Jeux et studios', 'Games & studios'), j('jeux-annee', 'Jeux : année de sortie', 'Games: release year'), j('persos-jeux', 'Personnages', 'Characters')],
-  },
-  {
-    k: 'lan', nom: { fr: 'Langues', en: 'Languages' },
-    icon: 'M4 5h9M8.5 3v2M6 5c.5 3 2.5 5.5 5 7M11 5c-.5 3-3 6-6.5 8M13 20l4-9 4 9M14.3 17h5.4',
-    motif: 'M15 20h45M37 12v8M25 20c3 15 12 27 25 35M50 20c-3 15-15 30-32 40M65 70l18-40 18 40M71 58h24',
-    subs: [j('traduction-en', 'Anglais', 'English'), j('traduction-es', 'Espagnol', 'Spanish'), j('traduction-de', 'Allemand', 'German'), j('traduction-it', 'Italien', 'Italian')],
   },
 ]
 

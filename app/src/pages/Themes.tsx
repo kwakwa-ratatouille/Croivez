@@ -6,6 +6,7 @@ import { FAMILLES, type Famille, type SousTheme } from '../themes'
 import { ICONS, Icon, Piece } from '../components/ui'
 import { PRIX_CAISSE, accesQuiz, familleOuverte, ouvrirCaisse, quizVerrouilles } from '../progression'
 import Caisse from '../components/Caisse'
+import { ouvrirFiche } from '../components/FicheLancement'
 import Illustration from '../components/Illustration'
 import { normaliser } from '../quiz/match'
 
@@ -25,7 +26,7 @@ function Tuile({ s, k, pct, verrou = false }: { s: SousTheme; k: string; pct: nu
     )
   }
   return (
-    <Link to={`/jouer/${s.id}`} className="card tuile" style={{ padding: 18, display: 'flex', flexDirection: 'column', gap: 12, textDecoration: 'none', boxShadow: 'none' }}>
+    <button type="button" onClick={() => ouvrirFiche(s.id)} className="card tuile" style={{ font: 'inherit', color: 'inherit', textAlign: 'left', cursor: 'pointer', padding: 18, display: 'flex', flexDirection: 'column', gap: 12, textDecoration: 'none', boxShadow: 'none' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
         <span className="t" style={{ fontSize: 17, fontWeight: 800, lineHeight: 1.25 }}>{s.nom[lang]}</span>
         <span style={{ width: 36, height: 36, borderRadius: 12, flex: 'none', background: `var(--${k}-t)`, color: `var(--${k}-i)`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon d={ICONS.arrowR} size={18} /></span>
@@ -34,7 +35,7 @@ function Tuile({ s, k, pct, verrou = false }: { s: SousTheme; k: string; pct: nu
         <div className="bar" style={{ flex: 1, height: 6 }}><span style={{ width: `${pct}%`, background: `var(--${k})` }} /></div>
         <span style={{ fontSize: 13, color: 'var(--muted)', fontWeight: 600, minWidth: 34, textAlign: 'right' }}>{pct} %</span>
       </div>
-    </Link>
+    </button>
   )
 }
 

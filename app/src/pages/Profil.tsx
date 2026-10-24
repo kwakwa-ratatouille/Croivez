@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import { niveau, useAuth, xpPourNiveau } from '../auth'
 import { usePrefs } from '../i18n'
 import { FAMILLES } from '../themes'
-import { BADGES, debloque } from '../badges'
+import { BADGES, PALIERS, palierAtteint } from '../badges'
 import { Icon, ICONS } from '../components/ui'
 
 export default function Profil() {
@@ -14,7 +14,6 @@ export default function Profil() {
   const debut = xpPourNiveau(nv)
   const fin = xpPourNiveau(nv + 1)
   const pct = Math.round(((profile.xp - debut) / (fin - debut)) * 100)
-  const obtenus = BADGES.filter((b) => debloque(b, profile)).length
   const fmt = new Intl.NumberFormat(fr ? 'fr-FR' : 'en-GB')
   const stats = [
     [fmt.format(profile.parties ?? 0), fr ? 'parties' : 'games'],
@@ -63,17 +62,27 @@ export default function Profil() {
       </section>
 
       <section style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-        <h2 className="t" style={{ fontSize: 22, fontWeight: 800 }}>{fr ? 'Badges' : 'Badges'} <span style={{ color: 'var(--muted)', fontWeight: 600, fontSize: 16 }}>{obtenus} / {BADGES.length}</span></h2>
-        <div className="grid-auto" style={{ ['--min' as string]: '200px', gap: 14 }}>
-          {BADGES.map((b) => {
-            const [v, max] = b.progres(profile)
-            const ok = v >= max
+        <h2 className="t" style={{ fontSize: 22, fontWeight: 800 }}>{fr ? 'Badges' : 'Badges'} <span style={{ color: 'var(--muted)', fontWeight: 600, fontSize: 16 }}>{BADGES.reduce((a, b) => a + palierAtteint(b, profile), 0)} / {BADGES.length * 3} {fr ? 'paliers' : 'tiers'}</span></h2>
+        <div className="grid-auto" style={{ ['--min' as string]: '170px', gap: 12 }}>
+          {/* Badges entamés d'abord, puis ceux à commencer */}
+          {[...BADGES].sort((a, b) => palierAtteint(b, profile) - palierAtteint(a, profile)).map((b) => {
+            const n = palierAtteint(b, profile)
+            const v = b.valeur(profile)
+            const prochain = b.paliers[Math.min(n, 2)]
+            const prec = n ? b.paliers[n - 1] : 0
+            const medaille = n ? PALIERS[n - 1].couleur : 'var(--line)'
             return (
-              <div key={b.id} className="card" style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 10, alignItems: 'flex-start', opacity: ok ? 1 : 0.6, background: ok ? `var(--${b.couleur}-t)` : 'var(--surface)', borderColor: ok ? 'transparent' : 'var(--line)' }}>
-                <div style={{ width: 48, height: 48, borderRadius: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', background: ok ? 'var(--surface)' : 'var(--surface2)', color: ok ? `var(--${b.couleur}-i)` : 'var(--muted)' }}><Icon d={b.icon} size={26} /></div>
-                <span className="t" style={{ fontWeight: 800, fontSize: 17, color: ok ? `var(--${b.couleur}-i)` : 'var(--text)' }}>{b.nom[lang]}</span>
-                <span style={{ fontSize: 13, color: 'var(--muted)' }}>{b.desc[lang]}</span>
-                {!ok && <div className="bar" style={{ width: '100%', height: 6 }}><span style={{ width: `${Math.min(100, (v / max) * 100)}%`, background: `var(--${b.couleur})` }} /></div>}
+              <div key={b.id} className="card" style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'flex-start', background: n ? `var(--${b.couleur}-t)` : 'var(--surface)', borderColor: n ? 'transparent' : 'var(--line)' }}>
+                <div style={{ position: 'relative', width: 48, height: 48, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--surface)', border: `3px solid ${medaille}`, color: n ? `var(--${b.couleur}-i)` : 'var(--muted)' }}>
+                  <Icon d={b.icon} size={24} />
+                </div>
+                <span className="t" style={{ fontWeight: 800, fontSize: 15.5, lineHeight: 1.2, color: n ? `var(--${b.couleur}-i)` : 'var(--text)' }}>{b.nom[lang]}</span>
+                {/* 3 pastilles : bronze, argent, or */}
+                <div style={{ display: 'flex', gap: 4 }} aria-label={n ? PALIERS[n - 1].nom[lang] : (fr ? 'Pas encore' : 'Not yet')}>
+                  {PALIERS.map((pl, i) => <span key={i} style={{ width: 14, height: 14, borderRadius: '50%', background: i < n ? pl.couleur : 'var(--surface2)', border: `1.5px solid ${pl.couleur}` }} />)}
+                </div>
+                <span style={{ fontSize: 12.5, color: 'var(--muted)' }}>{n === 3 ? b.desc[lang](b.paliers[2]) + ' ✓' : b.desc[lang](prochain)}</span>
+                {n < 3 && <div className="bar" style={{ width: '100%', height: 6 }}><span style={{ width: `${Math.min(100, ((v - prec) / Math.max(1, prochain - prec)) * 100)}%`, background: `var(--${b.couleur})` }} /></div>}
               </div>
             )
           })}

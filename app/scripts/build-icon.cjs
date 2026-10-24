@@ -1,5 +1,9 @@
 // Génère build/icon.png et build/icon.ico à partir du logo ✗✓ (rendu par Electron, sans dépendance).
 // Usage : npx electron scripts/build-icon.cjs
+// ⚠ Ce script dessine l'ANCIEN logo. Les icônes (build/, ios/, android/, public/) ont été
+// régénérées le 24/10/2026 avec le nouveau logo « deux cartes-réponses » (voir ../logo/).
+// Il s'arrête donc tout de suite, pour ne pas les écraser. Mettre FORCE_ANCIEN_LOGO=1 pour le relancer quand même.
+if (!process.env.FORCE_ANCIEN_LOGO) { console.log('build-icon : ancien logo, rien à faire (voir ../logo/).'); process.exit(0) }
 const { app, BrowserWindow } = require('electron')
 const fs = require('fs')
 const path = require('path')

@@ -23,6 +23,7 @@ export type Profile = {
   pieces?: number
   familles?: string[] // familles choisies au départ (entièrement ouvertes) ; absent = ancien compte, tout ouvert
   quiz?: string[] // quiz gagnés dans les caisses
+  records?: Record<string, number> // meilleurs scores Express / Survie
   paliers?: Record<string, number[]> // difficultés réussies (≥ 70 %) par quiz : ouvre la Légende
 }
 
@@ -80,6 +81,8 @@ type Partie = {
   defi?: boolean
   pieces?: number // pièces gagnées pendant la partie
   difficulte?: number // 1 à 4 : réussir à 70 % valide le palier (Légende)
+  sansRevision?: boolean // Mix / Express / Survie : questions de plusieurs quiz
+  record?: { jeu: string; score: number }
 }
 
 // Enregistre une partie : XP, série, maîtrise, statistiques des badges et cartes de révision
@@ -94,7 +97,7 @@ export async function enregistrerPartie(uid: string, profile: Profile, p: Partie
   const maitrise = Math.round(ancienne * 0.7 + taux * 100 * 0.3)
 
   const revision: Record<string, unknown> = {}
-  for (const r of p.resultats) {
+  for (const r of p.sansRevision ? [] : p.resultats) {
     const cle = cleRevision(p.sousTheme, r.id)
     const carte = profile.revision?.[cle]
     const suite = planifier(carte, p.sousTheme, r.id, r.juste)
@@ -115,6 +118,7 @@ export async function enregistrerPartie(uid: string, profile: Profile, p: Partie
     ...(p.revision ? {} : { maitrise: { [p.sousTheme]: maitrise } }),
     ...(defiReussi ? { defis: increment(1), defiJour: today } : {}),
     ...(Object.keys(revision).length ? { revision } : {}),
+    ...(p.record && p.record.score > (profile.records?.[p.record.jeu] ?? 0) ? { records: { [p.record.jeu]: p.record.score } } : {}),
     ...(p.difficulte && p.difficulte <= 4 && taux >= 0.7 ? { paliers: { [p.sousTheme]: arrayUnion(p.difficulte) } } : {}),
   }, { merge: true })
   await publierXp(uid, profile.pseudo, p.xp, (profile.xp ?? 0) + p.xp, serie).catch(console.error)

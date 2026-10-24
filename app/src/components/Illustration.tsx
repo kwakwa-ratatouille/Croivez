@@ -78,12 +78,6 @@ function Scene({ k }: { k: Famille }) {
       <circle cx="150" cy="96" r="7" fill="var(--lx)" /><circle cx="166" cy="110" r="7" fill="var(--lv)" />
       {[[48, 40], [64, 40], [56, 52], [190, 44], [202, 56]].map(([x, y]) => <rect key={`${x}${y}`} x={x} y={y} width="10" height="10" rx="2" fill={i} opacity=".7" />)}
     </>)
-    case 'lan': return (<>
-      <path d="M56 50h80a12 12 0 0 1 12 12v40a12 12 0 0 1-12 12H90l-20 18v-18H56a12 12 0 0 1-12-12V62a12 12 0 0 1 12-12Z" fill={c} />
-      <path d="M184 76h-60a12 12 0 0 0-12 12v32a12 12 0 0 0 12 12h40l18 16v-16h2a12 12 0 0 0 12-12V88a12 12 0 0 0-12-12Z" fill={i} />
-      <text x="96" y="92" textAnchor="middle" fontFamily="Nunito, sans-serif" fontWeight="900" fontSize="28" fill={s}>Aa</text>
-      <text x="154" y="114" textAnchor="middle" fontFamily="Nunito, sans-serif" fontWeight="900" fontSize="24" fill={s}>文</text>
-    </>)
   }
 }
 

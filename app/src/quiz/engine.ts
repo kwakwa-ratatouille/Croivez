@@ -36,6 +36,17 @@ const CULTURE = {
   artistes: { type: 'image', q: { fr: (_, g) => (g === 'f' ? 'Qui est cette artiste ?' : 'Qui est cet artiste ?'), en: () => 'Who is this artist?' } },
   albums: { type: 'attribut', q: { fr: (n) => `Quel artiste a sorti l’album « ${n} » ?`, en: (n) => `Which artist released the album “${n}”?` } },
   animaux: { type: 'image', q: { fr: () => 'Quel est cet animal ?', en: () => 'What is this animal?' } },
+  mammiferes: { type: 'image', q: { fr: () => 'Quel est ce mammifère ?', en: () => 'What is this mammal?' } },
+  oiseaux: { type: 'image', q: { fr: () => 'Quel est cet oiseau ?', en: () => 'What is this bird?' } },
+  poissons: { type: 'image', q: { fr: () => 'Quel est ce poisson ?', en: () => 'What is this fish?' } },
+  reptiles: { type: 'image', q: { fr: () => 'Quel est cet animal ?', en: () => 'What is this animal?' } },
+  papillons: { type: 'image', q: { fr: () => 'Quel est ce papillon ?', en: () => 'What is this butterfly?' } },
+  araignees: { type: 'image', q: { fr: () => 'Quelle est cette araignée ?', en: () => 'What is this spider?' } },
+  champignons: { type: 'image', q: { fr: () => 'Quel est ce champignon ?', en: () => 'What is this mushroom?' } },
+  chiens: { type: 'image', q: { fr: () => 'Quelle est cette race de chien ?', en: () => 'Which dog breed is this?' } },
+  chats: { type: 'image', q: { fr: () => 'Quelle est cette race de chat ?', en: () => 'Which cat breed is this?' } },
+  chevaux: { type: 'image', q: { fr: () => 'Quelle est cette race de cheval ?', en: () => 'Which horse breed is this?' } },
+  'noms-scientifiques': { type: 'attribut', pack: 'animaux', champ: 'latin', montrer: true, q: { fr: (n) => `Quel est le nom scientifique de : ${n} ?`, en: (n) => `What is the scientific name of ${n}?` } },
   insectes: { type: 'image', q: { fr: () => 'Quel est cet insecte ?', en: () => 'What is this insect?' } },
   plantes: { type: 'image', q: { fr: () => 'Quelle est cette plante ?', en: () => 'What is this plant?' } },
   corps: { type: 'image', q: { fr: () => 'Quelle est cette partie du corps ?', en: () => 'What is this body part?' } },
@@ -112,6 +123,7 @@ export type Question = {
   options: Option[]
   imagesOnly: boolean
   audio?: string // identifiant de titre Deezer (extrait à écouter)
+  s?: SousThemeId // sous-thème d'origine (parties Mix, Express, Survie)
   carte?: Carte
   fiche: Fiche
 }
@@ -168,7 +180,8 @@ const POOL_PAYS = { 1: 40, 2: 90, 3: 150, 4: Infinity } as const
 // Paliers de population des villes
 const MIN_FR = { 1: 80_000, 2: 20_000, 3: 5_000, 4: 0 } as const
 const MIN_MONDE = { 1: 1_500_000, 2: 400_000, 3: 100_000, 4: 15_000 } as const
-const SEUIL_FR = { 1: 50, 2: 35, 3: 25, 4: 20 } as const
+// Tolérance (km) : large en facile, plus serrée en expert
+const SEUIL_FR = { 1: 80, 2: 55, 3: 40, 4: 30 } as const
 
 // Distracteurs « similaires » : même continent d'abord
 // Pour les drapeaux : d'abord les sosies (Tchad/Roumanie, Indonésie/Monaco…), même hors de la difficulté choisie
@@ -228,6 +241,23 @@ function mulberry32(a: number) {
   }
 }
 let rand = Math.random
+
+// Mix / Express / Survie : questions piochées dans des quiz variés (sans carte, pour enchaîner vite).
+// difficultes : la difficulté de chaque question, dans l'ordre (Survie : de plus en plus dur).
+export async function genererMix(o: { quiz: SousThemeId[]; difficultes: Difficulte[]; lang: Lang; max?: Palier }): Promise<Question[]> {
+  const possibles = o.quiz.filter((s) => !['villes-fr', 'villes-monde', 'pays-carte'].includes(s))
+  const out: Question[] = []
+  let precedent = ''
+  for (const d of o.difficultes) {
+    // Jamais deux fois de suite le même quiz
+    const choix = possibles.filter((s) => s !== precedent)
+    const s = choix[Math.floor(Math.random() * choix.length)] ?? possibles[0]
+    precedent = s
+    const [q] = await genererPartie({ sousTheme: s, difficulte: d, max: o.max, nombre: 1, mode: 'qcm', lang: o.lang }).catch(() => [])
+    if (q && !out.some((x) => x.id === q.id)) out.push({ ...q, s })
+  }
+  return out
+}
 
 export async function genererPartie(o: Opts): Promise<Question[]> {
   const tous = await chargerPays()
@@ -308,7 +338,7 @@ async function villesMonde(o: Opts, tous: Pays[]): Promise<Question[]> {
     const p = parCode.get(cc)!
     const rangPays = villes.filter((v) => v[4] === cc).findIndex((v) => v[0] === nom) + 1
     // Seuil proportionnel à la taille du pays : 30 km au Luxembourg, ~400 km en Russie
-    const seuil = Math.max(30, Math.round(Math.sqrt(p.superficie || 10000) * 0.1))
+    const seuil = Math.max(50, Math.round(Math.sqrt(p.superficie || 10000) * 0.15))
     return {
       id: `${nom}|${cc}`, imagesOnly: false, options: [], acceptees: [], reponse: nom,
       enonce: lang === 'fr' ? `Placez ${nom} (${p.nom.fr})` : `Place ${nom} (${p.nom.en})`,

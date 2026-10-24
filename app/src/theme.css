@@ -82,6 +82,22 @@ button { font-family: inherit; }
 .famille:hover, .tuile:hover { transform: translateY(-3px); box-shadow: var(--shadow); }
 .famille:active, .tuile:active { transform: scale(.98); }
 
+/* Fiche de lancement : panneau qui monte du bas (centré sur PC) */
+@keyframes monte { from { transform: translateY(40px); opacity: 0; } to { transform: none; opacity: 1; } }
+.fiche-fond { position: fixed; inset: 0; z-index: 40; background: rgba(20, 24, 32, .4); display: flex; align-items: flex-end; justify-content: center; }
+.fiche { width: 100%; max-width: 560px; background: var(--bg); border-radius: 28px 28px 0 0; padding: 10px 20px calc(20px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 16px; animation: monte .28s ease-out both; box-shadow: 0 -10px 40px rgba(0,0,0,.18); }
+.fiche-poignee { width: 44px; height: 5px; border-radius: 5px; background: var(--line); align-self: center; }
+.fiche-defile { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; margin: 0 -20px; padding: 2px 20px; }
+.fiche-defile::-webkit-scrollbar { display: none; }
+.pill-legende { border-color: var(--his) !important; color: var(--his-i) !important; }
+@media (min-width: 761px) { .fiche-fond { align-items: center; } .fiche { border-radius: 28px; } }
+
+/* Carrousels : rangées qui défilent horizontalement */
+.carrousel { display: flex; gap: 14px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; margin: 0 -56px; padding: 4px 56px 8px; }
+.carrousel::-webkit-scrollbar { display: none; }
+.carrousel > * { scroll-snap-align: start; flex: none; }
+@media (max-width: 760px) { .carrousel { margin: 0 -16px; padding: 4px 16px 8px; } }
+
 /* Ouverture de caisse */
 .caisse-fond { position: fixed; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(20, 24, 32, .55); backdrop-filter: blur(4px); }
 .caisse { width: 100%; max-width: 760px; padding: 24px 0; border-radius: 28px; background: var(--bg); display: flex; flex-direction: column; gap: 20px; box-shadow: 0 20px 60px rgba(0,0,0,.25); }

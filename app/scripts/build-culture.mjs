@@ -4,7 +4,9 @@
 import { writeFile, mkdir } from 'node:fs/promises'
 
 const UA = { 'User-Agent': 'Croivez/0.1 (app perso de quiz)', Accept: 'application/sparql-results+json' }
-const LIMITE = 1200
+const LIMITE = 2000
+// Seuil de notoriété abaissé pour tous les thèmes : listes bien plus longues (les plus connus restent en tête)
+const SEUIL = 0.65
 
 async function sparql(requete, essais = 3) {
   for (let i = 1; i <= essais; i++) {
@@ -25,7 +27,7 @@ async function sparql(requete, essais = 3) {
 const req = (corps, { sl = 40, extra = '', select = '' } = {}) => `
 SELECT ?item ?sl ?nFr ?nEn ?dFr ?dEn ?img ${select} WHERE {
   ${corps}
-  ?item wikibase:sitelinks ?sl. FILTER(?sl > ${sl})
+  ?item wikibase:sitelinks ?sl. FILTER(?sl > ${Math.round(sl * SEUIL)})
   ?item rdfs:label ?nFr FILTER(LANG(?nFr) = "fr")
   OPTIONAL { ?item rdfs:label ?nEn FILTER(LANG(?nEn) = "en") }
   OPTIONAL { ?item schema:description ?dFr FILTER(LANG(?dFr) = "fr") }
@@ -157,11 +159,14 @@ const THEMES = {
   // Animaux, insectes et plantes : iNaturalist (Wikidata dépasse son délai sur l'arbre du vivant).
   // Espèces les plus observées, nom commun FR/EN et photo sous licence libre.
   nature: async () => {
+    // [pack, taxon iNaturalist, groupe, nombre d'espèces]
     const GROUPES = [
-      ['animaux', 40151, { fr: 'Mammifère', en: 'Mammal' }, 300], ['animaux', 3, { fr: 'Oiseau', en: 'Bird' }, 200],
-      ['animaux', 26036, { fr: 'Reptile', en: 'Reptile' }, 80], ['animaux', 20978, { fr: 'Amphibien', en: 'Amphibian' }, 50],
-      ['animaux', 47178, { fr: 'Poisson', en: 'Fish' }, 80], ['insectes', 47158, { fr: 'Insecte', en: 'Insect' }, 400],
-      ['plantes', 47126, { fr: 'Plante', en: 'Plant' }, 400],
+      ['mammiferes', 40151, { fr: 'Mammifère', en: 'Mammal' }, 800], ['oiseaux', 3, { fr: 'Oiseau', en: 'Bird' }, 1000],
+      ['reptiles', 26036, { fr: 'Reptile', en: 'Reptile' }, 400], ['reptiles', 20978, { fr: 'Amphibien', en: 'Amphibian' }, 250],
+      ['poissons', 47178, { fr: 'Poisson', en: 'Fish' }, 500], ['poissons', 47273, { fr: 'Requin ou raie', en: 'Shark or ray' }, 150],
+      ['insectes', 47158, { fr: 'Insecte', en: 'Insect' }, 1600], ['papillons', 47157, { fr: 'Papillon', en: 'Butterfly or moth' }, 800],
+      ['araignees', 47118, { fr: 'Araignée', en: 'Spider' }, 300], ['plantes', 47126, { fr: 'Plante', en: 'Plant' }, 2000],
+      ['champignons', 47170, { fr: 'Champignon', en: 'Fungus' }, 700],
     ]
     const page = async (taxon, locale, n) => {
       const out = []
@@ -175,7 +180,7 @@ const THEMES = {
       }
       return out.slice(0, n)
     }
-    const packs = { animaux: [], insectes: [], plantes: [] }
+    const packs = Object.fromEntries([...new Set(GROUPES.map((g) => g[0]))].map((p) => [p, []]))
     for (const [pack, taxon, groupe, n] of GROUPES) {
       const fr = await page(taxon, 'fr', n)
       const en = new Map((await page(taxon, 'en', n)).map((t) => [t.id, t]))
@@ -185,12 +190,14 @@ const THEMES = {
         const nomEn = en.get(t.id)?.preferred_common_name ?? t.name
         packs[pack].push({
           id: `inat${t.id}`, n: { fr: maj(t.preferred_common_name), en: maj(nomEn) },
-          img: t.default_photo.medium_url, g: groupe.fr, obs: t.observations_count,
+          img: t.default_photo.medium_url, g: groupe.fr, obs: t.observations_count, x: { latin: t.name },
           f: [[{ fr: 'Groupe', en: 'Group' }, groupe], [{ fr: 'Nom scientifique', en: 'Scientific name' }, t.name]],
           d: { fr: `${t.name}, ${groupe.fr.toLowerCase()}`, en: `${t.name}, ${groupe.en.toLowerCase()}` },
         })
       }
     }
+    // « Tous les animaux » : mammifères, oiseaux, poissons, reptiles réunis
+    packs.animaux = ['mammiferes', 'oiseaux', 'poissons', 'reptiles'].flatMap((p) => packs[p])
     return packs
   },
 
@@ -291,6 +298,10 @@ SELECT ?item ?sl ?nFr ?nEn ?dFr ?dEn ?img WHERE {
     }
     return enrichir(items, 'P27', 'pays', { fr: 'Pays', en: 'Country' })
   },
+
+  chiens: () => sparql(req('?item wdt:P31 wd:Q39367; wdt:P18 ?img.', { sl: 8 })).then((l) => finaliser(l, (b) => ({ ...base(b), img: image(b) }))),
+  chats: () => sparql(req('?item wdt:P31 wd:Q43577; wdt:P18 ?img.', { sl: 6 })).then((l) => finaliser(l, (b) => ({ ...base(b), img: image(b) }))),
+  chevaux: () => sparql(req('?item wdt:P31 wd:Q1160573; wdt:P18 ?img.', { sl: 6 })).then((l) => finaliser(l, (b) => ({ ...base(b), img: image(b) }))),
 
   // ——— Sport ———
   clubs: () => sparql(req('?item wdt:P31 wd:Q476028; wdt:P154 ?logo. OPTIONAL { ?item wdt:P17 ?x }', { sl: 40, select: `?logo ${libSelect('x')}`, extra: `OPTIONAL { ${lib('x')} }` }))
