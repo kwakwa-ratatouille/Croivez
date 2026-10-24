@@ -4,10 +4,11 @@ import { useAuth } from '../auth'
 import { usePrefs } from '../i18n'
 import { FAMILLES, type SousTheme } from '../themes'
 import { ICONS, Icon, Piece } from '../components/ui'
-import { PRIX_CAISSE, accesQuiz, progresFamille } from '../progression'
+import { PRIX_CAISSE, accesQuiz, legendeOuverte, progresFamille } from '../progression'
 import { evenementDeLaSemaine } from '../meta'
 import Illustration from '../components/Illustration'
-import CarteCouverture, { proposerCaisse } from '../components/CarteCouverture'
+import CarteCouverture, { proposerCaisse, useCouverture } from '../components/CarteCouverture'
+import Img from '../components/Img'
 import { normaliser } from '../quiz/match'
 
 const pctFamille = (subs: SousTheme[], maitrise: Record<string, number> = {}) => {
@@ -26,6 +27,36 @@ function Tuile({ s, pct, verrou = false }: { s: SousTheme; k: string; pct: numbe
     )
   }
   return <CarteCouverture id={s.id} pct={pct} verrou={verrou} />
+}
+
+// Carte d'une famille : mosaïque de vraies photos de ses quiz, progression, Légende
+function CarteFamille({ f, i }: { f: (typeof FAMILLES)[number]; i: number }) {
+  const { lang } = usePrefs()
+  const fr = lang === 'fr'
+  const { profile } = useAuth()
+  const jouables = f.subs.filter((s) => s.jouable)
+  const photos = [useCouverture(jouables[0]?.id ?? ''), useCouverture(jouables[1]?.id ?? ''), useCouverture(jouables[2]?.id ?? '')]
+  const { possedes, total } = progresFamille(f.k, profile)
+  const pct = pctFamille(f.subs, profile?.maitrise)
+  const leg = legendeOuverte(f.k, profile)
+  return (
+    <Link to={`/themes/${f.k}`} className="carte-famille rise" style={{ animationDelay: `${i * 40}ms`, ['--k' as string]: `var(--${f.k})`, ['--kt' as string]: `var(--${f.k}-t)`, ['--ki' as string]: `var(--${f.k}-i)` }}>
+      <span className="carte-famille-mosaique">
+        {photos.map((p, n) => <span key={n}>{p ? <Img src={p} alt="" loading="lazy" /> : null}</span>)}
+      </span>
+      <span className="carte-famille-voile" />
+      {evenementDeLaSemaine().k === f.k && <span className="chip carte-famille-event">×2</span>}
+      {leg && <span className="chip carte-famille-legende">{fr ? 'Légende' : 'Legend'}</span>}
+      <span className="carte-famille-bas">
+        <span className="carte-famille-icone"><Icon d={f.icon} size={20} /></span>
+        <span style={{ flex: 1, minWidth: 0 }}>
+          <strong className="t">{f.nom[lang]}</strong>
+          <span className="carte-famille-stats">{possedes < total && <Icon d={ICONS.lock} size={12} />}{possedes}/{total} quiz · {pct} %</span>
+          <span className="bar" style={{ height: 5, background: 'rgba(255,255,255,.35)' }}><span style={{ width: `${(possedes / Math.max(1, total)) * 100}%`, background: '#fff' }} /></span>
+        </span>
+      </span>
+    </Link>
+  )
 }
 
 export default function Themes() {
@@ -90,20 +121,7 @@ export default function Themes() {
       ) : (
         <section className="grille-familles">
           {FAMILLES.map((f, i) => {
-            const pct = pctFamille(f.subs, m)
-            const { possedes: nbOuverts, total } = progresFamille(f.k, profile)
-            const ouverte = nbOuverts === total
-            return (
-              <Link key={f.k} to={`/themes/${f.k}`} className="famille rise" style={{ animationDelay: `${i * 40}ms`, filter: nbOuverts ? 'none' : 'grayscale(.55)', borderRadius: 28, padding: '18px 20px 20px', background: `var(--${f.k}-t)`, color: `var(--${f.k}-i)`, textDecoration: 'none', display: 'flex', flexDirection: 'column', gap: 10, position: 'relative', overflow: 'hidden' }}>
-                <div className="illus-famille"><Illustration k={f.k} taille={190} fond={false} /></div>
-                {evenementDeLaSemaine().k === f.k && <span className="chip" style={{ position: 'absolute', top: 10, right: 10, background: 'var(--his)', color: 'var(--surface)' }}>×2</span>}
-                <h2 className="t" style={{ fontSize: 21, fontWeight: 900 }}>{f.nom[lang]}</h2>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <div className="bar" style={{ flex: 1, height: 8, background: 'var(--surface)' }}><span style={{ width: `${pct}%`, background: `var(--${f.k})` }} /></div>
-                  <span style={{ fontSize: 13, fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: 4 }}>{!ouverte && <Icon d={ICONS.lock} size={15} />}{nbOuverts} / {total}</span>
-                </div>
-              </Link>
-            )
+            return <CarteFamille key={f.k} f={f} i={i} />
           })}
         </section>
       )}

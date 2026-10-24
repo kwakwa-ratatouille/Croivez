@@ -297,3 +297,19 @@ button { font-family: inherit; }
 .fiche-recto img, .fiche-verso img { max-height: 160px; max-width: 100%; border-radius: 14px; object-fit: contain; }
 .fiche-recto strong, .fiche-verso strong { font-size: 21px; font-weight: 900; }
 .fiche-recto small, .fiche-verso small { color: var(--muted); font-size: 13px; line-height: 1.4; }
+
+/* Cartes de famille : mosaïque photo + dégradé de la couleur de famille */
+.carte-famille { position: relative; display: block; aspect-ratio: 4 / 3; border-radius: 24px; overflow: hidden; text-decoration: none; color: #fff; background: var(--kt); box-shadow: 0 6px 18px rgba(0,0,0,.1); transition: transform .2s ease-out, box-shadow .2s; }
+.carte-famille:hover { transform: translateY(-3px); box-shadow: 0 12px 26px rgba(0,0,0,.16); }
+.carte-famille-mosaique { position: absolute; inset: 0; display: grid; grid-template-columns: 1.4fr 1fr; grid-template-rows: 1fr 1fr; gap: 2px; }
+.carte-famille-mosaique span { position: relative; overflow: hidden; background: var(--k); }
+.carte-famille-mosaique span:first-child { grid-row: span 2; }
+.carte-famille-mosaique img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform .6s ease-out; }
+.carte-famille:hover .carte-famille-mosaique img { transform: scale(1.06); }
+.carte-famille-voile { position: absolute; inset: 0; background: linear-gradient(180deg, transparent 30%, color-mix(in srgb, var(--ki) 70%, transparent) 70%, var(--ki)); }
+.carte-famille-bas { position: absolute; left: 12px; right: 12px; bottom: 12px; display: flex; align-items: flex-end; gap: 10px; }
+.carte-famille-bas strong { display: block; font-size: 17px; font-weight: 900; line-height: 1.15; text-shadow: 0 1px 6px rgba(0,0,0,.3); }
+.carte-famille-icone { width: 38px; height: 38px; flex: none; border-radius: 12px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,.22); backdrop-filter: blur(6px); }
+.carte-famille-stats { display: flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 700; opacity: .9; margin: 2px 0 5px; }
+.carte-famille-event, .carte-famille-legende { position: absolute; top: 10px; right: 10px; background: var(--lx, #E3A72F); color: #fff; }
+.carte-famille-legende { right: auto; left: 10px; background: linear-gradient(90deg, #E3A72F, #A35BE0); }

@@ -123,6 +123,7 @@ const CULTURE = {
   'dieux-mythologie': { type: 'attribut', pack: 'dieux', montrer: true, q: { fr: (n) => `De quelle mythologie vient ${n} ?`, en: (n) => `Which mythology is ${n} from?` } },
   instruments: { type: 'image', q: { fr: () => 'Quel est cet instrument ?', en: () => 'Which instrument is this?' } },
   oscars: { type: 'annee', champ: 'annee', q: { fr: (n) => `En quelle année est sorti « ${n} » (Oscar du meilleur film) ?`, en: (n) => `In what year was “${n}” released?` } },
+  affiches: { type: 'image', q: { fr: () => 'De quel film est cette affiche ?', en: () => 'Which film is this poster from?' } },
   'lieux-jeux': { type: 'attribut', q: { fr: (n) => `Dans quel jeu trouve-t-on : ${n} ?`, en: (n) => `Which game features ${n}?` } },
   sagas: { type: 'attribut', montrer: true, q: { fr: (n) => `Quel éditeur publie la saga « ${n} » ?`, en: (n) => `Who publishes the “${n}” series?` } },
   'persos-univers': { type: 'attribut', pack: 'persos-jeux', champ: 'univers', montrer: true, q: { fr: (n) => `De quel univers vient ${n} ?`, en: (n) => `Which franchise is ${n} from?` } },
