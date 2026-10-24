@@ -1,11 +1,13 @@
-import { HashRouter, Route, Routes } from 'react-router-dom'
+import { useEffect } from 'react'
+import { HashRouter, Navigate, Route, Routes, useParams } from 'react-router-dom'
 import { AuthProvider, useAuth } from './auth'
 import { PrefsProvider, usePrefs } from './i18n'
 import Layout from './components/Layout'
 import { Logo } from './components/ui'
 import Accueil from './pages/Accueil'
 import Themes from './pages/Themes'
-import Configuration from './pages/Configuration'
+import { ouvrirFiche } from './components/FicheLancement'
+import { trouverSousTheme } from './themes'
 import Partie from './pages/Partie'
 import Parametres from './pages/Parametres'
 import Connexion from './pages/Connexion'
@@ -28,6 +30,14 @@ function BientotDisponible() {
   )
 }
 
+// Ancien lien direct vers un quiz : on affiche sa famille et on ouvre la fiche de lancement
+// (le quiz est déjà choisi, il ne reste que les réglages)
+function OuvrirQuiz() {
+  const { sous = '' } = useParams()
+  useEffect(() => { ouvrirFiche(sous) }, [sous])
+  return <Navigate to={`/themes/${trouverSousTheme(sous)?.famille.k ?? ''}`} replace />
+}
+
 function Routeur() {
   const { user, profile, loading } = useAuth()
   if (loading) return <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center' }}><Logo width={72} /></div>
@@ -43,7 +53,7 @@ function Routeur() {
           <Route path="/" element={<Accueil />} />
           <Route path="/themes" element={<Themes />} />
           <Route path="/themes/:k" element={<Themes />} />
-          <Route path="/jouer/:sous" element={<Configuration />} />
+          <Route path="/jouer/:sous" element={<OuvrirQuiz />} />
           <Route path="/parametres" element={<Parametres />} />
           <Route path="/revision" element={<Revision />} />
           <Route path="/profil" element={<Profil />} />

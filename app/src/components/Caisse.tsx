@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { ouvrirFiche } from './FicheLancement'
 import { usePrefs } from '../i18n'
 import type { Famille, SousTheme } from '../themes'
 import { prefsRetour, retourFin } from '../retour'
@@ -82,7 +82,7 @@ export default function Caisse({ k, possibles, gain, onFermer }: { k: Famille; p
           <div className="rise" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14, textAlign: 'center' }}>
             <p className="t" style={{ fontSize: 26, fontWeight: 900, color: 'var(--ki)' }}>{gain.nom[lang]}</p>
             <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'center' }}>
-              <Link className="btn btn-p btn-lg" to={`/jouer/${gain.id}`}>{fr ? 'Jouer maintenant' : 'Play now'}<Icon d={ICONS.arrowR} /></Link>
+              <button className="btn btn-p btn-lg" onClick={() => { onFermer(); ouvrirFiche(gain.id) }}>{fr ? 'Jouer maintenant' : 'Play now'}<Icon d={ICONS.arrowR} /></button>
               <button className="btn btn-g btn-lg" onClick={onFermer}>{fr ? 'Plus tard' : 'Later'}</button>
             </div>
           </div>
