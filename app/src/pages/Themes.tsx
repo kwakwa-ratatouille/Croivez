@@ -8,6 +8,7 @@ import { PRIX_CAISSE, accesQuiz, legendeOuverte, progresFamille, progresLegende 
 import { evenementDeLaSemaine } from '../meta'
 import CarteCouverture, { proposerCaisse, useCouverture } from '../components/CarteCouverture'
 import Img from '../components/Img'
+import Defileur from '../components/Defileur'
 import { normaliser } from '../quiz/match'
 
 const pctFamille = (subs: SousTheme[], maitrise: Record<string, number> = {}) => {
@@ -15,6 +16,13 @@ const pctFamille = (subs: SousTheme[], maitrise: Record<string, number> = {}) =>
   return j.length ? Math.round(j.reduce((a, s) => a + (maitrise[s.id] ?? 0), 0) / j.length) : 0
 }
 type Filtre = 'tous' | 'ouverts' | 'fermes'
+// Saut vers une famille : défilement doux, puis direct si le navigateur ne l'a pas fait (animations coupées)
+function allerA(k: string) {
+  const el = document.getElementById(`famille-${k}`)
+  if (!el) return
+  el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  setTimeout(() => { if (Math.abs(el.getBoundingClientRect().top - 70) > 120) el.scrollIntoView({ block: 'start' }) }, 800)
+}
 
 // Une famille sur la page d'index : en-tête coloré + ses quiz qui défilent (débloqués d'abord)
 function RangeeFamille({ f, filtre }: { f: (typeof FAMILLES)[number]; filtre: Filtre }) {
@@ -29,7 +37,7 @@ function RangeeFamille({ f, filtre }: { f: (typeof FAMILLES)[number]; filtre: Fi
   if (!quiz.length) return null
   const event = evenementDeLaSemaine().k === f.k
   return (
-    <section className="rangee-famille" style={{ ['--k' as string]: `var(--${f.k})`, ['--kt' as string]: `var(--${f.k}-t)`, ['--ki' as string]: `var(--${f.k}-i)` }}>
+    <section id={`famille-${f.k}`} className="rangee-famille" style={{ ['--k' as string]: `var(--${f.k})`, ['--kt' as string]: `var(--${f.k}-t)`, ['--ki' as string]: `var(--${f.k}-i)` }}>
       <Link to={`/themes/${f.k}`} className="rangee-famille-tete">
         <span className="rangee-famille-icone"><Icon d={f.icon} size={22} /></span>
         <span style={{ flex: 1, minWidth: 0 }}>
@@ -42,9 +50,9 @@ function RangeeFamille({ f, filtre }: { f: (typeof FAMILLES)[number]; filtre: Fi
         </span>
         <span className="lien-voir">{fr ? 'Voir' : 'See'}<Icon d={ICONS.arrowR} size={15} /></span>
       </Link>
-      <div className="carrousel">
+      <Defileur>
         {quiz.map((s) => <CarteCouverture key={s.id} id={s.id} pct={m[s.id] ?? 0} verrou={!accesQuiz(s.id, profile)} largeur={156} />)}
-      </div>
+      </Defileur>
     </section>
   )
 }
@@ -94,7 +102,7 @@ export default function Themes() {
           <span style={{ fontSize: 30 }} aria-hidden="true">{leg ? '👑' : '🔒'}</span>
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
             <strong className="t" style={{ fontSize: 17 }}>{leg ? (fr ? 'Légende ouverte !' : 'Legend unlocked!') : (fr ? 'Légende : la difficulté ultime' : 'Legend: the ultimate level')}</strong>
-            <span style={{ fontSize: 13.5, color: 'var(--muted)' }}>{leg ? (fr ? '6 choix, 12 secondes, pièges partout, XP ×2. Choisis « Légende » dans la fiche d’un quiz.' : '6 choices, 12 s, XP ×2.') : (fr ? `Réussis les 4 niveaux (au sans-faute) de chaque quiz de la famille : ${pl.faits} / ${pl.total}.` : `Pass all 4 levels of every quiz: ${pl.faits} / ${pl.total}.`)}</span>
+            <span style={{ fontSize: 13.5, color: 'var(--muted)' }}>{leg ? (fr ? '6 choix presque identiques (dont une faute d’orthographe piège), 12 secondes, XP et pièces ×3. Choisis « Légende » dans la fiche d’un quiz.' : '6 near-identical choices, 12 s, XP and coins ×3.') : (fr ? `Réussis les 4 niveaux (au sans-faute) de chaque quiz de la famille : ${pl.faits} / ${pl.total}.` : `Pass all 4 levels of every quiz: ${pl.faits} / ${pl.total}.`)}</span>
             {!leg && <span className="bar" style={{ height: 8 }}><span style={{ width: `${(pl.faits / Math.max(1, pl.total)) * 100}%`, background: 'linear-gradient(90deg, #E3A72F, #A35BE0)' }} /></span>}
           </div>
         </section>
@@ -132,6 +140,17 @@ export default function Themes() {
         </div>
         {!n && <div role="tablist" className="onglets">{FILTRES.map(([id, l]) => <button key={id} role="tab" aria-selected={filtre === id} className="onglet" onClick={() => setFiltre(id)}>{l}</button>)}</div>}
       </header>
+      {/* Accès direct à une famille, sans tout faire défiler : la barre reste en haut de l'écran */}
+      {!n && (
+        <nav className="barre-familles" aria-label={fr ? 'Aller à une famille' : 'Jump to a family'}>
+          {FAMILLES.map((f) => (
+            <button key={f.k} type="button" className="famille-puce" style={{ ['--k' as string]: `var(--${f.k})`, ['--kt' as string]: `var(--${f.k}-t)`, ['--ki' as string]: `var(--${f.k}-i)` }}
+              onClick={() => allerA(f.k)}>
+              <span className="famille-puce-icone"><Icon d={f.icon} size={16} /></span>{f.nom[lang].split(/ [&,]/)[0]}
+            </button>
+          ))}
+        </nav>
+      )}
 
       {n ? (
         <section className="grille-quiz">

@@ -52,7 +52,10 @@ export default function Revision() {
               ? (lang === 'fr' ? `Prochaine révision le ${new Date(prochaine.due).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}.` : `Next review on ${new Date(prochaine.due).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}.`)
               : (lang === 'fr' ? 'Jouez quelques parties : vos erreurs apparaîtront ici.' : 'Play a few games: your mistakes will show up here.')}
           </p>
-          <Link className="btn btn-p" to="/themes">{lang === 'fr' ? 'Jouer' : 'Play'}<Icon d={ICONS.arrowR} /></Link>
+          {/* Rien d'urgent : on peut quand même s'entraîner sur ses erreurs en cours */}
+          {toutes.length > 0
+            ? <Link className="btn btn-p" to={`/partie?s=tout&m=qcm&n=${Math.min(20, toutes.length)}&d=4&rev=1&ids=${encodeURIComponent([...toutes].sort((a, b) => a.due - b.due).slice(0, 20).map((c) => `${c.s}~${c.id}`).join(','))}`}>{lang === 'fr' ? `S’entraîner quand même (${Math.min(20, toutes.length)} erreurs)` : 'Practice anyway'}<Icon d={ICONS.arrowR} /></Link>
+            : <Link className="btn btn-p" to="/themes">{lang === 'fr' ? 'Jouer' : 'Play'}<Icon d={ICONS.arrowR} /></Link>}
         </section>
       ) : (
         <section className="grid-auto">

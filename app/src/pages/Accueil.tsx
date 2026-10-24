@@ -12,6 +12,8 @@ import { evenementDeLaSemaine, ligueDe, ligueSuivante } from '../meta'
 import { monXpSemaine } from '../social'
 import CarteCouverture from '../components/CarteCouverture'
 import Avatar from '../components/Avatar'
+import Defileur from '../components/Defileur'
+import { pleuvoirPieces } from '../components/PluiePieces'
 
 // Derniers quiz joués sur cet appareil (d'après la mémoire des questions), du plus récent au plus ancien
 function quizRecents(): string[] {
@@ -40,7 +42,7 @@ function Rangee({ titre, sous, lien, children }: { titre: string; sous?: string;
         </div>
         {lien && <Link to={lien.to} className="lien-voir">{lien.label}<Icon d={ICONS.arrowR} size={15} /></Link>}
       </div>
-      <div className="carrousel">{children}</div>
+      <Defileur>{children}</Defileur>
     </section>
   )
 }
@@ -97,7 +99,7 @@ export default function Accueil() {
       {/* Les autres façons de jouer */}
       <section className="accueil-modes">
         <Link to="/duels" className="mode-tuile" style={{ ['--k' as string]: 'var(--pop)', ['--kt' as string]: 'var(--pop-t)', ['--ki' as string]: 'var(--pop-i)' }}>
-          <span className="mode-emoji">👥</span><strong className="t">{fr ? 'Multijoueur' : 'Multiplayer'}</strong><span>{fr ? 'Salon entre amis, jusqu’à 12' : 'Rooms up to 12'}</span>
+          <span className="mode-emoji">👥</span><strong className="t">{fr ? 'Multijoueur' : 'Multiplayer'}</strong><span>{fr ? 'Salon entre amis, jusqu’à 20' : 'Rooms up to 20'}</span>
         </Link>
         <Link to="/partie?jeu=express&d=0&m=qcm" className="mode-tuile" style={{ ['--k' as string]: 'var(--cine)', ['--kt' as string]: 'var(--cine-t)', ['--ki' as string]: 'var(--cine-i)' }}>
           <span className="mode-emoji">⚡</span><strong className="t">Express</strong><span>{fr ? 'Le max en 1 minute' : 'Most in 1 minute'}{profile?.records?.express ? ` · ${fr ? 'record' : 'best'} ${profile.records.express}` : ''}</span>
@@ -138,7 +140,7 @@ export default function Accueil() {
                   {recue
                     ? <Coche size={18} anim={false} />
                     : fini
-                      ? <button className="btn btn-p" style={{ minHeight: 34, padding: '0 10px', fontSize: 13, gap: 4 }} onClick={() => user && recupererQuete(user.uid, qu.id)}><Piece size={14} />+{qu.gain}</button>
+                      ? <button className="btn btn-p" style={{ minHeight: 34, padding: '0 10px', fontSize: 13, gap: 4 }} onClick={async () => { if (!user) return; await recupererQuete(user.uid, qu.id); pleuvoirPieces(qu.gain) }}><Piece size={14} />+{qu.gain}</button>
                       : <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 13, fontWeight: 700, color: 'var(--his-i)' }}><Piece size={14} />{qu.gain}</span>}
                 </div>
                 {!recue && <div className="bar" style={{ height: 6 }}><span style={{ width: `${(v / qu.objectif) * 100}%`, background: fini ? 'var(--ok)' : 'var(--his)' }} /></div>}

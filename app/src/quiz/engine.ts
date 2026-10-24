@@ -293,7 +293,9 @@ const POOL_PAYS = { 1: 40, 2: 90, 3: 150, 4: Infinity } as const
 const MIN_FR = { 1: 80_000, 2: 20_000, 3: 5_000, 4: 0 } as const
 const MIN_MONDE = { 1: 1_500_000, 2: 400_000, 3: 100_000, 4: 15_000 } as const
 // Tolérance (km) : large en facile, plus serrée en expert
-const SEUIL_FR = { 1: 80, 2: 55, 3: 40, 4: 30 } as const
+// Tolérance (km) : large en facile pour apprendre où sont les villes, serrée en expert
+const SEUIL_FR = { 1: 160, 2: 100, 3: 60, 4: 35 } as const
+const FACTEUR_MONDE = { 1: 2.5, 2: 1.7, 3: 1.2, 4: 1 } as const
 
 // Distracteurs « similaires » : même continent d'abord
 // Pour les drapeaux : d'abord les sosies (Tchad/Roumanie, Indonésie/Monaco…), même hors de la difficulté choisie
@@ -428,7 +430,7 @@ async function villesFrance(o: Opts): Promise<Question[]> {
     return {
       id: `${nom}|${dep}`, imagesOnly: false, options: [], acceptees: [], reponse: nom,
       enonce: lang === 'fr' ? `Placez ${nom} sur la carte` : `Place ${nom} on the map`,
-      carte: { vue: 'france', cible: [lat, lng], seuilKm: SEUIL_FR[difficulte] },
+      carte: { vue: 'france', cible: [lat, lng], seuilKm: o.difficulte === LEGENDE ? 25 : SEUIL_FR[difficulte] },
       fiche: {
         faits: [{ l: L[lang].dep, v: `${deps[dep] ?? dep} (${dep})` }, { l: L[lang].population, v: fmt.format(pop) }],
         saviez: lang === 'fr' ? `${nom} est la ${ordinal(rang, lang).replace('1er', '1re')} commune la plus peuplée de France métropolitaine.` : `${nom} is the ${ordinal(rang, lang)} most populous town in mainland France.`,
@@ -451,7 +453,7 @@ async function villesMonde(o: Opts, tous: Pays[]): Promise<Question[]> {
     const p = parCode.get(cc)!
     const rangPays = villes.filter((v) => v[4] === cc).findIndex((v) => v[0] === nom) + 1
     // Seuil proportionnel à la taille du pays : 30 km au Luxembourg, ~400 km en Russie
-    const seuil = Math.max(50, Math.round(Math.sqrt(p.superficie || 10000) * 0.15))
+    const seuil = Math.round(Math.max(50, Math.sqrt(p.superficie || 10000) * 0.15) * (o.difficulte === LEGENDE ? 0.8 : FACTEUR_MONDE[palierDe(o.difficulte)]))
     return {
       id: `${nom}|${cc}`, imagesOnly: false, options: [], acceptees: [], reponse: nom,
       enonce: lang === 'fr' ? `Placez ${nom} (${p.nom.fr})` : `Place ${nom} (${p.nom.en})`,
@@ -466,6 +468,33 @@ async function villesMonde(o: Opts, tous: Pays[]): Promise<Question[]> {
       },
     }
   })
+}
+
+// ——— Pièges de la Légende ———
+// Ressemblance entre deux réponses : trigrammes communs + bonus si même premier ou même dernier mot
+const trigrammes = (s: string) => { const t = ` ${sansAccent(s)} `; const out = new Set<string>(); for (let i = 0; i < t.length - 2; i++) out.add(t.slice(i, i + 3)); return out }
+export function ressemblance(a: string, b: string) {
+  const ta = trigrammes(a), tb = trigrammes(b)
+  let communs = 0
+  for (const t of ta) if (tb.has(t)) communs++
+  const ma = sansAccent(a).split(/\s+/), mb = sansAccent(b).split(/\s+/)
+  return communs / Math.max(1, Math.min(ta.size, tb.size)) + (ma[0] === mb[0] ? 0.6 : 0) + (ma.length > 1 && ma[ma.length - 1] === mb[mb.length - 1] ? 0.4 : 0)
+}
+// Faux jumeau : la bonne réponse avec une faute d'orthographe discrète (lettres inversées, accent, consonne doublée…)
+export function fauxJumeau(s: string): string | null {
+  const mots = s.split(' ')
+  const i = mots.reduce((m, w, k) => (w.length > mots[m].length ? k : m), 0)
+  const w = mots[i]
+  if (w.length < 5 || /\d/.test(w)) return null
+  const essais: ((w: string) => string)[] = [
+    (w) => { const k = 1 + Math.floor(rand() * (w.length - 3)); return w.slice(0, k) + w[k + 1] + w[k] + w.slice(k + 2) },
+    (w) => w.replace(/([bcdfglmnprst])(?!\1)/, '$1$1'),
+    (w) => w.replace(/([bcdfglmnprst])\1/, '$1'),
+    (w) => w.replace(/é/, 'è'),
+    (w) => w.replace(/ph/, 'f').replace(/^((?!f).)*$/, (x) => x.replace(/y/, 'i')),
+  ]
+  for (const f of melanger(essais)) { const v = f(w); if (v && v !== w && v.length >= w.length - 1) { mots[i] = v; return mots.join(' ') } }
+  return null
 }
 
 // Les éléments sont triés du plus connu au moins connu (nombre d'articles Wikipédia)
@@ -527,7 +556,16 @@ function culture(o: Opts, tousItems: ItemCulture[]): Question[] {
           // groupe : un champ annexe sert de famille (jeux : même genre de jeu → propositions crédibles)
           : melanger((o.difficulte === LEGENDE || cfg.groupe ? items : pool).filter((x) => (cfg.groupe ? texte(x.x?.[cfg.groupe], 'fr') === texte(it.x?.[cfg.groupe], 'fr') : x.g && x.g === it.g)))
         const autresMarques = (l: ItemCulture[]) => (memeMarque === 'autre' ? l.filter((x) => marque(x) !== marque(it)) : l)
-        const cand = [...memes, ...melanger(autresMarques(pool.length >= 4 ? pool : items))]
+        let cand = [...memes, ...melanger(autresMarques(pool.length >= 4 ? pool : items))]
+        // Légende : les noms les plus ressemblants de tout le quiz (même début, mêmes syllabes), plus un « faux jumeau »
+        if (o.difficulte === LEGENDE) {
+          const valeur = (x: ItemCulture) => (cfg.type === 'image' ? x.n[lang] : texte(val(x), lang))
+          const proches = items.filter((x) => x.id !== it.id && valeur(x) && valeur(x) !== reponse)
+            .map((x) => ({ x, s: ressemblance(valeur(x), reponse) })).sort((a, b) => b.s - a.s).slice(0, 10)
+          cand = [...melanger(proches.map((p) => p.x)), ...cand]
+          const j = fauxJumeau(reponse)
+          if (j && !vus.has(j) && !items.some((x) => valeur(x) === j)) { vus.add(j); autres.push(j) }
+        }
         for (const x of cand) {
           const v = cfg.type === 'image' ? x.n[lang] : texte(val(x), lang)
           if (v && !vus.has(v)) { vus.add(v); autres.push(v) }

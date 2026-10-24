@@ -4,7 +4,7 @@ import { arrayUnion, deleteField, doc, getDoc, onSnapshot, serverTimestamp, setD
 import { auth, db } from './firebase'
 import { cleRevision, planifier, type CarteRevision } from './quiz/revision'
 import type { SousThemeId } from './quiz/engine'
-import { publierXp, resumePublic, synchroniserProfilPublic } from './social'
+import { publierRecord, publierXp, resumePublic, synchroniserProfilPublic } from './social'
 import { avancerQuetes, type EtatQuetes, type StatsPartie } from './quetes'
 import { secretsObtenus } from './meta'
 
@@ -40,6 +40,9 @@ export type Profile = {
   paliers?: Record<string, number[]> // difficultés réussies (sans-faute, cumulatif) par quiz : ouvre la Légende
   toutDebloque?: boolean // menu de test : tous les quiz, toutes les difficultés et la Légende ouverts
   titre?: string // titre équipé (affiché sous le pseudo)
+  bio?: string // phrase de la vitrine
+  vitrineFond?: string // fond de la vitrine
+  farm?: Record<string, Record<string, number>> // parties du jour par niveau (XP dégressive), clé = date
   miniJeux?: string[] // mini-jeux déjà joués (cadre Holographique, titre Touche-à-tout)
   exploits?: { salons?: number; victoiresMulti?: number; tv?: number; tvHote?: number; duelsGagnes?: number } // compteurs des récompenses multijoueur
 }
@@ -121,6 +124,7 @@ type Partie = {
   record?: { jeu: string; score: number }
   multi?: { mode: 'salon' | 'tv' | 'duel'; gagne: boolean } // partie à plusieurs (récompenses)
   miniJeu?: string
+  cleFarm?: string // niveau ou mode joué (XP dégressive)
 }
 
 // Enregistre une partie : XP, série, maîtrise, statistiques des badges et cartes de révision
@@ -177,6 +181,8 @@ export async function enregistrerPartie(uid: string, profile: Profile, p: Partie
     ...(p.stats ? { quetes: avancerQuetes(profile.quetes, p.stats) } : {}),
     partiesJour: partiesJour,
     ...(p.miniJeu ? { miniJeux: arrayUnion(p.miniJeu) } : {}),
+    // Compteur du jour pour l'XP dégressive (les jours précédents sont effacés)
+    ...(p.cleFarm ? { farm: { ...Object.fromEntries(Object.keys(profile.farm ?? {}).filter((j) => j !== today).map((j) => [j, deleteField()])), [today]: { [p.cleFarm]: increment(1) } } } : {}),
     ...(p.multi ? { exploits: {
       ...(p.multi.mode === 'duel' ? (p.multi.gagne ? { duelsGagnes: increment(1) } : {}) : { salons: increment(1), ...(p.multi.gagne ? { victoiresMulti: increment(1) } : {}) }),
       ...(p.multi.mode === 'tv' ? { tv: increment(1) } : {}),
@@ -187,5 +193,6 @@ export async function enregistrerPartie(uid: string, profile: Profile, p: Partie
     // Sans-faute obligatoire ; valider un niveau valide aussi tous ceux du dessous
     ...(valide ? { paliers: { [p.sousTheme]: arrayUnion(...[1, 2, 3, 4].filter((d) => d <= p.difficulte!)) } } : {}),
   }, { merge: true })
+  if (p.record && (p.record.jeu === 'express' || p.record.jeu === 'survie')) publierRecord(uid, profile.pseudo, { avatar: profile.avatar, cadre: profile.cadre }, p.record.jeu, p.record.score).catch(console.error)
   await publierXp(uid, profile.pseudo, p.xp, (profile.xp ?? 0) + p.xp, serie, { avatar: profile.avatar, cadre: profile.cadre }, resumePublic({ ...profile, parties: (profile.parties ?? 0) + 1, maitrise: p.revision ? profile.maitrise : { ...profile.maitrise, [p.sousTheme]: maitrise }, paliers: nouveauxPaliers })).catch(console.error)
 }

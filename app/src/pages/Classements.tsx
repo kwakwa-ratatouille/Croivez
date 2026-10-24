@@ -2,13 +2,13 @@ import { Link } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { useAuth } from '../auth'
 import { usePrefs } from '../i18n'
-import { BONUS_LEGENDE, POINTS_NIVEAU, classementGlobal, classementSemaine, erudition, profilsDe } from '../social'
+import { BONUS_LEGENDE, POINTS_NIVEAU, classementGlobal, classementRecord, classementSemaine, erudition, profilsDe, type PeriodeRecord } from '../social'
 import { BOUTIQUE, LIGUES, ligueDe, ligueSuivante } from '../meta'
 import { ICONS, Icon } from '../components/ui'
 import Avatar from '../components/Avatar'
 
 type Ligne = { uid: string; pseudo: string; valeur: number; niveau?: number; avatar?: string; cadre?: string; titre?: string }
-type Onglet = 'ligue' | 'semaine' | 'global' | 'amis'
+type Onglet = 'ligue' | 'semaine' | 'records' | 'global' | 'amis'
 
 // Classements : la ligue et la semaine se jouent à l'XP (l'effort de la semaine),
 // le classement de tous les temps et celui des amis à l'érudition (le savoir prouvé au sans-faute)
@@ -20,32 +20,36 @@ export default function Classements() {
   const [lignes, setLignes] = useState<Ligne[] | null>(null)
   const [erreur, setErreur] = useState('')
   const [aide, setAide] = useState(false)
+  const [jeuRecord, setJeuRecord] = useState<'express' | 'survie'>('express')
+  const [periode, setPeriode] = useState<PeriodeRecord>('jour')
 
   useEffect(() => {
     setLignes(null)
     setErreur('')
-    const charger: Promise<Ligne[]> = onglet === 'semaine' || onglet === 'ligue'
+    const charger: Promise<Ligne[]> = onglet === 'records'
+      ? classementRecord(jeuRecord, periode).then((l) => l.map((x) => ({ ...x, valeur: x.score })))
+      : onglet === 'semaine' || onglet === 'ligue'
       ? classementSemaine().then((l) => l.map((x) => ({ ...x, valeur: x.xp })))
       : onglet === 'global'
         ? classementGlobal().then((l) => l.map((x) => ({ ...x, valeur: x.erudition ?? 0 })))
         : profilsDe([user!.uid, ...(profile?.amis ?? [])]).then((l) => l.map((x) => ({ ...x, valeur: x.uid === user!.uid && profile ? erudition(profile) : x.erudition ?? 0 })).sort((a, b) => b.valeur - a.valeur))
     charger.then(setLignes).catch((e) => { console.error(e); setErreur(fr ? 'Classement indisponible (connexion ou règles Firebase).' : 'Leaderboard unavailable.') })
-  }, [onglet, user, profile, fr])
+  }, [onglet, user, profile, fr, jeuRecord, periode])
 
-  const ONGLETS: [Onglet, string][] = [['ligue', fr ? 'Ma ligue' : 'My league'], ['semaine', fr ? 'Semaine' : 'Week'], ['global', fr ? 'Érudition' : 'Knowledge'], ['amis', fr ? 'Amis' : 'Friends']]
+  const ONGLETS: [Onglet, string][] = [['ligue', fr ? 'Ma ligue' : 'My league'], ['semaine', fr ? 'Semaine' : 'Week'], ['records', 'Records'], ['global', fr ? 'Érudition' : 'Knowledge'], ['amis', fr ? 'Amis' : 'Friends']]
   const medaille = ['#E3A72F', '#9AA3AD', '#C98B5A']
   const xpSemaine = onglet === 'ligue' || onglet === 'semaine' ? lignes?.find((l) => l.uid === user?.uid)?.valeur ?? 0 : 0
   const maLigue = ligueDe(xpSemaine)
   const suivante = ligueSuivante(xpSemaine)
   const affichees = onglet === 'ligue' ? lignes?.filter((l) => ligueDe(l.valeur).id === maLigue.id) : lignes
-  const unite = onglet === 'global' || onglet === 'amis' ? (fr ? 'pts' : 'pts') : 'XP'
+  const unite = onglet === 'records' ? (fr ? 'bonnes' : 'correct') : onglet === 'global' || onglet === 'amis' ? 'pts' : 'XP'
   const fmt = new Intl.NumberFormat(fr ? 'fr-FR' : 'en-GB')
 
   return (
     <>
       <header style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
         <h1 className="t" style={{ fontSize: 34, fontWeight: 900 }}>{fr ? 'Classements' : 'Leaderboards'}</h1>
-        <p style={{ color: 'var(--muted)' }}>{onglet === 'global' || onglet === 'amis'
+        <p style={{ color: 'var(--muted)' }}>{onglet === 'records' ? (fr ? 'Les meilleurs scores en Express (60 secondes) et en Survie (3 vies).' : 'Best Express and Survival scores.') : onglet === 'global' || onglet === 'amis'
           ? (fr ? 'Classés à l’érudition : les niveaux réussis au sans-faute, pas le temps passé.' : 'Ranked by knowledge: levels passed flawlessly, not time spent.')
           : (fr ? 'Classés à l’XP gagnée cette semaine. Remise à zéro chaque lundi.' : 'Ranked by XP earned this week. Resets every Monday.')}</p>
       </header>
@@ -53,6 +57,18 @@ export default function Classements() {
         {ONGLETS.map(([id, l]) => <button key={id} role="tab" aria-selected={onglet === id} className="onglet" onClick={() => setOnglet(id)}>{l}</button>)}
       </div>
 
+      {onglet === 'records' && (
+        <section className="card" style={{ padding: 14, display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div className="salon-choix">
+            <button className="pill" aria-pressed={jeuRecord === 'express'} onClick={() => setJeuRecord('express')}>⚡ Express · 60 s</button>
+            <button className="pill" aria-pressed={jeuRecord === 'survie'} onClick={() => setJeuRecord('survie')}>❤️ {fr ? 'Survie · 3 vies' : 'Survival · 3 lives'}</button>
+          </div>
+          <div role="tablist" className="onglets">
+            {([['jour', fr ? 'Aujourd’hui' : 'Today'], ['mois', fr ? 'Ce mois' : 'This month'], ['annee', fr ? 'Cette année' : 'This year'], ['tout', fr ? 'Tous les temps' : 'All time']] as [PeriodeRecord, string][]).map(([id, l]) => <button key={id} role="tab" aria-selected={periode === id} className="onglet" onClick={() => setPeriode(id)}>{l}</button>)}
+          </div>
+          <Link to={`/partie?jeu=${jeuRecord}&d=0&m=qcm`} className="btn btn-p" style={{ alignSelf: 'flex-start' }}>{fr ? 'Battre le record' : 'Beat the record'}<Icon d={ICONS.arrowR} /></Link>
+        </section>
+      )}
       {onglet === 'ligue' && lignes && (
         <section className="card rise ligue-carte" style={{ ['--lc' as string]: maLigue.couleur }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>

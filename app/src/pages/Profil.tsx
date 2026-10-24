@@ -74,27 +74,47 @@ export function CarteJoueur({ p, moi = false }: { p: ProfilPublic; moi?: boolean
   )
 }
 
+// Fonds de vitrine au choix
+export const FONDS_VITRINE: Record<string, string> = {
+  aurore: 'linear-gradient(120deg, #7B5CF0, #E25FA8 55%, #F39A4E)', ocean: 'linear-gradient(120deg, #0EA5E9, #6366F1)', foret: 'linear-gradient(120deg, #14532D, #22C55E)',
+  braise: 'linear-gradient(120deg, #7F1D1D, #F97316)', nuit: 'linear-gradient(120deg, #0F0C29, #302B63 60%, #24243E)', or: 'linear-gradient(120deg, #B8862E, #F4C430 60%, #FFF2B8)',
+  bonbon: 'linear-gradient(120deg, #F472B6, #FBCFE8 50%, #A5F3FC)', ardoise: 'linear-gradient(120deg, #334155, #64748B)',
+}
+
+// Vitrine : une bannière personnalisable (fond, phrase, 3 badges, thème favori, chiffres forts)
 function Vitrine({ p, moi, onModifier }: { p: ProfilPublic; moi: boolean; onModifier?: () => void }) {
   const { lang } = usePrefs()
   const fr = lang === 'fr'
+  const fmt = new Intl.NumberFormat(fr ? 'fr-FR' : 'en-GB')
+  const fond = FONDS_VITRINE[p.vitrineFond ?? ''] ?? FONDS_VITRINE.aurore
+  const cases = [0, 1, 2].map((i) => p.vitrine?.[i])
   return (
-    <section className="card" style={{ padding: 16, display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'center' }}>
-      <div style={{ flex: '1 1 260px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-          <h2 className="t" style={{ fontSize: 17, fontWeight: 900 }}>{fr ? 'Vitrine' : 'Showcase'}</h2>
-          {moi && <button className="btn btn-g" style={{ minHeight: 36, fontSize: 14 }} onClick={onModifier}><Icon d={ICONS.settings} size={16} />{fr ? 'Modifier' : 'Edit'}</button>}
+    <section className="vitrine rise" style={{ background: fond }}>
+      <div className="vitrine-haut">
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <span className="eyebrow" style={{ color: 'rgba(255,255,255,.8)' }}>{fr ? 'Vitrine' : 'Showcase'}</span>
+          <p className="t vitrine-bio">{p.bio || (moi ? (fr ? 'Ajoute une phrase qui te ressemble…' : 'Add a line about you…') : '')}</p>
         </div>
-        <div style={{ display: 'flex', gap: 8, justifyContent: 'space-around' }}>
-          {(p.vitrine?.length ? p.vitrine : []).map((v) => <Medaille key={v} v={v} lang={lang} />)}
-          {!p.vitrine?.length && <span style={{ color: 'var(--muted)', fontSize: 14 }}>{moi ? (fr ? 'Choisis jusqu’à 3 badges à exposer.' : 'Pick up to 3 badges.') : (fr ? 'Vitrine vide' : 'Empty')}</span>}
-        </div>
+        {moi && <button className="btn vitrine-modifier" onClick={onModifier}><Icon d={ICONS.settings} size={16} />{fr ? 'Personnaliser' : 'Customize'}</button>}
       </div>
-      {p.favori && (
-        <div style={{ width: 150, display: 'flex', flexDirection: 'column', gap: 6 }}>
-          <span className="eyebrow">{fr ? 'Thème favori' : 'Favourite'}</span>
-          <CarteCouverture id={p.favori} largeur={150} />
+      <div className="vitrine-corps">
+        <div className="vitrine-badges">
+          {cases.map((v, i) => v
+            ? <div key={i} className="vitrine-case"><Medaille v={v} lang={lang} taille={64} /></div>
+            : <div key={i} className="vitrine-case vide">{moi ? '+' : ''}</div>)}
         </div>
-      )}
+        <div className="vitrine-chiffres">
+          <div><strong className="t">{fmt.format(p.erudition ?? 0)}</strong><span>{fr ? 'érudition' : 'knowledge'}</span></div>
+          <div><strong className="t">{p.meilleureSerie ?? 0}</strong><span>{fr ? 'jours de série max' : 'best streak'}</span></div>
+          <div><strong className="t">{fmt.format(p.bonnes ?? 0)}</strong><span>{fr ? 'bonnes réponses' : 'correct answers'}</span></div>
+        </div>
+        {p.favori && (
+          <div className="vitrine-favori">
+            <span className="eyebrow" style={{ color: 'rgba(255,255,255,.85)' }}>{fr ? 'Thème favori' : 'Favourite'}</span>
+            <CarteCouverture id={p.favori} largeur={150} />
+          </div>
+        )}
+      </div>
     </section>
   )
 }
@@ -131,6 +151,13 @@ export default function Profil() {
             {obtenus.length === 0 && <span style={{ color: 'var(--muted)' }}>{fr ? 'Aucun badge pour l’instant.' : 'No badge yet.'}</span>}
             {obtenus.map(({ b, n }) => <button key={b.id} type="button" className="pill" aria-pressed={vitrine.some((v) => v.startsWith(b.id + ':'))} onClick={() => basculer(`${b.id}:${n}`)}>{b.nom[lang]} · {PALIERS[n - 1].nom[lang]}</button>)}
           </div>
+          <strong>{fr ? 'Fond de la vitrine' : 'Showcase background'}</strong>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            {Object.entries(FONDS_VITRINE).map(([id, g]) => <button key={id} type="button" aria-label={id} aria-pressed={(profile.vitrineFond ?? 'aurore') === id} className="pastille-fond" style={{ background: g }} onClick={() => publierVitrine(user.uid, profile, { vitrineFond: id })} />)}
+          </div>
+          <label style={{ display: 'flex', flexDirection: 'column', gap: 6, fontWeight: 600 }}>{fr ? 'Ta phrase (60 caractères)' : 'Your line (60 chars)'}
+            <input className="input" maxLength={60} defaultValue={profile.bio ?? ''} placeholder={fr ? 'Ex. : Imbattable sur les drapeaux 🌍' : 'e.g. Unbeatable on flags'} onBlur={(e) => publierVitrine(user.uid, profile, { bio: e.target.value.trim().slice(0, 60) })} />
+          </label>
           <label style={{ display: 'flex', alignItems: 'center', gap: 10, fontWeight: 600 }}>{fr ? 'Thème favori' : 'Favourite'}
             <select className="input" style={{ flex: 1, minHeight: 44 }} value={profile.favori ?? ''} onChange={(e) => publierVitrine(user.uid, profile, { favori: e.target.value })}>
               <option value="">—</option>

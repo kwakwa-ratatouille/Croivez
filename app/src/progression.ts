@@ -40,6 +40,19 @@ export const rareteDe = (id: string): Rarete => RARETE[id] ?? 'rare'
 export const POIDS: Record<Rarete, number> = { commun: 60, rare: 25, epique: 11, legendaire: 4 }
 export const PRIX_CAISSE = 100
 
+// ——— XP anti-farm : refaire sans cesse le même niveau ne fait plus grimper ———
+// Le même niveau (ou le même mode) rejoué le même jour rapporte de moins en moins d'XP ; un niveau déjà réussi
+// au sans-faute rapporte moitié moins ; le réussir pour la première fois donne un gros bonus.
+// Pour monter tout en haut, il faut donc tout réussir au moins une fois. Les pièces, elles, ne changent pas.
+export const DEGRESSIF = [1, 0.6, 0.35, 0.15, 0.05]
+const aujourdhui = () => new Date().toLocaleDateString('sv')
+export function facteurXp(p: Profile | null | undefined, cle: string, dejaValide: boolean) {
+  const n = p?.farm?.[aujourdhui()]?.[cle] ?? 0
+  return DEGRESSIF[Math.min(n, DEGRESSIF.length - 1)] * (dejaValide ? 0.5 : 1)
+}
+export const partiesDuJour = (p: Profile | null | undefined, cle: string) => p?.farm?.[aujourdhui()]?.[cle] ?? 0
+export const BONUS_PREMIERE = { 1: 50, 2: 100, 3: 175, 4: 250 } as Record<number, number>
+
 // 2 pièces par bonne réponse, + bonus défi du jour réussi et sans-faute
 export const piecesGagnees = (bonnes: number, total: number, defi: boolean) =>
   bonnes * 2 + (defi && bonnes >= total / 2 ? 20 : 0) + (bonnes === total && total >= 10 ? 15 : 0)
@@ -123,4 +136,13 @@ export const payerPieces = (uid: string, n: number) => depenser(uid, n)
 export const testToutDebloquer = (uid: string) => setDoc(doc(db, 'users', uid), { familles: deleteField(), quiz: deleteField(), choixFait: deleteField(), toutDebloque: true }, { merge: true })
 // Repartir de zéro côté progression : choix des 6 sous-thèmes, 50 pièces (XP et stats conservés)
 export const testReinitialiser = (uid: string) => setDoc(doc(db, 'users', uid), { familles: deleteField(), quiz: [], choixFait: false, sauts: deleteField(), toutDebloque: deleteField(), pieces: 50 }, { merge: true })
+// Remise à zéro complète (test) : toute la progression repart de rien ; compte, pseudo et amis conservés
+const EFFACES = ['familles', 'sauts', 'paliers', 'maitrise', 'revision', 'album', 'toutDebloque', 'farm', 'miniJeux', 'exploits', 'secrets', 'possede', 'avatar', 'cadre', 'titre', 'records', 'quetes', 'defiJour', 'vitrine', 'favori', 'bio', 'vitrineFond']
+export async function testRemiseAZero(uid: string) {
+  await setDoc(doc(db, 'users', uid), {
+    ...Object.fromEntries(EFFACES.map((k) => [k, deleteField()])),
+    quiz: [], choixFait: false, pieces: 50, xp: 0, parties: 0, bonnes: 0, sansFaute: 0, defis: 0, serie: 0, meilleureSerie: 0, partiesJour: 0, dernierJour: '',
+  }, { merge: true })
+  try { Object.keys(localStorage).filter((k) => k.startsWith('memoire:') || k === 'nouveautesVues' || k === 'dernierMiniJeu').forEach((k) => localStorage.removeItem(k)) } catch { /* stockage indisponible */ }
+}
 export const testPieces = (uid: string, n: number) => setDoc(doc(db, 'users', uid), { pieces: increment(n) }, { merge: true })

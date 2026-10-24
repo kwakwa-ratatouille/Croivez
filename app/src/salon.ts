@@ -8,7 +8,7 @@ import type { Lang } from './i18n'
 // Stockés sous « duels/salon-CODE » : les règles de la base temps réel ouvrent déjà ce chemin aux joueurs connectés.
 // Tout le monde génère les mêmes questions avec la même graine ; l'hôte fait avancer les questions
 // (si l'hôte part, n'importe quel joueur prend le relais une fois le temps largement écoulé).
-export const MAX_JOUEURS = 12
+export const MAX_JOUEURS = 20
 export const REVELATION_MS = 3500 // temps pour voir la bonne réponse et le classement entre deux questions
 const chemin = (code: string) => `duels/salon-${code}`
 

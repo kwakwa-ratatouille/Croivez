@@ -7,6 +7,7 @@ import MiseAJour from './MiseAJour'
 import { useEffect, useRef, useState } from 'react'
 import MenuTest from './MenuTest'
 import Nouveautes from './Nouveautes'
+import PluiePieces from './PluiePieces'
 import Avatar from './Avatar'
 import FicheLancement from './FicheLancement'
 import Achat from './Achat'
@@ -65,6 +66,7 @@ export default function Layout() {
     <div className="shell">
       {test && <MenuTest onFermer={() => setTest(false)} />}
       <Nouveautes />
+      <PluiePieces />
       {achat && <Achat k={achat as Famille} onFermer={() => setAchat(null)} />}
       {fiche && <FicheLancement id={fiche} onFermer={() => setFiche(null)} />}
       <nav className="side" aria-label="Navigation principale">

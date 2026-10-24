@@ -4,7 +4,7 @@ import { niveau, type Profile } from './auth'
 import { FAMILLES } from './themes'
 
 // Profil public (lisible par tous les joueurs connectés) : sert aux classements et à la recherche d'amis
-export type ProfilPublic = { uid: string; pseudo: string; xp: number; niveau: number; serie: number; avatar?: string; cadre?: string; vitrine?: string[]; favori?: string; familles?: Record<string, number>; parties?: number; bonnes?: number; meilleureSerie?: number; erudition?: number; titre?: string }
+export type ProfilPublic = { uid: string; pseudo: string; xp: number; niveau: number; serie: number; avatar?: string; cadre?: string; vitrine?: string[]; favori?: string; familles?: Record<string, number>; parties?: number; bonnes?: number; meilleureSerie?: number; erudition?: number; titre?: string; bio?: string; vitrineFond?: string }
 
 // ——— Érudition : le classement global récompense le savoir, pas le temps passé ———
 // Chaque niveau réussi au sans-faute rapporte des points (les niveaux sautés en payant ne comptent pas),
@@ -29,9 +29,9 @@ export function resumePublic(p: Profile) {
     const j = f.subs.filter((s) => s.jouable)
     familles[f.k] = j.length ? Math.round(j.reduce((a, s) => a + (p.maitrise?.[s.id] ?? 0), 0) / j.length) : 0
   }
-  return { familles, vitrine: p.vitrine ?? [], favori: p.favori ?? '', parties: p.parties ?? 0, bonnes: p.bonnes ?? 0, meilleureSerie: p.meilleureSerie ?? p.serie ?? 0, erudition: erudition(p), titre: p.titre ?? '' }
+  return { familles, vitrine: p.vitrine ?? [], favori: p.favori ?? '', parties: p.parties ?? 0, bonnes: p.bonnes ?? 0, meilleureSerie: p.meilleureSerie ?? p.serie ?? 0, erudition: erudition(p), titre: p.titre ?? '', bio: p.bio ?? '', vitrineFond: p.vitrineFond ?? '' }
 }
-export const publierVitrine = (uid: string, p: Profile, maj: { vitrine?: string[]; favori?: string }) => Promise.all([
+export const publierVitrine = (uid: string, p: Profile, maj: { vitrine?: string[]; favori?: string; bio?: string; vitrineFond?: string }) => Promise.all([
   setDoc(doc(db, 'users', uid), maj, { merge: true }),
   setDoc(doc(db, 'profils', uid), { ...resumePublic({ ...p, ...maj }) }, { merge: true }),
 ])
@@ -108,6 +108,27 @@ export async function profilsDe(uids: string[]): Promise<ProfilPublic[]> {
 export async function classementGlobal(): Promise<ProfilPublic[]> {
   const snap = await getDocs(query(collection(db, 'profils'), orderBy('erudition', 'desc'), limit(50)))
   return snap.docs.map((d) => ({ uid: d.id, ...d.data() } as ProfilPublic))
+}
+
+// ——— Records Express (60 s) et Survie (3 vies) : du jour, du mois, de l'année et de tous les temps ———
+// Rangés sous « semaines/rec-JEU-PERIODE/scores/UID » (chemin déjà autorisé par les règles), meilleur score gardé.
+export type PeriodeRecord = 'jour' | 'mois' | 'annee' | 'tout'
+export function clePeriode(p: PeriodeRecord, d = new Date()) {
+  const j = d.toLocaleDateString('sv')
+  return p === 'jour' ? j : p === 'mois' ? j.slice(0, 7) : p === 'annee' ? j.slice(0, 4) : 'tout'
+}
+export async function publierRecord(uid: string, pseudo: string, look: { avatar?: string; cadre?: string }, jeu: string, score: number) {
+  if (score <= 0) return
+  const apparence = { ...(look.avatar ? { avatar: look.avatar } : {}), ...(look.cadre ? { cadre: look.cadre } : {}) }
+  await Promise.all((['jour', 'mois', 'annee', 'tout'] as PeriodeRecord[]).map((p) => runTransaction(db, async (tx) => {
+    const ref = doc(db, 'semaines', `rec-${jeu}-${clePeriode(p)}`, 'scores', uid)
+    const avant = ((await tx.get(ref)).data()?.score as number | undefined) ?? 0
+    if (score > avant) tx.set(ref, { pseudo, score, t: Date.now(), ...apparence })
+  })))
+}
+export async function classementRecord(jeu: string, p: PeriodeRecord) {
+  const snap = await getDocs(query(collection(db, 'semaines', `rec-${jeu}-${clePeriode(p)}`, 'scores'), orderBy('score', 'desc'), limit(50)))
+  return snap.docs.map((d) => ({ uid: d.id, ...(d.data() as { pseudo: string; score: number; avatar?: string; cadre?: string }) }))
 }
 
 // XP gagnée cette semaine (ligue hebdomadaire)

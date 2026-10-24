@@ -69,7 +69,7 @@ export default function Duels() {
     <>
       <header style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
         <h1 className="t" style={{ fontSize: 34, fontWeight: 900 }}>{fr ? 'Multijoueur' : 'Multiplayer'}</h1>
-        <p style={{ fontSize: 16, color: 'var(--muted)' }}>{fr ? 'Joue en direct avec tes amis : un salon jusqu’à 12 joueurs, ou un duel en face à face.' : 'Play live with friends: a room for up to 12, or a one-on-one duel.'}</p>
+        <p style={{ fontSize: 16, color: 'var(--muted)' }}>{fr ? 'Joue en direct avec tes amis : un salon jusqu’à 20 joueurs, ou un duel en face à face.' : 'Play live with friends: a room for up to 20, or a one-on-one duel.'}</p>
       </header>
 
       {/* Salon : la grande nouveauté, mise en avant */}

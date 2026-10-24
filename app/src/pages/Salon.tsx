@@ -19,6 +19,7 @@ import Extrait from '../components/Extrait'
 import Chrono, { BarreChrono } from '../components/Chrono'
 import LogoTruque, { type EffetLogo } from '../components/LogoTruque'
 import { pseudoInvite } from './Rejoindre'
+import { facteurXp } from '../progression'
 
 const MEDAILLES = ['#E3A72F', '#9AA3AD', '#C98B5A']
 const LETTRES = ['A', 'B', 'C', 'D', 'E', 'F']
@@ -322,7 +323,7 @@ function Jeu({ code, salon, suisHote, ecranTv, maintenant, onQuitter }: { code: 
     if (!profile || !moiJ) return // invité ou écran télé : rien à enregistrer
     const resultats = questions.slice(0, n).map((qq, k) => ({ id: qq.id, juste: !!moiJ.r?.[k]?.j, s: qq.s ?? r.s }))
     const bonnes = resultats.filter((x) => x.juste).length
-    enregistrerPartie(uid, profile, { sousTheme: (r.s === 'mix' ? 'mix' : r.s) as SousThemeId, xp: 20 + bonnes * 6 + (classement.length > 1 ? [50, 30, 15][rang] ?? 0 : 0), pieces: classement.length > 1 && rang === 0 ? 30 : 10, resultats, revision: true, sansRevision: true, multi: { mode: salon.tv ? 'tv' : 'salon', gagne: classement.length > 1 && rang === 0 }, miniJeu: r.mj }).catch(console.error)
+    enregistrerPartie(uid, profile, { sousTheme: (r.s === 'mix' ? 'mix' : r.s) as SousThemeId, xp: Math.round((20 + bonnes * 6 + (classement.length > 1 ? [50, 30, 15][rang] ?? 0 : 0)) * facteurXp(profile, salon.tv ? 'tv' : 'salon', false)), cleFarm: salon.tv ? 'tv' : 'salon', pieces: classement.length > 1 && rang === 0 ? 30 : 10, resultats, revision: true, sansRevision: true, multi: { mode: salon.tv ? 'tv' : 'salon', gagne: classement.length > 1 && rang === 0 }, miniJeu: r.mj }).catch(console.error)
   }, [salon.etat, profile, questions, moiJ, classement, uid, n, r.s, r.mj, ecranTv, salon.tv])
 
   // ——— Fin de partie ———

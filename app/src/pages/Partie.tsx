@@ -12,7 +12,7 @@ import Chrono, { BarreChrono } from '../components/Chrono'
 import LogoTruque, { type EffetLogo } from '../components/LogoTruque'
 import { lirePrefsJeu } from '../prefsJeu'
 import { saviezFaible, useResume } from '../quiz/resume'
-import { PRIX_INDICE, accesQuiz, payerIndice, payerPieces, piecesGagnees, plafonner } from '../progression'
+import { BONUS_PREMIERE, PRIX_INDICE, accesQuiz, facteurXp, partiesDuJour, payerIndice, payerPieces, piecesGagnees, plafonner, reussie } from '../progression'
 import { FAMILLES } from '../themes'
 import { bonusEvenement } from '../meta'
 import { Coche, Croix, ICONS, Icon, Logo, Piece } from '../components/ui'
@@ -113,7 +113,7 @@ export default function Partie() {
     }
     // Question boss : une dernière question très dure (difficulté max débloquée) en partie classique
     const avecBoss = !ids && !defi && !revision && !legende
-    genererPartie({ sousTheme, difficulte, max, nombre, mode, lang, ids, seed: ids ? undefined : seed }).then(async (qs) => {
+    genererPartie({ sousTheme, difficulte, max, nombre: avecBoss ? Math.max(1, nombre - 1) : nombre, mode, lang, ids, seed: ids ? undefined : seed }).then(async (qs) => {
       if (avecBoss) {
         const candidats = await genererPartie({ sousTheme, difficulte: max, max, nombre: 3, mode, lang }).catch(() => [])
         const boss = candidats.find((c) => !qs.some((x) => x.id === c.id))
@@ -228,13 +228,20 @@ export default function Partie() {
   // Les questions sur carte valent autant que la saisie libre
   // Défi du jour : XP doublés
   // Question boss réussie : +30 pièces ; gros score : un peu d'XP en plus
-  const pieces = (piecesGagnees(bonnes, questions?.length ?? 0, defi) * (legende ? 2 : 1) + (bossReussi ? 30 : 0)) * (jeu ? 1 : bonusEvenement(k, sousTheme))
-  const xp = (calculerXp(bonnes, q?.carte && !q.options.length ? 'libre' : mode, difficulte || 2) * (defi || legende ? 2 : 1) + Math.round(score / 250)) * (jeu ? 1 : bonusEvenement(k, sousTheme))
+  const pieces = (piecesGagnees(bonnes, questions?.length ?? 0, defi) * (legende ? 3 : 1) + (bossReussi ? 30 : 0)) * (jeu ? 1 : bonusEvenement(k, sousTheme))
+  const xpBrut = (calculerXp(bonnes, q?.carte && !q.options.length ? 'libre' : mode, difficulte || 2) * (legende ? 3 : defi ? 2 : 1) + Math.round(score / 250)) * (jeu ? 1 : bonusEvenement(k, sousTheme))
+  // XP dégressive : facteur figé au début de la partie (le profil change pendant l'enregistrement)
+  const cleFarm = jeu ?? `${sousTheme}:${difficulte}`
+  const dejaValide = !jeu && difficulte >= 1 && difficulte <= 4 && reussie(difficulte, profile, sousTheme)
+  const facteurRef = useRef<{ f: number; n: number } | null>(null)
+  if (!fini || !facteurRef.current) facteurRef.current = { f: facteurXp(profile, cleFarm, dejaValide), n: partiesDuJour(profile, cleFarm) }
+  const premiere = !jeu && !revision && !dejaValide && difficulte >= 1 && difficulte <= 4 && !!questions && bonnes === questions.length
+  const xp = Math.round(xpBrut * facteurRef.current.f) + (premiere ? BONUS_PREMIERE[difficulte] : 0)
   const enregistre = useRef(false)
   useEffect(() => {
     if (!fini || enregistre.current || !user || !profile || !questions) return
     enregistre.current = true
-    enregistrerPartie(user.uid, profile, { sousTheme, xp, pieces, stats: { bonnes, comboMax, jeu: jeu ?? undefined, famille: k, difficulte },  defi, revision: revision || !!jeu, sansRevision: !!jeu, record: jeu && jeu !== 'mix' ? { jeu, score: bonnes } : undefined, difficulte: jeu ? undefined : difficulte, resultats: reponses.map((r) => ({ id: r.q.id, juste: r.juste, s: r.q.s ?? sousTheme })), bossReussi, difficulteJouee: difficulte, miniJeu: mj ?? undefined }).catch(console.error)
+    enregistrerPartie(user.uid, profile, { sousTheme, xp, pieces, stats: { bonnes, comboMax, jeu: jeu ?? undefined, famille: k, difficulte },  defi, revision: revision || !!jeu, sansRevision: !!jeu, record: jeu && jeu !== 'mix' ? { jeu, score: bonnes } : undefined, difficulte: jeu ? undefined : difficulte, resultats: reponses.map((r) => ({ id: r.q.id, juste: r.juste, s: r.q.s ?? sousTheme })), bossReussi, difficulteJouee: difficulte, miniJeu: mj ?? undefined, cleFarm: revision ? undefined : cleFarm }).catch(console.error)
   }, [fini, user, profile, sousTheme, xp, pieces, defi, revision, reponses, questions])
 
   if (!questions) return <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center' }}><Logo width={72} /></div>
@@ -242,7 +249,8 @@ export default function Partie() {
   if (intro && infoMj && q) return <IntroMiniJeu info={infoMj} total={questions.length} onGo={() => { setIntro(false); setRestant(chrono); debutQuestion.current = Date.now() }} />
   if (!q) return <div style={{ padding: 48, textAlign: 'center' }}><p>{lang === 'fr' ? 'Aucune question disponible.' : 'No questions available.'}</p><Link className="btn btn-p" to="/">{t('res.home')}</Link></div>
 
-  if (fini) return <Resultat reponses={reponses} xp={xp} pieces={pieces} score={score} comboMax={comboMax} k={k} onReplay={(ids) => {
+  if (fini) return <Resultat reponses={reponses} xp={xp} pieces={pieces} score={score} comboMax={comboMax} k={k} reduit={revision ? null : { f: facteurRef.current!.f, n: facteurRef.current!.n, premiere, dejaValide }} onReplay={(ids) => {
+    facteurRef.current = null
     enregistre.current = false
     const p = new URLSearchParams(params)
     if (ids) p.set('ids', ids.join(',')); else p.delete('ids')
@@ -293,6 +301,7 @@ export default function Partie() {
           : jeu === 'survie'
             ? <span style={{ fontWeight: 800, whiteSpace: 'nowrap', letterSpacing: 2, color: 'var(--ko-i)' }} aria-label={`${vies} vies`}>{'♥'.repeat(Math.max(0, vies))}<span style={{ opacity: .25 }}>{'♥'.repeat(Math.max(0, 3 - vies))}</span> · {bonnes}</span>
             : <span style={{ fontWeight: 600, color: 'var(--muted)', whiteSpace: 'nowrap' }}>{i + 1} {t('q.of')} {questions.length}</span>}
+        <span className="puce puce-pieces" title={lang === 'fr' ? 'Tes pièces' : 'Your coins'}><Piece size={16} />{profile?.pieces ?? 0}</span>
         {chrono > 0 && <Chrono restant={restant} total={chrono} actif={!courante} />}
       </header>
       {chrono > 0 && <BarreChrono restant={restant} total={chrono} actif={!courante} />}
@@ -312,8 +321,6 @@ export default function Partie() {
         {q.image && (
           <Img src={q.image} alt="" className={q.flou && !courante ? 'image-floue' : undefined} style={{ height: 220, maxWidth: '100%', borderRadius: 18, boxShadow: 'var(--shadow)', border: '1px solid var(--line)', objectFit: 'contain', background: q.fondGris ? 'var(--fond-logo)' : 'var(--surface)', padding: q.fondGris ? 14 : 0 }} />
         )}
-        {/* Question sans image : illustration de la famille pour garder l'écran vivant (sans dévoiler la réponse) */}
-        {!q.image && !q.carte && !q.audio && !q.grand && !q.imagesOnly && <div className="illus-question"><Illustration k={k as Famille} taille={170} /></div>}
         {q.carte && <CarteQuiz carte={q.carte} clic={courante?.clic} repondu={!!courante} onClic={repondreCarte} />}
         {q.audio && <Extrait id={q.audio} />}
 
@@ -453,7 +460,7 @@ function Fiche({ r, onNext, dernier, k }: { r: Reponse; onNext: () => void; dern
   )
 }
 
-function Resultat({ reponses, xp, pieces, score, comboMax, k, onReplay }: { reponses: Reponse[]; xp: number; pieces: number; score: number; comboMax: number; k: string; onReplay: (ids?: string[]) => void }) {
+function Resultat({ reponses, xp, pieces, score, comboMax, k, reduit, onReplay }: { reponses: Reponse[]; xp: number; pieces: number; score: number; comboMax: number; k: string; reduit: { f: number; n: number; premiere: boolean; dejaValide: boolean } | null; onReplay: (ids?: string[]) => void }) {
   const { t, lang } = usePrefs()
   const bonnes = reponses.filter((r) => r.juste).length
   const erreurs = reponses.filter((r) => !r.juste)
@@ -475,6 +482,9 @@ function Resultat({ reponses, xp, pieces, score, comboMax, k, onReplay }: { repo
             <div><div className="t" style={{ fontSize: 44, fontWeight: 900, color: 'var(--ok-i)' }}>+{xp}</div><div style={{ color: 'var(--muted)' }}>{t('res.xp')}</div></div>
             <div><div className="t" style={{ fontSize: 44, fontWeight: 900, color: 'var(--his-i)', display: 'flex', alignItems: 'center', gap: 8 }}><Piece size={36} />+{pieces}</div><div style={{ color: 'var(--muted)' }}>{lang === 'fr' ? 'pièces' : 'coins'}</div></div>
           </div>
+          {/* Pourquoi l'XP est plus faible (ou le bonus de première réussite) */}
+          {reduit?.premiere && <p className="chip" style={{ position: 'relative', background: 'var(--ok-t)', color: 'var(--ok-i)', fontWeight: 800 }}>🎉 {lang === 'fr' ? 'Niveau réussi pour la première fois : bonus d’XP !' : 'First time clearing this level: XP bonus!'}</p>}
+          {reduit && reduit.f < 1 && !reduit.premiere && <p style={{ position: 'relative', fontSize: 13.5, color: 'var(--muted)', maxWidth: 460 }}>{lang === 'fr' ? `XP réduite (×${reduit.f.toFixed(2).replace('.', ',')}) : ${reduit.dejaValide ? 'niveau déjà réussi' : ''}${reduit.dejaValide && reduit.n ? ', ' : ''}${reduit.n ? `déjà joué ${reduit.n} fois aujourd’hui` : ''}. Pour gagner plus, essaie d’autres quiz ou un niveau plus dur.` : 'Reduced XP: try other quizzes or a harder level.'}</p>}
           <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center', position: 'relative' }}>
             {/* Rejouer : tout le niveau, mêmes réglages, nouvelles questions (les erreurs vont en révision) */}
             <button className="btn btn-p btn-lg" onClick={() => onReplay()} autoFocus>{t('res.replay')}<Icon d={ICONS.review} /></button>

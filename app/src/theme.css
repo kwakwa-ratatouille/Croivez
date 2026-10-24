@@ -606,3 +606,56 @@ button { font-family: inherit; }
 @keyframes eclair { 0%, 100% { opacity: 0; } 8% { opacity: 1; } 12% { opacity: .2; } 16% { opacity: 1; } 22% { opacity: 0; } }
 .avatar.cadre-etoiles::after { content: ''; position: absolute; inset: -8px; border-radius: 50%; background: radial-gradient(circle at 20% 30%, #fff 0 1.5px, transparent 2px), radial-gradient(circle at 80% 20%, #fff 0 1.2px, transparent 2px), radial-gradient(circle at 70% 80%, #fff 0 1.8px, transparent 2.5px), radial-gradient(circle at 15% 75%, #FDE68A 0 1.4px, transparent 2px), radial-gradient(circle at 50% 5%, #fff 0 1.2px, transparent 2px); animation: tourne 9s linear infinite, scintille 1.5s ease-in-out infinite alternate; z-index: 0; }
 @keyframes scintille { to { opacity: .4; } }
+
+/* La page ne glisse jamais sur le côté (la barre de gauche restait mangée) */
+html, body { overflow-x: clip; }
+.shell { overflow-x: clip; }
+/* Rangées défilantes : coupées net aux bords du contenu, flèches au survol, glisser à la souris */
+.defileur { position: relative; }
+.defileur .carrousel { margin: 0; padding: 4px 2px 10px; cursor: grab; scroll-snap-type: x proximity; mask-image: linear-gradient(90deg, transparent, #000 24px, #000 calc(100% - 24px), transparent); }
+.defileur.au-debut .carrousel { mask-image: linear-gradient(90deg, #000, #000 calc(100% - 24px), transparent); }
+.defileur.a-la-fin .carrousel { mask-image: linear-gradient(90deg, transparent, #000 24px, #000); }
+.defileur.au-debut.a-la-fin .carrousel { mask-image: none; }
+.defileur .carrousel.glisse { cursor: grabbing; scroll-snap-type: none; user-select: none; }
+.defileur .carrousel.glisse * { pointer-events: none; }
+.defileur-fleche { position: absolute; top: 50%; z-index: 3; width: 40px; height: 40px; margin-top: -26px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); color: var(--text); box-shadow: var(--shadow); display: flex; align-items: center; justify-content: center; cursor: pointer; opacity: 0; transition: opacity .2s; }
+.defileur-fleche.gauche { left: -6px; }
+.defileur-fleche.droite { right: -6px; }
+.defileur:hover .defileur-fleche { opacity: 1; }
+.defileur.au-debut .defileur-fleche.gauche, .defileur.a-la-fin .defileur-fleche.droite { opacity: 0 !important; pointer-events: none; }
+@media (hover: none) { .defileur-fleche { display: none; } .defileur .carrousel { cursor: auto; } }
+/* Barre des familles, collée en haut pendant le défilement */
+.barre-familles { position: sticky; top: 0; z-index: 8; display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; margin: -8px -4px 0; padding: 10px 4px; background: color-mix(in srgb, var(--bg) 92%, transparent); backdrop-filter: blur(8px); }
+.barre-familles::-webkit-scrollbar { display: none; }
+.barre-familles .famille-puce { flex: none; border: 0; cursor: pointer; font: 700 13.5px "DM Sans", sans-serif; min-height: 40px; }
+.rangee-famille { scroll-margin-top: 70px; }
+.puce-pieces { min-height: 34px; padding: 0 10px; font-size: 14px; box-shadow: none; }
+
+/* overflow: clip (et non hidden) pour que la barre des familles puisse rester collée en haut */
+.main { overflow: visible; overflow-x: clip; }
+
+/* ——— Vitrine du profil ——— */
+.vitrine { border-radius: 26px; padding: 18px; color: #fff; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 14px 34px rgba(0,0,0,.14); position: relative; overflow: hidden; }
+.vitrine::after { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at 85% 0%, rgba(255,255,255,.28), transparent 45%); pointer-events: none; }
+.vitrine-haut { display: flex; align-items: flex-start; gap: 12px; position: relative; z-index: 1; }
+.vitrine-bio { font-size: 19px; font-weight: 900; text-shadow: 0 1px 6px rgba(0,0,0,.2); }
+.vitrine-modifier { min-height: 38px; padding: 0 12px; font-size: 14px; background: rgba(255,255,255,.2); color: #fff; backdrop-filter: blur(6px); }
+.vitrine-corps { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; position: relative; z-index: 1; }
+.vitrine-badges { display: flex; gap: 10px; }
+.vitrine-case { width: 96px; min-height: 112px; border-radius: 20px; background: rgba(255,255,255,.92); color: var(--text); display: flex; align-items: center; justify-content: center; padding: 8px 4px; }
+.vitrine-case.vide { background: rgba(255,255,255,.15); border: 2px dashed rgba(255,255,255,.5); font: 900 30px Nunito, sans-serif; color: rgba(255,255,255,.8); }
+.vitrine-chiffres { flex: 1 1 200px; display: flex; flex-direction: column; gap: 6px; }
+.vitrine-chiffres div { display: flex; align-items: baseline; gap: 8px; padding: 6px 12px; border-radius: 12px; background: rgba(0,0,0,.14); }
+.vitrine-chiffres strong { font-size: 20px; font-weight: 900; }
+.vitrine-chiffres span { font-size: 13px; font-weight: 700; opacity: .9; }
+.vitrine-favori { width: 150px; display: flex; flex-direction: column; gap: 6px; }
+.pastille-fond { width: 44px; height: 44px; border-radius: 14px; border: 3px solid transparent; cursor: pointer; }
+.pastille-fond[aria-pressed="true"] { border-color: var(--text); box-shadow: 0 0 0 3px var(--surface) inset; }
+@media (max-width: 560px) { .vitrine-case { width: 30%; } .vitrine-badges { width: 100%; justify-content: space-between; } .vitrine-favori { width: 100%; } }
+
+/* Pluie de pièces (récompenses) */
+.pluie { position: fixed; inset: 0; z-index: 90; pointer-events: none; overflow: hidden; }
+.pluie-piece { position: absolute; top: -40px; animation-name: piece-tombe; animation-timing-function: cubic-bezier(.4, .1, .7, 1); animation-fill-mode: both; filter: drop-shadow(0 3px 4px rgba(0,0,0,.2)); }
+@keyframes piece-tombe { from { transform: translateY(0) rotate(0); opacity: 1; } 85% { opacity: 1; } to { transform: translateY(110vh) rotate(var(--r)); opacity: 0; } }
+.pluie-gain { position: absolute; left: 50%; top: 38%; transform: translate(-50%, -50%); font-size: 64px; font-weight: 900; color: #E3A72F; text-shadow: 0 4px 0 #fff, 0 8px 24px rgba(0,0,0,.25); animation: gain-saute 1.6s cubic-bezier(.2, 1.6, .4, 1) both; }
+@keyframes gain-saute { 0% { transform: translate(-50%, -50%) scale(.2); opacity: 0; } 25% { transform: translate(-50%, -50%) scale(1.15); opacity: 1; } 75% { opacity: 1; } 100% { transform: translate(-50%, -90%) scale(1); opacity: 0; } }
