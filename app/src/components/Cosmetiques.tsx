@@ -4,7 +4,7 @@ import { SAISONS } from '../evenements'
 import { TOUS_RANGS } from '../ligues'
 
 // ——— Fonds de vitrine animés : un dégradé et des particules qui tombent, montent ou flottent ———
-export type FondAnime = { id: string; nom: Record<Lang, string>; prix: number; fond: string; particules: string[]; mouvement: 'tombe' | 'monte' | 'flotte'; saison?: string; luxe?: 1 | 2; halo?: boolean; rang?: string; jetons?: number }
+export type FondAnime = { id: string; nom: Record<Lang, string>; prix: number; fond: string; particules: string[]; mouvement: 'tombe' | 'monte' | 'flotte'; saison?: string; luxe?: 1 | 2; halo?: boolean; effet?: string; rang?: string; jetons?: number }
 export const FONDS_ANIMES: FondAnime[] = [
   { id: 'fond-pieces', nom: { fr: 'Pluie de pièces', en: 'Coin rain' }, prix: 400, fond: 'linear-gradient(140deg, #78350F, #D97706 55%, #FDE68A)', particules: ['🪙', '💰', '🪙'], mouvement: 'tombe' },
   { id: 'fond-neige', nom: { fr: 'Nuit enneigée', en: 'Snowy night' }, prix: 350, fond: 'linear-gradient(180deg, #0F172A, #1E3A8A)', particules: ['❄️', '❅', '❆'], mouvement: 'tombe' },
@@ -22,6 +22,14 @@ export const FONDS_ANIMES: FondAnime[] = [
   { id: 'fond-aurore', nom: { fr: 'Aurore boréale', en: 'Northern lights' }, prix: 3000, luxe: 1, halo: true, fond: 'linear-gradient(180deg, #020617, #064E3B 55%, #134E4A)', particules: ['✨', '⭐', '✨'], mouvement: 'flotte' },
   { id: 'fond-tresor', nom: { fr: 'Salle du trésor', en: 'Treasure room' }, prix: 7500, luxe: 1, halo: true, fond: 'radial-gradient(circle at 50% 110%, #FDE047, #B45309 45%, #451A03)', particules: ['💎', '👑', '🪙', '💰'], mouvement: 'tombe' },
   { id: 'fond-ultime', nom: { fr: 'Big Bang', en: 'Big Bang' }, prix: 30000, luxe: 2, halo: true, fond: 'conic-gradient(from 0deg at 50% 50%, #0F0C29, #6D28D9, #DB2777, #F59E0B, #22D3EE, #0F0C29)', particules: ['🌌', '💫', '🪐', '☄️', '⭐', '💎'], mouvement: 'flotte' },
+  // Luxe dessiné : des effets de lumière à la place des particules d'émojis
+  { id: 'fond-lx-rideaux', nom: { fr: 'Rideaux d’aurore', en: 'Aurora curtains' }, prix: 4000, luxe: 1, effet: 'rideaux', fond: 'linear-gradient(180deg, #020617, #0F172A 60%, #052E16)', particules: ['·', '✦'], mouvement: 'flotte' },
+  { id: 'fond-lx-retro', nom: { fr: 'Autoroute 1984', en: 'Highway 1984' }, prix: 4500, luxe: 1, effet: 'grille', fond: 'linear-gradient(180deg, #1E1B4B, #701A75 55%, #F97316)', particules: ['✦'], mouvement: 'flotte' },
+  { id: 'fond-lx-soleil', nom: { fr: 'Soleil levant', en: 'Rising sun' }, prix: 3500, luxe: 1, effet: 'rayons', fond: 'radial-gradient(circle at 50% 110%, #FEF3C7, #F59E0B 30%, #B91C1C 70%, #450A0A)', particules: ['✦'], mouvement: 'monte' },
+  { id: 'fond-lx-matrice', nom: { fr: 'Matrice', en: 'Matrix' }, prix: 5000, luxe: 1, effet: 'pluie', fond: 'linear-gradient(180deg, #000, #022C22)', particules: ['0', '1'], mouvement: 'tombe' },
+  { id: 'fond-lx-ocean', nom: { fr: 'Houle profonde', en: 'Deep swell' }, prix: 4000, luxe: 1, effet: 'vagues', fond: 'linear-gradient(180deg, #0C4A6E, #082F49)', particules: ['·'], mouvement: 'monte' },
+  { id: 'fond-lx-nebuleuse', nom: { fr: 'Nébuleuse vivante', en: 'Living nebula' }, prix: 9000, luxe: 1, halo: true, effet: 'nebuleuse', fond: 'linear-gradient(160deg, #0B0221, #1E1B4B)', particules: ['✦', '·', '✧'], mouvement: 'flotte' },
+  { id: 'fond-lx-prisme', nom: { fr: 'Palais de cristal', en: 'Crystal palace' }, prix: 35000, luxe: 2, halo: true, effet: 'prisme', fond: 'conic-gradient(from 45deg, #312E81, #0E7490, #A21CAF, #312E81)', particules: ['✦', '✧', '◆'], mouvement: 'flotte' },
   // Boutique des rangs (jetons)
   { id: 'fond-j-podium', nom: { fr: 'Podium', en: 'Podium' }, prix: 0, jetons: 45, fond: 'linear-gradient(180deg, #1E3A8A, #6D28D9)', particules: ['🏆', '🥇', '✨'], mouvement: 'monte' },
   { id: 'fond-j-arene', nom: { fr: 'Arène en feu', en: 'Blazing arena' }, prix: 0, jetons: 90, halo: true, fond: 'radial-gradient(circle at 50% 120%, #F97316, #7F1D1D 55%, #111827)', particules: ['🔥', '⚔️', '🔥'], mouvement: 'monte' },
@@ -39,6 +47,7 @@ export function Particules({ f, nb = 14 }: { f: FondAnime; nb?: number }) {
   return (
     <span className={`particules ${f.mouvement}${f.luxe === 2 ? ' ultra' : ''}`} aria-hidden="true">
       {f.halo && <span className="fond-halo" />}
+      {f.effet && <span className={`fond-effet effet-${f.effet}`} />}
       {Array.from({ length: nb }, (_, i) => (
         <span key={i} style={{ left: `${(i * 73) % 100}%`, animationDelay: `${-(i * 1.37) % 7}s`, animationDuration: `${6 + (i % 5)}s`, fontSize: `${14 + ((i * 7) % 16)}px` }}>{f.particules[i % f.particules.length]}</span>
       ))}

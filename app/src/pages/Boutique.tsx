@@ -111,7 +111,7 @@ export default function Boutique() {
   const Apercu = ({ o, taille = 76 }: { o: Objet; taille?: number }) => o.type === 'fond'
     ? (() => { const f = fondAnime(o.id); return f ? <span className="apercu-fond" style={{ background: f.fond }}><Particules f={f} nb={8} /></span> : null })()
     : o.type === 'pseudo' ? <span className="apercu-pseudo t"><Pseudo nom={profile?.pseudo || 'Croivez'} style={o.id} /></span>
-      : o.type === 'titre' ? <span className="apercu-titre t">{o.nom[lang]}</span>
+      : o.type === 'titre' ? <span className={`apercu-titre t${o.anim ? ' titre-affiche ' + o.anim.split(' ').map((x) => 'titre-fx-' + x).join(' ') : ''}`}>{o.nom[lang]}</span>
         : <Avatar pseudo={profile?.pseudo} avatar={o.type === 'avatar' ? o.id : profile?.avatar} cadre={o.type === 'cadre' ? o.id : profile?.cadre} taille={taille} anime={o.type === 'cadre' || !!o.luxe} />
 
   const Carte = ({ o }: { o: Objet }) => {

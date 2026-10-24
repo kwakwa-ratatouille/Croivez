@@ -10,7 +10,7 @@ const MOTIFS = ['sticker-points', 'sticker-rayures', 'sticker-damier', 'sticker-
 const hache = (s: string) => [...s].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7)
 
 // Effets qui ont besoin de leur propre couche (les autres s'appliquent au cadre lui-même)
-const COUCHES = ['rayons', 'ondes', 'pointilles', 'comete', 'double', 'scintille', 'anneau', 'flamme', 'bulles']
+const COUCHES = ['rayons', 'ondes', 'pointilles', 'comete', 'double', 'scintille', 'anneau', 'flamme', 'bulles', 'aura', 'scanner', 'pulsar', 'reflet', 'sceau', 'satellites', 'contresens', 'etincelles', 'eclipse']
 
 // Couleur la plus lumineuse d'un dégradé de cadre (les effets restent visibles, même sur un cadre sombre)
 function couleurVive(couleur?: string) {

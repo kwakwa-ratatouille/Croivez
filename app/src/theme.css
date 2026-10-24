@@ -1635,3 +1635,75 @@ button.rang-palier[aria-pressed="true"] { background: color-mix(in srgb, var(--r
 }
 
 .multi-duel-choix.court { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; max-width: 420px; }
+
+/* ——— Cadres de luxe : effets dessinés ——— */
+.fx-aura { inset: -22%; background: conic-gradient(from 0deg, var(--fx), #EC4899, #22D3EE, var(--fx)); filter: blur(10px); opacity: .55; z-index: -1; animation: tourne 6s linear infinite, fx-respire 3s ease-in-out infinite alternate; }
+@keyframes fx-respire { from { opacity: .35; } to { opacity: .8; } }
+.fx-scanner { inset: -4%; z-index: 2; background: conic-gradient(from 0deg, transparent 0 75%, rgba(74, 222, 128, .15) 85%, rgba(134, 239, 172, .9) 99%, transparent); animation: tourne 2.4s linear infinite; mix-blend-mode: screen; }
+.fx-scanner::after { inset: 0; background: repeating-radial-gradient(circle, transparent 0 18%, rgba(74, 222, 128, .3) 18.5% 19.5%); }
+.fx-pulsar::before, .fx-pulsar::after { inset: 8%; border: 2px solid var(--fx); animation: fx-onde-pulsar 2.4s ease-out infinite; }
+.fx-pulsar::after { animation-delay: 1.2s; }
+@keyframes fx-onde-pulsar { from { transform: scale(.9); opacity: .9; } to { transform: scale(1.45); opacity: 0; } }
+.fx-reflet { inset: 0; overflow: hidden; z-index: 2; -webkit-mask: radial-gradient(circle, transparent 60%, #000 62%); mask: radial-gradient(circle, transparent 60%, #000 62%); }
+.fx-reflet::before { top: -50%; bottom: -50%; left: -60%; width: 40%; border-radius: 0; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .95), transparent); transform: rotate(25deg); animation: fx-balaye 2.8s ease-in-out infinite; }
+@keyframes fx-balaye { 0% { left: -60%; } 60%, 100% { left: 130%; } }
+.fx-sceau { inset: -14%; z-index: -1; }
+.fx-sceau::before, .fx-sceau::after { inset: 0; border-radius: 12%; border: 2px solid color-mix(in srgb, var(--fx) 80%, #fff); box-shadow: 0 0 10px color-mix(in srgb, var(--fx) 60%, transparent); animation: tourne 14s linear infinite; }
+.fx-sceau::after { animation: fx-tourne-inv 14s linear infinite; }
+@keyframes fx-tourne-inv { from { transform: rotate(45deg); } to { transform: rotate(-315deg); } }
+.fx-satellites { inset: -16%; z-index: 2; border: 1px solid color-mix(in srgb, var(--fx) 45%, transparent); animation: fx-orbite-a 3s linear infinite; }
+.fx-satellites::before { width: 9px; height: 9px; top: -4px; left: calc(50% - 4px); background: #fff; box-shadow: 0 0 10px 3px var(--fx); }
+.fx-satellites::after { inset: -1px; border: 1px solid color-mix(in srgb, var(--fx) 45%, transparent); transform: rotateY(70deg); }
+@keyframes fx-orbite-a { from { transform: rotateX(70deg) rotateZ(0); } to { transform: rotateX(70deg) rotateZ(360deg); } }
+.fx-contresens { inset: -10%; z-index: -1; border: 3px dashed color-mix(in srgb, var(--fx) 70%, #fff); animation: tourne 8s linear infinite; }
+.fx-contresens::after { inset: 10%; border: 2px dotted #fff; opacity: .7; animation: fx-tourne-inv 5s linear infinite; }
+.fx-etincelles { inset: 0; z-index: 2; }
+.fx-etincelles::before, .fx-etincelles::after { top: 50%; left: 50%; width: 4px; height: 4px; margin: -2px; background: #fff; box-shadow: 0 -38px 0 #FACC15, 27px -27px 0 #F472B6, 38px 0 0 #22D3EE, 27px 27px 0 #FACC15, 0 38px 0 #F472B6, -27px 27px 0 #22D3EE, -38px 0 0 #FACC15, -27px -27px 0 #F472B6; animation: fx-eclate 1.8s ease-out infinite; }
+.fx-etincelles::after { animation-delay: .9s; }
+@keyframes fx-eclate { 0% { transform: scale(.4) rotate(0); opacity: 0; } 20% { opacity: 1; } 100% { transform: scale(1.6) rotate(30deg); opacity: 0; } }
+.fx-eclipse { inset: -8%; z-index: -1; background: radial-gradient(circle, transparent 55%, #fff 58%, #FDE68A 62%, rgba(253, 230, 138, 0) 75%); filter: blur(1.5px); animation: fx-couronne 4s ease-in-out infinite alternate; }
+.fx-eclipse::after { inset: -10%; background: conic-gradient(from 0deg, transparent, rgba(255, 255, 255, .6) 5%, transparent 10%, transparent 30%, rgba(253, 230, 138, .5) 35%, transparent 40%, transparent 60%, rgba(255, 255, 255, .6) 65%, transparent 70%); -webkit-mask: radial-gradient(circle, transparent 50%, #000 60%, transparent 72%); mask: radial-gradient(circle, transparent 50%, #000 60%, transparent 72%); animation: tourne 10s linear infinite; }
+@keyframes fx-couronne { from { transform: scale(.97); opacity: .8; } to { transform: scale(1.06); opacity: 1; } }
+
+/* ——— Titres de luxe animés ——— */
+.titre-affiche[class*="titre-fx-"] { position: relative; overflow: hidden; isolation: isolate; }
+.titre-fx-or { background: linear-gradient(100deg, #92400E, #F59E0B 25%, #FEF3C7 50%, #F59E0B 75%, #92400E) 0 0 / 250% 100% !important; color: #451A03 !important; box-shadow: 0 0 0 1px #FDE68A, 0 4px 14px rgba(245, 158, 11, .45); animation: titre-glisse 3s linear infinite; }
+.titre-fx-or::after, .titre-fx-givre::after, .titre-fx-obsidienne::after { content: ''; position: absolute; top: -20%; bottom: -20%; left: -40%; width: 30%; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .9), transparent); transform: skewX(-20deg); animation: titre-reflet 2.6s ease-in-out infinite; z-index: -1; }
+@keyframes titre-glisse { to { background-position: 250% 0; } }
+@keyframes titre-reflet { 0% { left: -40%; } 60%, 100% { left: 130%; } }
+.titre-fx-holo { background: linear-gradient(90deg, #F472B6, #FACC15, #4ADE80, #22D3EE, #A78BFA, #F472B6) 0 0 / 300% 100% !important; color: #fff !important; text-shadow: 0 1px 2px rgba(0, 0, 0, .35); box-shadow: 0 0 16px rgba(167, 139, 250, .6); animation: titre-glisse 4s linear infinite; }
+.titre-fx-or.titre-fx-holo { color: #fff !important; animation: titre-glisse 3s linear infinite, fx-teinte 8s linear infinite; }
+.titre-fx-neon { background: #0B0B1A !important; color: #F5D0FE !important; border: 1.5px solid #E879F9; text-shadow: 0 0 4px #E879F9, 0 0 10px #E879F9; box-shadow: 0 0 10px #E879F9, inset 0 0 8px rgba(232, 121, 249, .5); animation: titre-neon 3s infinite; }
+@keyframes titre-neon { 0%, 18%, 22%, 62%, 64%, 100% { opacity: 1; } 20%, 63% { opacity: .45; } }
+.titre-fx-braise { background: linear-gradient(0deg, #7F1D1D, #DC2626 40%, #F97316 80%, #FDE047) 0 0 / 100% 200% !important; color: #fff !important; text-shadow: 0 0 6px #FDE047; animation: titre-braise 1.6s ease-in-out infinite alternate; }
+@keyframes titre-braise { from { background-position: 0 100%; box-shadow: 0 0 8px rgba(249, 115, 22, .5); } to { background-position: 0 0; box-shadow: 0 0 18px rgba(249, 115, 22, .9); } }
+.titre-fx-glitch { background: #0A0A0A !important; color: #fff !important; font-family: ui-monospace, monospace !important; animation: titre-glitch 2.4s steps(1) infinite; }
+@keyframes titre-glitch { 0%, 100% { text-shadow: 1px 0 #F43F5E, -1px 0 #22D3EE; transform: none; } 10% { text-shadow: -3px 0 #F43F5E, 3px 0 #22D3EE; transform: translateX(1px) skewX(-6deg); } 12% { text-shadow: 2px 1px #F43F5E, -2px -1px #22D3EE; transform: translateX(-2px); } 14% { transform: none; } 70% { text-shadow: 3px 0 #F43F5E, -3px 0 #22D3EE; clip-path: inset(10% 0 40% 0); } 72% { clip-path: none; } }
+.titre-fx-givre { background: linear-gradient(135deg, #E0F2FE, #7DD3FC 50%, #F0F9FF) !important; color: #0C4A6E !important; box-shadow: 0 0 0 1px #BAE6FD, 0 0 14px rgba(125, 211, 252, .7); }
+.titre-fx-obsidienne { background: linear-gradient(135deg, #0A0A0A, #1E1B4B 60%, #0A0A0A) !important; color: #C4B5FD !important; box-shadow: 0 0 0 1px #4C1D95, 0 0 14px rgba(124, 58, 237, .5); }
+.titre-fx-obsidienne::after { background: linear-gradient(90deg, transparent, rgba(167, 139, 250, .7), transparent); }
+.titre-fx-cosmos { background: radial-gradient(circle, #fff 0 1px, transparent 1.5px) 0 0 / 14px 14px, radial-gradient(circle, rgba(255, 255, 255, .6) 0 .8px, transparent 1.2px) 7px 7px / 11px 11px, linear-gradient(90deg, #0F0C29, #4C1D95, #0F0C29) !important; color: #FDE68A !important; box-shadow: 0 0 14px rgba(124, 58, 237, .7); animation: titre-etoiles 8s linear infinite; }
+@keyframes titre-etoiles { to { background-position: 140px 0, -110px 7px, 0 0; } }
+.apercu-titre.titre-affiche { padding: 6px 12px; font-size: 13px; }
+
+/* ——— Vitrines dessinées ——— */
+.fond-effet { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.fond-effet::before, .fond-effet::after { content: ''; position: absolute; }
+.effet-rideaux::before { inset: -20% -50% 30%; background: repeating-linear-gradient(90deg, rgba(52, 211, 153, 0) 0 6%, rgba(52, 211, 153, .5) 9%, rgba(34, 211, 238, .35) 12%, rgba(167, 139, 250, 0) 18%); filter: blur(8px); animation: rideaux 9s ease-in-out infinite alternate; transform-origin: top; }
+.effet-rideaux::after { inset: -20% -50% 40%; background: repeating-linear-gradient(90deg, transparent 0 10%, rgba(167, 139, 250, .4) 14%, transparent 20%); filter: blur(10px); animation: rideaux 13s ease-in-out infinite alternate-reverse; }
+@keyframes rideaux { from { transform: translateX(-10%) skewX(-12deg) scaleY(1); } to { transform: translateX(10%) skewX(12deg) scaleY(1.15); } }
+.effet-grille::before { left: -50%; right: -50%; bottom: -10%; height: 55%; background: repeating-linear-gradient(0deg, rgba(244, 114, 182, .8) 0 2px, transparent 2px 28px), repeating-linear-gradient(90deg, rgba(244, 114, 182, .8) 0 2px, transparent 2px 40px); transform: perspective(160px) rotateX(60deg); transform-origin: bottom; animation: grille 1.2s linear infinite; }
+.effet-grille::after { left: 50%; top: 18%; width: 34%; aspect-ratio: 1; transform: translateX(-50%); border-radius: 50%; background: linear-gradient(#FDE047, #F97316); -webkit-mask: linear-gradient(#000 50%, transparent 50% 55%, #000 55% 64%, transparent 64% 68%, #000 68% 76%, transparent 76% 80%, #000 80%); mask: linear-gradient(#000 50%, transparent 50% 55%, #000 55% 64%, transparent 64% 68%, #000 68% 76%, transparent 76% 80%, #000 80%); filter: drop-shadow(0 0 20px rgba(249, 115, 22, .8)); }
+@keyframes grille { to { background-position: 0 28px, 0 0; } }
+.effet-rayons::before { left: 50%; bottom: -60%; width: 200%; aspect-ratio: 1; margin-left: -100%; background: repeating-conic-gradient(rgba(255, 237, 160, .35) 0 6deg, transparent 6deg 15deg); border-radius: 50%; animation: tourne 30s linear infinite; }
+.effet-pluie::before, .effet-pluie::after { top: -100%; left: 0; right: 0; bottom: 0; background: repeating-linear-gradient(90deg, transparent 0 14px, rgba(74, 222, 128, .6) 14px 16px, transparent 16px 31px); -webkit-mask: repeating-linear-gradient(180deg, #000 0 30px, transparent 30px 70px); mask: repeating-linear-gradient(180deg, #000 0 30px, transparent 30px 70px); animation: pluie 2.2s linear infinite; }
+.effet-pluie::after { left: 8px; animation-duration: 3.4s; opacity: .6; }
+@keyframes pluie { to { transform: translateY(50%); } }
+.effet-vagues::before, .effet-vagues::after { left: -100px; right: -100px; bottom: -20px; height: 60%; background: radial-gradient(ellipse 50px 22px at 50% 0, transparent 95%, rgba(56, 189, 248, .4) 100%) 0 0 / 100px 40px repeat-x, linear-gradient(transparent 20px, rgba(14, 165, 233, .35) 21px); animation: vagues 5s linear infinite; }
+.effet-vagues::after { bottom: -40px; opacity: .7; animation-duration: 8s; animation-direction: reverse; }
+@keyframes vagues { to { transform: translateX(100px); } }
+.effet-nebuleuse::before { inset: -30%; background: radial-gradient(circle at 30% 40%, rgba(219, 39, 119, .55), transparent 30%), radial-gradient(circle at 70% 55%, rgba(14, 165, 233, .5), transparent 30%), radial-gradient(circle at 50% 80%, rgba(250, 204, 21, .3), transparent 25%); filter: blur(20px); animation: tourne 40s linear infinite; }
+.effet-nebuleuse::after { inset: 0; background: radial-gradient(circle, #fff 0 1px, transparent 1.5px) 0 0 / 50px 50px, radial-gradient(circle, rgba(255, 255, 255, .7) 0 .8px, transparent 1.2px) 25px 25px / 37px 37px; animation: fx-respire 4s ease-in-out infinite alternate; }
+.effet-prisme::before { inset: -50%; background: conic-gradient(from 0deg, transparent, rgba(255, 255, 255, .4) 4%, transparent 8%, transparent 20%, rgba(244, 114, 182, .4) 24%, transparent 28%, transparent 45%, rgba(34, 211, 238, .45) 49%, transparent 53%, transparent 70%, rgba(250, 204, 21, .4) 74%, transparent 78%); animation: tourne 12s linear infinite; }
+.effet-prisme::after { inset: 0; background: linear-gradient(60deg, transparent 0 40%, rgba(255, 255, 255, .25) 45%, transparent 50%) 0 0 / 300% 100%, repeating-linear-gradient(60deg, rgba(255, 255, 255, .06) 0 2px, transparent 2px 40px), repeating-linear-gradient(-60deg, rgba(255, 255, 255, .06) 0 2px, transparent 2px 40px); animation: titre-glisse 5s linear infinite; }
+@media (prefers-reduced-motion: reduce) { .fond-effet::before, .fond-effet::after, [class*="titre-fx-"], [class*="titre-fx-"]::after, .fx-aura, .fx-scanner, .fx-pulsar::before, .fx-pulsar::after, .fx-reflet::before, .fx-sceau::before, .fx-sceau::after, .fx-satellites, .fx-contresens, .fx-etincelles::before, .fx-etincelles::after, .fx-eclipse, .fx-eclipse::after { animation: none !important; } }
