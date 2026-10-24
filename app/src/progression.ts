@@ -28,6 +28,7 @@ const RARETE: Record<string, Rarete> = {
   'noms-scientifiques': 'commun', 'departements-numero': 'commun', 'departements-region': 'commun', 'departements-prefecture': 'commun', compositeurs: 'commun',
   papillons: 'commun', araignees: 'commun', champignons: 'commun', sculptures: 'commun', architecture: 'commun', mouvements: 'commun', monnaies: 'commun',
   'livres-annee': 'commun', 'jeux-annee': 'commun', 'films-annee': 'commun', 'studios-annee': 'commun', 'personnalites-naissance': 'commun', lunes: 'commun',
+  animes: 'epique', 'persos-animes': 'legendaire', doubleurs: 'rare', batailles: 'rare', attentats: 'epique', traites: 'commun', souverains: 'epique', voitures: 'epique', 'voitures-photo': 'legendaire', dieux: 'legendaire', 'dieux-mythologie': 'rare', fromages: 'rare', instruments: 'commun', oscars: 'rare', 'attentats-pays': 'commun', 'animes-studio': 'commun',
   chevaux: 'commun', constellations: 'commun', 'artistes-genre': 'commun', fleuves: 'commun', iles: 'commun', 'etats-us': 'commun', sagas: 'commun', stades: 'commun',
 }
 export const rareteDe = (id: string): Rarete => RARETE[id] ?? 'rare'

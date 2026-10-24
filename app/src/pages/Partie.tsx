@@ -88,6 +88,12 @@ export default function Partie() {
       return
     }
     setCombo(0); setComboMax(0); setDouble(false); setSecondeChance(null)
+    if (revision && sousTheme === ('tout' as SousThemeId) && ids) {
+      const groupes = ids.reduce<Record<string, string[]>>((acc, c) => { const [s, ...r] = c.split('~'); (acc[s] ??= []).push(r.join('~')); return acc }, {})
+      Promise.all(Object.entries(groupes).map(([s, l]) => genererPartie({ sousTheme: s as SousThemeId, difficulte: 4, max: 4, nombre: l.length, mode: s.startsWith('villes') ? 'libre' : 'qcm', lang, ids: l }).then((qs) => qs.map((q) => ({ ...q, s: s as SousThemeId }))).catch(() => [])))
+        .then((t) => { setQuestions(t.flat().sort(() => Math.random() - 0.5).map((x) => appliquerFormat(x, format, 3, lang))); debutQuestion.current = Date.now() })
+      return
+    }
     // Question boss : une dernière question très dure (difficulté max débloquée) en partie classique
     const avecBoss = !ids && !defi && !revision && !legende
     genererPartie({ sousTheme, difficulte, max, nombre, mode, lang, ids, seed: ids ? undefined : seed }).then(async (qs) => {
@@ -424,9 +430,8 @@ function Resultat({ reponses, xp, pieces, score, comboMax, k, onReplay }: { repo
             <div><div className="t" style={{ fontSize: 44, fontWeight: 900, color: 'var(--his-i)', display: 'flex', alignItems: 'center', gap: 8 }}><Piece size={36} />+{pieces}</div><div style={{ color: 'var(--muted)' }}>{lang === 'fr' ? 'pièces' : 'coins'}</div></div>
           </div>
           <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center', position: 'relative' }}>
-            {/* Rejouer : mêmes réglages, nouvelles questions (la mémoire évite de reposer les mêmes) */}
+            {/* Rejouer : tout le niveau, mêmes réglages, nouvelles questions (les erreurs vont en révision) */}
             <button className="btn btn-p btn-lg" onClick={() => onReplay()} autoFocus>{t('res.replay')}<Icon d={ICONS.review} /></button>
-            {erreurs.length > 0 && <button className="btn btn-s btn-lg" onClick={() => onReplay(erreurs.map((r) => r.q.id))}>{t('res.errors')}</button>}
             <Link className="btn btn-g" to="/">{t('res.home')}</Link>
           </div>
         </section>

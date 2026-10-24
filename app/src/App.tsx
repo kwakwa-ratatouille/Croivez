@@ -14,6 +14,7 @@ import Connexion from './pages/Connexion'
 import ChoixFamilles from './pages/ChoixFamilles'
 import { choixAFaire } from './progression'
 import Revision from './pages/Revision'
+import Fiches from "./pages/Fiches"
 import Profil, { Joueur } from './pages/Profil'
 import Duels from './pages/Duels'
 import Duel from './pages/Duel'
@@ -58,6 +59,7 @@ function Routeur() {
           <Route path="/jouer/:sous" element={<OuvrirQuiz />} />
           <Route path="/parametres" element={<Parametres />} />
           <Route path="/revision" element={<Revision />} />
+          <Route path="/fiches" element={<Fiches />} />
           <Route path="/profil" element={<Profil />} />
           <Route path="/joueur/:uid" element={<Joueur />} />
           <Route path="/duels" element={<Duels />} />

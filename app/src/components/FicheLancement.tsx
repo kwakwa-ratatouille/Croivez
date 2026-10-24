@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth'
 import { usePrefs } from '../i18n'
 import { trouverSousTheme } from '../themes'
-import { PRIX_SAUT, difficulteOuverte, legendeOuverte, plafonner, reussie, sauterDifficulte } from '../progression'
+import { PRIX_SAUT, difficulteOuverte, legendeOuverte, plafonner, progresLegende, reussie, sauterDifficulte } from '../progression'
 import type { Difficulte } from '../quiz/engine'
 import { FORMATS, type Format } from '../quiz/formats'
 
@@ -24,6 +24,7 @@ export default function FicheLancement({ id, onFermer }: { id: string; onFermer:
   // Par défaut : la plus haute difficulté ouverte de ce quiz, format auto
   const [r, setR] = useState<Reglages>(() => ({ ...lire(), d: plafonner(4, profile, id) }))
   const [msg, setMsg] = useState('')
+  const [options, setOptions] = useState(false)
   if (!trouve) return null
   const { famille, sous } = trouve
   const k = famille.k
@@ -31,8 +32,8 @@ export default function FicheLancement({ id, onFermer }: { id: string; onFermer:
   const qcmSeul = id === 'drapeaux-inverse'
   const legende = legendeOuverte(k, profile)
   const diffs: { v: Difficulte; label: string }[] = [
-    { v: 0, label: t('diff.auto') }, { v: 1, label: t('diff.1') }, { v: 2, label: t('diff.2') }, { v: 3, label: t('diff.3') }, { v: 4, label: t('diff.4') },
-    ...(legende ? [{ v: 5 as Difficulte, label: fr ? 'Légende' : 'Legend' }] : []),
+    { v: 1, label: t('diff.1') }, { v: 2, label: t('diff.2') }, { v: 3, label: t('diff.3') }, { v: 4, label: t('diff.4') },
+    { v: 5 as Difficulte, label: fr ? 'Légende' : 'Legend' },
   ]
   // Première difficulté fermée (1 à 4) : on peut la sauter pour 100 pièces, jamais la Légende
   const verrou = ([2, 3, 4] as const).find((d) => !difficulteOuverte(d, profile, id)) ?? 0
@@ -58,16 +59,18 @@ export default function FicheLancement({ id, onFermer }: { id: string; onFermer:
           <button className="btn btn-g" aria-label={fr ? 'Fermer' : 'Close'} onClick={onFermer} style={{ minHeight: 40, padding: '0 10px' }}><Icon d={ICONS.close} size={18} /></button>
         </div>
 
-        <div className="fiche-defile" role="radiogroup" aria-label={t('cfg.diff')}>
+        <div className="fiche-diffs" role="radiogroup" aria-label={t('cfg.diff')}>
           {diffs.map((d) => {
             const ouvert = d.v === 5 ? legende : difficulteOuverte(d.v, profile, id)
             return (
-              <button key={d.v} type="button" role="radio" aria-checked={r.d === d.v} className={`pill${d.v === 5 ? ' pill-legende' : ''}`} aria-pressed={r.d === d.v} disabled={!ouvert && d.v !== verrou} onClick={() => ouvert ? maj({ d: d.v }) : setMsg('')} style={{ flex: 'none', opacity: ouvert ? 1 : 0.45 }}>
+              <button key={d.v} type="button" role="radio" aria-checked={r.d === d.v} className={`pill${d.v === 5 ? ' pill-legende' : ''}`} aria-pressed={r.d === d.v} disabled={!ouvert} onClick={() => maj({ d: d.v })} style={{ opacity: ouvert ? 1 : 0.5 }}>
                 {!ouvert && <Icon d={ICONS.lock} size={14} />}{reussie(d.v, profile, id) && <span aria-label={fr ? 'réussi' : 'passed'}>✓</span>}{d.label}
               </button>
             )
           })}
         </div>
+
+        {!legende && (() => { const pl = progresLegende(k, profile); return <p className="fiche-legende"><Icon d={ICONS.lock} size={14} />{fr ? `Légende : la difficulté ultime (pièges partout, 6 choix, 12 s). Elle s’ouvre sur toute la famille quand chaque quiz a ses 4 niveaux réussis : ${pl.faits} / ${pl.total}.` : `Legend: the ultimate level. Unlocks for the whole family once every quiz has its 4 levels passed: ${pl.faits} / ${pl.total}.`}</p> })()}
 
         {verrou > 0 && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', fontSize: 13, fontWeight: 600, color: 'var(--muted)' }}>
@@ -77,18 +80,23 @@ export default function FicheLancement({ id, onFermer }: { id: string; onFermer:
           </div>
         )}
 
-        {!carte && !qcmSeul && (
-          <div className="fiche-defile" role="radiogroup" aria-label={fr ? 'Format de réponse' : 'Answer format'}>
+        <button type="button" className="fiche-options" aria-expanded={options} onClick={() => setOptions((o) => !o)}>
+          <span>{fr ? 'Options' : 'Options'}</span>
+          <span style={{ color: 'var(--muted)', fontWeight: 600 }}>{FORMATS.find((x) => x.v === r.m)?.[lang]}{r.chrono ? ' · chrono' : ''}{r.rapide ? (fr ? ' · rapide' : ' · quick') : ''}</span>
+          <Icon d={ICONS.arrowR} size={16} style={{ transform: options ? 'rotate(90deg)' : 'none', transition: 'transform .2s' }} />
+        </button>
+        {options && !carte && !qcmSeul && (
+          <div className="fiche-grille" role="radiogroup" aria-label={fr ? 'Format de réponse' : 'Answer format'}>
             {FORMATS.map((x) => (
-              <button key={x.v} type="button" role="radio" aria-checked={r.m === x.v} className="pill" aria-pressed={r.m === x.v} onClick={() => maj({ m: x.v })} style={{ flex: 'none' }}>{x[lang]}</button>
+              <button key={x.v} type="button" role="radio" aria-checked={r.m === x.v} className="pill" aria-pressed={r.m === x.v} onClick={() => maj({ m: x.v })}>{x[lang]}</button>
             ))}
           </div>
         )}
 
-        <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap' }}>
+        {options && <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap' }}>
           <label style={{ display: 'flex', alignItems: 'center', gap: 10, fontWeight: 600 }}><Toggle on={r.chrono} onChange={(v) => maj({ chrono: v })} label={t('cfg.timer')} />{t('cfg.timer')}</label>
           <label style={{ display: 'flex', alignItems: 'center', gap: 10, fontWeight: 600 }}><Toggle on={r.rapide} onChange={(v) => maj({ rapide: v })} label={fr ? 'Mode rapide' : 'Quick mode'} />{fr ? 'Rapide' : 'Quick'}</label>
-        </div>
+        </div>}
 
         <button className="btn btn-p btn-lg" onClick={jouer} autoFocus style={{ width: '100%' }}>{fr ? 'Jouer' : 'Play'} · {diffs.find((d) => d.v === r.d)?.label ?? t('diff.auto')}<Icon d={ICONS.arrowR} /></button>
       </div>

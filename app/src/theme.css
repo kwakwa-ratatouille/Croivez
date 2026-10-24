@@ -9,7 +9,7 @@
   --ko:#E0997A;--ko-t:#FBE9E1;--ko-i:#97482A;
   /* Familles ajoutées : même douceur que les couleurs de la DA */
   --spo:#7FC8A9;--spo-t:#E4F4EC;--spo-i:#245E47;--lit:#D9A07E;--lit-t:#F8EADF;--lit-i:#7D4424;
-  --jv:#C8A2D6;--jv-t:#F4EAF7;--jv-i:#6B3E7C;--lan:#C7B47E;--lan-t:#F4EEDD;--lan-i:#66552A;
+  --jv:#C8A2D6;--jv-t:#F4EAF7;--jv-i:#6B3E7C;--lan:#C7B47E;--lan-t:#F4EEDD;--lan-i:#66552A;--ani:#F29BB0;--ani-t:#FCE9EE;--ani-i:#8A2F49;--vie:#9CC28A;--vie-t:#EAF3E4;--vie-i:#3F6230;
   color-scheme: light;
 }
 :root[data-theme="dark"] {
@@ -21,7 +21,7 @@
   --brd:#9DADDA;--brd-t:#232F50;--brd-i:#BFCBEF;--ok:#93D9BB;--ok-t:#1D3B35;--ok-i:#A8E6CB;
   --ko:#E9A585;--ko-t:#3E2C29;--ko-i:#F3BCA2;
   --spo:#8ED6B7;--spo-t:#1C3B32;--spo-i:#A9E6CC;--lit:#E6B293;--lit-t:#3D2D27;--lit-i:#F2C8AE;
-  --jv:#D4B2E1;--jv-t:#33283F;--jv-i:#E4CCED;--lan:#D6C590;--lan-t:#36311F;--lan-i:#E8DAAE;
+  --jv:#D4B2E1;--jv-t:#33283F;--jv-i:#E4CCED;--lan:#D6C590;--lan-t:#36311F;--lan-i:#E8DAAE;--ani:#F4AFC0;--ani-t:#3E2730;--ani-i:#F8CBD6;--vie:#AFD09F;--vie-t:#283523;--vie-i:#CFE5C4;
   color-scheme: dark;
 }
 
@@ -277,3 +277,23 @@ button { font-family: inherit; }
 .caisse-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .caisse-case.gagnante { box-shadow: inset 0 -5px 0 var(--r), 0 0 26px var(--r); }
 .caisse-chances { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; font: 800 12px Nunito, sans-serif; }
+
+/* Fiche de lancement épurée */
+.fiche-diffs { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+.fiche-diffs .pill { padding: 0 4px; min-height: 44px; font-size: 13px; justify-content: center; gap: 3px; white-space: nowrap; overflow: hidden; }
+.fiche-grille { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.fiche-grille .pill { justify-content: center; min-height: 40px; font-size: 13.5px; }
+.fiche-options { display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 4px; border: 0; border-top: 1px solid var(--line); background: none; font: 700 15px 'DM Sans', sans-serif; color: var(--text); cursor: pointer; }
+.fiche-options span:nth-child(2) { margin-left: auto; font-size: 13px; }
+.fiche-legende { display: flex; gap: 6px; align-items: flex-start; font-size: 12.5px; line-height: 1.4; color: var(--muted); }
+.fiche-legende svg { flex: none; margin-top: 2px; }
+
+/* Fiches à retourner */
+.fiche-carte { position: relative; width: 100%; max-width: 520px; align-self: center; min-height: 340px; border: 0; padding: 0; background: none; cursor: pointer; perspective: 1200px; font: inherit; color: inherit; }
+.fiche-recto, .fiche-verso { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 22px; border-radius: 24px; background: var(--surface); border: 1px solid var(--line); box-shadow: var(--shadow); backface-visibility: hidden; transition: transform .5s cubic-bezier(.3, 1.3, .5, 1); text-align: center; }
+.fiche-verso { transform: rotateY(180deg); background: var(--ok-t); }
+.fiche-carte.retournee .fiche-recto { transform: rotateY(-180deg); }
+.fiche-carte.retournee .fiche-verso { transform: rotateY(0); }
+.fiche-recto img, .fiche-verso img { max-height: 160px; max-width: 100%; border-radius: 14px; object-fit: contain; }
+.fiche-recto strong, .fiche-verso strong { font-size: 21px; font-weight: 900; }
+.fiche-recto small, .fiche-verso small { color: var(--muted); font-size: 13px; line-height: 1.4; }

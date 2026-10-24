@@ -32,10 +32,21 @@ export default function Revision() {
         ))}
       </div>
 
+      {dues.length > 0 && (
+        <section className="card" style={{ padding: 18, display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap', background: 'var(--his-t)', borderColor: 'transparent' }}>
+          <div style={{ flex: '1 1 220px' }}>
+            <strong className="t" style={{ fontSize: 19 }}>{lang === 'fr' ? 'Tout réviser, mélangé' : 'Review everything, mixed'}</strong>
+            <p style={{ fontSize: 14, color: 'var(--muted)' }}>{lang === 'fr' ? `${Math.min(30, dues.length)} questions de tous tes quiz, dans le désordre.` : `${Math.min(30, dues.length)} questions from all your quizzes, shuffled.`}</p>
+          </div>
+          <Link className="btn btn-p btn-lg" to={`/partie?s=tout&m=qcm&n=${Math.min(30, dues.length)}&d=4&rev=1&ids=${encodeURIComponent([...dues].sort(() => Math.random() - 0.5).slice(0, 30).map((c) => `${c.s}~${c.id}`).join(','))}`}>{lang === 'fr' ? 'Lancer' : 'Start'}<Icon d={ICONS.arrowR} /></Link>
+          <Link className="btn btn-s btn-lg" to="/fiches">{lang === 'fr' ? 'Fiches à retourner' : 'Flashcards'}</Link>
+        </section>
+      )}
+
       {parTheme.length === 0 ? (
         <section className="card" style={{ padding: 40, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, textAlign: 'center' }}>
           <Coche size={56} />
-          <h2 className="t" style={{ fontSize: 24, fontWeight: 800 }}>{lang === 'fr' ? 'Rien à revoir pour l’instant' : 'Nothing to review right now'}</h2>
+          <h2 className="t" style={{ fontSize: 24, fontWeight: 800 }}>{lang === 'fr' ? 'Carnet d’erreurs vide' : 'Nothing to review right now'}</h2>
           <p style={{ color: 'var(--muted)' }}>
             {prochaine
               ? (lang === 'fr' ? `Prochaine révision le ${new Date(prochaine.due).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}.` : `Next review on ${new Date(prochaine.due).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}.`)

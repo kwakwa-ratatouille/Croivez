@@ -114,9 +114,10 @@ export async function enregistrerPartie(uid: string, profile: Profile, p: Partie
 
   const revision: Record<string, unknown> = {}
   for (const r of p.sansRevision ? [] : p.resultats) {
-    const cle = cleRevision(p.sousTheme, r.id)
+    const s = (r.s ?? p.sousTheme) as typeof p.sousTheme
+    const cle = cleRevision(s, r.id)
     const carte = profile.revision?.[cle]
-    const suite = planifier(carte, p.sousTheme, r.id, r.juste)
+    const suite = planifier(carte, s, r.id, r.juste)
     if (suite) revision[cle] = suite
     else if (carte) revision[cle] = deleteField()
   }
@@ -154,7 +155,7 @@ export async function enregistrerPartie(uid: string, profile: Profile, p: Partie
     ...(nouveauxSecrets.length ? { secrets: arrayUnion(...nouveauxSecrets) } : {}),
     ...(p.record && p.record.score > (profile.records?.[p.record.jeu] ?? 0) ? { records: { [p.record.jeu]: p.record.score } } : {}),
     // Sans-faute obligatoire ; valider un niveau valide aussi tous ceux du dessous
-    ...(p.difficulte && p.difficulte <= 4 && taux >= 1 ? { paliers: { [p.sousTheme]: arrayUnion(...[1, 2, 3, 4].filter((d) => d <= p.difficulte!)) } } : {}),
+    ...(!p.revision && p.difficulte && p.difficulte <= 4 && taux >= 1 ? { paliers: { [p.sousTheme]: arrayUnion(...[1, 2, 3, 4].filter((d) => d <= p.difficulte!)) } } : {}),
   }, { merge: true })
   await publierXp(uid, profile.pseudo, p.xp, (profile.xp ?? 0) + p.xp, serie, { avatar: profile.avatar, cadre: profile.cadre }, resumePublic({ ...profile, parties: (profile.parties ?? 0) + 1, maitrise: p.revision ? profile.maitrise : { ...profile.maitrise, [p.sousTheme]: maitrise } })).catch(console.error)
 }

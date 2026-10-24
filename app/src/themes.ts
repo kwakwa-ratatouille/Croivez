@@ -1,7 +1,7 @@
 import type { Lang } from './i18n'
 import type { SousThemeId } from './quiz/engine'
 
-export type Famille = 'geo' | 'cine' | 'mus' | 'nat' | 'sci' | 'his' | 'brd' | 'spo' | 'lit' | 'jv'
+export type Famille = 'geo' | 'cine' | 'mus' | 'nat' | 'sci' | 'his' | 'brd' | 'spo' | 'lit' | 'jv' | 'ani' | 'vie'
 
 export type SousTheme = { id: string; nom: Record<Lang, string>; jouable?: SousThemeId }
 
@@ -38,7 +38,7 @@ export const FAMILLES: { k: Famille; nom: Record<Lang, string>; icon: string; mo
     k: 'cine', nom: { fr: 'Cinéma & séries', en: 'Film & TV' },
     icon: 'M6 7h12a2.5 2.5 0 0 1 2.5 2.5v8A2.5 2.5 0 0 1 18 20H6a2.5 2.5 0 0 1-2.5-2.5v-8A2.5 2.5 0 0 1 6 7ZM3.5 11h17M8 7l2 4M13 7l2 4',
     motif: 'M10 10h100v60H10ZM10 20h100M10 60h100M20 10v10M40 10v10M60 10v10M80 10v10M100 10v10M20 60v10M40 60v10M60 60v10M80 60v10M100 60v10',
-    subs: [{ id: 'films', nom: { fr: 'Films et réalisateurs', en: 'Films & directors' }, jouable: 'films' }, { id: 'films-annee', nom: { fr: 'Films : année de sortie', en: 'Films: release year' }, jouable: 'films-annee' }, { id: 'series', nom: { fr: 'Séries', en: 'TV shows' }, jouable: 'series' }, { id: 'acteurs', nom: { fr: 'Acteurs', en: 'Actors' }, jouable: 'acteurs' }, j('studios', 'Disney, Pixar, Marvel… : le studio', 'Disney, Pixar, Marvel…: studio'), j('studios-annee', 'Films d’animation et super-héros : l’année', 'Animation & superhero films: year'), { id: 'affiches', nom: { fr: 'Affiches de films', en: 'Film posters' } }],
+    subs: [{ id: 'films', nom: { fr: 'Films et réalisateurs', en: 'Films & directors' }, jouable: 'films' }, { id: 'films-annee', nom: { fr: 'Films : année de sortie', en: 'Films: release year' }, jouable: 'films-annee' }, { id: 'series', nom: { fr: 'Séries', en: 'TV shows' }, jouable: 'series' }, { id: 'acteurs', nom: { fr: 'Acteurs', en: 'Actors' }, jouable: 'acteurs' }, j('studios', 'Disney, Pixar, Marvel… : le studio', 'Disney, Pixar, Marvel…: studio'), j('studios-annee', 'Films d’animation et super-héros : l’année', 'Animation & superhero films: year'), j('oscars', 'Oscars du meilleur film', 'Best Picture Oscars'), { id: 'affiches', nom: { fr: 'Affiches de films', en: 'Film posters' } }],
   },
   {
     k: 'mus', nom: { fr: 'Musique', en: 'Music' },
@@ -48,7 +48,7 @@ export const FAMILLES: { k: Famille; nom: Record<Lang, string>; icon: string; mo
   },
   {
     k: 'nat', nom: { fr: 'Nature', en: 'Nature' },
-    icon: 'M5 19.5C5 11 10 5 20 4.5c0 9.5-6 15-15 15ZM5 19.5c3-4.5 6.5-7.5 10-9',
+    icon: 'M19.5 4.5C10 4.5 4.5 9 4.5 15.5c0 1.5.3 2.9.8 4 6.9 0 14.2-4 14.2-15ZM5.3 19.5C8 15 11.5 12 15 10',
     motif: 'M20 70C20 40 40 18 80 16c0 36-24 54-60 54M20 70c12-16 26-28 40-34M80 60c0-14 10-24 30-26 0 18-12 26-30 26',
     subs: [
       j('animaux', 'Tous les animaux', 'All animals'),
@@ -77,7 +77,7 @@ export const FAMILLES: { k: Famille; nom: Record<Lang, string>; icon: string; mo
     k: 'his', nom: { fr: 'Histoire, personnalités & arts', en: 'History, people & arts' },
     icon: 'M3.5 9 12 4.5 20.5 9M6 10v7.5M10 10v7.5M14 10v7.5M18 10v7.5M3.5 20h17',
     motif: 'M20 30 60 10l40 20M28 34v30M48 34v30M72 34v30M92 34v30M16 70h88',
-    subs: [{ id: 'personnalites', nom: { fr: 'Personnalités', en: 'Famous people' }, jouable: 'personnalites' }, { id: 'personnalites-pays', nom: { fr: 'Nationalités', en: 'Nationalities' }, jouable: 'personnalites-pays' }, { id: 'personnalites-metier', nom: { fr: 'Qui fait quoi ?', en: 'Who does what?' }, jouable: 'personnalites-metier' }, { id: 'personnalites-naissance', nom: { fr: 'Années de naissance', en: 'Birth years' }, jouable: 'personnalites-naissance' }, { id: 'histoire', nom: { fr: 'Dates de l’histoire', en: 'History dates' }, jouable: 'histoire' }, { id: 'tableaux', nom: { fr: 'Tableaux célèbres', en: 'Famous paintings' }, jouable: 'tableaux' }, j('presidents', 'Présidents français', 'French presidents'), j('mouvements', 'Mouvements artistiques', 'Art movements'), j('sculptures', 'Sculptures', 'Sculptures'), j('architecture', 'Architectes', 'Architects')],
+    subs: [{ id: 'personnalites', nom: { fr: 'Personnalités', en: 'Famous people' }, jouable: 'personnalites' }, { id: 'personnalites-pays', nom: { fr: 'Nationalités', en: 'Nationalities' }, jouable: 'personnalites-pays' }, { id: 'personnalites-metier', nom: { fr: 'Qui fait quoi ?', en: 'Who does what?' }, jouable: 'personnalites-metier' }, { id: 'personnalites-naissance', nom: { fr: 'Années de naissance', en: 'Birth years' }, jouable: 'personnalites-naissance' }, { id: 'histoire', nom: { fr: 'Dates de l’histoire', en: 'History dates' }, jouable: 'histoire' }, { id: 'tableaux', nom: { fr: 'Tableaux célèbres', en: 'Famous paintings' }, jouable: 'tableaux' }, j('presidents', 'Présidents français', 'French presidents'), j('mouvements', 'Mouvements artistiques', 'Art movements'), j('sculptures', 'Sculptures', 'Sculptures'), j('architecture', 'Architectes', 'Architects'), j('batailles', 'Batailles', 'Battles'), j('attentats', 'Attentats : l’année', 'Attacks: year'), j('attentats-pays', 'Attentats : le pays', 'Attacks: country'), j('traites', 'Traités et accords', 'Treaties'), j('souverains', 'Rois, reines et empereurs', 'Monarchs')],
   },
   {
     k: 'brd', nom: { fr: 'Marques & logos', en: 'Brands & logos' },
@@ -99,9 +99,21 @@ export const FAMILLES: { k: Famille; nom: Record<Lang, string>; icon: string; mo
   },
   {
     k: 'jv', nom: { fr: 'Jeux vidéo', en: 'Video games' },
-    icon: 'M7 8h10a4 4 0 0 1 4 4v2.5a3 3 0 0 1-5.4 1.8L14.5 15h-5l-1.1 1.3A3 3 0 0 1 3 14.5V12a4 4 0 0 1 4-4ZM7.5 10.5v3M6 12h3M15.5 11.5h.01M17.5 13h.01',
+    icon: 'M8 7h8a6 6 0 0 1 5.8 7.5l-.6 2.3a2.6 2.6 0 0 1-4.5 1l-1.9-2.3H9.2l-1.9 2.3a2.6 2.6 0 0 1-4.5-1l-.6-2.3A6 6 0 0 1 8 7ZM8 10v4M6 12h4M15.5 11h.01M17.5 13h.01',
     motif: 'M30 24h60a20 20 0 0 1 20 20v10a14 14 0 0 1-25 8l-6-6H41l-6 6a14 14 0 0 1-25-8V44a20 20 0 0 1 20-20Z',
     subs: [j('jeux', 'Jeux et studios', 'Games & studios'), j('jeux-annee', 'Jeux : année de sortie', 'Games: release year'), j('persos-jeux', 'Personnages', 'Characters'), j('persos-univers', 'Personnages : de quel jeu ?', 'Characters: which game?'), j('lieux-jeux', 'Lieux et cartes : de quel jeu ?', 'Places & maps: which game?'), j('sagas', 'Sagas et éditeurs', 'Series & publishers')],
+  },
+  {
+    k: 'ani', nom: { fr: 'Animés & doublage', en: 'Anime & dubbing' },
+    icon: 'M12 3.5l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 15.9l-4.8 2.5.9-5.4-3.9-3.8 5.4-.8Z',
+    motif: 'M60 10l10 20 22 3-16 15 4 22-20-10-20 10 4-22-16-15 22-3Z',
+    subs: [j('animes', 'Animés : l’année', 'Anime: year'), j('animes-studio', 'Animés : le studio', 'Anime: studio'), j('persos-animes', 'Personnages d’animés', 'Anime characters'), j('doubleurs', 'Voix françaises', 'French voice actors')],
+  },
+  {
+    k: 'vie', nom: { fr: 'Vie quotidienne & mythes', en: 'Everyday life & myths' },
+    icon: 'M5 20.5h14M7 20.5V11l5-6.5 5 6.5v9.5M10 20.5v-5h4v5',
+    motif: 'M20 70h80M30 70V40l30-26 30 26v30M50 70V52h20v18',
+    subs: [j('voitures', 'Voitures : le constructeur', 'Cars: maker'), j('voitures-photo', 'Voitures en photo', 'Cars in pictures'), j('fromages', 'Fromages du monde', 'World cheeses'), j('dieux', 'Divinités', 'Deities'), j('dieux-mythologie', 'Quelle mythologie ?', 'Which mythology?'), j('instruments', 'Instruments de musique', 'Musical instruments')],
   },
 ]
 
