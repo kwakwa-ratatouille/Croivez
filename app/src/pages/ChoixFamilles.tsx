@@ -6,7 +6,7 @@ import { QUIZ_DEPART, choisirQuiz } from '../progression'
 import Img from '../components/Img'
 import Illustration from '../components/Illustration'
 import { useCouverture } from '../components/CarteCouverture'
-import { Coche, Logo, Piece } from '../components/ui'
+import { Coche, ICONS, Icon, Logo, Piece } from '../components/ui'
 
 // Petite vignette sélectionnable d'un sous-thème (photo de couverture)
 function Vignette({ id, nom, k, pris, grise, onClick }: { id: string; nom: string; k: string; pris: boolean; grise: boolean; onClick: () => void }) {
@@ -29,6 +29,8 @@ export default function ChoixFamilles() {
   const { user } = useAuth()
   const [choix, setChoix] = useState<string[]>([])
   const [envoi, setEnvoi] = useState(false)
+  // Une famille dépliée à la fois : tout se voit en grille, sans défilement horizontal
+  const [ouverte, setOuverte] = useState<string | null>(FAMILLES[0].k)
   const complet = choix.length === QUIZ_DEPART
 
   const basculer = (id: string) => setChoix((c) => (c.includes(id) ? c.filter((x) => x !== id) : c.length < QUIZ_DEPART ? [...c, id] : c))
@@ -42,15 +44,26 @@ export default function ChoixFamilles() {
           {fr ? 'Pioche dans toutes les familles. Les autres se débloquent ensuite avec les pièces gagnées en jouant.' : 'Pick from any family. Unlock the others later with the coins you earn.'}
         </p>
       </div>
-      <div style={{ width: '100%', maxWidth: 1000, display: 'flex', flexDirection: 'column', gap: 18 }}>
+      {/* Au hasard : 6 quiz de 6 familles différentes (variété garantie) */}
+      <button type="button" className="btn btn-s" onClick={() => {
+        const familles = [...FAMILLES].sort(() => Math.random() - 0.5).slice(0, QUIZ_DEPART)
+        setChoix(familles.map((f) => { const j = f.subs.filter((s) => s.jouable); return j[Math.floor(Math.random() * j.length)].id }))
+      }}><Icon d={ICONS.sparkle} size={18} />{fr ? 'Au hasard' : 'Random'}</button>
+      <div style={{ width: '100%', maxWidth: 1000, display: 'flex', flexDirection: 'column', gap: 10 }}>
         {FAMILLES.map((f) => (
-          <section key={f.k} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            <h2 className="t" style={{ fontSize: 17, fontWeight: 900, color: `var(--${f.k}-i)` }}>{f.nom[lang]}</h2>
-            <div className="carrousel" style={{ margin: '0 -16px', padding: '2px 16px 6px' }}>
+          <section key={f.k} className="choix-famille" style={{ ['--k' as string]: `var(--${f.k})`, ['--kt' as string]: `var(--${f.k}-t)`, ['--ki' as string]: `var(--${f.k}-i)` }}>
+            <button type="button" className="choix-famille-tete" aria-expanded={ouverte === f.k} onClick={() => setOuverte((o) => (o === f.k ? null : f.k))}>
+              <span className="choix-famille-icone"><Icon d={f.icon} size={20} /></span>
+              <span className="t" style={{ flex: 1, textAlign: 'left' }}>{f.nom[lang]}</span>
+              {(() => { const n = f.subs.filter((s) => choix.includes(s.id)).length; return n > 0 && <span className="chip" style={{ background: 'var(--k)', color: '#fff' }}>{n} ✓</span> })()}
+              <span style={{ color: 'var(--muted)', fontSize: 13, fontWeight: 600 }}>{f.subs.filter((s) => s.jouable).length}</span>
+              <Icon d={ICONS.arrowR} size={16} style={{ transform: ouverte === f.k ? 'rotate(90deg)' : 'none', transition: 'transform .2s' }} />
+            </button>
+            {ouverte === f.k && <div className="choix-grille rise">
               {f.subs.filter((s) => s.jouable).map((s) => (
                 <Vignette key={s.id} id={s.id} nom={s.nom[lang]} k={f.k} pris={choix.includes(s.id)} grise={complet && !choix.includes(s.id)} onClick={() => basculer(s.id)} />
               ))}
-            </div>
+            </div>}
           </section>
         ))}
       </div>

@@ -313,3 +313,10 @@ button { font-family: inherit; }
 .carte-famille-stats { display: flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 700; opacity: .9; margin: 2px 0 5px; }
 .carte-famille-event, .carte-famille-legende { position: absolute; top: 10px; right: 10px; background: var(--lx, #E3A72F); color: #fff; }
 .carte-famille-legende { right: auto; left: 10px; background: linear-gradient(90deg, #E3A72F, #A35BE0); }
+
+/* Choix des 6 premiers quiz : familles en accordéon, quiz en grille */
+.choix-famille { border-radius: 20px; background: var(--surface); border: 1px solid var(--line); overflow: hidden; }
+.choix-famille-tete { width: 100%; display: flex; align-items: center; gap: 10px; min-height: 56px; padding: 8px 14px; border: 0; background: none; cursor: pointer; font: 900 17px Nunito, sans-serif; color: var(--ki); }
+.choix-famille-icone { width: 36px; height: 36px; border-radius: 12px; display: flex; align-items: center; justify-content: center; background: var(--kt); flex: none; }
+.choix-grille { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 12px; padding: 4px 14px 16px; }
+.choix-grille .vignette-choix { width: auto; }
