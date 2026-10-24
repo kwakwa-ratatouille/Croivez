@@ -1,5 +1,31 @@
 [
  {
+  "id": "2026-10-24f",
+  "titre": "Code de la route et jeux de société",
+  "points": [
+   [
+    "🚦",
+    "Code de la route",
+    "54 panneaux à reconnaître et les règles de l’examen : vitesses, alcool, points, priorités."
+   ],
+   [
+    "♟️",
+    "Jeux de société, cartes et échecs",
+    "Monopoly, Scrabble, Uno, Cluedo, Loup-garou, échecs, poker, tarot, belote…"
+   ],
+   [
+    "⚡",
+    "Pokémon",
+    "Trouve le type de 50 Pokémon."
+   ],
+   [
+    "🔔",
+    "Rappels",
+    "Avec la nouvelle version 0.10.0 : quiz du jour, série en danger et révisions."
+   ]
+  ]
+ },
+ {
   "id": "2026-10-24e",
   "titre": "Aventure, pass de saison et statistiques",
   "points": [

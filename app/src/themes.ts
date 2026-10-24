@@ -98,10 +98,10 @@ export const FAMILLES: { k: Famille; nom: Record<Lang, string>; icon: string; mo
     subs: [j('livres', 'Livres et auteurs', 'Books & authors'), j('livres-annee', 'Livres : année', 'Books: year'), j('auteurs', 'Écrivains', 'Writers'), j('bd', 'Personnages de BD', 'Comic characters'), j('mangas', 'Mangas', 'Manga')],
   },
   {
-    k: 'jv', nom: { fr: 'Jeux vidéo', en: 'Video games' },
+    k: 'jv', nom: { fr: 'Jeux vidéo & jeux', en: 'Games' },
     icon: 'M8 7h8a6 6 0 0 1 5.8 7.5l-.6 2.3a2.6 2.6 0 0 1-4.5 1l-1.9-2.3H9.2l-1.9 2.3a2.6 2.6 0 0 1-4.5-1l-.6-2.3A6 6 0 0 1 8 7ZM8 10v4M6 12h4M15.5 11h.01M17.5 13h.01',
     motif: 'M30 24h60a20 20 0 0 1 20 20v10a14 14 0 0 1-25 8l-6-6H41l-6 6a14 14 0 0 1-25-8V44a20 20 0 0 1 20-20Z',
-    subs: [j('jeux', 'Jeux et studios', 'Games & studios'), j('jeux-annee', 'Jeux : année de sortie', 'Games: release year'), j('persos-jeux', 'Personnages', 'Characters'), j('persos-univers', 'Personnages : de quel jeu ?', 'Characters: which game?'), j('lieux-jeux', 'Lieux et cartes : de quel jeu ?', 'Places & maps: which game?'), j('sagas', 'Sagas et éditeurs', 'Series & publishers')],
+    subs: [j('jeux', 'Jeux et studios', 'Games & studios'), j('jeux-annee', 'Jeux : année de sortie', 'Games: release year'), j('persos-jeux', 'Personnages', 'Characters'), j('persos-univers', 'Personnages : de quel jeu ?', 'Characters: which game?'), j('lieux-jeux', 'Lieux et cartes : de quel jeu ?', 'Places & maps: which game?'), j('sagas', 'Sagas et éditeurs', 'Series & publishers'), j('regles-jeux', 'Jeux de société, cartes et échecs', 'Board & card games'), j('pokemon', 'Pokémon : le type', 'Pokémon: type')],
   },
   {
     k: 'ani', nom: { fr: 'Animés & doublage', en: 'Anime & dubbing' },
@@ -113,7 +113,7 @@ export const FAMILLES: { k: Famille; nom: Record<Lang, string>; icon: string; mo
     k: 'vie', nom: { fr: 'Vie quotidienne & mythes', en: 'Everyday life & myths' },
     icon: 'M5 20.5h14M7 20.5V11l5-6.5 5 6.5v9.5M10 20.5v-5h4v5',
     motif: 'M20 70h80M30 70V40l30-26 30 26v30M50 70V52h20v18',
-    subs: [j('voitures', 'Voitures : le constructeur', 'Cars: maker'), j('voitures-photo', 'Voitures en photo', 'Cars in pictures'), j('dieux', 'Divinités', 'Deities'), j('dieux-mythologie', 'Quelle mythologie ?', 'Which mythology?'), j('instruments', 'Instruments de musique', 'Musical instruments'), j('jeux-societe', 'Jeux de société et de café', 'Board & bar games'), j('legendes', 'Légendes urbaines et mythes', 'Urban legends & myths')],
+    subs: [j('voitures', 'Voitures : le constructeur', 'Cars: maker'), j('voitures-photo', 'Voitures en photo', 'Cars in pictures'), j('dieux', 'Divinités', 'Deities'), j('dieux-mythologie', 'Quelle mythologie ?', 'Which mythology?'), j('instruments', 'Instruments de musique', 'Musical instruments'), j('jeux-societe', 'Jeux de société et de café', 'Board & bar games'), j('legendes', 'Légendes urbaines et mythes', 'Urban legends & myths'), j('panneaux', 'Panneaux du code de la route', 'Road signs'), j('code-route', 'Code de la route : règles', 'Highway code')],
   },
   {
     k: 'pop', nom: { fr: 'Pop culture & Internet', en: 'Pop culture & Internet' },
