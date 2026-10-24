@@ -1,5 +1,21 @@
 [
  {
+  "id": "2026-10-24l",
+  "titre": "Héros et défis Légende plus fluides",
+  "points": [
+   [
+    "🦸",
+    "Héros",
+    "Deux nouveaux quiz : « Qui est ce héros ? » en image et « De quelle œuvre vient ce héros ? » (127 héros de films, Disney, jeux, animés et dessins animés)."
+   ],
+   [
+    "⏳",
+    "Défi Légende sans attente",
+    "Toutes les images se chargent avant le départ du chrono, avec une barre de progression."
+   ]
+  ]
+ },
+ {
   "id": "2026-10-24k",
   "titre": "Luxe, pseudos stylés et plein de persos",
   "points": [

@@ -173,6 +173,8 @@ const CULTURE = {
   peintres: { type: 'image', q: { fr: (_, g) => (g === 'f' ? 'Qui est cette peintre ?' : 'Qui est ce peintre ?'), en: () => 'Who is this painter?' } },
   'tableaux-photo': { type: 'image', pack: 'tableaux', q: { fr: () => 'Quel est ce tableau ?', en: () => 'Which painting is this?' } },
   applis: { type: 'image', q: { fr: () => 'Quelle est cette appli ?', en: () => 'Which app is this?' } },
+  heros: { type: 'attribut', montrer: true, groupe: 'genre', q: { fr: (n) => `De quelle œuvre vient ce héros : ${n} ?`, en: (n) => `Which work is the hero ${n} from?` } },
+  'heros-photo': { type: 'image', pack: 'heros', q: { fr: () => 'Qui est ce héros ?', en: () => 'Who is this hero?' } },
   'mechants-photo': { type: 'image', pack: 'mechants', q: { fr: () => 'Qui est ce méchant ?', en: () => 'Who is this villain?' } },
   doubleurs: { type: 'image', q: { fr: (_, g) => (g === 'f' ? 'Qui est cette comédienne de doublage ?' : 'Qui est ce comédien de doublage ?'), en: () => 'Who is this voice actor?' } },
   batailles: { type: 'annee', champ: 'annee', montrer: true, q: { fr: (n) => `En quelle année a eu lieu : ${n} ?`, en: (n) => `In what year was the ${n}?` } },

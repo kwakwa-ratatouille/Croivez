@@ -259,6 +259,41 @@ const MECHANTS = [
   ] },
 ]
 
+// ——— Héros : même principe que les méchants (wiki des héros), g : support
+const HEROS = [
+  { wiki: 'hero', liste: [
+    ['Luke Skywalker', 'Star Wars', 'film', 1], 
+    ['Batman', 'Batman', 'film', 1, 'Batman (Dark Knight Trilogy)'], ['Superman', 'Superman', 'film', 1, 'Superman (DC Extended Universe)'], ['Wonder Woman', 'Wonder Woman', 'film', 2, 'Wonder Woman (DC Extended Universe)'],
+    ['Captain America', 'Avengers', 'film', 1, 'Captain America (Marvel Cinematic Universe)'], ['Thor', 'Thor', 'film', 2, 'Thor (Marvel Cinematic Universe)'], ['Hulk', 'Avengers', 'film', 2, 'Hulk (Marvel Cinematic Universe)'], ['Black Panther', 'Black Panther', 'film', 2, 'Black Panther (Marvel Cinematic Universe)'],
+    ['Frodon Sacquet', 'Le Seigneur des anneaux', 'film', 1, 'Frodo Baggins'], ['Gandalf', 'Le Seigneur des anneaux', 'film', 1], ['Aragorn', 'Le Seigneur des anneaux', 'film', 2], ['Legolas', 'Le Seigneur des anneaux', 'film', 2],
+    ['Hermione Granger', 'Harry Potter', 'film', 1], ['Ron Weasley', 'Harry Potter', 'film', 2], ['Albus Dumbledore', 'Harry Potter', 'film', 2], ['Rubeus Hagrid', 'Harry Potter', 'film', 3],
+    ['Han Solo', 'Star Wars', 'film', 1], ['Princesse Leia', 'Star Wars', 'film', 1, 'Leia Organa'], ['Yoda', 'Star Wars', 'film', 1], ['Obi-Wan Kenobi', 'Star Wars', 'film', 2], ['Rey', 'Star Wars', 'film', 3, 'Rey Skywalker'], ['Chewbacca', 'Star Wars', 'film', 2],
+    ['Marty McFly', 'Retour vers le futur', 'film', 2], ['Doc Brown', 'Retour vers le futur', 'film', 2, 'Emmett Brown'], ['Jack Sparrow', 'Pirates des Caraïbes', 'film', 1], ['James Bond', 'James Bond', 'film', 1],
+    ['Neo', 'Matrix', 'film', 2], ['Ellen Ripley', 'Alien', 'film', 3], ['Sarah Connor', 'Terminator', 'film', 3], ['John McClane', 'Piège de cristal', 'film', 3], ['Rocky Balboa', 'Rocky', 'film', 2],
+    ['Katniss Everdeen', 'Hunger Games', 'film', 2], ['Jason Bourne', 'La Mémoire dans la peau', 'film', 4], ['Forrest Gump', 'Forrest Gump', 'film', 2], ['E.T.', 'E.T. l’extra-terrestre', 'film', 2, 'E.T. the Extra-Terrestrial'],
+    ['Paddington', 'Paddington', 'film', 3, 'Paddington Bear'], ['Groot', 'Les Gardiens de la Galaxie', 'film', 2, 'Groot (Marvel Cinematic Universe)'], ['Star-Lord', 'Les Gardiens de la Galaxie', 'film', 3, 'Star-Lord (Marvel Cinematic Universe)'], ['Deadpool', 'Deadpool', 'film', 2],
+    ['Wolverine', 'X-Men', 'film', 2], ['Docteur Strange', 'Doctor Strange', 'film', 3, 'Doctor Strange (Marvel Cinematic Universe)'], ['Aquaman', 'Aquaman', 'film', 3, 'Aquaman (DC Extended Universe)'], 
+    ['Simba', 'Le Roi lion', 'disney', 1], ['Mulan', 'Mulan', 'disney', 2, 'Fa Mulan'], ['Hercule', 'Hercule', 'disney', 2, 'Hercules (Disney)'], ['Peter Pan', 'Peter Pan', 'disney', 2, 'Peter Pan (Disney)'], ['Pinocchio', 'Pinocchio', 'disney', 2, 'Pinocchio (Disney)'],
+    ['Blanche-Neige', 'Blanche-Neige', 'disney', 2, 'Snow White (Disney)'], ['Cendrillon', 'Cendrillon', 'disney', 2, 'Cinderella (Disney)'], ['Ariel', 'La Petite Sirène', 'disney', 1, 'Ariel'], ['Belle', 'La Belle et la Bête', 'disney', 2, 'Belle (Disney)'], ['Pocahontas', 'Pocahontas', 'disney', 3, 'Pocahontas (Disney)'],
+    ['Quasimodo', 'Le Bossu de Notre-Dame', 'disney', 3, 'Quasimodo (Disney)'], ['Tarzan', 'Tarzan', 'disney', 3, 'Tarzan (Disney)'], ['Mowgli', 'Le Livre de la jungle', 'disney', 3, 'Mowgli (Disney)'], ['Dumbo', 'Dumbo', 'disney', 3],
+    ['Bambi', 'Bambi', 'disney', 3], ['Mérida', 'Rebelle', 'disney', 3, 'Merida'], ['Tiana', 'La Princesse et la Grenouille', 'disney', 3], ['Kuzco', 'Kuzco, l’empereur mégalo', 'disney', 4, 'Kuzco'], ['Milo Thatch', 'Atlantide, l’empire perdu', 'disney', 4],
+    ['Mario', 'Super Mario', 'jeu', 1], ['Link', 'The Legend of Zelda', 'jeu', 1], ['Sonic', 'Sonic', 'jeu', 1, 'Sonic the Hedgehog'], ['Pikachu', 'Pokémon', 'jeu', 1], ['Lara Croft', 'Tomb Raider', 'jeu', 2],
+    ['Master Chief', 'Halo', 'jeu', 2], ['Kratos', 'God of War', 'jeu', 2], ['Samus Aran', 'Metroid', 'jeu', 2], ['Kirby', 'Kirby', 'jeu', 1], ['Donkey Kong', 'Donkey Kong', 'jeu', 2],
+    ['Crash Bandicoot', 'Crash Bandicoot', 'jeu', 2], ['Spyro', 'Spyro', 'jeu', 2, 'Spyro the Dragon'], ['Rayman', 'Rayman', 'jeu', 2], ['Ezio Auditore', 'Assassin’s Creed', 'jeu', 3, 'Ezio Auditore da Firenze'], ['Geralt de Riv', 'The Witcher', 'jeu', 2, 'Geralt of Rivia'],
+    ['Nathan Drake', 'Uncharted', 'jeu', 3], ['Joel Miller', 'The Last of Us', 'jeu', 3], ['Ellie', 'The Last of Us', 'jeu', 3, 'Ellie Williams'], ['Arthur Morgan', 'Red Dead Redemption 2', 'jeu', 3], ['Cloud Strife', 'Final Fantasy VII', 'jeu', 2],
+    ['Solid Snake', 'Metal Gear', 'jeu', 3], ['Gordon Freeman', 'Half-Life', 'jeu', 3], ['Aloy', 'Horizon', 'jeu', 3], ['Ratchet', 'Ratchet & Clank', 'jeu', 3], ['Sora', 'Kingdom Hearts', 'jeu', 3],
+    ['Professeur Layton', 'Professeur Layton', 'jeu', 3, 'Hershel Layton'], ['Phoenix Wright', 'Ace Attorney', 'jeu', 3], ['Steve', 'Minecraft', 'jeu', 1, 'Steve (Minecraft)'], ['Le Chevalier', 'Hollow Knight', 'jeu', 4, 'The Knight (Hollow Knight)'], ['Max Caulfield', 'Life is Strange', 'jeu', 4],
+    ['Son Goku', 'Dragon Ball', 'anime', 1, 'Goku'], ['Naruto Uzumaki', 'Naruto', 'anime', 1], ['Monkey D. Luffy', 'One Piece', 'anime', 1], ['Tanjiro Kamado', 'Demon Slayer', 'anime', 2], ['Izuku Midoriya', 'My Hero Academia', 'anime', 2],
+    ['Ichigo Kurosaki', 'Bleach', 'anime', 2], ['Edward Elric', 'Fullmetal Alchemist', 'anime', 3], ['Saitama', 'One Punch Man', 'anime', 2], ['Gon Freecss', 'Hunter × Hunter', 'anime', 3], ['Yuji Itadori', 'Jujutsu Kaisen', 'anime', 3],
+    ['Sailor Moon', 'Sailor Moon', 'anime', 2, 'Usagi Tsukino'], ['Astro Boy', 'Astro, le petit robot', 'anime', 4, 'Astro Boy (character)'], ['Totoro', 'Mon voisin Totoro', 'anime', 2], ['Chihiro', 'Le Voyage de Chihiro', 'anime', 3, 'Chihiro Ogino'], ['Ash Ketchum', 'Pokémon', 'anime', 2],
+    ['Bob l’éponge', 'Bob l’éponge', 'dessin', 1, 'SpongeBob SquarePants'], ['Ladybug', 'Miraculous', 'dessin', 1, 'Marinette Dupain-Cheng'], ['Ben Tennyson', 'Ben 10', 'dessin', 2], ['Aang', 'Avatar, le dernier maître de l’air', 'dessin', 2], ['Kim Possible', 'Kim Possible', 'dessin', 2],
+    ['Les Super Nanas', 'Les Super Nanas', 'dessin', 3, 'Powerpuff Girls'], ['Scooby-Doo', 'Scooby-Doo', 'dessin', 1], ['Astérix', 'Astérix', 'dessin', 1, 'Asterix'], ['Tintin', 'Tintin', 'dessin', 1], ['Lucky Luke', 'Lucky Luke', 'dessin', 2],
+    ['Inspecteur Gadget', 'Inspecteur Gadget', 'dessin', 3], ['Woody', 'Toy Story', 'dessin', 1, 'Woody (Toy Story)'], ['Buzz l’Éclair', 'Toy Story', 'dessin', 1, 'Buzz Lightyear'], ['Shrek', 'Shrek', 'dessin', 1], ['Po', 'Kung Fu Panda', 'dessin', 2, 'Po (Kung Fu Panda)'],
+    ['Flash McQueen', 'Cars', 'dessin', 2, 'Lightning McQueen'], ['Rémy', 'Ratatouille', 'dessin', 3, 'Remy'], ['M. Indestructible', 'Les Indestructibles', 'dessin', 2, 'Mr. Incredible'], ['Krokmou', 'Dragons', 'dessin', 2, 'Toothless'], ['Elsa', 'La Reine des neiges', 'dessin', 1],
+    ['Kirikou', 'Kirikou', 'dessin', 3], ['Titeuf', 'Titeuf', 'dessin', 2], ['Aelita', 'Code Lyoko', 'dessin', 3, 'Aelita Schaeffer'], ['Finn', 'Adventure Time', 'dessin', 3, 'Finn the Human'],
+  ] },
+]
+
 // ——— Construction ———
 const parse = (txt) => (txt ?? '').split('|').map((s) => s.trim()).filter(Boolean).map((s) => { const [nom, palier, titre] = s.split('~'); return { nom, palier: Number(palier) || 4, titre: titre ?? nom } })
 async function images(wiki, titres, essai = 1) {
@@ -332,4 +367,5 @@ if (!quoi || quoi === 'animes') {
   await ecrire('persos-animes', ANIMES.flatMap((d) => parse(d.persos).map((p) => ({ ...p, oeuvre: d.oeuvre, wiki: d.wiki, g: d.g }))))
   await ecrire('lieux-animes', ANIMES.flatMap((d) => parse(d.lieux).map((p) => ({ ...p, oeuvre: d.oeuvre, wiki: d.wiki, g: d.g }))))
 }
+if (!quoi || quoi === 'heros') await ecrire('heros', HEROS.flatMap((m) => m.liste.map(([nom, oeuvre, g, palier, titre]) => ({ nom, oeuvre, g, palier, titre: titre ?? nom, wiki: m.wiki }))))
 if (!quoi || quoi === 'mechants') await ecrire('mechants', MECHANTS.flatMap((m) => m.liste.map(([nom, oeuvre, g, palier, titre]) => ({ nom, oeuvre, g, palier, titre: titre ?? nom, wiki: m.wiki }))))

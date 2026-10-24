@@ -21,7 +21,7 @@ import { FAMILLES } from '../themes'
 import { bonusEvenement } from '../meta'
 import { Coche, Croix, ICONS, Icon, Logo, Piece } from '../components/ui'
 import Extrait from '../components/Extrait'
-import Img, { prechargerImages } from '../components/Img'
+import Img, { chargerImages, prechargerImages } from '../components/Img'
 import CarteQuiz, { type Clic } from '../components/CarteQuiz'
 import Illustration from '../components/Illustration'
 import ImageWiki from '../components/ImageWiki'
@@ -78,6 +78,7 @@ export default function Partie() {
   const [vies, setVies] = useState(3)
 
   const [questions, setQuestions] = useState<Question[] | null>(null)
+  const [prepa, setPrepa] = useState<{ fait: number; total: number } | null>(null) // Légende : images chargées avant le départ
   const [i, setI] = useState(0)
   const [reponses, setReponses] = useState<Reponse[]>([])
   const [saisie, setSaisie] = useState('')
@@ -135,7 +136,13 @@ export default function Partie() {
         const boss = candidats.find((c) => !qs.some((x) => x.id === c.id))
         if (boss) qs = [...qs, { ...boss, boss: true }]
       }
-      setQuestions(qs.map((x) => (mj ? appliquerMiniJeu(x, mj, lang) : appliquerFormat(x, format, difficulte, lang))))
+      const pretes = qs.map((x) => (mj ? appliquerMiniJeu(x, mj, lang) : appliquerFormat(x, format, difficulte, lang)))
+      // Défi Légende (chrono serré) : toutes les images sont chargées avant de lancer le chrono
+      if (legende) {
+        await chargerImages(pretes.flatMap((x) => [x.image, ...x.options.map((o) => o.image)]), (fait, total) => setPrepa({ fait, total }))
+        setPrepa(null)
+      }
+      setQuestions(pretes)
       debutQuestion.current = Date.now()
     })
   }, [sousTheme, difficulte, max, nombre, mode, lang, chrono, seed, jeu, profile, mj, infoMj, format, defi, legende, revision])
@@ -267,7 +274,18 @@ export default function Partie() {
     enregistrerPartie(user.uid, profile, { sousTheme, xp, pieces, stats: { bonnes, comboMax, jeu: jeu ?? undefined, famille: k, difficulte },  defi, revision: revision || !!jeu, sansRevision: !!jeu, record: jeu && jeu !== 'mix' ? { jeu, score: bonnes } : undefined, difficulte: jeu ? undefined : difficulte, resultats: reponses.map((r) => ({ id: r.q.id, juste: r.juste, s: r.q.s ?? sousTheme })), bossReussi, difficulteJouee: difficulte, miniJeu: mj ?? undefined, cleFarm: revision ? undefined : cleFarm }).catch(console.error)
   }, [fini, user, profile, sousTheme, xp, pieces, defi, revision, reponses, questions])
 
-  if (!questions) return <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center' }}><Logo width={72} /></div>
+  if (!questions) return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 14, height: '100%', alignItems: 'center', justifyContent: 'center' }}>
+      <Logo width={72} />
+      {prepa && prepa.total > 0 && (
+        <div style={{ width: 'min(280px, 80%)', display: 'flex', flexDirection: 'column', gap: 8, textAlign: 'center' }}>
+          <strong className="t">{lang === 'fr' ? 'Préparation du défi Légende…' : 'Preparing the Legend challenge…'}</strong>
+          <div className="bar" style={{ height: 8 }}><span style={{ width: `${(prepa.fait / prepa.total) * 100}%`, background: 'var(--lx, #E3A72F)' }} /></div>
+          <small style={{ color: 'var(--muted)' }}>{lang === 'fr' ? `Images chargées : ${prepa.fait} / ${prepa.total}` : `Images loaded: ${prepa.fait} / ${prepa.total}`}</small>
+        </div>
+      )}
+    </div>
+  )
   // Écran d'annonce du mini-jeu : on sait à quoi on joue avant que le chrono parte
   if (intro && infoMj && q) return <IntroMiniJeu info={infoMj} total={questions.length} onGo={() => { setIntro(false); setRestant(chrono); debutQuestion.current = Date.now() }} />
   if (!q) return <div style={{ padding: 48, textAlign: 'center' }}><p>{lang === 'fr' ? 'Aucune question disponible.' : 'No questions available.'}</p><Link className="btn btn-p" to="/">{t('res.home')}</Link></div>

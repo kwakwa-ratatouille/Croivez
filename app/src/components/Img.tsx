@@ -44,6 +44,22 @@ export function prechargerImages(srcs: (string | undefined)[]) {
   }
 }
 
+// Attend que des images soient chargées (avant un défi chronométré), avec un délai maximum
+export function chargerImages(srcs: (string | undefined)[], progres: (fait: number, total: number) => void, maxMs = 10000) {
+  const liste = [...new Set(srcs.filter((s): s is string => !!s))]
+  let fait = 0
+  progres(0, liste.length)
+  const une = (src: string) => new Promise<void>((ok) => {
+    prechargees.add(src)
+    const im = new Image()
+    if (src.includes('nocookie.net')) im.referrerPolicy = 'unsafe-url'
+    im.onload = im.onerror = () => { progres(++fait, liste.length); ok() }
+    im.src = urls.get(src) ?? src
+    mettreEnCache(src).catch(() => {})
+  })
+  return Promise.race([Promise.all(liste.map(une)).then(() => {}), new Promise<void>((ok) => setTimeout(ok, maxMs))])
+}
+
 export async function telechargerImages(srcs: string[], progres: (fait: number) => void, parallele = 6) {
   const c = await caches.open(NOM)
   let fait = 0
