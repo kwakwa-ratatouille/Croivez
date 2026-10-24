@@ -1,3 +1,4 @@
+import { notifierInvitation } from '../rappels'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { onValue, ref, remove } from 'firebase/database'
@@ -5,12 +6,12 @@ import { rtdb } from '../firebase'
 import { useAuth } from '../auth'
 import { usePrefs } from '../i18n'
 import { refuser, rejoindre } from '../duel'
-import { ajouterAmi } from '../social'
+import { accepterAmi, ajouterAmi } from '../social'
 import { retourFin } from '../retour'
 
 // Invitations reçues, visibles partout dans l'appli : duel, salon, demande d'ami.
 // Rangées sous « invitations/<moi> » (chemin déjà ouvert par les règles de la base temps réel).
-type Invit = { id: string; de: string; uid?: string; salon?: string; type?: 'ami' }
+type Invit = { id: string; de: string; uid?: string; salon?: string; type?: 'ami' | 'ami-ok' }
 
 export default function Invitations() {
   const { lang } = usePrefs()
@@ -25,33 +26,43 @@ export default function Invitations() {
     return onValue(ref(rtdb, `invitations/${uid}`), (s) => {
       const v = (s.val() ?? {}) as Record<string, Omit<Invit, 'id'>>
       const l = Object.entries(v).map(([id, x]) => ({ id, ...x }))
-      setListe((avant) => { if (!premiere && l.length > avant.length) retourFin(true); return l })
+      for (const x of l) if (x.type === 'ami-ok' && x.uid) ajouterAmi(uid, x.uid).catch(() => {})
+      setListe((avant) => {
+        if (!premiere && l.length > avant.length) {
+          retourFin(true)
+          // Appli en arrière-plan : notification sur le téléphone
+          const n = l.find((x) => !avant.some((y) => y.id === x.id))
+          if (n) notifierInvitation(n.type === 'ami-ok' ? '🎉 Nouvel ami' : n.type === 'ami' ? '👋 Demande d’ami' : n.salon ? '👥 Invitation' : '⚔️ Duel !', `${n.de} ${n.type === 'ami-ok' ? 'a accepté ta demande' : n.type === 'ami' ? 'veut être ton ami·e' : n.salon ? 't’invite dans son salon' : 'te défie en duel !'}`).catch(() => {})
+        }
+        return l
+      })
       premiere = false
     })
   }, [uid])
   if (!uid || !liste.length) return null
   const fermer = (i: Invit) => remove(ref(rtdb, `invitations/${uid}/${i.id}`))
   const accepter = async (i: Invit) => {
-    if (i.type === 'ami') { if (i.uid) await ajouterAmi(uid, i.uid); await fermer(i); return }
+    if (i.type === 'ami') { if (i.uid) await accepterAmi(uid, profile?.pseudo ?? '?', i.uid); await fermer(i); return }
+    if (i.type === 'ami-ok') { await fermer(i); return }
     if (i.salon) { await fermer(i); nav(`/salon/${i.salon}`); return }
     const ok = await rejoindre(i.id, uid, profile?.pseudo ?? '?')
     if (ok) nav(`/duel/${i.id}`)
   }
-  const decliner = async (i: Invit) => { if (i.type === 'ami' || i.salon) await fermer(i); else await refuser(i.id, uid) }
-  const deja = (i: Invit) => i.type === 'ami' && !!i.uid && !!profile?.amis?.includes(i.uid)
+  const decliner = async (i: Invit) => { if (i.type === 'ami' || i.type === 'ami-ok' || i.salon) await fermer(i); else await refuser(i.id, uid) }
+  const deja = (i: Invit) => i.type === 'ami-ok' || (i.type === 'ami' && !!i.uid && !!profile?.amis?.includes(i.uid))
   return (
     <div className="invitations" role="status" aria-live="polite">
       {liste.slice(0, 3).map((i) => (
         <div key={i.id} className="invitation rise">
-          <span className="invitation-emoji">{i.type === 'ami' ? '👋' : i.salon ? '👥' : '⚔️'}</span>
+          <span className="invitation-emoji">{i.type === 'ami-ok' ? '🎉' : i.type === 'ami' ? '👋' : i.salon ? '👥' : '⚔️'}</span>
           <span className="invitation-texte">
             <strong>{i.de}</strong>
-            <small>{i.type === 'ami' ? (deja(i) ? (fr ? 'est aussi ton ami·e maintenant' : 'is now your friend too') : (fr ? 't’a ajouté·e en ami·e' : 'added you as a friend')) : i.salon ? (fr ? 't’invite dans son salon' : 'invites you to a room') : (fr ? 'te défie en duel !' : 'challenges you to a duel!')}</small>
+            <small>{i.type === 'ami-ok' ? (fr ? 'a accepté ta demande : vous êtes amis ! 🎉' : 'accepted: you are friends! 🎉') : i.type === 'ami' ? (deja(i) ? (fr ? 'est aussi ton ami·e maintenant' : 'is now your friend too') : (fr ? 'veut être ton ami·e' : 'wants to be your friend')) : i.salon ? (fr ? 't’invite dans son salon' : 'invites you to a room') : (fr ? 'te défie en duel !' : 'challenges you to a duel!')}</small>
           </span>
           {deja(i)
             ? <button className="btn btn-g" onClick={() => fermer(i)}>OK</button>
             : <>
-              <button className="btn btn-p" onClick={() => accepter(i)}>{i.type === 'ami' ? (fr ? 'Ajouter' : 'Add') : (fr ? 'Jouer' : 'Play')}</button>
+              <button className="btn btn-p" onClick={() => accepter(i)}>{i.type === 'ami' ? (fr ? 'Accepter' : 'Accept') : (fr ? 'Jouer' : 'Play')}</button>
               <button className="btn btn-g" aria-label={fr ? 'Refuser' : 'Decline'} onClick={() => decliner(i)}>✕</button>
             </>}
         </div>

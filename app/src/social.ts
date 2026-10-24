@@ -1,6 +1,6 @@
 import { ref as rref, set } from 'firebase/database'
 import { rtdb } from './firebase'
-import { arrayRemove, arrayUnion, collection, doc, getDoc, getDocs, increment, limit, orderBy, query, runTransaction, setDoc, where, documentId } from 'firebase/firestore'
+import { arrayRemove, arrayUnion, collection, doc, getDoc, getDocs, increment, limit, orderBy, query, runTransaction, setDoc, where, documentId, startAt, endAt } from 'firebase/firestore'
 import { db } from './firebase'
 import { niveau, type Profile } from './auth'
 import { FAMILLES } from './themes'
@@ -86,6 +86,15 @@ export async function publierXp(uid: string, pseudo: string, xp: number, xpTotal
   ])
 }
 
+// Suggestions pendant la saisie d'un pseudo : les pseudos qui commencent par ces lettres
+export async function chercherPseudos(debut: string, max = 6): Promise<ProfilPublic[]> {
+  const cle = pseudoCle(debut)
+  if (cle.length < 2) return []
+  const snap = await getDocs(query(collection(db, 'pseudos'), orderBy(documentId()), startAt(cle), endAt(cle + '\uf8ff'), limit(max)))
+  const uids = snap.docs.map((d) => d.data().uid as string).filter(Boolean)
+  return uids.length ? profilsDe(uids) : []
+}
+
 export async function trouverParPseudo(pseudo: string): Promise<ProfilPublic | null> {
   const ref = await getDoc(doc(db, 'pseudos', pseudoCle(pseudo)))
   if (!ref.exists()) return null
@@ -97,6 +106,8 @@ export async function trouverParPseudo(pseudo: string): Promise<ProfilPublic | n
 export const ajouterAmi = (moi: string, ami: string) => setDoc(doc(db, 'users', moi), { amis: arrayUnion(ami) }, { merge: true })
 // Prévient le joueur ajouté (notification « X t'a ajouté·e », avec un bouton pour l'ajouter en retour)
 export const prevenirAmi = (moi: string, pseudo: string, ami: string) => set(rref(rtdb, `invitations/${ami}/ami-${moi}`), { type: 'ami', de: pseudo, uid: moi, t: Date.now() })
+// Demande acceptée : l'autre joueur est prévenu, son appli l'ajoute à ses amis toute seule
+export const accepterAmi = async (moi: string, pseudo: string, ami: string) => { await ajouterAmi(moi, ami); await set(rref(rtdb, `invitations/${ami}/amiok-${moi}`), { type: 'ami-ok', de: pseudo, uid: moi, t: Date.now() }) }
 export const retirerAmi = (moi: string, ami: string) => setDoc(doc(db, 'users', moi), { amis: arrayRemove(ami) }, { merge: true })
 
 export async function profilsDe(uids: string[]): Promise<ProfilPublic[]> {

@@ -10,7 +10,7 @@ export const FORMATS: { v: Format; fr: string; en: string }[] = [
 ]
 
 // ——— Mini-jeux : une série entière se joue avec la même règle, tirée au hasard ———
-export type MiniJeu = 'qcm' | 'vf' | 'duo' | 'lettres' | 'flou' | 'eclair' | 'assistee' | 'avantapres'
+export type MiniJeu = 'qcm' | 'vf' | 'duo' | 'lettres' | 'flou' | 'eclair' | 'assistee' | 'avantapres' | 'flash' | 'zoom'
 export type InfoMiniJeu = { v: MiniJeu; nom: Record<Lang, string>; desc: Record<Lang, string>; icone: string; chrono?: number; nature?: 'image' | 'annee' }
 export const MINI_JEUX: InfoMiniJeu[] = [
   { v: 'qcm', nom: { fr: 'Quiz classique', en: 'Classic quiz' }, desc: { fr: 'Quatre propositions, une seule est la bonne.', en: 'Four choices, one is right.' }, icone: '🎯' },
@@ -18,6 +18,8 @@ export const MINI_JEUX: InfoMiniJeu[] = [
   { v: 'duo', nom: { fr: 'Pile ou face', en: 'Heads or tails' }, desc: { fr: 'Deux choix seulement… mais 7 secondes pour trancher.', en: 'Only two choices… but 7 seconds to decide.' }, icone: '🪙', chrono: 7 },
   { v: 'eclair', nom: { fr: 'Éclair', en: 'Lightning' }, desc: { fr: 'Quatre propositions, 5 secondes par question. Pas le temps de réfléchir !', en: 'Four choices, 5 seconds each. No time to think!' }, icone: '⚡', chrono: 5 },
   { v: 'flou', nom: { fr: 'Photo floue', en: 'Blurry photo' }, desc: { fr: 'L’image se dévoile peu à peu : plus tu réponds tôt, plus tu marques.', en: 'The picture sharpens slowly: answer early to score more.' }, icone: '🔍', nature: 'image' },
+  { v: 'flash', nom: { fr: 'Flash', en: 'Flash' }, desc: { fr: 'L’image n’apparaît qu’une seconde et demie : ouvre grand les yeux, puis réponds de mémoire.', en: 'The picture shows for 1.5 s only: answer from memory.' }, icone: '📸', nature: 'image' },
+  { v: 'zoom', nom: { fr: 'Zoom', en: 'Zoom' }, desc: { fr: 'On part d’un très gros plan qui se dézoome peu à peu : devine le plus tôt possible.', en: 'Starts as an extreme close-up that slowly zooms out.' }, icone: '🔎', nature: 'image' },
   { v: 'avantapres', nom: { fr: 'Avant ou après ?', en: 'Before or after?' }, desc: { fr: 'Une année est proposée : la bonne réponse est-elle avant ou après ?', en: 'A year is shown: is the answer before or after?' }, icone: '⏳', nature: 'annee' },
   { v: 'lettres', nom: { fr: 'Lettres mélangées', en: 'Scrambled letters' }, desc: { fr: 'Les lettres de la réponse sont données en vrac : remets-les dans l’ordre.', en: 'Unscramble the letters of the answer.' }, icone: '🔤' },
   { v: 'assistee', nom: { fr: 'À toi d’écrire', en: 'Type it' }, desc: { fr: 'Tape la réponse, des suggestions (parfois pièges) t’aident.', en: 'Type the answer, with (sometimes tricky) suggestions.' }, icone: '⌨️' },
@@ -54,10 +56,10 @@ export function tirerMiniJeu(quiz?: string): MiniJeu {
 // (Facile : surtout des choix ; Expert : surtout de la saisie). Jamais deux fois de suite le même.
 type Tirage = MiniJeu | 'libre'
 const POIDS_AUTO: Record<number, Partial<Record<Tirage, number>>> = {
-  0: { qcm: 3, vf: 2, duo: 2, flou: 2, avantapres: 2, lettres: 2, assistee: 2, libre: 1 },
+  0: { qcm: 3, vf: 2, duo: 2, flou: 2, flash: 2, zoom: 2, avantapres: 2, lettres: 2, assistee: 2, libre: 1 },
   1: { qcm: 4, vf: 3, duo: 3, flou: 2, avantapres: 2, lettres: 1 },
-  2: { qcm: 3, vf: 2, duo: 1, flou: 2, avantapres: 2, lettres: 2, assistee: 2 },
-  3: { qcm: 2, vf: 2, flou: 2, avantapres: 2, lettres: 3, assistee: 3, libre: 1 },
+  2: { qcm: 3, vf: 2, duo: 1, flou: 2, flash: 1, zoom: 2, avantapres: 2, lettres: 2, assistee: 2 },
+  3: { qcm: 2, vf: 2, flou: 2, flash: 2, zoom: 2, avantapres: 2, lettres: 3, assistee: 3, libre: 1 },
   4: { qcm: 1, vf: 1, flou: 1, avantapres: 1, lettres: 2, assistee: 3, libre: 4 },
   5: { qcm: 3, vf: 1, flou: 1, avantapres: 1, lettres: 2, assistee: 2, libre: 2 },
 }
@@ -66,7 +68,7 @@ function tirerAuto(q: Question, d: number): Tirage {
   const poids = POIDS_AUTO[d] ?? POIDS_AUTO[0]
   const annee = /^\d{3,4}$/.test(q.reponse)
   const cand = (Object.entries(poids) as [Tirage, number][]).filter(([v]) =>
-    v !== dernierAuto && (v !== 'flou' || !!q.image) && (v !== 'avantapres' || annee)
+    v !== dernierAuto && (!['flou', 'flash', 'zoom'].includes(v) || !!q.image) && (v !== 'avantapres' || annee)
     // Saisie et lettres : réponses trop longues (expressions, sigles…) → injouables
     && (!['libre', 'assistee', 'lettres'].includes(v) || q.reponse.length <= (v === 'lettres' ? 14 : 28)))
   let x = Math.random() * cand.reduce((n, [, p]) => n + p, 0)
@@ -113,6 +115,8 @@ export function appliquerMiniJeu(q: Question, mj: MiniJeu, lang: Lang): Question
       return { ...q, format: 'qcm', options: (Math.random() < 0.5 ? [q.reponse, autre] : [autre, q.reponse]).map((label) => ({ label })) }
     }
     case 'flou': return { ...q, format: 'qcm', flou: !!q.image }
+    case 'flash': return { ...q, format: 'qcm', effet: q.image ? 'flash' : undefined }
+    case 'zoom': return { ...q, format: 'qcm', effet: q.image ? 'zoom' : undefined }
     case 'avantapres': {
       const y = Number(q.reponse)
       if (!/^\d{3,4}$/.test(q.reponse)) return { ...q, format: 'qcm' }

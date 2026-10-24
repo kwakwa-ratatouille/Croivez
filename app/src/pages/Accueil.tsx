@@ -1,3 +1,4 @@
+import SerieHebdo from '../components/SerieHebdo'
 import { ETAPES } from '../aventure'
 import { etatSaison } from '../saison'
 import { useEffect, useState } from 'react'
@@ -112,6 +113,8 @@ export default function Accueil() {
         <Link to="/aventure" className="objectif" style={{ ['--k' as string]: 'var(--esp)', ['--kt' as string]: 'var(--esp-t)', ['--ki' as string]: 'var(--esp-i)' }}><span className="objectif-emoji">🗺️</span><span className="objectif-texte"><strong className="t">{fr ? 'Mode histoire' : 'Story mode'}</strong><small>{fr ? `Étape ${Math.min(ETAPES.length, (profile?.aventure ?? 0) + 1)} sur ${ETAPES.length}` : `Step ${Math.min(ETAPES.length, (profile?.aventure ?? 0) + 1)} of ${ETAPES.length}`}</small></span><span className="objectif-barre"><span style={{ width: `${((profile?.aventure ?? 0) / ETAPES.length) * 100}%` }} /></span></Link>
         <Link to="/saison" className="objectif" style={{ ['--k' as string]: 'var(--ani)', ['--kt' as string]: 'var(--ani-t)', ['--ki' as string]: 'var(--ani-i)' }}><span className="objectif-emoji">🎟️</span><span className="objectif-texte"><strong className="t">{fr ? 'Pass de saison' : 'Season pass'}</strong><small>{fr ? `Palier ${etatSaison(profile).palier} sur 20` : `Tier ${etatSaison(profile).palier} of 20`}</small></span><span className="objectif-barre"><span style={{ width: `${(etatSaison(profile).palier / 20) * 100}%` }} /></span></Link>
       </section>
+
+      <SerieHebdo />
 
       {/* Modes de jeu (le multijoueur est dans le menu) */}
       <section className="accueil-modes compact">

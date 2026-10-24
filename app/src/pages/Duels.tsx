@@ -1,12 +1,15 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { legendeOuverte } from '../progression'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { onValue, ref, remove } from 'firebase/database'
 import { rtdb } from '../firebase'
 import { useAuth } from '../auth'
 import { usePrefs } from '../i18n'
-import { ajouterAmi, prevenirAmi, profilsDe, retirerAmi, trouverParPseudo, type ProfilPublic } from '../social'
+import { profilsDe, type ProfilPublic } from '../social'
 import { annulerRecherche, chercherAdversaire, inviter, refuser, rejoindre, type Duel } from '../duel'
 import { ICONS, Icon, Logo } from '../components/ui'
+import Avatar from '../components/Avatar'
+import AjoutAmi from '../components/AjoutAmi'
 import { MAX_JOUEURS, creerSalon, normaliserCode, rejoindreSalon } from '../salon'
 import { FAMILLES } from '../themes'
 import { CAST_APP_ID, estIos } from '../cast'
@@ -21,19 +24,23 @@ export default function Duels() {
   const [invitations, setInvitations] = useState<{ id: string; de: string; salon?: string }[]>([])
   const [codeSalon, setCodeSalon] = useState('')
   const [msgSalon, setMsgSalon] = useState('')
-  const [pseudo, setPseudo] = useState('')
   const [themeDuel, setThemeDuel] = useState('mix') // thème des duels contre un ami (« mix » = au hasard)
   const [message, setMessage] = useState('')
   const [recherche, setRecherche] = useState<string | null>(null)
   const [attenteAmi, setAttenteAmi] = useState<string | null>(() => new URLSearchParams(location.hash.split('?')[1] ?? '').get('attente'))
   const uid = user!.uid
+  const aLegende = FAMILLES.some((f) => legendeOuverte(f.k, profile))
+  const [legendeDuel, setLegendeDuel] = useState(false)
+  const [nbDuel, setNbDuel] = useState(10)
+  const [secDuel, setSecDuel] = useState(15)
+  const [diffDuel, setDiffDuel] = useState(2)
   const moi = profile?.pseudo ?? '?'
 
   useEffect(() => { profilsDe(profile?.amis ?? []).then(setAmis).catch(console.error) }, [profile?.amis])
 
   useEffect(() => onValue(ref(rtdb, `invitations/${uid}`), (s) => {
     const v = (s.val() ?? {}) as Record<string, { de: string; salon?: string; type?: string }>
-    setInvitations(Object.entries(v).filter(([, x]) => x.type !== 'ami').map(([id, x]) => ({ id, de: x.de, salon: x.salon })))
+    setInvitations(Object.entries(v).filter(([, x]) => x.type !== 'ami' && x.type !== 'ami-ok').map(([id, x]) => ({ id, de: x.de, salon: x.salon })))
   }), [uid])
 
   // Dès que l'adversaire rejoint (recherche ou invitation), on part au duel
@@ -42,22 +49,10 @@ export default function Duels() {
     if (!enAttente) return
     return onValue(ref(rtdb, `duels/${enAttente}`), (s) => {
       const d = s.val() as Duel | null
-      if (d?.etat === 'jeu') nav(`/duel/${enAttente}`)
+      if (d?.etat === 'pret' || d?.etat === 'jeu') nav(`/duel/${enAttente}`)
       if (d?.etat === 'fini') { setAttenteAmi(null); setMessage(fr ? 'Invitation refusée.' : 'Invitation declined.') }
     })
   }, [enAttente, nav, fr])
-
-  const ajouter = async (e: FormEvent) => {
-    e.preventDefault()
-    setMessage('')
-    const p = await trouverParPseudo(pseudo)
-    if (!p) return setMessage(fr ? 'Aucun joueur avec ce pseudo.' : 'No player with this username.')
-    if (p.uid === uid) return setMessage(fr ? 'C’est vous !' : 'That’s you!')
-    await ajouterAmi(uid, p.uid)
-    prevenirAmi(uid, moi, p.uid).catch(() => {})
-    setPseudo('')
-    setMessage(fr ? `${p.pseudo} ajouté à vos amis.` : `${p.pseudo} added to your friends.`)
-  }
 
   if (enAttente) {
     return (
@@ -70,15 +65,69 @@ export default function Duels() {
     )
   }
 
+  const defier = async (ami: string) => setAttenteAmi(await inviter(uid, moi, ami, themeDuel === 'mix' ? undefined : themeDuel as SousThemeId, legendeDuel ? 5 : diffDuel, nbDuel, secDuel))
+
   return (
     <>
-      <header style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' }}>
-          <h1 className="t" style={{ fontSize: 34, fontWeight: 900 }}>{fr ? 'Multijoueur' : 'Multiplayer'}</h1>
-          <Link to="/amis" className="btn btn-s">👋 {fr ? 'Mes amis et messages' : 'Friends & chat'}</Link>
+      <h1 className="t" style={{ fontSize: 30, fontWeight: 900 }}>{fr ? 'Multijoueur' : 'Multiplayer'}</h1>
+
+      {/* Invitations reçues, tout en haut */}
+      {invitations.length > 0 && (
+        <section className="multi-invits rise">
+          {invitations.map((inv) => (
+            <div key={inv.id} className="multi-invit">
+              <span className="multi-invit-emoji">{inv.salon ? '👥' : '⚔️'}</span>
+              <strong>{inv.de} <small>{inv.salon ? (fr ? 't’invite dans son salon' : 'invites you to a room') : (fr ? 'te défie en duel !' : 'challenges you!')}</small></strong>
+              <button className="btn btn-p" onClick={async () => { if (inv.salon) { await remove(ref(rtdb, `invitations/${uid}/${inv.id}`)); nav(`/salon/${inv.salon}`); return } if (await rejoindre(inv.id, uid, moi)) nav(`/duel/${inv.id}`); else setMessage(fr ? 'Ce duel a été annulé.' : 'This duel was cancelled.') }}>{fr ? 'Accepter' : 'Accept'}</button>
+              <button className="btn btn-g" aria-label={fr ? 'Refuser' : 'Decline'} onClick={() => (inv.salon ? remove(ref(rtdb, `invitations/${uid}/${inv.id}`)) : refuser(inv.id, uid))}>✕</button>
+            </div>
+          ))}
+        </section>
+      )}
+
+      {/* Bandeau amis : bien visible, en haut ; un appui sur ⚔️ lance l'invitation au duel */}
+      <section className="card multi-amis">
+        <div className="multi-amis-tete">
+          <h2 className="t">👋 {fr ? 'Mes amis' : 'My friends'} <span>{amis.length}</span></h2>
+          <Link to="/amis" className="btn btn-g">{fr ? 'Messages et plus' : 'Chat & more'}<Icon d={ICONS.arrowR} size={16} /></Link>
         </div>
-        <p style={{ fontSize: 16, color: 'var(--muted)' }}>{fr ? 'Joue en direct avec tes amis : un salon jusqu’à 20 joueurs, ou un duel en face à face.' : 'Play live with friends: a room for up to 20, or a one-on-one duel.'}</p>
-      </header>
+        {amis.length > 0
+          ? <div className="multi-amis-liste">{amis.map((a) => (
+              <div key={a.uid} className="multi-ami">
+                <Link to={`/joueur/${a.uid}`} className="multi-ami-id"><Avatar pseudo={a.pseudo} avatar={a.avatar} cadre={a.cadre} taille={54} /><strong>{a.pseudo}</strong><small>{fr ? 'Niv.' : 'Lv.'} {a.niveau}</small></Link>
+                <button className="btn btn-p multi-ami-defi" onClick={() => defier(a.uid)}>⚔️ {fr ? 'Défier' : 'Duel'}</button>
+              </div>
+            ))}</div>
+          : <p style={{ color: 'var(--muted)', fontSize: 14 }}>{fr ? `Ajoute tes amis ci-dessous, ou partage ton pseudo « ${moi} ».` : `Add friends below, or share “${moi}”.`}</p>}
+        <AjoutAmi uid={uid} />
+        {message && <p role="status" style={{ fontSize: 14, color: 'var(--muted)' }}>{message}</p>}
+      </section>
+
+      {/* Duel : réglages lisibles (thème, Légende), puis ami ou adversaire au hasard */}
+      <section className="card multi-duel">
+        <div className="multi-duel-tete"><span className="multi-duel-icone">⚔️</span><div><h2 className="t">{fr ? 'Duel en face à face' : 'One-on-one duel'}</h2><p>{fr ? '10 questions, les mêmes pour les deux, chacun confirme « Prêt » avant de partir.' : '10 identical questions, both confirm before starting.'}</p></div></div>
+        <div className="multi-duel-reglages">
+          <label><span>{fr ? 'Thème' : 'Topic'}</span>
+            <select className="input" value={themeDuel} onChange={(e) => setThemeDuel(e.target.value)}>
+              <option value="mix">{fr ? '🎲 Au hasard' : '🎲 Random'}</option>
+              {FAMILLES.map((f) => ({ f, subs: f.subs.filter((s) => s.jouable && natureQuiz(s.id) !== 'carte') })).filter((x) => x.subs.length).map(({ f, subs }) => <optgroup key={f.k} label={f.nom[lang]}>{subs.map((s) => <option key={s.id} value={s.id}>{s.nom[lang]}</option>)}</optgroup>)}
+            </select>
+          </label>
+        </div>
+        <div className="multi-duel-grille">
+          <span>{fr ? 'Difficulté' : 'Difficulty'}</span>
+          <div className="multi-duel-choix">
+            {[[1, fr ? 'Facile' : 'Easy'], [2, fr ? 'Moyen' : 'Medium'], [3, fr ? 'Difficile' : 'Hard'], [4, 'Expert']].map(([v, l]) => <button key={v} type="button" className="pill" aria-pressed={!legendeDuel && diffDuel === v} onClick={() => { setLegendeDuel(false); setDiffDuel(v as number) }}>{l}</button>)}
+            <button type="button" className="pill pill-legende" aria-pressed={legendeDuel} disabled={!aLegende} title={aLegende ? '' : (fr ? 'Débloque une Légende pour l’utiliser' : 'Unlock a Legend first')} onClick={() => setLegendeDuel(true)}>{aLegende ? '👑' : '🔒'} Légende</button>
+          </div>
+          <span>{fr ? 'Questions' : 'Questions'}</span>
+          <div className="multi-duel-choix">{[5, 10, 15, 20].map((n) => <button key={n} type="button" className="pill" aria-pressed={nbDuel === n} onClick={() => setNbDuel(n)}>{n}</button>)}</div>
+          <span>{fr ? 'Temps' : 'Time'}</span>
+          <div className="multi-duel-choix">{[8, 15, 20, 30].map((n) => <button key={n} type="button" className="pill" aria-pressed={secDuel === n} onClick={() => setSecDuel(n)}>{n} s</button>)}</div>
+        </div>
+        <button className="btn btn-lg multi-hasard" onClick={async () => setRecherche(await chercherAdversaire(uid, moi))}>🎲 {fr ? 'Adversaire au hasard' : 'Random opponent'}<Icon d={ICONS.arrowR} /></button>
+        <p className="multi-astuce">{fr ? 'Pour défier un ami : bouton ⚔️ Défier dans « Mes amis » juste au-dessus.' : 'To duel a friend: ⚔️ in “My friends” above.'}</p>
+      </section>
 
       {/* Salon : la grande nouveauté, mise en avant */}
       <section className="card salon-accueil rise">
@@ -122,54 +171,6 @@ export default function Duels() {
           <Icon d={ICONS.arrowR} />
         </Link>
       )}
-      <h2 className="t" style={{ fontSize: 22, fontWeight: 900 }}>{fr ? 'Duels en face à face' : 'One-on-one duels'}</h2>
-
-      {invitations.length > 0 && (
-        <section className="card rise" style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 12, background: 'var(--his-t)', borderColor: 'transparent', color: 'var(--his-i)' }}>
-          <span className="eyebrow" style={{ color: 'var(--his-i)' }}>{fr ? 'Invitations' : 'Invitations'}</span>
-          {invitations.map((inv) => (
-            <div key={inv.id} style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-              <strong style={{ flex: 1 }}>{inv.de} {inv.salon ? (fr ? `t’invite dans son salon (${inv.salon})` : `invites you to room ${inv.salon}`) : (fr ? 'vous défie !' : 'challenges you!')}</strong>
-              <button className="btn btn-p" onClick={async () => { if (inv.salon) { await refuser(inv.id, uid).catch(() => {}); nav(`/salon/${inv.salon}`); return } if (await rejoindre(inv.id, uid, moi)) nav(`/duel/${inv.id}`); else setMessage(fr ? 'Ce duel a été annulé.' : 'This duel was cancelled.') }}>{fr ? 'Accepter' : 'Accept'}</button>
-              <button className="btn btn-g" style={{ background: 'var(--surface)' }} onClick={() => (inv.salon ? remove(ref(rtdb, `invitations/${uid}/${inv.id}`)) : refuser(inv.id, uid))}>{fr ? 'Refuser' : 'Decline'}</button>
-            </div>
-          ))}
-        </section>
-      )}
-
-      <div className="grid-auto">
-        <section className="card" style={{ padding: 28, display: 'flex', flexDirection: 'column', gap: 16, background: 'var(--mus-t)', borderColor: 'transparent', color: 'var(--mus-i)' }}>
-          <Icon d={ICONS.duels} size={34} />
-          <h2 className="t" style={{ fontSize: 24, fontWeight: 800 }}>{fr ? 'Adversaire au hasard' : 'Random opponent'}</h2>
-          <p>{fr ? 'Affrontez le premier joueur disponible.' : 'Face the first available player.'}</p>
-          <button className="btn btn-p" style={{ alignSelf: 'flex-start' }} onClick={async () => setRecherche(await chercherAdversaire(uid, moi))}>{fr ? 'Chercher' : 'Search'}<Icon d={ICONS.arrowR} /></button>
-        </section>
-
-        <section className="card" style={{ padding: 28, display: 'flex', flexDirection: 'column', gap: 14 }}>
-          <h2 className="t" style={{ fontSize: 22, fontWeight: 800 }}>{fr ? 'Vos amis' : 'Your friends'}</h2>
-          <form onSubmit={ajouter} style={{ display: 'flex', gap: 10 }}>
-            <label htmlFor="ami" className="sr">{fr ? 'Pseudo de l’ami' : 'Friend’s username'}</label>
-            <input id="ami" className="input" value={pseudo} onChange={(e) => setPseudo(e.target.value)} placeholder={fr ? 'Ajouter par pseudo…' : 'Add by username…'} style={{ minHeight: 48 }} />
-            <button className="btn btn-s" style={{ minHeight: 48 }}>{fr ? 'Ajouter' : 'Add'}</button>
-          </form>
-          {message && <p role="status" style={{ fontSize: 14, color: 'var(--muted)' }}>{message}</p>}
-          <label className="salon-champ"><span>{fr ? 'Thème du duel' : 'Duel topic'}</span>
-            <select className="input" value={themeDuel} onChange={(e) => setThemeDuel(e.target.value)}>
-              <option value="mix">{fr ? '🎲 Aléatoire' : '🎲 Random'}</option>
-              {FAMILLES.map((f) => ({ f, subs: f.subs.filter((s) => s.jouable && natureQuiz(s.id) !== 'carte') })).filter((x) => x.subs.length).map(({ f, subs }) => <optgroup key={f.k} label={f.nom[lang]}>{subs.map((s) => <option key={s.id} value={s.id}>{s.nom[lang]}</option>)}</optgroup>)}
-            </select>
-          </label>
-          {amis.length === 0 && <p style={{ color: 'var(--muted)', fontSize: 15 }}>{fr ? `Partagez votre pseudo « ${moi} » pour qu’on vous ajoute.` : `Share your username “${moi}” so friends can add you.`}</p>}
-          {amis.map((a) => (
-            <div key={a.uid} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 10, borderRadius: 16, background: 'var(--surface2)' }}>
-              <span className="t" style={{ width: 40, height: 40, borderRadius: '50%', background: 'var(--geo-t)', color: 'var(--geo-i)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800 }}>{a.pseudo[0]?.toUpperCase()}</span>
-              <div style={{ flex: 1, cursor: 'pointer' }} onClick={() => nav(`/joueur/${a.uid}`)}><div style={{ fontWeight: 700 }}>{a.pseudo}</div><div style={{ fontSize: 13, color: 'var(--muted)' }}>{fr ? 'Niveau' : 'Level'} {a.niveau}</div></div>
-              <button className="btn btn-p" style={{ minHeight: 44 }} onClick={async () => setAttenteAmi(await inviter(uid, moi, a.uid, themeDuel === 'mix' ? undefined : themeDuel as SousThemeId))}>{fr ? 'Défier' : 'Challenge'}</button>
-              <button className="btn btn-g" style={{ minHeight: 44, padding: '0 12px' }} aria-label={fr ? 'Retirer' : 'Remove'} onClick={() => retirerAmi(uid, a.uid)}><Icon d={ICONS.close} size={18} /></button>
-            </div>
-          ))}
-        </section>
-      </div>
     </>
   )
 }

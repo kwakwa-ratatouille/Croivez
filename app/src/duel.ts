@@ -3,9 +3,12 @@ import { rtdb } from './firebase'
 import type { SousThemeId } from './quiz/engine'
 
 // Un duel : 10 questions générées des deux côtés avec la même graine, donc identiques
-export type JoueurDuel = { pseudo: string; score: number; r?: Record<string, { j: boolean; ms: number }> }
+export type JoueurDuel = { pseudo: string; score: number; pret?: boolean; r?: Record<string, { j: boolean; ms: number }> }
 export type Duel = {
-  etat: 'attente' | 'jeu' | 'fini'
+  etat: 'attente' | 'pret' | 'jeu' | 'fini' // pret : les deux joueurs sont là, chacun doit confirmer
+  d?: number // difficulté (5 = Légende)
+  secondes?: number // temps par question
+  debut?: number // heure de départ commune
   createur: string
   invite?: string
   s: SousThemeId
@@ -20,19 +23,19 @@ export const SECONDES_DUEL = 15
 const THEMES: SousThemeId[] = ['drapeaux', 'capitales', 'drapeaux-inverse', 'capitales-inverse', 'pays-carte', 'acteurs', 'films', 'artistes', 'logos', 'animaux', 'personnalites', 'monuments', 'elements', 'extraits', 'plats', 'films-annee', 'personnalites-pays', 'tableaux', 'monnaies']
 
 // Thème choisi par celui qui invite, ou au hasard
-function nouveauDuel(uid: string, pseudo: string, invite?: string, theme?: SousThemeId): Duel {
+function nouveauDuel(uid: string, pseudo: string, invite?: string, theme?: SousThemeId, d = 2, n = QUESTIONS_DUEL, secondes = SECONDES_DUEL): Duel {
   return {
     etat: 'attente', createur: uid, s: theme ?? THEMES[Math.floor(Math.random() * THEMES.length)],
-    seed: Math.floor(Math.random() * 2 ** 31), n: QUESTIONS_DUEL,
+    seed: Math.floor(Math.random() * 2 ** 31), n, secondes,
     joueurs: { [uid]: { pseudo, score: 0 } }, cree: Date.now(),
-    ...(invite ? { invite } : {}),
+    ...(invite ? { invite } : {}), d,
   }
 }
 
 // Invitation d'un ami : le duel attend, l'ami le voit dans ses invitations
-export async function inviter(uid: string, pseudo: string, ami: string, theme?: SousThemeId) {
+export async function inviter(uid: string, pseudo: string, ami: string, theme?: SousThemeId, d = 2, n = QUESTIONS_DUEL, secondes = SECONDES_DUEL) {
   const r = push(ref(rtdb, 'duels'))
-  await set(r, nouveauDuel(uid, pseudo, ami, theme))
+  await set(r, nouveauDuel(uid, pseudo, ami, theme, d, n, secondes))
   await set(ref(rtdb, `invitations/${ami}/${r.key}`), { de: pseudo, uid, t: serverTimestamp() })
   return r.key!
 }
@@ -42,8 +45,19 @@ export async function rejoindre(id: string, uid: string, pseudo: string) {
   await remove(ref(rtdb, `invitations/${uid}/${id}`))
   const d = (await get(ref(rtdb, `duels/${id}`))).val() as Duel | null
   if (d?.etat !== 'attente') return false
-  await update(ref(rtdb, `duels/${id}`), { [`joueurs/${uid}`]: { pseudo, score: 0 }, etat: 'jeu' })
+  await update(ref(rtdb, `duels/${id}`), { [`joueurs/${uid}`]: { pseudo, score: 0 }, etat: 'pret' })
   return true
+}
+
+// « Je suis prêt » : le duel ne démarre que quand les deux joueurs ont confirmé (transaction : un seul départ)
+export async function marquerPret(id: string, uid: string) {
+  await update(ref(rtdb, `duels/${id}/joueurs/${uid}`), { pret: true })
+  await runTransaction(ref(rtdb, `duels/${id}`), (d: Duel | null) => {
+    if (!d || d.etat !== 'pret') return d
+    const j = Object.values(d.joueurs ?? {})
+    if (j.length >= 2 && j.every((x) => x.pret)) return { ...d, etat: 'jeu', debut: Date.now() + 1500 }
+    return d
+  })
 }
 
 export const refuser = (id: string, uid: string) => Promise.all([remove(ref(rtdb, `invitations/${uid}/${id}`)), update(ref(rtdb, `duels/${id}`), { etat: 'fini' })])
@@ -78,8 +92,8 @@ export async function annulerRecherche(uid: string, duel: string) {
 }
 
 // Réponse : 100 points si juste, + jusqu'à 50 de bonus de rapidité
-export async function repondreDuel(id: string, uid: string, i: number, juste: boolean, ms: number, scoreActuel: number) {
-  const points = juste ? 100 + Math.round(50 * Math.max(0, 1 - ms / (SECONDES_DUEL * 1000))) : 0
+export async function repondreDuel(id: string, uid: string, i: number, juste: boolean, ms: number, scoreActuel: number, secondes = SECONDES_DUEL) {
+  const points = juste ? 100 + Math.round(50 * Math.max(0, 1 - ms / (secondes * 1000))) : 0
   await update(ref(rtdb, `duels/${id}/joueurs/${uid}`), { [`r/${i}`]: { j: juste, ms }, score: scoreActuel + points })
 }
 

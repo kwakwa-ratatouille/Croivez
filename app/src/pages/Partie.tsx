@@ -198,7 +198,7 @@ export default function Partie() {
 
   const suivant = useCallback(() => {
     if (!questions) return
-    if (i + 1 >= questions.length || (jeu === 'survie' && vies <= 0)) { setFini(true); retourFin(reponses.filter((x) => x.juste).length >= questions.length / 2); return }
+    if (i + 1 >= questions.length || (jeu === 'survie' && vies <= 0)) { setFini(true); { const b = reponses.filter((x) => x.juste).length; retourFin(b >= questions.length / 2, b === questions.length ? 2 : 1) } return }
     setI(i + 1)
     debutQuestion.current = Date.now()
     setBonusMsg('')
@@ -359,7 +359,7 @@ export default function Partie() {
           {double && <span className="chip" style={{ background: 'var(--mus-t)', color: 'var(--mus-i)' }}>{lang === 'fr' ? '×2 actif' : '×2 on'}</span>}
         </div>
         {q.image && (
-          <Img src={q.image} alt="" className={`question-image${q.flou && !courante ? ' image-floue' : ''}`} style={{ height: 220, maxWidth: '100%', borderRadius: 18, boxShadow: 'var(--shadow)', border: '1px solid var(--line)', objectFit: 'contain', background: q.fondGris ? 'var(--fond-logo)' : 'var(--surface)', padding: q.fondGris ? 14 : 0 }} />
+          <Img src={q.image} alt="" className={`question-image${q.flou && !courante ? ' image-floue' : ''}${q.effet && !courante ? ` image-${q.effet}` : ''}`} style={{ height: 220, maxWidth: '100%', borderRadius: 18, boxShadow: 'var(--shadow)', border: '1px solid var(--line)', objectFit: 'contain', background: q.fondGris ? 'var(--fond-logo)' : 'var(--surface)', padding: q.fondGris ? 14 : 0 }} />
         )}
         {q.image && q.flou && !courante && <p className="legende-flou">{lang === 'fr' ? '🔍 L’image se précise peu à peu : réponds tôt pour marquer plus' : '🔍 The picture sharpens: answer early to score more'}</p>}
         {q.carte && <CarteQuiz carte={q.carte} clic={courante?.clic} repondu={!!courante} onClic={repondreCarte} />}

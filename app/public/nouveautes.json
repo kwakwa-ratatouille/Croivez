@@ -1,5 +1,51 @@
 [
  {
+  "id": "2026-10-24j",
+  "titre": "Duels et amis au top",
+  "points": [
+   [
+    "⚔️",
+    "Duels réglables",
+    "Choisis la difficulté (Légende si tu l’as), le nombre de questions et le temps. Les deux joueurs disent « Prêt » avant de partir."
+   ],
+   [
+    "👋",
+    "Amis réciproques",
+    "Envoie une demande, l’autre accepte, et vous êtes amis tous les deux. Les pseudos sont suggérés pendant la saisie."
+   ],
+   [
+    "🔔",
+    "Notifications",
+    "Invitations de duel, de salon et d’ami partout dans l’appli, et sur le téléphone quand l’appli est en arrière-plan."
+   ],
+   [
+    "🏆",
+    "Série de la semaine",
+    "Chaque quiz du jour remplit la barre : coffres de pièces et d’XP à 3, 5 et 7 jours."
+   ],
+   [
+    "🎉",
+    "Confettis",
+    "Victoire, sans-faute, coffre, palier : ça fête tes réussites."
+   ],
+   [
+    "📸",
+    "Mini-jeux Flash et Zoom",
+    "Une image furtive à retenir, ou un très gros plan qui se dézoome."
+   ],
+   [
+    "💬",
+    "Citations et personnages",
+    "Près de 100 citations et des personnages classiques d’avant 1990."
+   ],
+   [
+    "🗺️",
+    "Villes plus faciles",
+    "Grandes villes au début et tolérance plus large pour les placer."
+   ]
+  ]
+ },
+ {
   "id": "2026-10-24q",
   "titre": "Plus rapide, plus simple",
   "points": [

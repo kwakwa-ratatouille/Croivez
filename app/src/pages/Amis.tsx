@@ -1,9 +1,10 @@
+import AjoutAmi from '../components/AjoutAmi'
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { auth } from '../firebase'
 import { useAuth } from '../auth'
 import { usePrefs } from '../i18n'
-import { ajouterAmi, prevenirAmi, profilsDe, retirerAmi, trouverParPseudo, type ProfilPublic } from '../social'
+import { profilsDe, retirerAmi, type ProfilPublic } from '../social'
 import { inviter } from '../duel'
 import { creerSalon, inviterAuSalon } from '../salon'
 import { ecouterMessages, envoyerMessage, type Message } from '../chat'
@@ -18,40 +19,41 @@ export default function Amis() {
   const uid = auth.currentUser?.uid ?? ''
   const nav = useNavigate()
   const [amis, setAmis] = useState<ProfilPublic[]>([])
-  const [pseudo, setPseudo] = useState('')
-  const [msg, setMsg] = useState('')
   const [ouvert, setOuvert] = useState<ProfilPublic | null>(null)
   const [copie, setCopie] = useState(false)
+  const [aRetirer, setARetirer] = useState<ProfilPublic | null>(null)
   useEffect(() => { profilsDe(profile?.amis ?? []).then(setAmis).catch(() => setAmis([])) }, [profile?.amis])
 
-  const ajouter = async (e: FormEvent) => {
-    e.preventDefault()
-    setMsg('')
-    const p = await trouverParPseudo(pseudo).catch(() => null)
-    if (!p) { setMsg(fr ? 'Aucun joueur avec ce pseudo.' : 'No player with this name.'); return }
-    if (p.uid === uid) { setMsg(fr ? 'C’est toi 😄' : 'That’s you!'); return }
-    await ajouterAmi(uid, p.uid)
-    prevenirAmi(uid, profile?.pseudo ?? '?', p.uid).catch(() => {})
-    setPseudo(''); setMsg(fr ? `${p.pseudo} ajouté·e !` : `${p.pseudo} added!`)
-  }
+
   const partagerPseudo = async () => {
     const texte = fr ? `Ajoute-moi sur Croivez : mon pseudo est « ${profile?.pseudo} » 🧠` : `Add me on Croivez: ${profile?.pseudo}`
     try { if (navigator.share) { await navigator.share({ text: texte }); return } } catch { /* annulé */ }
     try { await navigator.clipboard.writeText(texte); setCopie(true) } catch { /* indisponible */ }
   }
 
+  const confirmation = aRetirer && (
+    <div className="fiche-voile" onClick={() => setARetirer(null)}>
+      <div className="card confirmer-retrait rise" onClick={(e) => e.stopPropagation()}>
+        <Avatar pseudo={aRetirer.pseudo} avatar={aRetirer.avatar} cadre={aRetirer.cadre} taille={64} />
+        <strong className="t">{fr ? `Retirer ${aRetirer.pseudo} de tes amis ?` : `Remove ${aRetirer.pseudo}?`}</strong>
+        <p>{fr ? 'Tu pourras toujours l’ajouter à nouveau plus tard.' : 'You can add them again later.'}</p>
+        <div style={{ display: 'flex', gap: 8, width: '100%' }}>
+          <button className="btn btn-g btn-lg" style={{ flex: 1 }} onClick={() => setARetirer(null)}>{fr ? 'Annuler' : 'Cancel'}</button>
+          <button className="btn btn-lg" style={{ flex: 1, background: 'var(--ko)', color: '#fff' }} onClick={async () => { await retirerAmi(uid, aRetirer.uid); setARetirer(null) }}>🗑️ {fr ? 'Retirer' : 'Remove'}</button>
+        </div>
+      </div>
+    </div>
+  )
+
   if (ouvert) return <Conversation ami={ouvert} uid={uid} onRetour={() => setOuvert(null)} />
 
   return (
     <>
+      {confirmation}
       <h1 className="t" style={{ fontSize: 30, fontWeight: 900 }}>{fr ? 'Amis' : 'Friends'}</h1>
       <section className="card amis-ajout">
         <strong className="t">{fr ? 'Ajouter un ami' : 'Add a friend'}</strong>
-        <form onSubmit={ajouter} style={{ display: 'flex', gap: 8 }}>
-          <input className="input" value={pseudo} onChange={(e) => setPseudo(e.target.value)} placeholder={fr ? 'Son pseudo' : 'Their username'} style={{ flex: 1, minHeight: 48 }} />
-          <button className="btn btn-p" disabled={!pseudo.trim()}>{fr ? 'Ajouter' : 'Add'}</button>
-        </form>
-        {msg && <p role="status" style={{ fontSize: 14, fontWeight: 600 }}>{msg}</p>}
+        <AjoutAmi uid={uid} />
         <button type="button" className="btn btn-s" style={{ alignSelf: 'flex-start' }} onClick={partagerPseudo}><Icon d={ICONS.link} size={16} />{copie ? (fr ? 'Copié !' : 'Copied!') : (fr ? `Partager mon pseudo (${profile?.pseudo})` : 'Share my username')}</button>
       </section>
 
@@ -65,7 +67,7 @@ export default function Amis() {
               <button className="btn btn-s" title={fr ? 'Message' : 'Message'} onClick={() => setOuvert(a)}>💬<span className="ami-txt">{fr ? 'Message' : 'Chat'}</span></button>
               <button className="btn btn-s" title={fr ? 'Défier en duel' : 'Duel'} onClick={async () => { const id = await inviter(uid, profile?.pseudo ?? '', a.uid); nav(`/duels?attente=${id}`) }}>⚔️<span className="ami-txt">{fr ? 'Duel' : 'Duel'}</span></button>
               <button className="btn btn-s" title={fr ? 'Inviter dans un salon' : 'Invite to a room'} onClick={async () => { const m = { uid, pseudo: profile?.pseudo ?? '', avatar: profile?.avatar, cadre: profile?.cadre }; const code = await creerSalon(m); await inviterAuSalon(code, m, a.uid); nav(`/salon/${code}`) }}>👥<span className="ami-txt">{fr ? 'Salon' : 'Room'}</span></button>
-              <button className="btn btn-g" aria-label={fr ? 'Retirer' : 'Remove'} onClick={() => retirerAmi(uid, a.uid)}><Icon d={ICONS.close} size={16} /></button>
+              <button className="btn btn-g ami-poubelle" aria-label={fr ? 'Retirer de mes amis' : 'Remove friend'} title={fr ? 'Retirer' : 'Remove'} onClick={() => setARetirer(a)}>🗑️</button>
             </div>
           </div>
         ))}

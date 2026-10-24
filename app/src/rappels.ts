@@ -25,3 +25,11 @@ export async function planifierRappels(p: Profile | null) {
   if (dues > 0) n.push({ id: 3, title: 'Révision 🧠', body: `${dues} question${dues > 1 ? 's' : ''} à revoir pour ne pas oublier.`, schedule: { at: demain(17) } })
   await LocalNotifications.schedule({ notifications: n }).catch(console.error)
 }
+
+// Invitation reçue pendant que l'appli est en arrière-plan : notification immédiate sur le téléphone
+export async function notifierInvitation(titre: string, texte: string) {
+  if (!Capacitor.isNativePlatform() || !Capacitor.isPluginAvailable('LocalNotifications') || !document.hidden) return
+  const { LocalNotifications } = await import('@capacitor/local-notifications')
+  if ((await LocalNotifications.checkPermissions()).display !== 'granted') return
+  await LocalNotifications.schedule({ notifications: [{ id: 100 + Math.floor(Math.random() * 1000), title: titre, body: texte, schedule: { at: new Date(Date.now() + 500) } }] }).catch(() => {})
+}

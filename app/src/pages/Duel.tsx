@@ -5,12 +5,12 @@ import { rtdb } from '../firebase'
 import { enregistrerPartie, useAuth } from '../auth'
 import { usePrefs } from '../i18n'
 import { genererPartie, type Question } from '../quiz/engine'
-import { QUESTIONS_DUEL, SECONDES_DUEL, repondreDuel, terminerDuel, type Duel as DuelT } from '../duel'
+import { QUESTIONS_DUEL, SECONDES_DUEL, marquerPret, repondreDuel, terminerDuel, type Duel as DuelT } from '../duel'
 import { Coche, Croix, ICONS, Icon, Logo } from '../components/ui'
 import Extrait from '../components/Extrait'
 import Img from '../components/Img'
 import CarteQuiz from '../components/CarteQuiz'
-import { retourReponse } from '../retour'
+import { retourFin, retourReponse } from '../retour'
 
 export default function Duel() {
   const { id = '' } = useParams()
@@ -32,8 +32,10 @@ export default function Duel() {
   const theme = duel?.s
   useEffect(() => {
     if (!seed || !theme) return
-    genererPartie({ sousTheme: theme, seed, nombre: QUESTIONS_DUEL, difficulte: 2, mode: 'qcm', lang }).then((q) => { setQuestions(q); setDebut(Date.now()) })
-  }, [seed, theme, lang])
+    genererPartie({ sousTheme: theme, seed, nombre: duel?.n ?? QUESTIONS_DUEL, difficulte: (duel?.d ?? 2) as 2, mode: 'qcm', lang }).then((q) => { setQuestions(q); setDebut(Date.now()) })
+  }, [seed, theme, lang]) // eslint-disable-line react-hooks/exhaustive-deps
+  // Départ commun quand les deux ont dit « prêt »
+  useEffect(() => { if (duel?.etat === 'jeu' && duel.debut) setDebut(Math.max(Date.now(), duel.debut)) }, [duel?.etat, duel?.debut])
 
   useEffect(() => { const t = setInterval(() => setMaintenant(Date.now()), 200); return () => clearInterval(t) }, [])
 
@@ -43,17 +45,18 @@ export default function Duel() {
   const q = questions?.[i]
   const maReponse = moi?.r?.[i]
   const saReponse = autre?.r?.[i]
-  const restant = Math.max(0, SECONDES_DUEL - (maintenant - debut) / 1000)
+  const secondes = duel?.secondes ?? SECONDES_DUEL
+  const restant = Math.max(0, secondes - (maintenant - debut) / 1000)
   const fini = !!questions && i >= questions.length
 
   const repondre = useCallback((label: string | null) => {
     if (!q || maReponse || !moi) return
     retourReponse(label === q.reponse)
-    repondreDuel(id, uid, i, label === q.reponse, Date.now() - debut, moi.score)
+    repondreDuel(id, uid, i, label === q.reponse, Date.now() - debut, moi.score, secondes)
   }, [q, maReponse, moi, id, uid, i, debut])
 
   // Temps écoulé : réponse vide
-  useEffect(() => { if (q && !maReponse && restant <= 0) repondre(null) }, [q, maReponse, restant, repondre])
+  useEffect(() => { if (duel?.etat === 'jeu' && q && !maReponse && restant <= 0) repondre(null) }, [duel?.etat, q, maReponse, restant, repondre])
 
   // Question suivante quand les deux ont répondu (ou quand le temps de l'adversaire est écoulé aussi)
   // (booléen : le chrono qui tourne ne doit pas relancer l'attente à chaque tic)
@@ -69,17 +72,39 @@ export default function Duel() {
     enregistre.current = true
     terminerDuel(id).catch(console.error)
     const gagne = moi.score > (autre?.score ?? 0)
+    retourFin(gagne, 2) // victoire : grosse fête
     const resultats = questions.map((qq, n) => ({ id: qq.id, juste: !!moi.r?.[n]?.j }))
     enregistrerPartie(uid, profile, { sousTheme: theme, xp: (gagne ? 60 : 25) + resultats.filter((r) => r.juste).length * 5, pieces: gagne ? 50 : 20, resultats, revision: true, multi: { mode: 'duel', gagne } }).catch(console.error)
   }, [fini, profile, moi, autre, questions, theme, id, uid])
 
   if (!duel || !questions || !moi) return <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center' }}><Logo width={72} /></div>
 
+  // Salle d'attente : chacun confirme ; le duel ne part que quand les deux sont prêts
+  if (duel.etat === 'pret' || duel.etat === 'attente') {
+    const joueurs = Object.entries(duel.joueurs ?? {})
+    return (
+      <div className="partie" style={{ minHeight: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+        <section className="card rise duel-pret">
+          <span className="eyebrow">{fr ? 'Duel' : 'Duel'}{duel.d === 5 ? ' · 👑 Légende' : ''}</span>
+          <h1 className="t">{fr ? 'Prêts ?' : 'Ready?'}</h1>
+          <div className="duel-pret-joueurs">
+            {joueurs.map(([k, j]) => <div key={k} className={`duel-pret-joueur${j.pret ? ' ok' : ''}`}><strong>{j.pseudo}{k === uid ? (fr ? ' (toi)' : ' (you)') : ''}</strong><span>{j.pret ? '✅ ' + (fr ? 'Prêt' : 'Ready') : '⏳ ' + (fr ? 'En attente' : 'Waiting')}</span></div>)}
+            {joueurs.length < 2 && <div className="duel-pret-joueur"><strong>…</strong><span>⏳ {fr ? 'L’adversaire arrive' : 'Opponent coming'}</span></div>}
+          </div>
+          {moi.pret
+            ? <p style={{ color: 'var(--muted)', fontWeight: 700 }}>{fr ? 'En attente de l’autre joueur…' : 'Waiting for the other player…'}</p>
+            : <button className="btn btn-p btn-lg" disabled={joueurs.length < 2} onClick={() => marquerPret(id, uid)}>{fr ? 'Je suis prêt !' : 'I’m ready!'}</button>}
+          <Link to="/duels" className="btn btn-g" onClick={() => terminerDuel(id).catch(() => {})}>{fr ? 'Annuler le duel' : 'Cancel'}</Link>
+        </section>
+      </div>
+    )
+  }
+
   const Score = ({ j, moiAussi }: { j?: { pseudo: string; score: number }; moiAussi?: boolean }) => (
-    <div className="card" style={{ flex: 1, padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 12, background: moiAussi ? 'var(--geo-t)' : 'var(--cine-t)', borderColor: 'transparent' }}>
-      <span className="t" style={{ width: 40, height: 40, borderRadius: '50%', background: 'var(--surface)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800 }}>{j?.pseudo?.[0]?.toUpperCase() ?? '?'}</span>
-      <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis' }}>{j?.pseudo ?? '…'}</div></div>
-      <span className="t" style={{ fontSize: 26, fontWeight: 900 }}>{j?.score ?? 0}</span>
+    <div className="card duel-score" style={{ flex: 1, minWidth: 0, padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 12, background: moiAussi ? 'var(--geo-t)' : 'var(--cine-t)', borderColor: 'transparent' }}>
+      <span className="t duel-initiale" style={{ width: 40, height: 40, flex: 'none', borderRadius: '50%', background: 'var(--surface)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800 }}>{j?.pseudo?.[0]?.toUpperCase() ?? '?'}</span>
+      <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{j?.pseudo ?? '…'}</div></div>
+      <span className="t duel-points" style={{ fontSize: 26, fontWeight: 900 }}>{j?.score ?? 0}</span>
     </div>
   )
 
@@ -91,7 +116,7 @@ export default function Duel() {
         <section className="card rise" style={{ width: '100%', maxWidth: 640, padding: 40, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 18, textAlign: 'center' }}>
           {gagne ? <Coche size={72} /> : egal ? <Logo width={90} /> : <Croix size={60} />}
           <h1 className="t" style={{ fontSize: 34, fontWeight: 900 }}>{gagne ? (fr ? 'Victoire !' : 'Victory!') : egal ? (fr ? 'Égalité' : 'Draw') : (fr ? 'Défaite, de peu' : 'So close')}</h1>
-          <div style={{ display: 'flex', gap: 12, width: '100%' }}><Score j={moi} moiAussi />{autreId ? <Link to={`/joueur/${autreId}`} style={{ flex: 1, display: 'flex', color: 'inherit', textDecoration: 'none' }}><Score j={autre} /></Link> : <Score j={autre} />}</div>
+          <div style={{ display: 'flex', gap: 12, width: '100%' }}><Score j={moi} moiAussi />{autreId ? <Link to={`/joueur/${autreId}`} style={{ flex: 1, minWidth: 0, display: 'flex', color: 'inherit', textDecoration: 'none' }}><Score j={autre} /></Link> : <Score j={autre} />}</div>
           <div style={{ display: 'flex', gap: 12 }}>
             <Link className="btn btn-p" to="/duels">{fr ? 'Nouveau duel' : 'New duel'}</Link>
             <Link className="btn btn-g" to="/">{fr ? 'Accueil' : 'Home'}</Link>
@@ -102,16 +127,16 @@ export default function Duel() {
   }
 
   return (
-    <div className="partie" style={{ minHeight: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '28px 40px 48px', gap: 20 }}>
-      <header style={{ width: '100%', maxWidth: 1040, display: 'flex', alignItems: 'center', gap: 12 }}>
+    <div className="partie duel-page" style={{ minHeight: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '28px 40px 48px', gap: 20 }}>
+      <header className="duel-entete" style={{ width: '100%', maxWidth: 1040, display: 'flex', alignItems: 'center', gap: 12 }}>
         <Link to="/duels" className="btn btn-g" aria-label={fr ? 'Quitter' : 'Quit'} style={{ minHeight: 44, padding: '0 14px' }}><Icon d={ICONS.close} /></Link>
         <Score j={moi} moiAussi />
         <span className="t" style={{ fontWeight: 900, color: 'var(--muted)' }}>VS</span>
-        {autreId ? <Link to={`/joueur/${autreId}`} style={{ flex: 1, display: 'flex', color: 'inherit', textDecoration: 'none' }}><Score j={autre} /></Link> : <Score j={autre} />}
+        {autreId ? <Link to={`/joueur/${autreId}`} style={{ flex: 1, minWidth: 0, display: 'flex', color: 'inherit', textDecoration: 'none' }}><Score j={autre} /></Link> : <Score j={autre} />}
       </header>
       <div style={{ width: '100%', maxWidth: 1040, display: 'flex', alignItems: 'center', gap: 12 }}>
         <span style={{ fontWeight: 600, color: 'var(--muted)', whiteSpace: 'nowrap' }}>{i + 1} / {questions.length}</span>
-        <div className="bar" style={{ flex: 1, height: 6 }}><span style={{ width: `${(restant / SECONDES_DUEL) * 100}%`, background: restant <= 5 ? 'var(--ko)' : 'var(--geo)', transition: 'width .2s linear' }} /></div>
+        <div className="bar" style={{ flex: 1, height: 6 }}><span style={{ width: `${(restant / secondes) * 100}%`, background: restant <= 5 ? 'var(--ko)' : 'var(--geo)', transition: 'width .2s linear' }} /></div>
         <span style={{ fontWeight: 700, minWidth: 40, color: restant <= 5 ? 'var(--ko-i)' : 'var(--text)' }}>{Math.ceil(restant)} s</span>
       </div>
 

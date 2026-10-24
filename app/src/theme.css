@@ -1306,3 +1306,138 @@ button.rang-palier[aria-pressed="true"] { background: color-mix(in srgb, var(--r
 .tv-telecommande { font-size: 20px; text-align: center; padding: 10px 16px; border-radius: 16px; background: rgba(255,255,255,.12); }
 
 .gains-multi { font-weight: 800; padding: 10px 16px; border-radius: 999px; background: #FEF3C7; color: #78350F; text-align: center; }
+
+/* Duel sur téléphone : l'en-tête (scores, VS) tient dans l'écran */
+@media (max-width: 560px) {
+  .duel-page { padding: calc(14px + env(safe-area-inset-top)) 14px 40px !important; gap: 14px !important; }
+  .duel-entete { gap: 6px !important; }
+  .duel-entete > .btn { padding: 0 10px !important; min-height: 40px !important; }
+  .duel-score { padding: 8px 10px !important; gap: 6px !important; border-radius: 16px; }
+  .duel-initiale { display: none !important; }
+  .duel-points { font-size: 20px !important; }
+  .duel-page h1.t { font-size: 21px !important; }
+}
+
+/* Duel : salle d'attente « Prêts ? » et scores lisibles sur téléphone */
+.duel-pret { width: 100%; max-width: 460px; padding: 26px; display: flex; flex-direction: column; align-items: center; gap: 14px; text-align: center; }
+.duel-pret h1 { font-size: 32px; font-weight: 900; }
+.duel-pret-joueurs { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.duel-pret-joueur { display: flex; flex-direction: column; gap: 4px; padding: 14px 10px; border-radius: 16px; background: var(--surface2); }
+.duel-pret-joueur.ok { background: var(--ok-t); }
+.duel-pret-joueur strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.duel-pret-joueur span { font-size: 13px; font-weight: 700; }
+@media (max-width: 640px) {
+  .duel-page { padding: 14px 12px 40px !important; }
+  .duel-entete { gap: 6px !important; }
+  .duel-entete .duel-score { padding: 8px 10px !important; gap: 6px !important; }
+  .duel-entete .duel-initiale { display: none !important; }
+  .duel-entete .duel-points { font-size: 20px !important; }
+  .duel-entete > .t { font-size: 12px; }
+}
+
+/* Multi : invitations, bandeau amis, carte duel */
+.multi-invits { display: flex; flex-direction: column; gap: 8px; }
+.multi-invit { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 18px; background: var(--his-t); color: var(--his-i); }
+.multi-invit strong { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.multi-invit small { font-weight: 600; font-size: 13px; }
+.multi-invit-emoji { font-size: 26px; }
+.multi-amis { padding: 16px; display: flex; flex-direction: column; gap: 12px; background: linear-gradient(135deg, color-mix(in srgb, #5B8DEF 14%, var(--surface)), var(--surface)); border-color: color-mix(in srgb, #5B8DEF 35%, transparent); }
+.multi-amis-tete { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.multi-amis-tete h2 { font-size: 20px; font-weight: 900; }
+.multi-amis-tete h2 span { font-size: 14px; color: var(--muted); }
+.multi-amis-tete .btn { min-height: 38px; font-size: 14px; }
+.multi-amis-liste { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 4px; }
+.multi-ami { flex: none; width: 118px; display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 12px 8px; border-radius: 18px; background: var(--surface); border: 1px solid var(--line); }
+.multi-ami-id { display: flex; flex-direction: column; align-items: center; gap: 4px; text-decoration: none; color: inherit; min-width: 0; width: 100%; }
+.multi-ami-id strong { font-size: 14px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.multi-ami-id small { font-size: 11.5px; color: var(--muted); }
+.multi-ami-defi { min-height: 34px; padding: 0 12px; font-size: 13px; width: 100%; }
+.ajout-ami { position: relative; display: flex; flex-direction: column; gap: 6px; }
+.ajout-ami-champ { display: flex; gap: 8px; }
+.ajout-ami-champ .input { flex: 1; min-height: 46px; }
+.ajout-ami-sugg { list-style: none; margin: 0; padding: 6px; border-radius: 16px; background: var(--surface); border: 1px solid var(--line); box-shadow: var(--shadow); display: flex; flex-direction: column; }
+.ajout-ami-sugg button { width: 100%; display: flex; align-items: center; gap: 10px; padding: 6px 8px; border: 0; border-radius: 10px; background: none; cursor: pointer; font: inherit; color: inherit; text-align: left; }
+.ajout-ami-sugg button:hover { background: var(--surface2); }
+.ajout-ami-sugg span { flex: 1; display: flex; flex-direction: column; font-weight: 700; }
+.ajout-ami-sugg small { font-weight: 600; color: var(--muted); font-size: 12px; }
+.ajout-ami-sugg em { font-style: normal; font-weight: 900; color: var(--mus-i); }
+.ajout-ami-msg { font-size: 14px; font-weight: 600; }
+.multi-duel { padding: 18px; display: flex; flex-direction: column; gap: 14px; background: linear-gradient(135deg, color-mix(in srgb, #E3574B 12%, var(--surface)), color-mix(in srgb, #A35BE0 12%, var(--surface))); }
+.multi-duel-tete { display: flex; gap: 12px; align-items: center; }
+.multi-duel-icone { width: 52px; height: 52px; flex: none; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 28px; background: var(--surface); box-shadow: var(--shadow); }
+.multi-duel-tete h2 { font-size: 21px; font-weight: 900; }
+.multi-duel-tete p { font-size: 13.5px; color: var(--muted); }
+.multi-duel-reglages { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; }
+.multi-duel-reglages label { flex: 1 1 220px; display: flex; flex-direction: column; gap: 4px; font-weight: 700; font-size: 13px; }
+.multi-duel-reglages .input { min-height: 44px; }
+.multi-duel-niveau { display: flex; gap: 6px; }
+.multi-hasard { background: var(--text); color: var(--bg); }
+.multi-astuce { font-size: 12.5px; color: var(--muted); }
+
+.multi-duel-grille { display: grid; grid-template-columns: auto 1fr; gap: 8px 12px; align-items: center; }
+.multi-duel-grille > span { font-weight: 800; font-size: 13px; color: var(--muted); }
+.multi-duel-choix { display: flex; gap: 6px; flex-wrap: wrap; }
+.multi-duel-choix .pill { min-height: 38px; padding: 0 12px; }
+
+/* Série hebdo du quiz du jour */
+.hebdo { padding: 14px 16px 12px; border-radius: 20px; background: var(--his-t); color: var(--his-i); display: flex; flex-direction: column; gap: 10px; }
+.hebdo-tete { display: flex; justify-content: space-between; align-items: baseline; }
+.hebdo-tete small { font-weight: 700; font-size: 13px; }
+.hebdo-barre { position: relative; display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-right: 20px; }
+.hebdo-barre > span { height: 12px; border-radius: 6px; background: color-mix(in srgb, var(--his-i) 15%, transparent); }
+.hebdo-barre > span.fait { background: var(--his); }
+.hebdo-coffre { position: absolute; top: -12px; width: 36px; height: 36px; border-radius: 50%; border: 2px solid var(--surface); background: var(--surface); font-size: 18px; display: flex; align-items: center; justify-content: center; cursor: default; opacity: .65; }
+.hebdo-coffre.pret { opacity: 1; cursor: pointer; animation: pastille 1s ease-in-out infinite alternate; box-shadow: 0 0 0 4px color-mix(in srgb, var(--his) 40%, transparent); }
+.hebdo-coffre.pris { opacity: 1; }
+.hebdo-gains { display: flex; justify-content: space-between; gap: 6px; flex-wrap: wrap; font-size: 11.5px; font-weight: 700; opacity: .85; }
+.hebdo-gains span { display: inline-flex; align-items: center; gap: 3px; }
+/* « Jouer au hasard » : plus compact sur les petits écrans (Huawei, etc.) */
+@media (max-width: 560px) {
+  .accueil-jouer { padding: 14px 14px; gap: 10px; border-radius: 22px; }
+  .accueil-jouer-des { font-size: 34px; }
+  .accueil-jouer strong { font-size: 20px !important; }
+  .accueil-jouer > span:nth-child(2) > span:last-child { display: none; }
+  .accueil-jouer-bouton { width: 44px; height: 44px; }
+}
+
+/* Retirer un ami : confirmation */
+.confirmer-retrait { width: 100%; max-width: 380px; padding: 22px; display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; }
+.confirmer-retrait strong { font-size: 19px; }
+.confirmer-retrait p { color: var(--muted); font-size: 14px; }
+.ami-poubelle { font-size: 16px; }
+
+/* Confettis des réussites */
+.confettis { position: fixed; inset: 0; z-index: 90; pointer-events: none; overflow: hidden; }
+.confettis i { position: absolute; top: -20px; animation-name: confetti-chute; animation-timing-function: cubic-bezier(.2,.6,.4,1); animation-fill-mode: forwards; }
+@keyframes confetti-chute { 0% { transform: translate(0, 0) rotate(0); opacity: 1; } 100% { transform: translate(var(--dx), 105vh) rotate(var(--r)); opacity: .9; } }
+/* Petites animations d'interface : boutons qui rebondissent, cartes qui apparaissent */
+.btn:active { transform: scale(.96); }
+.btn-p { transition: transform .12s ease-out, box-shadow .2s; }
+.grille-reponses > button:not(:disabled):active { transform: scale(.97); }
+
+/* Indice : bouton plus gros, coloré, avec son libellé */
+.outils-bouton { width: auto !important; height: 50px !important; padding: 0 16px !important; border-radius: 999px !important; gap: 6px; opacity: 1 !important; background: linear-gradient(135deg, #FFE08A, #E3A72F) !important; color: #3A2A00 !important; border: 0 !important; font: 800 15px Nunito, sans-serif; box-shadow: 0 6px 18px rgba(227, 167, 47, .45) !important; }
+.outils-bouton::after { content: 'Indice'; }
+.outils.ouvert .outils-bouton::after { content: 'Fermer'; }
+
+/* Album sur téléphone : un carnet à spirale (page entière) au lieu d'une moitié de livre */
+@media (max-width: 899px) {
+  .album-classeur { padding: 22px 8px 10px; background: none !important; box-shadow: none !important; }
+  .album-double .album-page.gauche { position: relative; border-radius: 18px !important; padding: 26px 10px 30px !important; background: var(--kt); box-shadow: 0 10px 24px rgba(0,0,0,.12), inset 0 0 0 2px color-mix(in srgb, var(--k) 35%, transparent) !important; }
+  .album-double .album-page.gauche::before { content: ''; position: absolute; left: 14px; right: 14px; top: -10px; height: 22px; background: radial-gradient(circle at 50% 50%, transparent 4px, #9aa0a8 4.5px, #c7ccd3 6px, transparent 6.5px) 0 0 / 26px 22px repeat-x; }
+  .album-double .album-page { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  .album-nav span { font-size: 13px; }
+}
+
+/* Badges : contraste renforcé (textes lisibles sur les fonds colorés) */
+.repli .grid-auto > div { color: var(--text); }
+.repli .grid-auto > div .t { color: var(--text) !important; }
+.repli .grid-auto > div span[style*="muted"], .repli .grid-auto > div > span:last-of-type { color: color-mix(in srgb, var(--text) 78%, transparent) !important; }
+.vitrine, .vitrine strong, .vitrine span, .vitrine small { text-shadow: 0 1px 4px rgba(0,0,0,.45); }
+
+/* Mini-jeux Flash et Zoom */
+.image-flash { animation: flash-image 1.5s steps(1, end) forwards; }
+@keyframes flash-image { 0% { filter: none; } 100% { filter: brightness(0) blur(12px); } }
+.image-zoom { animation: zoom-image 9s cubic-bezier(.3, 0, .5, 1) forwards; transform-origin: 50% 45%; }
+@keyframes zoom-image { from { transform: scale(4.5); clip-path: inset(38.9%); } to { transform: scale(1); clip-path: inset(0); } }
+

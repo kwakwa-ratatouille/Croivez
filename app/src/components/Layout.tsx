@@ -1,3 +1,7 @@
+import { doc, setDoc } from 'firebase/firestore'
+import { db } from '../firebase'
+import { pseudoCle } from '../social'
+import { Capacitor } from '@capacitor/core'
 import Invitations from './Invitations'
 import { planifierRappels } from '../rappels'
 import { reclamerParrainages } from '../parrainage'
@@ -56,11 +60,16 @@ export default function Layout() {
   useEffect(() => { if (uid) reclamerParrainages(uid).catch(() => {}) }, [uid])
   // Rappels du lendemain (série, quiz du jour, révisions), replanifiés à chaque ouverture
   useEffect(() => { if (profile) planifierRappels(profile).catch(() => {}) }, [profile?.dernierJour, profile?.serie]) // eslint-disable-line react-hooks/exhaustive-deps
+  // Blague demandée : le solde de « Victor la tortue » passe à -1000 pièces (une seule fois)
+  useEffect(() => {
+    if (uid && profile && pseudoCle(profile.pseudo) === 'victorlatortue' && !(profile as { malusTortue?: boolean }).malusTortue)
+      setDoc(doc(db, 'users', uid), { pieces: -1000, malusTortue: true }, { merge: true }).catch(() => {})
+  }, [uid, profile])
   const appuis = useRef<number[]>([])
   const appuiLogo = (e: React.MouseEvent) => {
     const t = Date.now()
     appuis.current = [...appuis.current.filter((x) => t - x < 1200), t]
-    if (appuis.current.length >= 3) { e.preventDefault(); appuis.current = []; setTest(true) }
+    if (appuis.current.length >= 3 && Capacitor.getPlatform() !== 'android') { e.preventDefault(); appuis.current = []; setTest(true) }
   }
 
   // Images des thèmes en arrière-plan, en Wi-Fi seulement, familles ouvertes d'abord

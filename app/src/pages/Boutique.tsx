@@ -84,7 +84,7 @@ export default function Boutique() {
     setChoisi(o)
   }
 
-  const duType = useMemo(() => BOUTIQUE.filter((o) => o.type === onglet), [onglet])
+  const duType = useMemo(() => BOUTIQUE.filter((o) => o.type === onglet && !o.cache), [onglet])
   const liste = useMemo(() => {
     const q = sansAccents(cherche.trim())
     const l = duType.filter((o) => {

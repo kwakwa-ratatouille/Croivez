@@ -55,6 +55,7 @@ export type Profile = {
   histo?: Record<string, { p: number; b: number; t: number; xp: number }> // 30 derniers jours (statistiques)
   precision?: Record<string, { b: number; t: number }> // bonnes réponses / questions par famille
   aventure?: number // étapes du mode aventure réussies
+  defisSemaine?: { s: string; jours: string[]; coffres: number[] } // quiz du jour réussis cette semaine (coffres à 3, 5 et 7 jours)
   halloween?: number // ancien compteur Halloween (2026)
   evenements?: Record<string, number> // parties jouées pendant chaque événement (récompenses)
   exploits?: { salons?: number; victoiresMulti?: number; tv?: number; tvHote?: number; duelsGagnes?: number } // compteurs des récompenses multijoueur
@@ -205,7 +206,7 @@ export async function enregistrerPartie(uid: string, profile: Profile, p: Partie
     bonnes: increment(bonnes),
     ...(taux === 1 && p.resultats.length >= 10 ? { sansFaute: increment(1) } : {}),
     ...(p.revision ? {} : { maitrise: { [p.sousTheme]: maitrise } }),
-    ...(defiReussi ? { defis: increment(1), defiJour: today } : {}),
+    ...(defiReussi ? { defis: increment(1), defiJour: today, defisSemaine: profile.defisSemaine?.s === semaine() ? { ...profile.defisSemaine, jours: [...new Set([...profile.defisSemaine.jours, today])] } : { s: semaine(), jours: [today], coffres: [] } } : {}),
     ...(Object.keys(revision).length ? { revision } : {}),
     ...(p.stats ? { quetes: avancerQuetes(profile.quetes, p.stats) } : {}),
     partiesJour: partiesJour,

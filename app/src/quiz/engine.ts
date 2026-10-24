@@ -165,6 +165,7 @@ const CULTURE = {
   'plans-cinema': { type: 'attribut', q: { fr: (n) => `Cadrage : ${n.charAt(0).toLowerCase() + n.slice(1)} ?`, en: (n) => `Framing: ${n}?` } },
   lumiere: { type: 'attribut', q: { fr: (n) => `Lumière : ${n.charAt(0).toLowerCase() + n.slice(1)} ?`, en: (n) => `Lighting: ${n}?` } },
   'video-montage': { type: 'attribut', q: { fr: (n) => `Vidéo : ${n.charAt(0).toLowerCase() + n.slice(1)} ?`, en: (n) => `Video: ${n}?` } },
+  'persos-classiques': { type: 'image', q: { fr: () => 'Qui est ce personnage classique ?', en: () => 'Who is this classic character?' } },
   volcans: { type: 'image', q: { fr: () => 'Quel est ce volcan ?', en: () => 'Which volcano is this?' } },
   'volcans-pays': { type: 'attribut', pack: 'volcans', montrer: true, q: { fr: (n) => `Dans quel pays se trouve le volcan ${n} ?`, en: (n) => `Which country is ${n} in?` } },
   fleurs: { type: 'image', q: { fr: () => 'Quelle est cette fleur ?', en: () => 'Which flower is this?' } },
@@ -309,6 +310,7 @@ export type Question = {
   grand?: string // texte à afficher en gros (émojis, réplique, slogan…)
   fixe?: boolean // format imposé (vrai / faux) : pas de transformation
   flou?: boolean // mini-jeu Photo floue : l'image se dévoile peu à peu
+  effet?: 'flash' | 'zoom' // mini-jeux Flash (image furtive) et Zoom (gros plan qui se dézoome)
   jeu?: string // format tiré en mode Auto (pastille affichée sur la question)
   fondGris?: boolean // logos : fond gris pour voir aussi les logos blancs
 }
@@ -364,11 +366,11 @@ function fichePays(p: Pays, tous: Pays[], lang: Lang): Fiche {
 const POOL_PAYS = { 1: 25, 2: 70, 3: 140, 4: Infinity } as const
 // Paliers de population des villes
 const MIN_FR = { 1: 80_000, 2: 20_000, 3: 5_000, 4: 0 } as const
-const MIN_MONDE = { 1: 1_500_000, 2: 400_000, 3: 100_000, 4: 15_000 } as const
+const MIN_MONDE = { 1: 3_000_000, 2: 800_000, 3: 200_000, 4: 30_000 } as const
 // Tolérance (km) : large en facile, plus serrée en expert
 // Tolérance (km) : large en facile pour apprendre où sont les villes, serrée en expert
-const SEUIL_FR = { 1: 160, 2: 100, 3: 60, 4: 35 } as const
-const FACTEUR_MONDE = { 1: 2.5, 2: 1.7, 3: 1.2, 4: 1 } as const
+const SEUIL_FR = { 1: 220, 2: 140, 3: 80, 4: 45 } as const
+const FACTEUR_MONDE = { 1: 4, 2: 2.6, 3: 1.7, 4: 1.2 } as const
 
 // Distracteurs « similaires » : même continent d'abord
 // Pour les drapeaux : d'abord les sosies (Tchad/Roumanie, Indonésie/Monaco…), même hors de la difficulté choisie
