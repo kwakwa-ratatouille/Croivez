@@ -9,6 +9,7 @@ import { memoriser } from '../quiz/memoire'
 import { retourFin, retourReponse } from '../retour'
 import { PRIX_INDICE, accesQuiz, payerIndice, payerPieces, piecesGagnees, plafonner } from '../progression'
 import { FAMILLES } from '../themes'
+import { bonusEvenement } from '../meta'
 import { Coche, Croix, ICONS, Icon, Logo, Piece } from '../components/ui'
 import Extrait from '../components/Extrait'
 import Img from '../components/Img'
@@ -198,13 +199,13 @@ export default function Partie() {
   // Les questions sur carte valent autant que la saisie libre
   // Défi du jour : XP doublés
   // Question boss réussie : +30 pièces ; gros score : un peu d'XP en plus
-  const pieces = piecesGagnees(bonnes, questions?.length ?? 0, defi) * (legende ? 2 : 1) + (bossReussi ? 30 : 0)
-  const xp = calculerXp(bonnes, q?.carte && !q.options.length ? 'libre' : mode, difficulte || 2) * (defi || legende ? 2 : 1) + Math.round(score / 250)
+  const pieces = (piecesGagnees(bonnes, questions?.length ?? 0, defi) * (legende ? 2 : 1) + (bossReussi ? 30 : 0)) * (jeu ? 1 : bonusEvenement(k))
+  const xp = (calculerXp(bonnes, q?.carte && !q.options.length ? 'libre' : mode, difficulte || 2) * (defi || legende ? 2 : 1) + Math.round(score / 250)) * (jeu ? 1 : bonusEvenement(k))
   const enregistre = useRef(false)
   useEffect(() => {
     if (!fini || enregistre.current || !user || !profile || !questions) return
     enregistre.current = true
-    enregistrerPartie(user.uid, profile, { sousTheme, xp, pieces, stats: { bonnes, comboMax, jeu: jeu ?? undefined, famille: k, difficulte },  defi, revision: revision || !!jeu, sansRevision: !!jeu, record: jeu && jeu !== 'mix' ? { jeu, score: bonnes } : undefined, difficulte: jeu ? undefined : difficulte, resultats: reponses.map((r) => ({ id: r.q.id, juste: r.juste })) }).catch(console.error)
+    enregistrerPartie(user.uid, profile, { sousTheme, xp, pieces, stats: { bonnes, comboMax, jeu: jeu ?? undefined, famille: k, difficulte },  defi, revision: revision || !!jeu, sansRevision: !!jeu, record: jeu && jeu !== 'mix' ? { jeu, score: bonnes } : undefined, difficulte: jeu ? undefined : difficulte, resultats: reponses.map((r) => ({ id: r.q.id, juste: r.juste, s: r.q.s ?? sousTheme })), bossReussi, difficulteJouee: difficulte }).catch(console.error)
   }, [fini, user, profile, sousTheme, xp, pieces, defi, revision, reponses, questions])
 
   if (!questions) return <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center' }}><Logo width={72} /></div>

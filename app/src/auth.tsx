@@ -6,6 +6,7 @@ import { cleRevision, planifier, type CarteRevision } from './quiz/revision'
 import type { SousThemeId } from './quiz/engine'
 import { publierXp, synchroniserProfilPublic } from './social'
 import { avancerQuetes, type EtatQuetes, type StatsPartie } from './quetes'
+import { secretsObtenus } from './meta'
 
 export type Profile = {
   pseudo: string
@@ -26,6 +27,12 @@ export type Profile = {
   quiz?: string[] // quiz gagnés dans les caisses
   records?: Record<string, number> // meilleurs scores Express / Survie
   quetes?: EtatQuetes // quêtes du jour
+  album?: Record<string, string[]> // cartes collectionnées (bonnes réponses) par quiz
+  secrets?: string[] // succès secrets obtenus
+  possede?: string[] // objets achetés (avatars, cadres)
+  avatar?: string
+  cadre?: string
+  partiesJour?: number // parties jouées aujourd'hui (succès Marathonien)
   paliers?: Record<string, number[]> // difficultés réussies (≥ 70 %) par quiz : ouvre la Légende
 }
 
@@ -78,13 +85,15 @@ export const jour = (d = new Date()) => d.toLocaleDateString('sv') // AAAA-MM-JJ
 type Partie = {
   sousTheme: SousThemeId
   xp: number
-  resultats: { id: string; juste: boolean }[]
+  resultats: { id: string; juste: boolean; s?: string }[]
   revision?: boolean // partie de révision : ne compte pas dans la maîtrise
   defi?: boolean
   pieces?: number // pièces gagnées pendant la partie
   difficulte?: number // 1 à 4 : réussir à 70 % valide le palier (Légende)
   sansRevision?: boolean // Mix / Express / Survie : questions de plusieurs quiz
   stats?: StatsPartie // pour les quêtes du jour
+  bossReussi?: boolean
+  difficulteJouee?: number
   record?: { jeu: string; score: number }
 }
 
@@ -108,6 +117,20 @@ export async function enregistrerPartie(uid: string, profile: Profile, p: Partie
     else if (carte) revision[cle] = deleteField()
   }
 
+  // Album : chaque bonne réponse ajoute sa carte (par quiz d'origine)
+  const album: Record<string, unknown> = {}
+  for (const r of p.resultats) if (r.juste) {
+    const s = r.s ?? p.sousTheme
+    album[s] = album[s] ? [...(album[s] as string[]), r.id] : [r.id]
+  }
+  for (const s of Object.keys(album)) album[s] = arrayUnion(...(album[s] as string[]))
+  const partiesJour = profile.dernierJour === today ? (profile.partiesJour ?? 0) + 1 : 1
+  const maintenant = new Date()
+  const nouveauxSecrets = secretsObtenus(profile, {
+    heure: maintenant.getHours(), jourSemaine: maintenant.getDay(), bonnes, total: p.resultats.length,
+    comboMax: p.stats?.comboMax ?? 0, difficulte: p.difficulteJouee, jeu: p.stats?.jeu, bossReussi: !!p.bossReussi, partiesAujourdhui: partiesJour,
+  })
+
   const defiReussi = p.defi && taux >= 0.5 && profile.defiJour !== today
   await setDoc(doc(db, 'users', uid), {
     xp: increment(p.xp),
@@ -122,8 +145,11 @@ export async function enregistrerPartie(uid: string, profile: Profile, p: Partie
     ...(defiReussi ? { defis: increment(1), defiJour: today } : {}),
     ...(Object.keys(revision).length ? { revision } : {}),
     ...(p.stats ? { quetes: avancerQuetes(profile.quetes, p.stats) } : {}),
+    partiesJour: partiesJour,
+    ...(Object.keys(album).length ? { album } : {}),
+    ...(nouveauxSecrets.length ? { secrets: arrayUnion(...nouveauxSecrets) } : {}),
     ...(p.record && p.record.score > (profile.records?.[p.record.jeu] ?? 0) ? { records: { [p.record.jeu]: p.record.score } } : {}),
     ...(p.difficulte && p.difficulte <= 4 && taux >= 0.7 ? { paliers: { [p.sousTheme]: arrayUnion(p.difficulte) } } : {}),
   }, { merge: true })
-  await publierXp(uid, profile.pseudo, p.xp, (profile.xp ?? 0) + p.xp, serie).catch(console.error)
+  await publierXp(uid, profile.pseudo, p.xp, (profile.xp ?? 0) + p.xp, serie, { avatar: profile.avatar, cadre: profile.cadre }).catch(console.error)
 }

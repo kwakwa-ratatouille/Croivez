@@ -3,6 +3,8 @@ import { niveau, useAuth, xpPourNiveau } from '../auth'
 import { usePrefs } from '../i18n'
 import { FAMILLES } from '../themes'
 import { BADGES, PALIERS, palierAtteint } from '../badges'
+import { SECRETS } from '../meta'
+import Avatar from '../components/Avatar'
 import { Icon, ICONS } from '../components/ui'
 
 export default function Profil() {
@@ -26,7 +28,7 @@ export default function Profil() {
   return (
     <>
       <section className="card" style={{ padding: 32, display: 'flex', alignItems: 'center', gap: 28, flexWrap: 'wrap' }}>
-        <span className="t" style={{ width: 96, height: 96, borderRadius: '50%', background: 'var(--sci-t)', color: 'var(--sci-i)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: 40, flex: 'none' }}>{profile.pseudo[0]?.toUpperCase()}</span>
+        <Link to="/boutique" aria-label={fr ? 'Changer d’avatar' : 'Change avatar'}><Avatar pseudo={profile.pseudo} avatar={profile.avatar} cadre={profile.cadre} taille={96} /></Link>
         <div style={{ flex: '1 1 300px', display: 'flex', flexDirection: 'column', gap: 10 }}>
           <h1 className="t" style={{ fontSize: 32, fontWeight: 900 }}>{profile.pseudo}</h1>
           <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
@@ -35,7 +37,11 @@ export default function Profil() {
             <span style={{ fontSize: 14, color: 'var(--muted)', whiteSpace: 'nowrap' }}>{fmt.format(profile.xp - debut)} / {fmt.format(fin - debut)} XP</span>
           </div>
         </div>
-        <Link className="btn btn-g" to="/parametres"><Icon d={ICONS.settings} />{fr ? 'Paramètres' : 'Settings'}</Link>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <Link className="btn btn-s" to="/album">{fr ? 'Album' : 'Album'}</Link>
+          <Link className="btn btn-s" to="/boutique">{fr ? 'Boutique' : 'Shop'}</Link>
+          <Link className="btn btn-g" to="/parametres"><Icon d={ICONS.settings} />{fr ? 'Paramètres' : 'Settings'}</Link>
+        </div>
       </section>
 
       <section className="grid-auto" style={{ ['--min' as string]: '180px', gap: 16 }}>
@@ -59,6 +65,21 @@ export default function Profil() {
             </div>
           )
         })}
+      </section>
+
+      <section style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <h2 className="t" style={{ fontSize: 22, fontWeight: 800 }}>{fr ? 'Succès secrets' : 'Secret achievements'} <span style={{ color: 'var(--muted)', fontWeight: 600, fontSize: 16 }}>{profile.secrets?.length ?? 0} / {SECRETS.length}</span></h2>
+        <div className="grid-auto" style={{ ['--min' as string]: '160px', gap: 10 }}>
+          {SECRETS.map((s) => {
+            const ok = profile.secrets?.includes(s.id)
+            return (
+              <div key={s.id} className="card" style={{ padding: 14, display: 'flex', flexDirection: 'column', gap: 4, boxShadow: 'none', background: ok ? 'var(--his-t)' : 'var(--surface2)', borderColor: 'transparent', color: ok ? 'var(--his-i)' : 'var(--muted)' }}>
+                <span className="t" style={{ fontWeight: 800 }}>{ok ? s.nom[lang] : '???'}</span>
+                <span style={{ fontSize: 12.5 }}>{ok ? s.indice[lang] : (fr ? 'Secret : continuez à jouer…' : 'Secret: keep playing…')}</span>
+              </div>
+            )
+          })}
+        </div>
       </section>
 
       <section style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>

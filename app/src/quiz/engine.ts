@@ -102,7 +102,7 @@ const CULTURE = {
 } satisfies Record<string, { type: TypeCulture; montrer?: boolean; pack?: string; champ?: string; q: Record<Lang, (nom: string, genre?: string) => string> }>
 export type CultureId = keyof typeof CULTURE
 export const estCulture = (s: string): s is CultureId => s in CULTURE
-const packCulture = (s: CultureId) => (CULTURE[s] as { pack?: string }).pack ?? s
+export const packCulture = (s: CultureId) => (CULTURE[s] as { pack?: string }).pack ?? s
 
 export type Option = { label: string; image?: string }
 export type Fiche = { image?: string; faits: { l: string; v: string }[]; saviez: string; wiki: string }

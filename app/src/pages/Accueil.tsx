@@ -7,6 +7,7 @@ import { aReviser } from '../quiz/revision'
 import { accesQuiz } from '../progression'
 import { Coche, ICONS, Icon, Piece } from '../components/ui'
 import { etatDuJour, quetesDuJour, recupererQuete } from '../quetes'
+import { evenementDeLaSemaine } from '../meta'
 import Illustration from '../components/Illustration'
 import { ouvrirFiche } from '../components/FicheLancement'
 
@@ -53,6 +54,7 @@ export default function Accueil() {
   const fr = lang === 'fr'
   const { user, profile } = useAuth()
   const etatQuetes = etatDuJour(profile?.quetes)
+  const evenement = evenementDeLaSemaine()
   const serie = profile?.serie ?? 0
   const today = new Date().toLocaleDateString('sv')
   const defi = defiDuJour(today)
@@ -81,6 +83,16 @@ export default function Accueil() {
           <Icon d={ICONS.flame} style={{ color: 'var(--cine-i)' }} /><span style={{ fontWeight: 800 }}>{serie}</span><span style={{ color: 'var(--muted)', fontSize: 14 }}>{t('home.streak')}</span>
         </div>
       </header>
+
+      {/* Événement de la semaine : une famille à l'honneur */}
+      <Link to={`/themes/${evenement.k}`} className="famille rise" style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '10px 16px', borderRadius: 22, textDecoration: 'none', background: `linear-gradient(100deg, var(--${evenement.k}-t), var(--his-t))`, color: `var(--${evenement.k}-i)` }}>
+        <Illustration k={evenement.k} taille={86} fond={false} />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <span className="eyebrow" style={{ color: 'inherit' }}>{fr ? 'Événement de la semaine' : 'Event of the week'}</span>
+          <strong className="t" style={{ display: 'block', fontSize: 18 }}>{evenement.nom[lang]} · XP {fr ? 'et pièces' : '& coins'} ×2</strong>
+        </div>
+        <Icon d={ICONS.arrowR} />
+      </Link>
 
       {/* Modes de jeu : un appui, la partie démarre */}
       <section style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 10 }}>

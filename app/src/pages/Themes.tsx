@@ -6,6 +6,7 @@ import { FAMILLES, type Famille, type SousTheme } from '../themes'
 import { ICONS, Icon, Piece } from '../components/ui'
 import { PRIX_CAISSE, accesQuiz, familleOuverte, ouvrirCaisse, quizVerrouilles } from '../progression'
 import Caisse from '../components/Caisse'
+import { evenementDeLaSemaine } from '../meta'
 import { ouvrirFiche } from '../components/FicheLancement'
 import Illustration from '../components/Illustration'
 import { normaliser } from '../quiz/match'
@@ -36,6 +37,46 @@ function Tuile({ s, k, pct, verrou = false }: { s: SousTheme; k: string; pct: nu
         <span style={{ fontSize: 13, color: 'var(--muted)', fontWeight: 600, minWidth: 34, textAlign: 'right' }}>{pct} %</span>
       </div>
     </button>
+  )
+}
+
+// Carte de progression : un chemin d'étapes (un quiz = une étape), validée à 60 % de maîtrise
+function CheminProgression({ subs, k, m, ouvert }: { subs: SousTheme[]; k: string; m: Record<string, number>; ouvert: (id: string) => boolean }) {
+  const { lang } = usePrefs()
+  const faites = subs.filter((s) => (m[s.id] ?? 0) >= 60).length
+  const actuelle = subs.findIndex((s) => ouvert(s.id) && (m[s.id] ?? 0) < 60)
+  const pas = 96
+  const largeur = Math.max(1, subs.length) * pas
+  // Sentier ondulé : les étapes alternent haut / bas
+  const y = (i: number) => (i % 2 ? 78 : 34)
+  const chemin = subs.map((_, i) => `${i ? 'S' : 'M'} ${i * pas + pas / 2 - (i ? pas / 2 : 0)} ${i ? (y(i) + y(i - 1)) / 2 : y(0)} ${i * pas + pas / 2} ${y(i)}`).join(' ')
+  return (
+    <section className="card" style={{ padding: '14px 0 8px', overflow: 'hidden' }}>
+      <div style={{ padding: '0 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+        <strong className="t" style={{ fontSize: 17 }}>{lang === 'fr' ? 'Ton chemin' : 'Your path'}</strong>
+        <span style={{ fontSize: 13, color: 'var(--muted)', fontWeight: 600 }}>{faites} / {subs.length} {lang === 'fr' ? 'étapes' : 'steps'}</span>
+      </div>
+      <div className="carrousel" style={{ margin: 0, padding: '0 18px' }}>
+        <svg width={largeur} height={130} viewBox={`0 0 ${largeur} 130`} role="img" aria-label={`${faites} / ${subs.length}`} style={{ flex: 'none' }}>
+          <path d={chemin} fill="none" stroke="var(--line)" strokeWidth="6" strokeLinecap="round" strokeDasharray="2 12" />
+          {subs.map((s, i) => {
+            const fait = (m[s.id] ?? 0) >= 60
+            const bloque = !ouvert(s.id)
+            const ici = i === actuelle
+            return (
+              <g key={s.id} transform={`translate(${i * pas + pas / 2} ${y(i)})`} style={{ cursor: bloque ? 'default' : 'pointer' }} onClick={() => !bloque && ouvrirFiche(s.id)}>
+                {ici && <circle r="27" fill={`var(--${k})`} opacity=".25"><animate attributeName="r" values="22;29;22" dur="2s" repeatCount="indefinite" /></circle>}
+                <circle r="20" fill={fait ? `var(--${k})` : bloque ? 'var(--surface2)' : 'var(--surface)'} stroke={bloque ? 'var(--line)' : `var(--${k})`} strokeWidth="3" />
+                {fait
+                  ? <path d="M-8 1 L-2 7 L9 -6" fill="none" stroke="var(--surface)" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
+                  : <text textAnchor="middle" dy="5" fontFamily="Nunito, sans-serif" fontWeight="900" fontSize="15" fill={bloque ? 'var(--muted)' : `var(--${k}-i)`}>{bloque ? '•' : i + 1}</text>}
+                <text textAnchor="middle" y={i % 2 ? -30 : 38} fontFamily="DM Sans, sans-serif" fontWeight="600" fontSize="11" fill="var(--muted)">{s.nom[lang].length > 14 ? s.nom[lang].slice(0, 13) + '…' : s.nom[lang]}</text>
+              </g>
+            )
+          })}
+        </svg>
+      </div>
+    </section>
   )
 }
 
@@ -82,6 +123,7 @@ export default function Themes() {
             {msg && <p role="status" style={{ fontSize: 14 }}>{msg}</p>}
           </div>
         </header>
+        <CheminProgression subs={jouables} k={famille.k} m={m} ouvert={(id) => accesQuiz(id, profile)} />
         <section style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))', gap: 14 }}>
           {famille.subs.map((s) => <Tuile key={s.id} s={s} k={famille.k} pct={m[s.id] ?? 0} verrou={!accesQuiz(s.id, profile)} />)}
         </section>
@@ -123,6 +165,7 @@ export default function Themes() {
             return (
               <Link key={f.k} to={`/themes/${f.k}`} className="famille rise" style={{ animationDelay: `${i * 40}ms`, filter: ouverte || nbOuverts ? 'none' : 'grayscale(.55)', borderRadius: 28, padding: '18px 20px 20px', background: `var(--${f.k}-t)`, color: `var(--${f.k}-i)`, textDecoration: 'none', display: 'flex', flexDirection: 'column', gap: 10, position: 'relative', overflow: 'hidden' }}>
                 <div className="illus-famille"><Illustration k={f.k} taille={190} fond={false} /></div>
+                {evenementDeLaSemaine().k === f.k && <span className="chip" style={{ position: 'absolute', top: 10, right: 10, background: 'var(--his)', color: 'var(--surface)' }}>×2</span>}
                 <h2 className="t" style={{ fontSize: 21, fontWeight: 900 }}>{f.nom[lang]}</h2>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <div className="bar" style={{ flex: 1, height: 8, background: 'var(--surface)' }}><span style={{ width: `${pct}%`, background: `var(--${f.k})` }} /></div>

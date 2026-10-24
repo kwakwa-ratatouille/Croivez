@@ -6,6 +6,7 @@ import { aReviser } from '../quiz/revision'
 import MiseAJour from './MiseAJour'
 import { useEffect, useRef, useState } from 'react'
 import MenuTest from './MenuTest'
+import Avatar from './Avatar'
 import FicheLancement from './FicheLancement'
 import { telechargerEnFond, surveillerWifi } from '../telechargementFond'
 import { familleOuverte } from '../progression'
@@ -76,7 +77,7 @@ export default function Layout() {
             </div>
           )}
           <NavLink to="/profil" style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 12, borderRadius: 18, background: 'var(--surface2)', textDecoration: 'none' }}>
-            <span className="t" style={{ width: 40, height: 40, borderRadius: '50%', background: 'var(--sci-t)', color: 'var(--sci-i)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800 }}>{pseudo[0]?.toUpperCase()}</span>
+            <Avatar pseudo={pseudo} avatar={profile?.avatar} cadre={profile?.cadre} taille={40} />
             <span style={{ display: 'flex', flexDirection: 'column' }}>
               <span style={{ fontWeight: 700, fontSize: 15 }}>{pseudo}</span>
               <span style={{ fontSize: 13, color: 'var(--muted)', display: 'flex', alignItems: 'center', gap: 6 }}>{t('level')} {niveau(profile?.xp ?? 0)} · <Piece size={14} />{profile?.pieces ?? 0}</span>

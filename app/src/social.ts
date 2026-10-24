@@ -41,10 +41,11 @@ export async function synchroniserProfilPublic(uid: string, p: Profile) {
 }
 
 // Appelé après chaque partie : XP du profil public et du classement de la semaine
-export async function publierXp(uid: string, pseudo: string, xp: number, xpTotal: number, serie: number) {
+export async function publierXp(uid: string, pseudo: string, xp: number, xpTotal: number, serie: number, look: { avatar?: string; cadre?: string } = {}) {
+  const apparence = { ...(look.avatar ? { avatar: look.avatar } : {}), ...(look.cadre ? { cadre: look.cadre } : {}) }
   await Promise.all([
-    setDoc(doc(db, 'profils', uid), { pseudo, xp: xpTotal, niveau: niveau(xpTotal), serie }, { merge: true }),
-    setDoc(doc(db, 'semaines', semaine(), 'scores', uid), { pseudo, xp: increment(xp) }, { merge: true }),
+    setDoc(doc(db, 'profils', uid), { pseudo, xp: xpTotal, niveau: niveau(xpTotal), serie, ...apparence }, { merge: true }),
+    setDoc(doc(db, 'semaines', semaine(), 'scores', uid), { pseudo, xp: increment(xp), ...apparence }, { merge: true }),
   ])
 }
 
@@ -74,7 +75,7 @@ export async function classementGlobal(): Promise<ProfilPublic[]> {
   return snap.docs.map((d) => ({ uid: d.id, ...d.data() } as ProfilPublic))
 }
 
-export async function classementSemaine(): Promise<{ uid: string; pseudo: string; xp: number }[]> {
+export async function classementSemaine(): Promise<{ uid: string; pseudo: string; xp: number; avatar?: string; cadre?: string }[]> {
   const snap = await getDocs(query(collection(db, 'semaines', semaine(), 'scores'), orderBy('xp', 'desc'), limit(50)))
-  return snap.docs.map((d) => ({ uid: d.id, ...(d.data() as { pseudo: string; xp: number }) }))
+  return snap.docs.map((d) => ({ uid: d.id, ...(d.data() as { pseudo: string; xp: number; avatar?: string; cadre?: string }) }))
 }

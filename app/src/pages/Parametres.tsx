@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { signOut } from 'firebase/auth'
 import { auth, natif } from '../firebase'
+import { App } from '@capacitor/app'
+import { CapacitorUpdater } from '@capgo/capacitor-updater'
 import { useAuth } from '../auth'
 import { usePrefs } from '../i18n'
 import { FAMILLES } from '../themes'
@@ -21,6 +23,16 @@ export default function Parametres() {
 
   const majTaille = () => tailleCache().then(setTaille)
   useEffect(() => { majTaille() }, [])
+
+  // Versions installées : utile pour comprendre une mise à jour qui n'arrive pas
+  const [versions, setVersions] = useState('')
+  useEffect(() => {
+    const web = `contenu ${import.meta.env.VITE_WEB ?? 'dev'}`
+    if (!natif) { setVersions(web); return }
+    Promise.all([App.getInfo(), CapacitorUpdater.current()])
+      .then(([info, cur]) => setVersions(`app ${info.version} (build ${info.build}) · ${cur.bundle.version === 'builtin' ? web + ' d’origine' : 'contenu ' + cur.bundle.version}`))
+      .catch(() => setVersions(web))
+  }, [])
 
   const ligne = { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 20, flexWrap: 'wrap' as const }
   const titre = { fontSize: 19, fontWeight: 800 }
@@ -76,6 +88,7 @@ export default function Parametres() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
             <span className="t" style={titre}>{t('set.account')}</span>
             <span style={{ color: 'var(--muted)' }}>{profile?.pseudo} · {user?.email}</span>
+            <span style={{ color: 'var(--muted)', fontSize: 13 }}>Version : {versions}</span>
           </div>
           <button className="btn btn-g" onClick={() => signOut(auth)}>{t('set.logout')}</button>
         </div>
