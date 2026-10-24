@@ -1537,3 +1537,10 @@ button.rang-palier[aria-pressed="true"] { background: color-mix(in srgb, var(--r
 .choix-carte img, .choix-carte > span { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 10px; background: var(--surface2); box-shadow: 0 0 0 2px transparent; }
 .choix-carte.choisi img { box-shadow: 0 0 0 3px var(--mus); }
 .choix-carte small { font-size: 10.5px; line-height: 1.15; }
+
+/* Cadres « teinte » : les couleurs défilent en continu (un seul filtre animé, peu coûteux) */
+.avatar.cadre-teinte::before { animation: teinte-cadre 6s linear infinite; }
+.avatar.cadre-teinte.cadre-tourne::before { animation: tourne 4s linear infinite, teinte-cadre 6s linear infinite; }
+.avatar.cadre-teinte.cadre-vague::before { animation: tourne 6s linear infinite, teinte-cadre 6s linear infinite; }
+@keyframes teinte-cadre { to { filter: hue-rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .avatar.cadre-teinte::before { animation: none !important; } }
