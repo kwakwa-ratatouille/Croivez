@@ -81,7 +81,7 @@ export default function FicheLancement({ id, onFermer }: { id: string; onFermer:
         </div>
 
         {msg && verrou === 0 && <p role="status" className="fiche-legende" style={{ color: 'var(--ko-i)', fontWeight: 600 }}>{msg}</p>}
-        {!legende && (() => { const pl = progresLegende(k, profile); return <p className="fiche-legende"><Icon d={ICONS.lock} size={14} />{fr ? `Légende : la difficulté ultime (6 choix presque identiques dont un faux jumeau, 12 s, XP et pièces ×3). Elle s’ouvre sur toute la famille quand chaque quiz a ses 4 niveaux réussis : ${pl.faits} / ${pl.total}.` : `Legend: the ultimate level. Unlocks for the whole family once every quiz has its 4 levels passed: ${pl.faits} / ${pl.total}.`}</p> })()}
+        {!legende && (() => { const pl = progresLegende(k, profile); return <p className="fiche-legende"><Icon d={ICONS.lock} size={14} />{fr ? `Légende : la difficulté ultime (6 choix presque identiques, des fautes pièges partout, 12 s, XP et pièces ×3). Elle s’ouvre sur toute la famille quand chaque quiz a ses 4 niveaux réussis : ${pl.faits} / ${pl.total}.` : `Legend: the ultimate level. Unlocks for the whole family once every quiz has its 4 levels passed: ${pl.faits} / ${pl.total}.`}</p> })()}
 
         {verrou > 0 && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', fontSize: 13, fontWeight: 600, color: 'var(--muted)' }}>

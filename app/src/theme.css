@@ -702,3 +702,30 @@ html, body { overflow-x: clip; }
 .album-carte.vide { box-shadow: none; border: 2px dashed color-mix(in srgb, var(--k) 50%, transparent); background: color-mix(in srgb, var(--surface) 50%, transparent); align-items: center; justify-content: center; font: 900 16px Nunito, sans-serif; color: color-mix(in srgb, var(--ki) 45%, transparent); }
 .album-nav { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-weight: 700; font-size: 14px; color: var(--muted); }
 .album { max-width: 560px; }
+
+/* Salons : mode équipes */
+.salon-equipes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.salon-equipe { display: flex; flex-direction: column; gap: 6px; padding: 12px; border-radius: 16px; background: color-mix(in srgb, var(--e) 14%, var(--surface)); box-shadow: inset 0 3px 0 var(--e); min-height: 120px; }
+.salon-equipe strong { color: var(--e); font: 900 16px Nunito, sans-serif; }
+.salon-equipe-joueur { display: flex; align-items: center; gap: 6px; font-weight: 700; font-size: 14px; }
+.salon-duel-equipes { width: 100%; max-width: 560px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.salon-duel-equipes > div { display: flex; flex-direction: column; align-items: center; padding: 16px; border-radius: 20px; background: color-mix(in srgb, var(--e) 16%, var(--surface)); box-shadow: inset 0 4px 0 var(--e); }
+.salon-duel-equipes > div.gagne { box-shadow: inset 0 4px 0 var(--e), 0 0 24px var(--e); }
+.salon-duel-equipes strong { color: var(--e); font: 900 18px Nunito, sans-serif; }
+.salon-duel-equipes span { font-size: 40px; font-weight: 900; }
+.salon-duel-equipes small { color: var(--muted); font-weight: 600; }
+
+/* Téléphone : grande image, réponses compactes, bonus en icônes */
+.bonus-barre .btn { gap: 4px; }
+@media (max-width: 760px) {
+  .question-image { height: min(38vh, 320px) !important; width: 100%; object-fit: contain; }
+  .bonus-txt { display: none; }
+  .bonus-barre { gap: 6px !important; }
+  .bonus-barre .btn { min-height: 38px; padding: 0 10px; font-size: 14px; }
+  .grille-reponses { gap: 8px !important; }
+  .grille-reponses > button { min-height: 52px !important; padding: 0 12px !important; font-size: 16px !important; border-radius: 16px !important; }
+  .grille-reponses > button .kbd { display: none; }
+  .grille-reponses.images { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+  .grille-reponses.images.six { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+  .grille-reponses.images > button { padding: 6px !important; min-height: 0 !important; }
+}

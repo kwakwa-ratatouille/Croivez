@@ -322,7 +322,7 @@ export default function Partie() {
           {double && <span className="chip" style={{ background: 'var(--mus-t)', color: 'var(--mus-i)' }}>{lang === 'fr' ? '×2 actif' : '×2 on'}</span>}
         </div>
         {q.image && (
-          <Img src={q.image} alt="" className={q.flou && !courante ? 'image-floue' : undefined} style={{ height: 220, maxWidth: '100%', borderRadius: 18, boxShadow: 'var(--shadow)', border: '1px solid var(--line)', objectFit: 'contain', background: q.fondGris ? 'var(--fond-logo)' : 'var(--surface)', padding: q.fondGris ? 14 : 0 }} />
+          <Img src={q.image} alt="" className={`question-image${q.flou && !courante ? ' image-floue' : ''}`} style={{ height: 220, maxWidth: '100%', borderRadius: 18, boxShadow: 'var(--shadow)', border: '1px solid var(--line)', objectFit: 'contain', background: q.fondGris ? 'var(--fond-logo)' : 'var(--surface)', padding: q.fondGris ? 14 : 0 }} />
         )}
         {q.carte && <CarteQuiz carte={q.carte} clic={courante?.clic} repondu={!!courante} onClic={repondreCarte} />}
         {q.audio && <Extrait id={q.audio} />}
@@ -331,7 +331,7 @@ export default function Partie() {
         {q.vraie && q.format !== 'vf' && courante && <p className="t" style={{ fontSize: 20, fontWeight: 900, color: courante.juste ? 'var(--ok-i)' : 'var(--ko-i)' }}>{lang === 'fr' ? 'C’était' : 'It was'} {q.vraie}</p>}
         {q.format === 'lettres' && !courante && <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, justifyContent: 'center' }}>{q.lettres?.map((l, n) => <span key={n} className="kbd" style={{ fontSize: 18, minWidth: 34 }}>{l}</span>)}</div>}
         {q.options.length > 0 ? (
-          <div style={{ width: '100%', display: 'grid', gridTemplateColumns: q.imagesOnly ? 'repeat(auto-fit, minmax(200px, 1fr))' : 'repeat(2, minmax(0, 1fr))', gap: 14 }}>
+          <div className={`grille-reponses${q.imagesOnly ? ' images' : ''}${q.options.length > 4 ? ' six' : ''}`} style={{ width: '100%', display: 'grid', gridTemplateColumns: q.imagesOnly ? 'repeat(auto-fit, minmax(200px, 1fr))' : 'repeat(2, minmax(0, 1fr))', gap: 14 }}>
             {q.options.map((o, n) => {
               const estBonne = o.label === q.reponse
               const choisie = courante?.donnee === o.label
@@ -376,10 +376,10 @@ export default function Partie() {
         {/* Bonus : 15 pièces chacun (pas en Légende) */}
         {!courante && !legende && prefs.bonus && (
           <div className="bonus-barre">
-            {chrono > 0 && <button type="button" className="btn btn-s" onClick={() => acheterBonus(() => setRestant((r) => r + 10))}>+10 s · <Piece size={15} />{PRIX_BONUS}</button>}
-            <button type="button" className="btn btn-s" onClick={() => acheterBonus(() => enregistrer({ donnee: lang === 'fr' ? '(passée)' : '(skipped)', juste: true }))}>{lang === 'fr' ? 'Passer' : 'Skip'} · <Piece size={15} />{PRIX_BONUS}</button>
-            {q.options.length > 0 && secondeChance !== i && <button type="button" className="btn btn-s" onClick={() => acheterBonus(() => setSecondeChance(i))}>{lang === 'fr' ? 'Seconde chance' : 'Second chance'} · <Piece size={15} />{PRIX_BONUS}</button>}
-            {!double && <button type="button" className="btn btn-s" onClick={() => acheterBonus(() => setDouble(true))}>Points ×2 · <Piece size={15} />{PRIX_BONUS}</button>}
+            {chrono > 0 && <button type="button" className="btn btn-s" onClick={() => acheterBonus(() => setRestant((r) => r + 10))} title="+10 s">⏱️<span className="bonus-txt">+10 s</span> <Piece size={15} />{PRIX_BONUS}</button>}
+            <button type="button" className="btn btn-s" onClick={() => acheterBonus(() => enregistrer({ donnee: lang === 'fr' ? '(passée)' : '(skipped)', juste: true }))} title={lang === 'fr' ? 'Passer' : 'Skip'}>⏭️<span className="bonus-txt">{lang === 'fr' ? 'Passer' : 'Skip'}</span> <Piece size={15} />{PRIX_BONUS}</button>
+            {q.options.length > 0 && secondeChance !== i && <button type="button" className="btn btn-s" onClick={() => acheterBonus(() => setSecondeChance(i))} title={lang === 'fr' ? 'Seconde chance' : 'Second chance'}>🔁<span className="bonus-txt">{lang === 'fr' ? 'Seconde chance' : 'Second chance'}</span> <Piece size={15} />{PRIX_BONUS}</button>}
+            {!double && <button type="button" className="btn btn-s" onClick={() => acheterBonus(() => setDouble(true))} title="Points ×2">✖️2<span className="bonus-txt">Points ×2</span> <Piece size={15} />{PRIX_BONUS}</button>}
           </div>
         )}
         {bonusMsg && <p role="status" style={{ fontSize: 14, fontWeight: 600, color: 'var(--mus-i)' }}>{bonusMsg}</p>}

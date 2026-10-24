@@ -1,3 +1,4 @@
+import { TAILLES, appliquerTaille, lireTaille } from '../taille'
 import { useEffect, useState } from 'react'
 import { signOut } from 'firebase/auth'
 import { auth, natif } from '../firebase'
@@ -18,6 +19,7 @@ export default function Parametres() {
   const { t, lang, setLang, dark, setDark } = usePrefs()
   const fr = lang === 'fr'
   const { user, profile } = useAuth()
+  const [zoom, setZoom] = useState(lireTaille)
   const [son, setSon] = useState(prefsRetour.son)
   const [vibration, setVibration] = useState(prefsRetour.vibration)
   const [taille, setTaille] = useState<number | null>(null)
@@ -101,6 +103,13 @@ export default function Parametres() {
           <div style={{ display: 'flex', gap: 10 }}>
             <button className="pill" aria-pressed={!dark} onClick={() => setDark(false)}>{t('set.light')}</button>
             <button className="pill" aria-pressed={dark} onClick={() => setDark(true)}>{t('set.dark')}</button>
+          </div>
+        </div>
+        {/* Taille d'affichage : pour ceux qui voient mal de près */}
+        <div style={{ ...ligne, flexWrap: 'wrap' }}>
+          <span className="t" style={titre}>{fr ? 'Taille d’affichage' : 'Display size'}</span>
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+            {TAILLES.map((x) => <button key={x.v} className="pill" aria-pressed={zoom === x.v} onClick={() => { setZoom(x.v); appliquerTaille(x.v) }}>{x[lang]}</button>)}
           </div>
         </div>
         <div style={ligne}>

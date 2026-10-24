@@ -139,6 +139,22 @@ const CULTURE = {
   'coupe-monde': { type: 'attribut', q: { fr: (n) => `Qui a remporté la ${n} ?`, en: (n) => `Who won the ${n}?` } },
   telephones: { type: 'attribut', montrer: true, q: { fr: (n) => `Quelle marque a sorti le ${n} ?`, en: (n) => `Which brand made the ${n}?` } },
   emissions: { type: 'annee', champ: 'annee', montrer: true, q: { fr: (n) => `En quelle année a débuté l’émission « ${n} » ?`, en: (n) => `In what year did “${n}” start?` } },
+  'pourcentages': { type: 'attribut', q: { fr: (n) => `Quel est le pourcentage ${n.charAt(0).toLowerCase() + n.slice(1)} ?`, en: (n) => `Quel est le pourcentage ${n} ?` } },
+  'roles': { type: 'attribut', q: { fr: (n) => `Qui a joué ce rôle : ${n.charAt(0).toLowerCase() + n.slice(1)} ?`, en: (n) => `Qui a joué ce rôle : ${n} ?` } },
+  'maladies': { type: 'attribut', q: { fr: (n) => `Quelle est cette maladie : ${n.charAt(0).toLowerCase() + n.slice(1)} ?`, en: (n) => `Quelle est cette maladie : ${n} ?` } },
+  'troubles': { type: 'attribut', q: { fr: (n) => `Quel est ce trouble : ${n.charAt(0).toLowerCase() + n.slice(1)} ?`, en: (n) => `Quel est ce trouble : ${n} ?` } },
+  'traditions': { type: 'attribut', q: { fr: (n) => `Quelle tradition est célèbre dans ce pays : ${n.charAt(0).toLowerCase() + n.slice(1)} ?`, en: (n) => `Quelle tradition est célèbre dans ce pays : ${n} ?` } },
+  'specialites-pays': { type: 'attribut', q: { fr: (n) => `De quel pays vient cette spécialité : ${n.charAt(0).toLowerCase() + n.slice(1)} ?`, en: (n) => `De quel pays vient cette spécialité : ${n} ?` } },
+  'legendes': { type: 'attribut', q: { fr: (n) => `De quelle légende ou de quel mythe s’agit-il : ${n.charAt(0).toLowerCase() + n.slice(1)} ?`, en: (n) => `De quelle légende ou de quel mythe s’agit-il : ${n} ?` } },
+  catastrophes: { type: 'annee', champ: 'annee', montrer: true, q: { fr: (n) => `En quelle année a eu lieu : ${n} ?`, en: (n) => `In what year did this happen: ${n}?` } },
+  volcans: { type: 'image', q: { fr: () => 'Quel est ce volcan ?', en: () => 'Which volcano is this?' } },
+  'volcans-pays': { type: 'attribut', pack: 'volcans', montrer: true, q: { fr: (n) => `Dans quel pays se trouve le volcan ${n} ?`, en: (n) => `Which country is ${n} in?` } },
+  fleurs: { type: 'image', q: { fr: () => 'Quelle est cette fleur ?', en: () => 'Which flower is this?' } },
+  arbres: { type: 'image', q: { fr: () => 'Quel est cet arbre ?', en: () => 'Which tree is this?' } },
+  'marques-mode': { type: 'image', q: { fr: () => 'Quelle est cette marque de mode ?', en: () => 'Which fashion brand is this?' } },
+  peintres: { type: 'image', q: { fr: (_, g) => (g === 'f' ? 'Qui est cette peintre ?' : 'Qui est ce peintre ?'), en: () => 'Who is this painter?' } },
+  'tableaux-photo': { type: 'image', pack: 'tableaux', q: { fr: () => 'Quel est ce tableau ?', en: () => 'Which painting is this?' } },
+  applis: { type: 'image', q: { fr: () => 'Quelle est cette appli ?', en: () => 'Which app is this?' } },
   'mechants-photo': { type: 'image', pack: 'mechants', q: { fr: () => 'Qui est ce méchant ?', en: () => 'Who is this villain?' } },
   doubleurs: { type: 'image', q: { fr: (_, g) => (g === 'f' ? 'Qui est cette comédienne de doublage ?' : 'Qui est ce comédien de doublage ?'), en: () => 'Who is this voice actor?' } },
   batailles: { type: 'annee', champ: 'annee', montrer: true, q: { fr: (n) => `En quelle année a eu lieu : ${n} ?`, en: (n) => `In what year was the ${n}?` } },
@@ -519,6 +535,17 @@ export function fauxJumeau(s: string): string | null {
     (w) => w.replace(/([bcdfglmnprst])\1/, '$1'),
     (w) => w.replace(/é/, 'è'),
     (w) => w.replace(/ph/, 'f').replace(/^((?!f).)*$/, (x) => x.replace(/y/, 'i')),
+    (w) => w.replace(/[éèêë]/, 'e'),
+    (w) => w.replace(/(?<=.)e(?=[^aeiouy])/, 'é'),
+    (w) => w.replace(/(?<=.)ou/, 'u'),
+    (w) => w.replace(/(?<=.)s(?=[aeiouy])/, 'z'),
+    (w) => w.replace(/(?<=.)c(?=[aou])/, 'k'),
+    (w) => w.replace(/(?<=.)i(?=.)/, 'y'),
+    (w) => w.replace(/(?<=.)an/, 'en'),
+    (w) => w.replace(/(?<=.)ai/, 'é'),
+    (w) => { const k = 1 + Math.floor(rand() * (w.length - 2)); return /[aeiouy]/i.test(w[k]) ? w.slice(0, k) + w.slice(k + 1) : w },
+    (w) => w.replace(/h/, ''),
+    (w) => w.replace(/(?<=.)([aeiou])(?=[^aeiou]*$)/, (v) => ({ a: 'e', e: 'a', i: 'e', o: 'au', u: 'ou' } as Record<string, string>)[v] ?? v),
   ]
   for (const f of melanger(essais)) { const v = f(w); if (v && v !== w && v.length >= w.length - 1) { mots[i] = v; return mots.join(' ') } }
   return null
@@ -592,13 +619,22 @@ function culture(o: Opts, tousItems: ItemCulture[]): Question[] {
           const proches = items.filter((x) => x.id !== it.id && valeur(x) && valeur(x) !== reponse)
             .map((x) => ({ x, s: ressemblance(valeur(x), reponse) })).sort((a, b) => b.s - a.s).slice(0, 10)
           cand = [...melanger(proches.map((p) => p.x)), ...cand]
-          const j = fauxJumeau(reponse)
-          if (j && !vus.has(j) && !items.some((x) => valeur(x) === j)) { vus.add(j); autres.push(j) }
         }
         for (const x of cand) {
           const v = cfg.type === 'image' ? x.n[lang] : texte(val(x), lang)
           if (v && !vus.has(v)) { vus.add(v); autres.push(v) }
           if (autres.length === nb) break
+        }
+        if (o.difficulte === LEGENDE && autres.length >= 3) {
+          // 0 : aucun jumeau ; 1 : jumeau de la bonne réponse + jumeau d'un leurre ; 2 : jumeau d'un leurre seulement ;
+          // 3 : deux leurres avec leur jumeau. Une paire ne dit donc jamais laquelle est la bonne.
+          const schema = Math.floor(rand() * 4)
+          const valeurs = new Set(items.map((x) => (cfg.type === 'image' ? x.n[lang] : texte(val(x), lang))))
+          const jumeau = (v: string) => { const j = fauxJumeau(v); return j && !vus.has(j) && !valeurs.has(j) ? j : null }
+          const remplacer = (j: string | null) => { if (!j) return; vus.add(j); autres[autres.length - 1] = j; autres.unshift(autres.pop()!) }
+          if (schema === 1) { remplacer(jumeau(reponse)); remplacer(jumeau(autres[1])) }
+          if (schema === 2) remplacer(jumeau(autres[0]))
+          if (schema === 3) { remplacer(jumeau(autres[0])); remplacer(jumeau(autres[2] ?? autres[1])) }
         }
       }
       options = melanger([reponse, ...autres]).map((label) => ({ label }))

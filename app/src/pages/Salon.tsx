@@ -8,7 +8,7 @@ import { natureQuiz, type Question, type SousThemeId } from '../quiz/engine'
 import { infoMiniJeu } from '../quiz/formats'
 import { profilsDe, type ProfilPublic } from '../social'
 import {
-  MAX_JOUEURS, MINI_JEUX_SALON, REVELATION_MS, avancerSalon, ecouterDecalage, ecouterSalon, inviterAuSalon, lancerSalon, lienRejoindre, majRegles,
+  EQUIPES, choisirEquipe, repartirEquipes, scoresEquipes, MAX_JOUEURS, MINI_JEUX_SALON, REVELATION_MS, avancerSalon, ecouterDecalage, ecouterSalon, inviterAuSalon, lancerSalon, lienRejoindre, majRegles,
   pointsSalon, questionsSalon, quitterSalon, rejoindreSalon, rejouerSalon, repondreSalon, type JoueurSalon, type ReglesSalon, type Salon as SalonT,
 } from '../salon'
 import { retourFin, retourReponse, retourTic } from '../retour'
@@ -119,6 +119,7 @@ function Regles({ code, salon, modifiable }: { code: string; salon: SalonT; modi
       {!infoMiniJeu(r.mj)?.chrono && (
         <div className="salon-champ"><span>{fr ? 'Temps par question' : 'Time per question'}</span>
           <div className="salon-choix">{[10, 15, 20, 30].map((n) => <button key={n} type="button" className="pill" aria-pressed={r.secondes === n} onClick={() => maj({ secondes: n })}>{n} s</button>)}</div>
+          <div className="salon-choix"><button type="button" className="pill" aria-pressed={!r.equipes} onClick={() => maj({ equipes: false })}>{fr ? 'Chacun pour soi' : 'Free for all'}</button><button type="button" className="pill" aria-pressed={!!r.equipes} onClick={() => maj({ equipes: true })}>{fr ? 'Bleus contre Rouges' : 'Blue vs Red'}</button></div>
         </div>
       )}
     </>
@@ -168,7 +169,19 @@ function Lobby({ code, salon, suisHote, hote, onQuitter, moi }: { code: string; 
       <div className="salon-grille">
         <section className="card" style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 12 }}>
           <h2 className="t" style={{ fontSize: 19, fontWeight: 900 }}>{fr ? 'Joueurs' : 'Players'} · {joueurs.length}/{MAX_JOUEURS}</h2>
-          <div className="salon-joueurs">
+          {salon.regles.equipes && (
+            <div className="salon-equipes">
+              {(['a', 'b'] as const).map((e) => (
+                <div key={e} className="salon-equipe" style={{ ['--e' as string]: EQUIPES[e].couleur }}>
+                  <strong>{EQUIPES[e][lang]} · {joueurs.filter(([, j]) => (j.equipe ?? 'a') === e).length}</strong>
+                  {joueurs.filter(([, j]) => (j.equipe ?? 'a') === e).map(([id, j]) => <span key={id} className="salon-equipe-joueur"><Avatar pseudo={j.pseudo} avatar={j.avatar} cadre={j.cadre} taille={28} />{j.pseudo}</span>)}
+                  {!salon.tv && (salon.joueurs?.[moi.uid]?.equipe ?? 'a') !== e && <button className="btn btn-s" style={{ minHeight: 36 }} onClick={() => choisirEquipe(code, moi.uid, e)}>{fr ? 'Rejoindre' : 'Join'}</button>}
+                </div>
+              ))}
+              {suisHote && <button className="btn btn-g" style={{ gridColumn: '1 / -1' }} onClick={() => repartirEquipes(code, salon)}>🎲 {fr ? 'Répartir au hasard' : 'Shuffle teams'}</button>}
+            </div>
+          )}
+          <div className="salon-joueurs" hidden={!!salon.regles.equipes}>
             {joueurs.map(([id, j]) => (
               <div key={id} className="salon-joueur rise">
                 <Avatar pseudo={j.pseudo} avatar={j.avatar} cadre={j.cadre} taille={48} />
@@ -334,6 +347,16 @@ function Jeu({ code, salon, suisHote, ecranTv, maintenant, onQuitter }: { code: 
         <h1 className="t" style={{ fontSize: ecranTv ? 56 : 34, fontWeight: 900, textAlign: 'center' }}>
           {ecranTv ? `🏆 ${classement[0]?.pseudo ?? ''} ${fr ? 'gagne !' : 'wins!'}` : rang === 1 ? (fr ? 'Tu gagnes ! 🏆' : 'You win! 🏆') : (fr ? `Tu finis ${rang}${rang === 1 ? 'er' : 'e'}` : `You finished #${rang}`)}
         </h1>
+        {r.equipes && (() => {
+          const sc = scoresEquipes(classement)
+          const gagnante = sc.a.moyenne === sc.b.moyenne ? null : sc.a.moyenne > sc.b.moyenne ? 'a' : 'b'
+          return (
+            <section className="salon-duel-equipes rise">
+              {(['a', 'b'] as const).map((e) => <div key={e} style={{ ['--e' as string]: EQUIPES[e].couleur }} className={gagnante === e ? 'gagne' : ''}><strong>{EQUIPES[e][lang]}</strong><span className="t">{sc[e].moyenne}</span><small>{fr ? 'pts / joueur' : 'pts / player'} · {sc[e].n}</small></div>)}
+              <p className="t" style={{ gridColumn: '1 / -1', fontSize: 22, fontWeight: 900, textAlign: 'center' }}>{gagnante ? `🏆 ${EQUIPES[gagnante][lang]} ${fr ? 'gagnent !' : 'win!'}` : (fr ? 'Égalité !' : 'Draw!')}</p>
+            </section>
+          )
+        })()}
         <Podium classement={classement} />
         {classement.length > 3 && (
           <section className="card" style={{ width: '100%', maxWidth: 560, padding: 8 }}>
