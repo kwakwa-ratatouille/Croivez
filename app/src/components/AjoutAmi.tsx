@@ -31,7 +31,7 @@ export default function AjoutAmi({ uid }: { uid: string }) {
   return (
     <form className="ajout-ami" onSubmit={valider}>
       <div className="ajout-ami-champ">
-        <input className="input" value={pseudo} onChange={(e) => { setPseudo(e.target.value); setMsg('') }} placeholder={fr ? 'Ajouter un ami : tape son pseudo…' : 'Add a friend: type a name…'} autoComplete="off" />
+        <input className="input" value={pseudo} onChange={(e) => { setPseudo(e.target.value); setMsg('') }} placeholder={fr ? 'Pseudo d’un ami…' : 'Friend’s name…'} autoComplete="off" />
         <button className="btn btn-p" disabled={!pseudo.trim()}>{fr ? 'Envoyer' : 'Send'}</button>
       </div>
       {sugg.length > 0 && (

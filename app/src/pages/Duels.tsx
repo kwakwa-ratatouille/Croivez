@@ -92,7 +92,7 @@ export default function Duels() {
       <section className="card multi-amis">
         <div className="multi-amis-tete">
           <h2 className="t">👋 {fr ? 'Mes amis' : 'My friends'} <span>{amis.length}</span></h2>
-          <Link to="/amis" className="btn btn-g">{fr ? 'Messages et plus' : 'Chat & more'}<Icon d={ICONS.arrowR} size={16} /></Link>
+          <Link to="/amis" className="btn btn-g">{fr ? 'Messages' : 'Chat'}<Icon d={ICONS.arrowR} size={16} /></Link>
         </div>
         {amis.length > 0
           ? <div className="multi-amis-liste">{amis.map((a) => (
@@ -101,7 +101,7 @@ export default function Duels() {
                 <button className="btn btn-p multi-ami-defi" onClick={() => defier(a.uid)}>⚔️ {fr ? 'Défier' : 'Duel'}</button>
               </div>
             ))}</div>
-          : <p style={{ color: 'var(--muted)', fontSize: 14 }}>{fr ? `Ajoute tes amis ci-dessous, ou partage ton pseudo « ${moi} ».` : `Add friends below, or share “${moi}”.`}</p>}
+          : <p className="aide-mobile" style={{ color: 'var(--muted)', fontSize: 14 }}>{fr ? `Ajoute tes amis ci-dessous, ou partage ton pseudo « ${moi} ».` : `Add friends below, or share “${moi}”.`}</p>}
         <AjoutAmi uid={uid} />
         {message && <p role="status" style={{ fontSize: 14, color: 'var(--muted)' }}>{message}</p>}
       </section>

@@ -1547,3 +1547,14 @@ button.rang-palier[aria-pressed="true"] { background: color-mix(in srgb, var(--r
 
 .choix-theme { height: min(86vh, 720px); }
 .choix-theme-grille { flex: 1; align-content: start; }
+
+/* Téléphone : on masque les explications qui n'apportent rien une fois qu'on connaît l'écran */
+.multi-amis-tete h2 { white-space: nowrap; }
+@media (max-width: 560px) {
+  .multi-duel-tete p, .multi-astuce, .aide-mobile, .multi-aleatoire p, .aide-rangs { display: none; }
+  .multi-duel-icone { width: 42px; height: 42px; font-size: 22px; }
+  .multi-duel-tete h2, .multi-aleatoire h2 { font-size: 18px; }
+  .multi-duel-grille { grid-template-columns: 1fr; gap: 4px; }
+  .multi-duel-grille > span { margin-top: 4px; }
+  .salon-accueil p, .tv-carte span span { font-size: 13px; }
+}
