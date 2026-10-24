@@ -15,6 +15,8 @@ import ChoixFamilles from './pages/ChoixFamilles'
 import { choixAFaire } from './progression'
 import Revision from './pages/Revision'
 import Fiches from "./pages/Fiches"
+import ClassementJour from "./pages/ClassementJour"
+import Soiree from "./pages/Soiree"
 import Profil, { Joueur } from './pages/Profil'
 import Duels from './pages/Duels'
 import Duel from './pages/Duel'
@@ -79,6 +81,8 @@ function Routeur() {
           <Route path="/parametres" element={<Parametres />} />
           <Route path="/revision" element={<Revision />} />
           <Route path="/fiches" element={<Fiches />} />
+          <Route path="/jour" element={<ClassementJour />} />
+          <Route path="/soiree" element={<Soiree />} />
           <Route path="/profil" element={<Profil />} />
           <Route path="/joueur/:uid" element={<Joueur />} />
           <Route path="/duels" element={<Duels />} />

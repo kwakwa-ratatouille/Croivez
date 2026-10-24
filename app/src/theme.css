@@ -666,3 +666,39 @@ html, body { overflow-x: clip; }
   .fiche-diffs .pill-legende { grid-column: 1 / -1; }
 }
 .fiche-diffs .pill-legende { background: linear-gradient(90deg, color-mix(in srgb, #E3A72F 18%, var(--surface)), color-mix(in srgb, #A35BE0 18%, var(--surface))); font-weight: 900; }
+
+/* Mode soirée */
+.soiree-passe { width: 100%; min-height: 60vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; border: 0; cursor: pointer; font: inherit; color: inherit; text-align: center; }
+.soiree-choix { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; min-height: 64px; padding: 10px; border-radius: 18px; border: 2px solid var(--line); background: var(--surface); font: 600 16px 'DM Sans', sans-serif; color: var(--text); cursor: pointer; transition: all .2s; }
+.soiree-choix[data-etat='ok'] { border-color: var(--ok); background: var(--ok-t); }
+.soiree-choix[data-etat='ko'] { border-color: var(--ko); background: var(--ko-t); }
+.soiree-choix[data-etat='dim'] { opacity: .5; }
+
+/* Album : étagère de livres, classeur de 9 cartes qu'on feuillette */
+.album-etagere { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 16px; }
+.album-livre { position: relative; aspect-ratio: 3 / 4; border: 0; padding: 0; border-radius: 6px 14px 14px 6px; overflow: hidden; cursor: pointer; color: #fff; text-align: left; background: var(--k); box-shadow: 0 10px 22px rgba(0,0,0,.2); transition: transform .2s; }
+.album-livre:hover { transform: translateY(-4px) rotate(-1deg); }
+.album-livre-photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: flex; align-items: center; justify-content: center; }
+.album-livre::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 40%, color-mix(in srgb, var(--ki) 85%, transparent)); }
+.album-livre-dos { position: absolute; left: 0; top: 0; bottom: 0; width: 12px; z-index: 1; background: linear-gradient(90deg, rgba(0,0,0,.35), rgba(255,255,255,.15), rgba(0,0,0,.1)); }
+.album-livre-titre { position: absolute; z-index: 1; left: 18px; right: 10px; bottom: 30px; display: flex; gap: 6px; align-items: center; font: 900 15px/1.15 Nunito, sans-serif; }
+.album-livre-compte { position: absolute; z-index: 1; left: 18px; bottom: 10px; font: 700 12px 'DM Sans', sans-serif; opacity: .9; }
+.album { display: flex; flex-direction: column; gap: 14px; max-width: 720px; width: 100%; margin: 0 auto; }
+.album-onglets { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: thin; }
+.album-onglets .pill { flex: none; }
+.album-onglets small { opacity: .6; margin-left: 4px; }
+.album-classeur { padding: 16px; border-radius: 22px; background: var(--kt); box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--k) 40%, transparent); perspective: 1400px; min-height: 300px; }
+.album-page { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; transform-origin: left center; }
+.album-page.tourne-d { animation: page-d .45s ease-out; }
+.album-page.tourne-g { animation: page-g .45s ease-out; transform-origin: right center; }
+@keyframes page-d { from { transform: rotateY(-70deg); opacity: .2; } to { transform: none; opacity: 1; } }
+@keyframes page-g { from { transform: rotateY(70deg); opacity: .2; } to { transform: none; opacity: 1; } }
+.album-carte { aspect-ratio: 5 / 7; border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; background: var(--surface); box-shadow: 0 0 0 3px var(--r), 0 4px 10px rgba(0,0,0,.12); position: relative; }
+.album-carte-photo { position: relative; flex: 1; background: var(--surface2); }
+.album-carte-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.album-carte-nom { padding: 5px 6px 0; font: 800 11.5px/1.15 Nunito, sans-serif; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.album-carte-pied { display: flex; justify-content: space-between; padding: 2px 6px 5px; font: 700 9.5px 'DM Sans', sans-serif; color: var(--r); }
+.album-carte.legendaire::after, .album-carte.epique::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(115deg, transparent 40%, rgba(255,255,255,.5) 50%, transparent 60%); background-size: 250% 100%; animation: brille 3.2s ease-in-out infinite; }
+.album-carte.vide { box-shadow: none; border: 2px dashed color-mix(in srgb, var(--k) 50%, transparent); background: color-mix(in srgb, var(--surface) 50%, transparent); align-items: center; justify-content: center; font: 900 16px Nunito, sans-serif; color: color-mix(in srgb, var(--ki) 45%, transparent); }
+.album-nav { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-weight: 700; font-size: 14px; color: var(--muted); }
+.album { max-width: 560px; }

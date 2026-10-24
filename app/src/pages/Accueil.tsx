@@ -107,9 +107,10 @@ export default function Accueil() {
         <Link to="/partie?jeu=survie&d=0&m=qcm" className="mode-tuile" style={{ ['--k' as string]: 'var(--nat)', ['--kt' as string]: 'var(--nat-t)', ['--ki' as string]: 'var(--nat-i)' }}>
           <span className="mode-emoji">❤️</span><strong className="t">{fr ? 'Survie' : 'Survival'}</strong><span>{fr ? '3 vies, de plus en plus dur' : '3 lives, ever harder'}{profile?.records?.survie ? ` · ${fr ? 'record' : 'best'} ${profile.records.survie}` : ''}</span>
         </Link>
+        <Link to="/soiree" className="mode-tuile" style={{ ['--k' as string]: 'var(--mus)', ['--kt' as string]: 'var(--mus-t)', ['--ki' as string]: 'var(--mus-i)' }}><span className="mode-emoji">🎉</span><strong className="t">{fr ? 'Soirée' : 'Party'}</strong><span>{fr ? 'Un téléphone, plusieurs joueurs' : 'One phone, many players'}</span></Link>
         {profile?.defiJour === today
-          ? <div className="mode-tuile" style={{ ['--k' as string]: 'var(--his)', ['--kt' as string]: 'var(--his-t)', ['--ki' as string]: 'var(--his-i)' }}><span className="mode-emoji">✅</span><strong className="t">{fr ? 'Défi réussi' : 'Challenge done'}</strong><span>{fr ? 'Reviens demain !' : 'Come back tomorrow!'}</span></div>
-          : <Link to={defi.url} className="mode-tuile" style={{ ['--k' as string]: 'var(--his)', ['--kt' as string]: 'var(--his-t)', ['--ki' as string]: 'var(--his-i)' }}><span className="mode-emoji">🏆</span><strong className="t">{fr ? 'Défi du jour' : 'Daily challenge'}</strong><span>{defi.titre[lang]} · XP ×2</span></Link>}
+          ? <Link to="/jour" className="mode-tuile" style={{ ['--k' as string]: 'var(--his)', ['--kt' as string]: 'var(--his-t)', ['--ki' as string]: 'var(--his-i)' }}><span className="mode-emoji">🏅</span><strong className="t">{fr ? 'Classement du jour' : 'Today’s ranking'}</strong><span>{fr ? 'Vois ton rang et défie tes potes' : 'See your rank'}</span></Link>
+          : <Link to={defi.url} className="mode-tuile" style={{ ['--k' as string]: 'var(--his)', ['--kt' as string]: 'var(--his-t)', ['--ki' as string]: 'var(--his-i)' }}><span className="mode-emoji">🏆</span><strong className="t">{fr ? 'Quiz du jour' : 'Daily quiz'}</strong><span>{defi.titre[lang]} · XP ×2</span></Link>}
       </section>
 
       {/* Ma semaine : ligue, quêtes, révision, événement */}

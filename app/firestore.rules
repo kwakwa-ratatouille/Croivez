@@ -25,6 +25,11 @@ service cloud.firestore {
       allow read: if connecte() && resource.data.parrain == request.auth.uid;
       allow update: if connecte() && resource.data.parrain == request.auth.uid && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reclame']);
     }
+    // Classement du quiz du jour
+    match /jours/{date}/scores/{uid} {
+      allow read: if connecte();
+      allow write: if moi(uid);
+    }
     // Classement de la semaine
     match /semaines/{semaine}/scores/{uid} {
       allow read: if connecte();

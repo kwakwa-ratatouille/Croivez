@@ -1,21 +1,22 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../auth'
 import { usePrefs } from '../i18n'
-import { FAMILLES, trouverSousTheme, type Famille } from '../themes'
-import { chargerPays, drapeau, estCulture, packCulture, type ItemCulture, type SousThemeId } from '../quiz/engine'
+import { FAMILLES, type Famille } from '../themes'
+import { chargerPays, drapeau, estCulture, packCulture, type ItemCulture } from '../quiz/engine'
+import { RARETES, type Rarete } from '../progression'
 import { useCouverture } from '../components/CarteCouverture'
 import Img from '../components/Img'
 import Illustration from '../components/Illustration'
 import { ICONS, Icon } from '../components/ui'
 
 type Carte = { id: string; nom: string; img?: string }
+const PAR_PAGE = 9
 
-// Contenu d'un quiz pour l'album (les cartes possibles)
+// Contenu d'un quiz pour l'album (les cartes possibles, des plus connues aux plus pointues)
 async function cartesDe(s: string, lang: 'fr' | 'en'): Promise<Carte[]> {
   if (estCulture(s)) {
-    const pack = packCulture(s)
-    const items = (await (await fetch(`./packs/culture/${pack}.json`)).json()) as ItemCulture[]
+    const items = (await (await fetch(`./packs/culture/${packCulture(s)}.json`)).json()) as ItemCulture[]
     return items.map((it) => ({ id: it.id, nom: it.n[lang], img: it.img }))
   }
   if (['drapeaux', 'drapeaux-inverse', 'capitales', 'capitales-inverse', 'pays-carte'].includes(s)) {
@@ -24,74 +25,41 @@ async function cartesDe(s: string, lang: 'fr' | 'en'): Promise<Carte[]> {
   return []
 }
 
-const MOIS = new Intl.DateTimeFormat('fr-FR', { month: 'long', year: 'numeric' }).format(new Date())
+// Rareté d'une carte selon son rang de notoriété : les plus célèbres sont les plus précieuses
+const rareteCarte = (i: number, total: number): Rarete => {
+  const r = i / Math.max(1, total)
+  return r < 0.05 ? 'legendaire' : r < 0.2 ? 'epique' : r < 0.5 ? 'rare' : 'commun'
+}
 
-// Couverture d'un numéro (une famille) : titre de revue, photo pleine page, gros titres, code-barres
-function Couverture({ k, n, onOuvrir }: { k: Famille; n: number; onOuvrir: () => void }) {
+// Couverture d'un album (une famille) : photo, nom, cartes obtenues
+function CouvertureAlbum({ k, onOuvrir }: { k: Famille; onOuvrir: () => void }) {
   const { lang } = usePrefs()
   const { profile } = useAuth()
   const f = FAMILLES.find((x) => x.k === k)!
   const subs = f.subs.filter((s) => s.jouable && !s.id.startsWith('villes'))
   const album = profile?.album ?? {}
-  // La une : le quiz le plus collectionné de la famille
-  const une = [...subs].sort((a, b) => (album[b.id]?.length ?? 0) - (album[a.id]?.length ?? 0))[0]
-  const src = useCouverture(une?.id ?? '')
+  const src = useCouverture(subs[0]?.id ?? '')
   const total = subs.reduce((a, s) => a + (album[s.id]?.length ?? 0), 0)
   return (
-    <button type="button" className="mag-couv" onClick={onOuvrir} style={{ ['--k' as string]: `var(--${k})`, ['--ki' as string]: `var(--${k}-i)`, ['--kt' as string]: `var(--${k}-t)` }}>
-      {src ? <Img src={src} alt="" loading="lazy" className="mag-couv-photo" /> : <span className="mag-couv-photo" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--kt)' }}><Illustration k={k} taille={160} fond={false} /></span>}
-      <span className="mag-titre">CROIVEZ</span>
-      <span className="mag-numero">N°{n} · {MOIS}</span>
-      <span className="mag-dossier">{f.nom[lang]}</span>
-      <span className="mag-titres">
-        {subs.slice(0, 3).map((s) => <span key={s.id}>{s.nom[lang]} <b>{album[s.id]?.length ?? 0}</b></span>)}
-      </span>
-      <span className="mag-barre"><span>{total}</span></span>
+    <button type="button" className="album-livre" onClick={onOuvrir} style={{ ['--k' as string]: `var(--${k})`, ['--ki' as string]: `var(--${k}-i)`, ['--kt' as string]: `var(--${k}-t)` }}>
+      {src ? <Img src={src} alt="" loading="lazy" className="album-livre-photo" /> : <span className="album-livre-photo"><Illustration k={k} taille={120} fond={false} /></span>}
+      <span className="album-livre-dos" />
+      <span className="album-livre-titre"><Icon d={f.icon} size={16} />{f.nom[lang]}</span>
+      <span className="album-livre-compte">{total} {lang === 'fr' ? 'cartes' : 'cards'}</span>
     </button>
   )
 }
 
-// Un article : une page par quiz, la une en grand, les cartes en colonnes, les manquantes en emplacements numérotés
-function Article({ s, k, obtenues }: { s: SousThemeId; k: Famille; obtenues: Set<string> }) {
-  const { lang } = usePrefs()
-  const fr = lang === 'fr'
-  const [cartes, setCartes] = useState<Carte[] | null>(null)
-  const [tout, setTout] = useState(false)
-  useEffect(() => { cartesDe(s, lang).then(setCartes).catch(() => setCartes([])) }, [s, lang])
-  const t = trouverSousTheme(s)
-  if (!t) return null
-  const liste = cartes ?? []
-  const eues = liste.filter((c) => obtenues.has(c.id))
-  const manquantes = liste.length - eues.length
-  const [une, ...autres] = eues
-  const pct = liste.length ? Math.round((eues.length / liste.length) * 100) : 0
+// Une carte à collectionner : photo, numéro, nom, liseré de rareté ; manquante = emplacement numéroté
+function CarteAlbum({ c, n, rarete, eue }: { c: Carte; n: number; rarete: Rarete; eue: boolean }) {
+  const r = RARETES[rarete]
+  if (!eue) return <div className="album-carte vide"><span>#{n}</span></div>
   return (
-    <article className="mag-page" style={{ ['--k' as string]: `var(--${k})`, ['--ki' as string]: `var(--${k}-i)` }}>
-      <header className="mag-entete">
-        <span className="mag-rubrique">{t.famille.nom[lang]}</span>
-        <h2 className="mag-h">{t.sous.nom[lang]}</h2>
-        <p className="mag-chapeau">{fr ? `${eues.length} pièces de collection sur ${liste.length || '…'} — ${pct} % du dossier.` : `${eues.length} of ${liste.length || '…'} collected — ${pct}%.`}</p>
-      </header>
-      {une ? (
-        <figure className="mag-une">
-          {une.img ? <Img src={une.img} alt="" loading="lazy" /> : <span />}
-          <figcaption><b>{fr ? 'À la une' : 'Cover story'}</b> {une.nom}</figcaption>
-        </figure>
-      ) : <p className="mag-vide">{fr ? 'Pas encore de pièce : chaque bonne réponse ajoute sa photo à ce dossier.' : 'Nothing yet: every correct answer adds its picture.'}</p>}
-      <div className="mag-colonnes">
-        {(tout ? autres : autres.slice(0, 23)).map((c) => (
-          <figure key={c.id} className="mag-vignette">
-            {c.img ? <Img src={c.img} alt="" loading="lazy" /> : <span className="mag-sans" />}
-            <figcaption>{c.nom}</figcaption>
-          </figure>
-        ))}
-        {/* Emplacements vides, façon album d'autocollants */}
-        {manquantes > 0 && Array.from({ length: Math.min(manquantes, tout ? 60 : 8) }, (_, i) => (
-          <div key={'v' + i} className="mag-emplacement"><span>{eues.length + i + 1}</span></div>
-        ))}
-      </div>
-      {(autres.length > 23 || manquantes > 8) && <button type="button" className="btn btn-g" style={{ alignSelf: 'center' }} onClick={() => setTout((x) => !x)}>{tout ? (fr ? 'Réduire' : 'Less') : (fr ? 'Tourner les pages' : 'More')}</button>}
-    </article>
+    <div className={`album-carte ${rarete}`} style={{ ['--r' as string]: r.couleur }}>
+      <span className="album-carte-photo">{c.img ? <Img src={c.img} alt="" loading="lazy" /> : null}</span>
+      <span className="album-carte-nom">{c.nom}</span>
+      <span className="album-carte-pied"><span>#{n}</span><span>{r.nom.fr}</span></span>
+    </div>
   )
 }
 
@@ -100,36 +68,61 @@ export default function Album() {
   const fr = lang === 'fr'
   const { profile } = useAuth()
   const album = profile?.album ?? {}
-  const [numero, setNumero] = useState<Famille | null>(null)
+  const [famille, setFamille] = useState<Famille | null>(null)
+  const [quiz, setQuiz] = useState<string | null>(null)
+  const [cartes, setCartes] = useState<Carte[] | null>(null)
+  const [page, setPage] = useState(0)
+  const [sens, setSens] = useState<'g' | 'd'>('d')
+  const toucher = useRef(0)
 
-  // ——— Un numéro ouvert : sommaire puis articles ———
-  if (numero) {
-    const f = FAMILLES.find((x) => x.k === numero)!
-    const subs = f.subs.filter((s) => s.jouable && !s.id.startsWith('villes'))
-    return (
-      <div className="mag">
-        <button type="button" onClick={() => setNumero(null)} className="mag-retour"><Icon d={ICONS.arrowL} />{fr ? 'Kiosque' : 'Newsstand'}</button>
-        <nav className="mag-sommaire" aria-label={fr ? 'Sommaire' : 'Contents'}>
-          <span className="mag-titre" style={{ position: 'static', color: `var(--${f.k}-i)` }}>CROIVEZ</span>
-          <strong>{fr ? 'Sommaire' : 'Contents'}</strong>
-          {subs.map((s, i) => <a key={s.id} href={`#art-${s.id}`} onClick={(e) => { e.preventDefault(); document.getElementById(`art-${s.id}`)?.scrollIntoView({ behavior: 'smooth' }) }}><span>{s.nom[lang]}</span><i />{String(i + 2).padStart(2, '0')}</a>)}
-        </nav>
-        {subs.map((s) => <div key={s.id} id={`art-${s.id}`}><Article s={s.id as SousThemeId} k={f.k} obtenues={new Set(album[s.id] ?? [])} /></div>)}
-      </div>
-    )
-  }
+  useEffect(() => { if (quiz) { setCartes(null); setPage(0); cartesDe(quiz, lang).then(setCartes).catch(() => setCartes([])) } }, [quiz, lang])
 
-  // ——— Kiosque : un numéro par famille ———
-  return (
+  // ——— Étagère : un album par famille ———
+  if (!famille) return (
     <>
       <Link to="/profil" style={{ alignSelf: 'flex-start', display: 'inline-flex', alignItems: 'center', gap: 8, minHeight: 44, fontWeight: 600, textDecoration: 'none', color: 'var(--muted)' }}><Icon d={ICONS.arrowL} />{fr ? 'Profil' : 'Profile'}</Link>
       <header>
-        <h1 className="t" style={{ fontSize: 30, fontWeight: 900 }}>{fr ? 'Le kiosque' : 'Newsstand'}</h1>
-        <p style={{ color: 'var(--muted)', fontSize: 14 }}>{fr ? 'Chaque bonne réponse ajoute sa photo à la revue de sa famille.' : 'Every correct answer adds its picture to the family magazine.'}</p>
+        <h1 className="t" style={{ fontSize: 30, fontWeight: 900 }}>{fr ? 'Mes albums' : 'My albums'}</h1>
+        <p style={{ color: 'var(--muted)', fontSize: 14 }}>{fr ? 'Chaque bonne réponse colle sa carte. Les plus célèbres sont les plus rares !' : 'Every correct answer adds its card.'}</p>
       </header>
-      <section className="mag-kiosque">
-        {FAMILLES.map((f, i) => <Couverture key={f.k} k={f.k} n={i + 1} onOuvrir={() => setNumero(f.k)} />)}
-      </section>
+      <section className="album-etagere">{FAMILLES.map((f) => <CouvertureAlbum key={f.k} k={f.k} onOuvrir={() => { setFamille(f.k); setQuiz(f.subs.find((s) => s.jouable && !s.id.startsWith('villes'))?.id ?? null) }} />)}</section>
     </>
+  )
+
+  const f = FAMILLES.find((x) => x.k === famille)!
+  const subs = f.subs.filter((s) => s.jouable && !s.id.startsWith('villes'))
+  const eues = new Set(album[quiz ?? ''] ?? [])
+  const liste = cartes ?? []
+  const pages = Math.max(1, Math.ceil(liste.length / PAR_PAGE))
+  const tourner = (d: number) => { const p = Math.min(pages - 1, Math.max(0, page + d)); if (p !== page) { setSens(d > 0 ? 'd' : 'g'); setPage(p) } }
+
+  // ——— Un album ouvert : onglets des quiz, pages de 9 cartes qu'on feuillette ———
+  return (
+    <div className="album" style={{ ['--k' as string]: `var(--${famille})`, ['--ki' as string]: `var(--${famille}-i)`, ['--kt' as string]: `var(--${famille}-t)` }}>
+      <button type="button" onClick={() => setFamille(null)} className="mag-retour"><Icon d={ICONS.arrowL} />{fr ? 'Mes albums' : 'My albums'}</button>
+      <h1 className="t" style={{ fontSize: 26, fontWeight: 900, color: 'var(--ki)' }}>{f.nom[lang]}</h1>
+      <div className="album-onglets">
+        {subs.map((s) => <button key={s.id} type="button" className="pill" aria-pressed={quiz === s.id} onClick={() => setQuiz(s.id)}>{s.nom[lang]} <small>{album[s.id]?.length ?? 0}</small></button>)}
+      </div>
+      <div className="album-classeur" onTouchStart={(e) => { toucher.current = e.touches[0].clientX }} onTouchEnd={(e) => { const dx = e.changedTouches[0].clientX - toucher.current; if (Math.abs(dx) > 50) tourner(dx < 0 ? 1 : -1) }}>
+        {!cartes && <p style={{ color: 'var(--muted)', padding: 30 }}>…</p>}
+        {cartes && liste.length === 0 && <p style={{ color: 'var(--muted)', padding: 30 }}>{fr ? 'Pas de cartes pour ce quiz.' : 'No cards for this quiz.'}</p>}
+        {cartes && liste.length > 0 && (
+          <div key={`${quiz}-${page}`} className={`album-page tourne-${sens}`}>
+            {liste.slice(page * PAR_PAGE, page * PAR_PAGE + PAR_PAGE).map((c, j) => {
+              const i = page * PAR_PAGE + j
+              return <CarteAlbum key={c.id} c={c} n={i + 1} rarete={rareteCarte(i, liste.length)} eue={eues.has(c.id)} />
+            })}
+          </div>
+        )}
+      </div>
+      {cartes && liste.length > 0 && (
+        <div className="album-nav">
+          <button className="btn btn-g" disabled={page === 0} onClick={() => tourner(-1)} aria-label={fr ? 'Page précédente' : 'Previous page'}><Icon d={ICONS.arrowL} /></button>
+          <span>{fr ? 'Page' : 'Page'} {page + 1} / {pages} · {[...eues].filter((id) => liste.some((c) => c.id === id)).length} / {liste.length}</span>
+          <button className="btn btn-g" disabled={page >= pages - 1} onClick={() => tourner(1)} aria-label={fr ? 'Page suivante' : 'Next page'}><Icon d={ICONS.arrowR} /></button>
+        </div>
+      )}
+    </div>
   )
 }
