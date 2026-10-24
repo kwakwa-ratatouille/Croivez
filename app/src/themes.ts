@@ -1,7 +1,7 @@
 import type { Lang } from './i18n'
 import type { SousThemeId } from './quiz/engine'
 
-export type Famille = 'geo' | 'cine' | 'mus' | 'nat' | 'sci' | 'his' | 'brd' | 'spo' | 'lit' | 'jv' | 'ani' | 'vie' | 'pop' | 'cui' | 'mot'
+export type Famille = 'mot' | 'geo' | 'cine' | 'mus' | 'nat' | 'sci' | 'his' | 'brd' | 'spo' | 'lit' | 'jv' | 'ani' | 'vie' | 'pop' | 'cui' | 'mot'
 
 export type SousTheme = { id: string; nom: Record<Lang, string>; jouable?: SousThemeId }
 
@@ -71,13 +71,13 @@ export const FAMILLES: { k: Famille; nom: Record<Lang, string>; icon: string; mo
     k: 'sci', nom: { fr: 'Corps humain & sciences', en: 'Human body & science' },
     icon: 'M9.5 3.5h5M10.5 3.5v5.5L5.2 18.3a1.5 1.5 0 0 0 1.3 2.2h11a1.5 1.5 0 0 0 1.3-2.2L13.5 9V3.5M7.5 15h9',
     motif: 'M40 40a10 10 0 1 1-20 0a10 10 0 1 1 20 0M80 20a8 8 0 1 1-16 0a8 8 0 1 1 16 0M100 56a10 10 0 1 1-20 0a10 10 0 1 1 20 0M40 36l26-12M76 26l12 22',
-    subs: [{ id: 'corps', nom: { fr: 'Corps humain', en: 'Human body' }, jouable: 'corps' }, { id: 'elements', nom: { fr: 'Éléments chimiques', en: 'Chemical elements' }, jouable: 'elements' }, j('scientifiques', 'Scientifiques', 'Scientists'), j('inventions', 'Inventions et découvertes', 'Inventions & discoveries'), j('constellations', 'Constellations', 'Constellations'), j('lunes', 'Planètes et lunes', 'Planets & moons'), j('mineraux', 'Pierres précieuses et minéraux', 'Gems & minerals')],
+    subs: [{ id: 'corps', nom: { fr: 'Corps humain', en: 'Human body' }, jouable: 'corps' }, { id: 'elements', nom: { fr: 'Éléments chimiques', en: 'Chemical elements' }, jouable: 'elements' }, j('scientifiques', 'Scientifiques', 'Scientists'), j('inventions', 'Inventions et découvertes', 'Inventions & discoveries'), j('constellations', 'Constellations', 'Constellations'), j('lunes', 'Planètes et lunes', 'Planets & moons'), j('mineraux', 'Pierres précieuses et minéraux', 'Gems & minerals'), j('unites', 'Unités de mesure', 'Units'), j('formules', 'Formules et symboles', 'Formulas')],
   },
   {
     k: 'his', nom: { fr: 'Histoire, personnalités & arts', en: 'History, people & arts' },
     icon: 'M3.5 9 12 4.5 20.5 9M6 10v7.5M10 10v7.5M14 10v7.5M18 10v7.5M3.5 20h17',
     motif: 'M20 30 60 10l40 20M28 34v30M48 34v30M72 34v30M92 34v30M16 70h88',
-    subs: [{ id: 'personnalites', nom: { fr: 'Personnalités', en: 'Famous people' }, jouable: 'personnalites' }, { id: 'personnalites-pays', nom: { fr: 'Nationalités', en: 'Nationalities' }, jouable: 'personnalites-pays' }, { id: 'personnalites-metier', nom: { fr: 'Qui fait quoi ?', en: 'Who does what?' }, jouable: 'personnalites-metier' }, { id: 'personnalites-naissance', nom: { fr: 'Années de naissance', en: 'Birth years' }, jouable: 'personnalites-naissance' }, { id: 'histoire', nom: { fr: 'Dates de l’histoire', en: 'History dates' }, jouable: 'histoire' }, { id: 'tableaux', nom: { fr: 'Tableaux célèbres', en: 'Famous paintings' }, jouable: 'tableaux' }, j('presidents', 'Présidents français', 'French presidents'), j('mouvements', 'Mouvements artistiques', 'Art movements'), j('sculptures', 'Sculptures', 'Sculptures'), j('architecture', 'Architectes', 'Architects'), j('batailles', 'Batailles', 'Battles'), j('attentats', 'Attentats : l’année', 'Attacks: year'), j('attentats-pays', 'Attentats : le pays', 'Attacks: country'), j('traites', 'Traités et accords', 'Treaties'), j('souverains', 'Rois, reines et empereurs', 'Monarchs')],
+    subs: [{ id: 'personnalites', nom: { fr: 'Personnalités', en: 'Famous people' }, jouable: 'personnalites' }, { id: 'personnalites-pays', nom: { fr: 'Nationalités', en: 'Nationalities' }, jouable: 'personnalites-pays' }, { id: 'personnalites-metier', nom: { fr: 'Qui fait quoi ?', en: 'Who does what?' }, jouable: 'personnalites-metier' }, { id: 'personnalites-naissance', nom: { fr: 'Années de naissance', en: 'Birth years' }, jouable: 'personnalites-naissance' }, { id: 'histoire', nom: { fr: 'Dates de l’histoire', en: 'History dates' }, jouable: 'histoire' }, { id: 'tableaux', nom: { fr: 'Tableaux célèbres', en: 'Famous paintings' }, jouable: 'tableaux' }, j('presidents', 'Présidents français', 'French presidents'), j('mouvements', 'Mouvements artistiques', 'Art movements'), j('sculptures', 'Sculptures', 'Sculptures'), j('architecture', 'Architectes', 'Architects'), j('batailles', 'Batailles', 'Battles'), j('attentats', 'Attentats : l’année', 'Attacks: year'), j('attentats-pays', 'Attentats : le pays', 'Attacks: country'), j('traites', 'Traités et accords', 'Treaties'), j('souverains', 'Rois, reines et empereurs', 'Monarchs'), j('politiques', 'Personnalités politiques françaises', 'French politicians'), j('dirigeants', 'Dirigeants du monde', 'World leaders')],
   },
   {
     k: 'brd', nom: { fr: 'Marques & logos', en: 'Brands & logos' },
@@ -89,7 +89,7 @@ export const FAMILLES: { k: Famille; nom: Record<Lang, string>; icon: string; mo
     k: 'spo', nom: { fr: 'Sport', en: 'Sport' },
     icon: 'M12 3.5a8.5 8.5 0 1 0 0 17a8.5 8.5 0 1 0 0-17ZM12 3.5v4l3.5 2.5-1.3 4h-4.4L8.5 10 12 7.5M15.5 10l4.5-1M8.5 10 4 9M9.8 14l-2.3 4.5M14.2 14l2.3 4.5',
     motif: 'M10 70h100M20 70V30M100 70V30M20 30h80M60 30v40M40 50a20 20 0 0 1 40 0',
-    subs: [j('sportifs', 'Sportifs', 'Athletes'), j('sportifs-sport', 'Quel sport ?', 'Which sport?'), j('clubs', 'Clubs de football', 'Football clubs'), j('stades', 'Stades', 'Stadiums')],
+    subs: [j('sportifs', 'Sportifs', 'Athletes'), j('sportifs-sport', 'Quel sport ?', 'Which sport?'), j('clubs', 'Clubs de football', 'Football clubs'), j('stades', 'Stades', 'Stadiums'), j('sports-photo', 'Sports en photo', 'Sports in pictures'), j('balles', 'Ballons et balles', 'Sports balls')],
   },
   {
     k: 'lit', nom: { fr: 'Littérature & BD', en: 'Books & comics' },
@@ -125,13 +125,19 @@ export const FAMILLES: { k: Famille; nom: Record<Lang, string>; icon: string; mo
     k: 'cui', nom: { fr: 'Cuisine & saveurs', en: 'Food & flavours' },
     icon: 'M7 3.5v6.5M5 3.5V8a2 2 0 0 0 4 0V3.5M7 10v10.5M17 3.5c-1.8 1.3-2.8 3.6-2.8 6.4V13H17v7.5',
     motif: 'M30 10v30M22 10v18a8 8 0 0 0 16 0V10M30 40v34M86 10c-8 6-12 16-12 28v12h12v24',
-    subs: [j('fruits', 'Fruits', 'Fruits'), j('legumes', 'Légumes', 'Vegetables'), j('desserts', 'Desserts et pâtisseries', 'Desserts & pastries'), j('epices', 'Épices et herbes', 'Spices & herbs'), j('fromages', 'Fromages du monde', 'World cheeses')],
+    subs: [j('fruits', 'Fruits', 'Fruits'), j('legumes', 'Légumes', 'Vegetables'), j('desserts', 'Desserts et pâtisseries', 'Desserts & pastries'), j('epices', 'Épices et herbes', 'Spices & herbs'), j('fromages', 'Fromages du monde', 'World cheeses'), j('plats-photo', 'Plats du monde en photo', 'World dishes in pictures')],
   },
   {
     k: 'mot', nom: { fr: 'Mots & curiosités', en: 'Words & curiosities' },
     icon: 'M4.5 5h15A1.5 1.5 0 0 1 21 6.5v9a1.5 1.5 0 0 1-1.5 1.5H10l-4.5 3.5V17h-1A1.5 1.5 0 0 1 3 15.5v-9A1.5 1.5 0 0 1 4.5 5ZM8 10h8M8 13h5',
     motif: 'M14 14h92v44H50l-20 16V58H14ZM30 30h60M30 42h36',
     subs: [j('idees-recues', 'Idées reçues : vrai ou faux ?', 'Myths: true or false?'), j('expressions', 'Expressions françaises', 'French expressions'), j('gentiles', 'Habitants des villes', 'What locals are called'), j('phobies', 'Phobies', 'Phobias'), j('cris', 'Cris des animaux', 'Animal sounds'), j('sigles', 'Sigles et acronymes', 'Acronyms')],
+  },
+  {
+    k: 'mot', nom: { fr: 'Mots & curiosités', en: 'Words & curiosities' },
+    icon: 'M4 6.5h16M4 12h10M4 17.5h13M18 15l2 2.5-2 2.5',
+    motif: 'M20 20h80M20 40h50M20 60h65',
+    subs: [j('verlan', 'Verlan et argot', 'French slang'), j('proverbes', 'Proverbes à compléter', 'Proverbs'), j('citations', 'Qui a dit ça ?', 'Who said it?'), j('petits-animaux', 'Petits des animaux', 'Baby animals'), j('groupes-animaux', 'Groupes d’animaux', 'Animal groups'), j('surnoms-villes', 'Surnoms de villes', 'City nicknames')],
   },
 ]
 

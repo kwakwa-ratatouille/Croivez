@@ -66,13 +66,21 @@ export default function FicheLancement({ id, onFermer }: { id: string; onFermer:
           {diffs.map((d) => {
             const ouvert = d.v === 5 ? legende : difficulteOuverte(d.v, profile, id)
             return (
-              <button key={d.v} type="button" role="radio" aria-checked={r.d === d.v} className={`pill${d.v === 5 ? ' pill-legende' : ''}`} aria-pressed={r.d === d.v} disabled={!ouvert} onClick={() => maj({ d: d.v })} style={{ opacity: ouvert ? 1 : 0.5 }}>
+              <button key={d.v} type="button" role="radio" aria-checked={r.d === d.v} className={`pill${d.v === 5 ? ' pill-legende' : ''}`} aria-pressed={r.d === d.v} aria-disabled={!ouvert} onClick={() => {
+                if (ouvert) { maj({ d: d.v }); setMsg(''); return }
+                // Fermée : on explique pourquoi et comment l'ouvrir
+                const prec = diffs.find((x) => x.v === d.v - 1)?.label
+                setMsg(d.v === 5
+                  ? (fr ? 'La Légende s’ouvre quand tous les quiz de la famille ont leurs 4 niveaux réussis au sans-faute. Elle ne s’achète pas.' : 'Legend unlocks when every quiz in the family has its 4 levels passed perfectly.')
+                  : (fr ? `${d.label} est fermé : fais un sans-faute en ${prec} (ou plus haut), ou saute-le pour ${PRIX_SAUT} pièces.` : `${d.label} is locked: get a perfect run on ${prec}, or skip it for ${PRIX_SAUT} coins.`))
+              }} style={{ opacity: ouvert ? 1 : 0.5 }}>
                 {!ouvert && <Icon d={ICONS.lock} size={14} />}{reussie(d.v, profile, id) && <span aria-label={fr ? 'réussi' : 'passed'}>✓</span>}{d.label}
               </button>
             )
           })}
         </div>
 
+        {msg && verrou === 0 && <p role="status" className="fiche-legende" style={{ color: 'var(--ko-i)', fontWeight: 600 }}>{msg}</p>}
         {!legende && (() => { const pl = progresLegende(k, profile); return <p className="fiche-legende"><Icon d={ICONS.lock} size={14} />{fr ? `Légende : la difficulté ultime (6 choix presque identiques dont un faux jumeau, 12 s, XP et pièces ×3). Elle s’ouvre sur toute la famille quand chaque quiz a ses 4 niveaux réussis : ${pl.faits} / ${pl.total}.` : `Legend: the ultimate level. Unlocks for the whole family once every quiz has its 4 levels passed: ${pl.faits} / ${pl.total}.`}</p> })()}
 
         {verrou > 0 && (
