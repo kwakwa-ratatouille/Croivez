@@ -1443,3 +1443,12 @@ button.rang-palier[aria-pressed="true"] { background: color-mix(in srgb, var(--r
 
 
 .changer-pseudo { display: flex; flex-direction: column; gap: 8px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
+
+/* Multi : « Défier un ami » (réglages + amis) et « Duel aléatoire » séparés */
+.multi-duel-amis { display: flex; gap: 8px; flex-wrap: wrap; }
+.multi-duel-ami { display: flex; align-items: center; gap: 8px; padding: 6px 12px 6px 6px; border-radius: 999px; border: 2px solid var(--line); background: var(--surface); font: 700 14px 'DM Sans', sans-serif; color: var(--text); cursor: pointer; transition: transform .12s, border-color .2s; }
+.multi-duel-ami:hover { border-color: #E3574B; transform: translateY(-1px); }
+.multi-duel-ami em { font-style: normal; }
+.multi-aleatoire { padding: 16px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; background: linear-gradient(135deg, color-mix(in srgb, #5B8DEF 14%, var(--surface)), var(--surface)); }
+.multi-aleatoire h2 { font-size: 19px; font-weight: 900; }
+.multi-aleatoire p { font-size: 13px; color: var(--muted); }

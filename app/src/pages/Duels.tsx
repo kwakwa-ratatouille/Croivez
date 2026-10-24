@@ -103,9 +103,9 @@ export default function Duels() {
         {message && <p role="status" style={{ fontSize: 14, color: 'var(--muted)' }}>{message}</p>}
       </section>
 
-      {/* Duel : réglages lisibles (thème, Légende), puis ami ou adversaire au hasard */}
+      {/* Défier un ami : tous les réglages, puis le choix de l'ami */}
       <section className="card multi-duel">
-        <div className="multi-duel-tete"><span className="multi-duel-icone">⚔️</span><div><h2 className="t">{fr ? 'Duel en face à face' : 'One-on-one duel'}</h2><p>{fr ? '10 questions, les mêmes pour les deux, chacun confirme « Prêt » avant de partir.' : '10 identical questions, both confirm before starting.'}</p></div></div>
+        <div className="multi-duel-tete"><span className="multi-duel-icone">🤝</span><div><h2 className="t">{fr ? 'Défier un ami' : 'Challenge a friend'}</h2><p>{fr ? 'Tu choisis tout : thème, difficulté, nombre de questions et temps. Ton ami confirme « Prêt » et c’est parti.' : 'You pick the rules, your friend confirms.'}</p></div></div>
         <div className="multi-duel-reglages">
           <label><span>{fr ? 'Thème' : 'Topic'}</span>
             <select className="input" value={themeDuel} onChange={(e) => setThemeDuel(e.target.value)}>
@@ -125,8 +125,18 @@ export default function Duels() {
           <span>{fr ? 'Temps' : 'Time'}</span>
           <div className="multi-duel-choix">{[8, 15, 20, 30].map((n) => <button key={n} type="button" className="pill" aria-pressed={secDuel === n} onClick={() => setSecDuel(n)}>{n} s</button>)}</div>
         </div>
-        <button className="btn btn-lg multi-hasard" onClick={async () => setRecherche(await chercherAdversaire(uid, moi))}>🎲 {fr ? 'Adversaire au hasard' : 'Random opponent'}<Icon d={ICONS.arrowR} /></button>
-        <p className="multi-astuce">{fr ? 'Pour défier un ami : bouton ⚔️ Défier dans « Mes amis » juste au-dessus.' : 'To duel a friend: ⚔️ in “My friends” above.'}</p>
+        <div className="multi-duel-amis">
+          {amis.length === 0 && <p className="multi-astuce">{fr ? 'Ajoute d’abord des amis dans « Mes amis » juste au-dessus.' : 'Add friends above first.'}</p>}
+          {amis.map((a) => <button key={a.uid} type="button" className="multi-duel-ami" onClick={() => defier(a.uid)}><Avatar pseudo={a.pseudo} avatar={a.avatar} cadre={a.cadre} taille={34} /><span>{a.pseudo}</span><em>⚔️</em></button>)}
+        </div>
+
+      </section>
+
+      {/* Duel aléatoire : règles de base, thèmes au hasard, aucun réglage */}
+      <section className="card multi-aleatoire">
+        <span className="multi-duel-icone">🎲</span>
+        <div style={{ flex: 1, minWidth: 0 }}><h2 className="t">{fr ? 'Duel aléatoire' : 'Random duel'}</h2><p>{fr ? 'Un adversaire au hasard, un thème au hasard, règles classiques (10 questions, 15 s).' : 'Random opponent and topic, classic rules.'}</p></div>
+        <button className="btn btn-lg multi-hasard" onClick={async () => setRecherche(await chercherAdversaire(uid, moi))}>{fr ? 'Jouer' : 'Play'}<Icon d={ICONS.arrowR} /></button>
       </section>
 
       {/* Salon : la grande nouveauté, mise en avant */}
