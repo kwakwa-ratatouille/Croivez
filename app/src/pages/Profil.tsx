@@ -4,7 +4,8 @@ import { niveau, useAuth, xpPourNiveau } from '../auth'
 import { usePrefs, type Lang } from '../i18n'
 import { FAMILLES } from '../themes'
 import { BADGES, PALIERS, palierAtteint } from '../badges'
-import { BOUTIQUE, SECRETS } from '../meta'
+import { BOUTIQUE, SECRETS, possede } from '../meta'
+import { FONDS_ANIMES, Particules, Pseudo, fondAnime } from '../components/Cosmetiques'
 import { accesQuiz } from '../progression'
 import { profilPublic, publierVitrine, resumePublic, type ProfilPublic } from '../social'
 import Avatar from '../components/Avatar'
@@ -46,7 +47,7 @@ export function CarteJoueur({ p, moi = false }: { p: ProfilPublic; moi?: boolean
       <section className="card profil-tete">
         {moi ? <Link to="/boutique" aria-label={fr ? 'Changer d’avatar' : 'Change avatar'}><Avatar pseudo={p.pseudo} avatar={p.avatar} cadre={p.cadre} taille={84} anime /></Link> : <Avatar pseudo={p.pseudo} avatar={p.avatar} cadre={p.cadre} taille={84} anime />}
         <div style={{ flex: '1 1 220px', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <h1 className="t" style={{ fontSize: 26, fontWeight: 900, overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.pseudo}</h1>
+          <h1 className="t" style={{ fontSize: 26, fontWeight: 900, overflow: 'hidden', textOverflow: 'ellipsis' }}><Pseudo nom={p.pseudo} style={p.pseudoStyle} /></h1>
           {/* Titre équipé (gagné par un exploit) */}
           {p.titre && BOUTIQUE.find((o) => o.id === p.titre) && <span className="titre-affiche">🏅 {BOUTIQUE.find((o) => o.id === p.titre)!.nom[lang]}</span>}
           {moi && !p.titre && <Link to="/boutique" className="titre-affiche vide">+ {fr ? 'Choisir un titre' : 'Pick a title'}</Link>}
@@ -93,10 +94,12 @@ function Vitrine({ p, moi, onModifier }: { p: ProfilPublic; moi: boolean; onModi
   const { lang } = usePrefs()
   const fr = lang === 'fr'
   const fmt = new Intl.NumberFormat(fr ? 'fr-FR' : 'en-GB')
-  const fond = FONDS_VITRINE[p.vitrineFond ?? ''] ?? FONDS_VITRINE.aurore
+  const anime = fondAnime(p.vitrineFond)
+  const fond = anime?.fond ?? FONDS_VITRINE[p.vitrineFond ?? ''] ?? FONDS_VITRINE.aurore
   const cases = [0, 1, 2].map((i) => p.vitrine?.[i])
   return (
     <section className="vitrine rise" style={{ background: fond }}>
+      {anime && <Particules f={anime} />}
       <div className="vitrine-haut">
         <div style={{ flex: 1, minWidth: 0 }}>
           <span className="eyebrow" style={{ color: 'rgba(255,255,255,.8)' }}>{fr ? 'Vitrine' : 'Showcase'}</span>
@@ -165,6 +168,8 @@ export default function Profil() {
           <strong>{fr ? 'Fond de la vitrine' : 'Showcase background'}</strong>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             {Object.entries(FONDS_VITRINE).map(([id, g]) => <button key={id} type="button" aria-label={id} aria-pressed={(profile.vitrineFond ?? 'aurore') === id} className="pastille-fond" style={{ background: g }} onClick={() => publierVitrine(user.uid, profile, { vitrineFond: id })} />)}
+            {FONDS_ANIMES.filter((f) => BOUTIQUE.some((o) => o.id === f.id && possede(profile, o))).map((f) => <button key={f.id} type="button" aria-label={f.nom[lang]} title={f.nom[lang]} aria-pressed={profile.vitrineFond === f.id} className="pastille-fond anime" style={{ background: f.fond }} onClick={() => publierVitrine(user.uid, profile, { vitrineFond: f.id })}>{f.particules[0]}</button>)}
+            <Link to="/boutique?o=fond" className="pastille-fond plus" aria-label={fr ? 'Plus de fonds animés en boutique' : 'More animated backgrounds'}>🛍️</Link>
           </div>
           <label style={{ display: 'flex', flexDirection: 'column', gap: 6, fontWeight: 600 }}>{fr ? 'Ta phrase (60 caractères)' : 'Your line (60 chars)'}
             <input className="input" maxLength={60} defaultValue={profile.bio ?? ''} placeholder={fr ? 'Ex. : Imbattable sur les drapeaux 🌍' : 'e.g. Unbeatable on flags'} onBlur={(e) => publierVitrine(user.uid, profile, { bio: e.target.value.trim().slice(0, 60) })} />

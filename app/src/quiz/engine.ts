@@ -190,6 +190,8 @@ const CULTURE = {
   affiches: { type: 'image', q: { fr: () => 'De quel film est cette affiche ?', en: () => 'Which film is this poster from?' } },
   'lieux-jeux': { type: 'attribut', montrer: true, groupe: 'genre', q: { fr: (n) => `De quel jeu vient ce lieu : ${n} ?`, en: (n) => `Which game is ${n} from?` } },
   sagas: { type: 'attribut', q: { fr: (n) => `Quel studio ou éditeur est derrière « ${n} » ?`, en: (n) => `Which studio or publisher is behind “${n}”?` } },
+  // ——— Quiz spéciaux des événements (scripts/build-evenements.mjs) : l'élément est la question elle-même ———
+  ...Object.fromEntries(['halloween', 'noel', 'nouvel-an', 'saint-valentin', 'paques', 'musique', 'ete', 'rentree'].map((e) => [`evt-${e}`, { type: 'attribut' as const, q: { fr: (n: string) => n, en: (n: string) => n } }])) as Record<`evt-${'halloween' | 'noel' | 'nouvel-an' | 'saint-valentin' | 'paques' | 'musique' | 'ete' | 'rentree'}`, { type: 'attribut'; q: Record<Lang, (nom: string) => string> }>,
   // ——— Nouveaux thèmes ———
   youtubeurs: { type: 'image', q: { fr: (_, g) => (g === 'f' ? 'Qui est cette vidéaste ?' : 'Qui est ce vidéaste ?'), en: () => 'Who is this content creator?' } },
   fruits: { type: 'image', q: { fr: () => 'Quel est ce fruit ?', en: () => 'What is this fruit?' } },
@@ -212,6 +214,13 @@ const CULTURE = {
   cris: { type: 'attribut', q: { fr: (n) => `Comment crie ${minuscule(n)} ?`, en: (n) => `What sound does ${minuscule(n)} make?` } },
   sigles: { type: 'attribut', grand: true, q: { fr: () => 'Que signifie ce sigle ?', en: () => 'What does this acronym stand for?' } },
   // Vrai ou faux : deux réponses seulement, jamais transformé en un autre format
+  // Défis (scripts/build-defis.mjs) : l'élément est la question elle-même
+  'devinettes': { type: 'attribut', grand: true, fixe: true, q: { fr: () => 'Devinette : qui suis-je ?', en: () => 'Riddle: who am I?' } },
+  'suites-logiques': { type: 'attribut', grand: true, fixe: true, q: { fr: () => 'Complète la suite logique', en: () => 'Complete the sequence' } },
+  'metiers': { type: 'attribut', q: { fr: (n) => n, en: (n) => n } },
+  'records-monde': { type: 'attribut', q: { fr: (n) => n, en: (n) => n } },
+  'mascottes': { type: 'attribut', q: { fr: (n) => n, en: (n) => n } },
+  'fast-food': { type: 'attribut', q: { fr: (n) => n, en: (n) => n } },
   'idees-recues': { type: 'attribut', grand: true, fixe: true, q: { fr: () => 'Vrai ou faux ?', en: () => 'True or false?' } },
   'persos-univers': { type: 'attribut', pack: 'persos-jeu', montrer: true, groupe: 'genre', q: { fr: (n) => `De quel jeu vient ce personnage : ${n} ?`, en: (n) => `Which game is ${n} from?` } },
 } satisfies Record<string, { type: TypeCulture; montrer?: boolean; pack?: string; champ?: string; grand?: boolean; fixe?: boolean; groupe?: string; q: Record<Lang, (nom: string, genre?: string) => string> }>
@@ -400,7 +409,8 @@ function tirer<T>(liste: T[], fin: (d: Palier) => number, o: Opts, idDe: (x: T) 
   const dessous = liste.slice(0, debut)
   // Défi du jour et duels (graine) : même tirage pour tout le monde, sans la mémoire personnelle
   const trier = (l: T[]) => (o.seed ? melanger(l) : prioriser(o.sousTheme, l, idDe, rand))
-  const nPalier = dessous.length && d !== LEGENDE ? Math.ceil(o.nombre * 0.6) : o.nombre
+  // 70 % des questions viennent des nouveautés du niveau (ce qu'on n'avait pas au niveau d'en dessous)
+  const nPalier = dessous.length && d !== LEGENDE ? Math.ceil(o.nombre * 0.7) : o.nombre
   let cibles = [...trier(palier).slice(0, nPalier), ...trier(dessous).slice(0, o.nombre - Math.min(nPalier, palier.length))]
   if (cibles.length < o.nombre) cibles = [...cibles, ...trier(pool.filter((x) => !cibles.includes(x)))].slice(0, o.nombre)
   return { cibles: melanger(cibles), pool }
@@ -578,6 +588,10 @@ export function fauxJumeau(s: string): string | null {
 
 // Les éléments sont triés du plus connu au moins connu (nombre d'articles Wikipédia)
 const POOL_CULTURE = { 1: 40, 2: 120, 3: 300, 4: Infinity } as const
+// Paliers proportionnels à la taille du quiz : un gros quiz (2 000 logos) a un Facile plus large (moins de répétitions),
+// tout en restant les éléments les plus connus ; chaque niveau ajoute des éléments plus pointus qu'avant
+const PART_PALIER = { 1: 0.12, 2: 0.32, 3: 0.62, 4: 1 } as const
+const finCulture = (n: number) => (d: Palier) => (d === 4 ? n : Math.min(n, Math.max(POOL_CULTURE[d], Math.round(n * PART_PALIER[d]))))
 const texte = (v: string | Texte | undefined, lang: Lang) => (v === undefined ? '' : typeof v === 'string' ? v : v[lang])
 
 function culture(o: Opts, tousItems: ItemCulture[]): Question[] {
@@ -596,7 +610,7 @@ function culture(o: Opts, tousItems: ItemCulture[]): Question[] {
   const items = cfg.type === 'image' ? (lisibles.length >= 30 ? lisibles : tousItems).filter((it) => it.img) : tousItems.filter((it) => val(it) && !(sousTheme.startsWith('traduction') && simple(texte(val(it), 'fr')) === simple(it.n.fr))
     // Question où la réponse se lit dans l'énoncé et ne peut pas être masquée : écartée
     && (!avecTexte || masquer(it.n.fr, texte(val(it), 'fr'), cfg.type === 'annee') !== null))
-  const { cibles, pool } = tirer(items, (d) => Math.min(items.length, POOL_CULTURE[d]), o, (it) => it.id)
+  const { cibles, pool } = tirer(items, finCulture(items.length), o, (it) => it.id)
   // Années proposées autour de la bonne : à 1 ou 2 ans près en difficile
   // Légende : toutes les années à 1, 2 ou 3 ans près
   const ecarts = o.difficulte === LEGENDE ? [-3, -2, -1, 1, 2, 3] : { 1: [-15, -10, -7, -5, 5, 7, 10, 15], 2: [-6, -4, -3, -2, 2, 3, 4, 6], 3: [-3, -2, -1, 1, 2, 3], 4: [-2, -1, 1, 2] }[difficulte]
@@ -705,7 +719,7 @@ const NOMS_TRUCS: Record<string, Record<Lang, string>> = {
 }
 function logosVrai(o: Opts, tous: ItemCulture[]): Question[] {
   const items = tous.filter((it) => it.img)
-  const { cibles } = tirer(items, (d) => Math.min(items.length, POOL_CULTURE[d]), o, (it) => it.id)
+  const { cibles } = tirer(items, finCulture(items.length), o, (it) => it.id)
   const force = o.difficulte === LEGENDE ? 3 : Math.max(0, palierDe(o.difficulte) - 1)
   const nbFaux = nbLeurres(o.difficulte)
   return cibles.map((it): Question => {

@@ -11,6 +11,7 @@ import { accesQuiz } from '../progression'
 import { Coche, ICONS, Icon, Piece } from '../components/ui'
 import { etatDuJour, quetesDuJour, recupererQuete } from '../quetes'
 import { evenementDeLaSemaine, ligueDe, ligueSuivante } from '../meta'
+import BandeauEvenement from '../components/BandeauEvenement'
 import { monXpSemaine } from '../social'
 import CarteCouverture from '../components/CarteCouverture'
 import Avatar from '../components/Avatar'
@@ -86,6 +87,9 @@ export default function Accueil() {
           <span className="puce">{fr ? 'Niv.' : 'Lv.'} {niveau(profile?.xp ?? 0)}</span>
         </div>
       </header>
+
+      {/* Événement en cours (ou saison du mois) */}
+      <BandeauEvenement />
 
       {/* Le gros bouton : une partie aléatoire avec un mini-jeu surprise */}
       <Link to="/partie?jeu=mix&d=0&m=qcm" className="accueil-jouer rise">

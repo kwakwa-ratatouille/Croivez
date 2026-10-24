@@ -6,7 +6,9 @@ import { BADGES, palierAtteint } from './badges'
 import { legendeOuverte } from './progression'
 import { FAMILLES, type Famille } from './themes'
 import { erudition, semaine } from './social'
+import { EVENEMENTS, SAISONS, evenementActif } from './evenements'
 import { ANIMAUX } from './components/Animal'
+import { FONDS_ANIMES, STYLES_PSEUDO } from './components/Cosmetiques'
 
 // ——— Ligues hebdomadaires : selon l'XP gagnée cette semaine (classement de la semaine) ———
 export const LIGUES = [
@@ -62,6 +64,8 @@ export function evenementDuJour(d = new Date()): EvenementActif {
 }
 export const evenementDeLaSemaine = evenementDuJour
 export const bonusEvenement = (k?: string, sousTheme?: string) => {
+  // Quiz spécial de l'événement en cours (Halloween, Noël…) : XP et pièces ×2
+  if (sousTheme && evenementActif()?.quiz === sousTheme) return 2
   const e = evenementDuJour()
   if (!k || e.k !== k) return e.quiz && sousTheme && e.quiz.includes(sousTheme) ? 2 : 1
   return !e.quiz || (sousTheme && e.quiz.includes(sousTheme)) ? 2 : 1
@@ -88,11 +92,12 @@ export const secretsObtenus = (p: Profile | null | undefined, c: ContexteFin) =>
 // Certains s'achètent avec des pièces, d'autres se gagnent par un exploit précis (condition) : ils montrent ce qu'on a accompli.
 // Cadres animés : animations CSS (transform / opacity / filter), seulement sur les grands avatars.
 export type Objet = {
-  id: string; type: 'avatar' | 'cadre' | 'titre'; nom: Record<Lang, string>; prix: number
+  id: string; type: 'avatar' | 'cadre' | 'titre' | 'fond' | 'pseudo'; nom: Record<Lang, string>; prix: number
   categorie?: 'metier' | 'animal' | 'fun' | 'famille'
   k?: Famille; couleur?: string; perso?: string; animal?: string; emoji?: string; anim?: string
   orbite?: string[] // petits éléments qui tournent autour de l'avatar (planètes, notes, feuilles…)
   condition?: { desc: Record<Lang, string>; test: (p: Profile) => boolean }
+  evenement?: string; saison?: string // récompense d'un événement ou d'une saison
 }
 const NOMS_PERSOS: Record<string, [string, string]> = {
   eleve: ['Élève', 'Pupil'], savante: ['Savante', 'Scientist'], explorateur: ['Explorateur', 'Explorer'], astronaute: ['Astronaute', 'Astronaut'],
@@ -239,16 +244,40 @@ export const BOUTIQUE: Objet[] = [
     ]
   }),
   // ——— Mode histoire terminé ———
-  { id: 'cadre-tour-du-monde', type: 'cadre', nom: { fr: 'Tour du monde', en: 'World tour' }, prix: 0, couleur: 'conic-gradient(#4FAE6A, #3A86C8, #E3A72F, #8E4FC4, #4FAE6A)', anim: 'tourne holo', orbite: ['🌍', '✈️', '🗺️'], condition: { desc: { fr: 'Finir le mode histoire', en: 'Finish story mode' }, test: (p: Profile) => (p.aventure ?? 0) >= 64 } },
+  { id: 'cadre-tour-du-monde', type: 'cadre', nom: { fr: 'Tour du monde', en: 'World tour' }, prix: 0, couleur: 'conic-gradient(#4FAE6A, #3A86C8, #E3A72F, #8E4FC4, #4FAE6A)', anim: 'tourne holo', orbite: ['🌍', '✈️', '🗺️'], condition: { desc: { fr: 'Finir les 8 premiers mondes du mode histoire', en: 'Finish the first 8 story worlds' }, test: (p: Profile) => (p.aventure ?? 0) >= 64 } },
   { id: 'cadre-mi-parcours', type: 'cadre', nom: { fr: 'Voyageur', en: 'Traveller' }, prix: 0, couleur: 'conic-gradient(#3A86C8, #8ED3F0, #3A86C8)', anim: 'vague', orbite: ['🧭', '🎒'], condition: { desc: { fr: 'Atteindre le 4ᵉ monde du mode histoire', en: 'Reach story world 4' }, test: (p: Profile) => (p.aventure ?? 0) >= 24 } },
-  { id: 'titre-tour-du-monde', type: 'titre', nom: { fr: 'Aventurier·ère du monde', en: 'World adventurer' }, prix: 0, condition: { desc: { fr: 'Finir le mode histoire', en: 'Finish story mode' }, test: (p: Profile) => (p.aventure ?? 0) >= 64 } },
+  { id: 'titre-tour-du-monde', type: 'titre', nom: { fr: 'Aventurier·ère du monde', en: 'World adventurer' }, prix: 0, condition: { desc: { fr: 'Finir les 8 premiers mondes du mode histoire', en: 'Finish the first 8 story worlds' }, test: (p: Profile) => (p.aventure ?? 0) >= 64 } },
+  { id: 'cadre-legendes-histoire', type: 'cadre', nom: { fr: 'Dragon légendaire', en: 'Legendary dragon' }, prix: 0, couleur: 'conic-gradient(#7F1D1D, #F59E0B, #FDE047, #F59E0B, #7F1D1D)', anim: 'tourne holo', orbite: ['🐉', '🔥', '👑'], condition: { desc: { fr: 'Vaincre le boss ultime du mode histoire (104 étapes)', en: 'Beat the ultimate story boss' }, test: (p: Profile) => (p.aventure ?? 0) >= 104 } },
+  { id: 'titre-legende-histoire', type: 'titre', nom: { fr: 'Légende vivante', en: 'Living legend' }, prix: 0, condition: { desc: { fr: 'Vaincre le boss ultime du mode histoire', en: 'Beat the ultimate story boss' }, test: (p: Profile) => (p.aventure ?? 0) >= 104 } },
+  { id: 'cadre-arcade', type: 'cadre', nom: { fr: 'Pixel', en: 'Pixel' }, prix: 0, couleur: 'conic-gradient(#22C55E, #3B82F6, #EF4444, #22C55E)', anim: 'tourne', orbite: ['🕹️', '👾', '🎮'], condition: { desc: { fr: 'Finir l’arcade infinie (monde 9 du mode histoire)', en: 'Finish story world 9' }, test: (p: Profile) => (p.aventure ?? 0) >= 72 } },
   { id: 'titre-premier-boss', type: 'titre', nom: { fr: 'Tueur de boss', en: 'Boss slayer' }, prix: 0, condition: { desc: { fr: 'Battre le premier boss du mode histoire', en: 'Beat the first story boss' }, test: (p: Profile) => (p.aventure ?? 0) >= 8 } },
   { id: 'perso-astronaute-or', type: 'avatar', nom: { fr: 'Explorateur·rice doré·e', en: 'Golden explorer' }, prix: 0, perso: 'astronaute', categorie: 'metier', condition: { desc: { fr: 'Finir le mode histoire', en: 'Finish story mode' }, test: (p: Profile) => (p.aventure ?? 0) >= 64 } },
   { id: 'avatar-boss', type: 'avatar', nom: { fr: 'Boss', en: 'Boss' }, prix: 0, emoji: '👑', categorie: 'fun', condition: { desc: { fr: 'Battre 4 boss du mode histoire', en: 'Beat 4 story bosses' }, test: (p: Profile) => (p.aventure ?? 0) >= 32 } },
-  // ——— Événement Halloween (25 oct. – 1er nov.) : à gagner en jouant pendant l'événement ———
-  { id: 'cadre-halloween', type: 'cadre', nom: { fr: 'Halloween', en: 'Halloween' }, prix: 0, couleur: 'conic-gradient(#FF7A00, #1A1A1A, #7C3AED, #1A1A1A, #FF7A00)', anim: 'tourne pulse', orbite: ['🦇', '👻', '🎃'], condition: { desc: { fr: 'Jouer une partie pendant Halloween', en: 'Play during Halloween' }, test: (p: Profile) => !!p.possede?.includes('cadre-halloween') } },
-  { id: 'avatar-citrouille', type: 'avatar', nom: { fr: 'Citrouille', en: 'Pumpkin' }, prix: 0, emoji: '🎃', categorie: 'fun', condition: { desc: { fr: '5 parties pendant Halloween', en: '5 games during Halloween' }, test: (p: Profile) => !!p.possede?.includes('avatar-citrouille') } },
-  { id: 'titre-halloween', type: 'titre', nom: { fr: 'Créature de la nuit', en: 'Creature of the night' }, prix: 0, condition: { desc: { fr: '5 parties pendant Halloween', en: '5 games during Halloween' }, test: (p: Profile) => !!p.possede?.includes('titre-halloween') } },
+  // ——— Événements (Halloween, Noël…) : cadre dès la 1ʳᵉ partie pendant l'événement, avatar et titre à la 5ᵉ ———
+  ...EVENEMENTS.flatMap((e): Objet[] => {
+    const a = (txt: string) => (p: Profile) => !!p.possede?.includes(txt)
+    const quand = `${e.debut.split('-').reverse().join('/')} – ${e.fin.split('-').reverse().join('/')}`
+    return [
+      { id: e.cadre.id, type: 'cadre', nom: e.cadre.nom, prix: 0, couleur: e.cadre.couleur, anim: e.cadre.anim, orbite: e.cadre.orbite, evenement: e.id, condition: { desc: { fr: `${e.emoji} ${e.nom.fr} (${quand}) : jouer 1 partie`, en: `${e.emoji} ${e.nom.en}: play 1 game` }, test: a(e.cadre.id) } },
+      { id: e.avatar.id, type: 'avatar', nom: e.avatar.nom, prix: 0, emoji: e.avatar.emoji, categorie: 'fun', evenement: e.id, condition: { desc: { fr: `${e.emoji} ${e.nom.fr} (${quand}) : 5 parties`, en: `${e.emoji} ${e.nom.en}: 5 games` }, test: a(e.avatar.id) } },
+      { id: e.titre.id, type: 'titre', nom: e.titre.nom, prix: 0, evenement: e.id, condition: { desc: { fr: `${e.emoji} ${e.nom.fr} (${quand}) : 5 parties`, en: `${e.emoji} ${e.nom.en}: 5 games` }, test: a(e.titre.id) } },
+    ]
+  }),
+  // ——— Saisons du passe de combat (une par mois) : avatar au palier 5, titre au 10, cadre animé au 20 ———
+  ...SAISONS.flatMap((s): Objet[] => {
+    const a = (txt: string) => (p: Profile) => !!p.possede?.includes(txt)
+    const c = (n: number) => ({ desc: { fr: `${s.emoji} ${s.nom.fr} : passe de combat, palier ${n}`, en: `${s.emoji} ${s.nom.en}: battle pass tier ${n}` } })
+    return [
+      { id: `avatar-s-${s.id}`, type: 'avatar', nom: { fr: s.nom.fr.replace('Saison ', '').replace(/^(du|des|de la|de l’) /, ''), en: s.nom.en }, prix: 0, emoji: s.avatar, categorie: 'fun', saison: s.id, condition: { ...c(5), test: a(`avatar-s-${s.id}`) } },
+      { id: `titre-s-${s.id}`, type: 'titre', nom: s.titre, prix: 0, saison: s.id, condition: { ...c(10), test: a(`titre-s-${s.id}`) } },
+      { id: `cadre-s-${s.id}`, type: 'cadre', nom: s.nom, prix: 0, couleur: s.cadre.couleur, anim: s.cadre.anim, orbite: s.cadre.orbite, saison: s.id, condition: { ...c(20), test: a(`cadre-s-${s.id}`) } },
+    ]
+  }),
+  // ——— Fonds de vitrine animés et styles de pseudo (achetables ; un fond par saison au palier 15) ———
+  ...FONDS_ANIMES.map((f): Objet => f.saison
+    ? { id: f.id, type: 'fond', nom: f.nom, prix: 0, saison: f.saison, condition: { desc: { fr: `${SAISONS.find((s) => s.id === f.saison)?.emoji} ${f.nom.fr} : passe de combat, palier 15`, en: `${f.nom.en}: battle pass tier 15` }, test: (p) => !!p.possede?.includes(f.id) } }
+    : { id: f.id, type: 'fond', nom: f.nom, prix: f.prix }),
+  ...STYLES_PSEUDO.map((s): Objet => ({ id: s.id, type: 'pseudo', nom: s.nom, prix: s.prix })),
   { id: 'cadre-rare-saison', type: 'cadre', nom: { fr: 'Étoile filante', en: 'Shooting star' }, prix: 1200, couleur: 'conic-gradient(#0F172A, #1E3A8A, #0F172A)', anim: 'tourne etoiles', orbite: ['☄️', '⭐', '✨'] },
   { id: 'cadre-coeurs', type: 'cadre', nom: { fr: 'Cœurs', en: 'Hearts' }, prix: 600, couleur: 'conic-gradient(#F472B6, #FB7185, #F472B6)', anim: 'pulse', orbite: ['💖', '💕', '💗'] },
   { id: 'cadre-musique', type: 'cadre', nom: { fr: 'Mélodie', en: 'Melody' }, prix: 700, couleur: 'conic-gradient(#6D28D9, #DB2777, #6D28D9)', anim: 'tourne', orbite: ['🎵', '🎶', '🎵'] },
@@ -266,7 +295,7 @@ export async function acheterObjet(uid: string, o: Objet) {
   })
 }
 export async function equiper(uid: string, o: Objet) {
-  const champ = { [o.type]: o.id }
+  const champ = { [o.type === 'fond' ? 'vitrineFond' : o.type === 'pseudo' ? 'pseudoStyle' : o.type]: o.id }
   await Promise.all([
     setDoc(doc(db, 'users', uid), champ, { merge: true }),
     setDoc(doc(db, 'profils', uid), champ, { merge: true }),

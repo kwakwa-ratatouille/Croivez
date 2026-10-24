@@ -8,6 +8,7 @@ import type { SousThemeId } from './quiz/engine'
 import { publierRecord, publierXp, resumePublic, synchroniserProfilPublic } from './social'
 import { avancerQuetes, type EtatQuetes, type StatsPartie } from './quetes'
 import { secretsObtenus } from './meta'
+import { evenementActif } from './evenements'
 
 export type Profile = {
   pseudo: string
@@ -42,14 +43,17 @@ export type Profile = {
   toutDebloque?: boolean // menu de test : tous les quiz, toutes les difficultés et la Légende ouverts
   titre?: string // titre équipé (affiché sous le pseudo)
   bio?: string // phrase de la vitrine
-  vitrineFond?: string // fond de la vitrine
+  vitrineFond?: string // fond de la vitrine (dégradé ou fond animé « fond-… »)
+  pseudoStyle?: string // style du pseudo acheté en boutique
+  caisses?: number // caisses ouvertes (le prix augmente avec)
   farm?: Record<string, Record<string, number>> // parties du jour par niveau (XP dégressive), clé = date
   miniJeux?: string[] // mini-jeux déjà joués (cadre Holographique, titre Touche-à-tout)
   saison?: { id: string; xp: number; recl: number[] } // saison en cours (un mois) : XP gagnée et paliers récupérés
   histo?: Record<string, { p: number; b: number; t: number; xp: number }> // 30 derniers jours (statistiques)
   precision?: Record<string, { b: number; t: number }> // bonnes réponses / questions par famille
   aventure?: number // étapes du mode aventure réussies
-  halloween?: number // parties jouées pendant l'événement Halloween
+  halloween?: number // ancien compteur Halloween (2026)
+  evenements?: Record<string, number> // parties jouées pendant chaque événement (récompenses)
   exploits?: { salons?: number; victoiresMulti?: number; tv?: number; tvHote?: number; duelsGagnes?: number } // compteurs des récompenses multijoueur
 }
 
@@ -178,6 +182,8 @@ export async function enregistrerPartie(uid: string, profile: Profile, p: Partie
   })
 
   const defiReussi = p.defi && taux >= 0.5 && profile.defiJour !== today
+  const evt = evenementActif()
+  const partiesEvt = evt ? profile.evenements?.[evt.id] ?? (evt.id === 'halloween' ? profile.halloween ?? 0 : 0) : 0
   const valide = !p.revision && p.difficulte && p.difficulte <= 4 && taux >= 1
   // Paliers après cette partie : l'érudition publique est recalculée tout de suite
   const nouveauxPaliers = valide ? { ...profile.paliers, [p.sousTheme]: [...new Set([...(profile.paliers?.[p.sousTheme] ?? []), ...[1, 2, 3, 4].filter((d) => d <= p.difficulte!)])] } : profile.paliers
@@ -196,7 +202,8 @@ export async function enregistrerPartie(uid: string, profile: Profile, p: Partie
     ...(p.stats ? { quetes: avancerQuetes(profile.quetes, p.stats) } : {}),
     partiesJour: partiesJour,
     // Événement Halloween : le cadre dès la 1ʳᵉ partie, l'avatar et le titre à la 5ᵉ
-    ...(halloween() ? { halloween: increment(1), possede: arrayUnion('cadre-halloween', ...((profile.halloween ?? 0) + 1 >= 5 ? ['avatar-citrouille', 'titre-halloween'] : [])) } : {}),
+    // Événement en cours (Halloween, Noël…) : le cadre dès la 1ʳᵉ partie, l'avatar et le titre à la 5ᵉ
+    ...(evt ? { evenements: { [evt.id]: increment(1) }, possede: arrayUnion(evt.cadre.id, ...(partiesEvt + 1 >= 5 ? [evt.avatar.id, evt.titre.id] : [])) } : {}),
     // Saison du mois : l'XP repart de zéro à chaque nouveau mois
     saison: profile.saison?.id === saisonId() ? { ...profile.saison, xp: profile.saison.xp + p.xp } : { id: saisonId(), xp: p.xp, recl: [] },
     // Historique des 30 derniers jours et précision par famille (statistiques)

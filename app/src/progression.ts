@@ -39,7 +39,9 @@ const RARETE: Record<string, Rarete> = {
 export const rareteDe = (id: string): Rarete => RARETE[id] ?? 'rare'
 // Chances relatives à l'ouverture d'une caisse (parmi les quiz encore verrouillés : on finit forcément par tout avoir)
 export const POIDS: Record<Rarete, number> = { commun: 60, rare: 25, epique: 11, legendaire: 4 }
+// Prix des caisses : 100 pièces, puis +15 à chaque caisse ouverte, plafonné à 350 (≈ quelques parties de plus à chaque fois)
 export const PRIX_CAISSE = 100
+export const prixCaisse = (p?: Pick<Profile, 'caisses'> | null) => Math.min(350, PRIX_CAISSE + 15 * (p?.caisses ?? 0))
 
 // ——— XP anti-farm : refaire sans cesse le même niveau ne fait plus grimper ———
 // Le même niveau (ou le même mode) rejoué le même jour rapporte de moins en moins d'XP ; un niveau déjà réussi
@@ -63,8 +65,9 @@ export const familleDe = (id: string) => FAMILLES.find((x) => x.subs.some((s) =>
 // Anciens comptes (ni liste de quiz, ni familles) : tout reste ouvert, on ne reprend rien à personne.
 // Comptes de l'étape « familles » : les quiz de leurs familles choisies restent acquis.
 const toutOuvert = (p?: Profile | null) => !p || (!p.quiz && !p.familles)
+// Les quiz d'événements sont ouverts à tous
 export const accesQuiz = (id: string, p?: Profile | null) =>
-  toutOuvert(p) || !!p?.quiz?.includes(id) || !!p?.familles?.includes(familleDe(id)?.k ?? '')
+  id.startsWith('evt-') || toutOuvert(p) || !!p?.quiz?.includes(id) || !!p?.familles?.includes(familleDe(id)?.k ?? '')
 
 export const choixAFaire = (p?: Profile | null) => !!p && (p.choixFait === false || (p.choixFait === undefined && Array.isArray(p.familles) && p.familles.length === 0 && !p.quiz?.length))
 
@@ -114,7 +117,7 @@ async function depenser(uid: string, montant: number, maj: Record<string, unknow
 }
 
 export const choisirQuiz = (uid: string, ids: string[]) => setDoc(doc(db, 'users', uid), { quiz: ids, choixFait: true }, { merge: true })
-// Caisse d'une famille : prix fixe, gain tiré selon la rareté parmi les quiz encore verrouillés
+// Caisse d'une famille : prix progressif, gain tiré selon la rareté parmi les quiz encore verrouillés
 export function tirerGain<T extends { id: string }>(possibles: T[]): T {
   const total = possibles.reduce((n, x) => n + POIDS[rareteDe(x.id)], 0)
   let x = Math.random() * total
@@ -125,7 +128,15 @@ export async function ouvrirCaisse(uid: string, k: Famille, p?: Profile | null) 
   const possibles = quizVerrouilles(k, p)
   if (!possibles.length) return null
   const gain = tirerGain(possibles)
-  return (await depenser(uid, PRIX_CAISSE, { quiz: arrayUnion(gain.id) })) ? gain : false
+  // Le prix est relu dans la transaction (deux appareils ne peuvent pas payer l'ancien prix)
+  return (await runTransaction(db, async (tx) => {
+    const ref = doc(db, 'users', uid)
+    const d = (await tx.get(ref)).data() ?? {}
+    const prix = prixCaisse({ caisses: d.caisses as number | undefined })
+    if (((d.pieces as number | undefined) ?? 0) < prix) return false
+    tx.update(ref, { pieces: increment(-prix), quiz: arrayUnion(gain.id), caisses: increment(1) })
+    return true
+  })) ? gain : false
 }
 export const sauterDifficulte = async (uid: string, id: string, d: number) => d >= 2 && d <= 4 && depenser(uid, PRIX_SAUT, { [`sauts.${id}`]: arrayUnion(d) })
 export const payerIndice = (uid: string) => depenser(uid, PRIX_INDICE)
@@ -138,7 +149,7 @@ export const testToutDebloquer = (uid: string) => setDoc(doc(db, 'users', uid), 
 // Repartir de zéro côté progression : choix des 6 sous-thèmes, 50 pièces (XP et stats conservés)
 export const testReinitialiser = (uid: string) => setDoc(doc(db, 'users', uid), { familles: deleteField(), quiz: [], choixFait: false, sauts: deleteField(), toutDebloque: deleteField(), pieces: 50 }, { merge: true })
 // Remise à zéro complète (test) : toute la progression repart de rien ; compte, pseudo et amis conservés
-const EFFACES = ['familles', 'sauts', 'paliers', 'maitrise', 'revision', 'album', 'toutDebloque', 'farm', 'miniJeux', 'exploits', 'secrets', 'possede', 'avatar', 'cadre', 'titre', 'records', 'quetes', 'defiJour', 'vitrine', 'favori', 'bio', 'vitrineFond']
+const EFFACES = ['familles', 'sauts', 'paliers', 'maitrise', 'revision', 'album', 'toutDebloque', 'farm', 'miniJeux', 'exploits', 'secrets', 'possede', 'avatar', 'cadre', 'titre', 'records', 'quetes', 'defiJour', 'vitrine', 'favori', 'bio', 'vitrineFond', 'pseudoStyle', 'caisses']
 export async function testRemiseAZero(uid: string) {
   await setDoc(doc(db, 'users', uid), {
     ...Object.fromEntries(EFFACES.map((k) => [k, deleteField()])),

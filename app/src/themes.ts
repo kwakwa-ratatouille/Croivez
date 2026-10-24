@@ -1,7 +1,7 @@
 import type { Lang } from './i18n'
 import type { SousThemeId } from './quiz/engine'
 
-export type Famille = 'pho' | 'tec' | 'esp' | 'mot' | 'geo' | 'cine' | 'mus' | 'nat' | 'sci' | 'his' | 'brd' | 'spo' | 'lit' | 'jv' | 'ani' | 'vie' | 'pop' | 'cui' | 'mot'
+export type Famille = 'pho' | 'tec' | 'esp' | 'mot' | 'geo' | 'cine' | 'mus' | 'nat' | 'sci' | 'his' | 'brd' | 'spo' | 'lit' | 'jv' | 'ani' | 'vie' | 'pop' | 'cui' | 'mot' | 'evt'
 
 export type SousTheme = { id: string; nom: Record<Lang, string>; jouable?: SousThemeId }
 
@@ -10,6 +10,12 @@ const j = (id: SousThemeId, fr: string, en: string): SousTheme => ({ id, nom: { 
 
 // Icônes et motifs repris de la DA (Themes.dc.html)
 export const FAMILLES: { k: Famille; nom: Record<Lang, string>; icon: string; motif: string; subs: SousTheme[] }[] = [
+  {
+    k: 'evt', nom: { fr: 'Événements', en: 'Events' },
+    icon: 'M12 3.5l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 15.9l-4.8 2.5.9-5.4-3.9-3.8 5.4-.8ZM5 20.5h14',
+    motif: 'M60 10l10 20 22 3-16 15 4 22-20-10-20 10 4-22-16-15 22-3Z',
+    subs: [j('evt-halloween', '🎃 Halloween', 'Halloween'), j('evt-noel', '🎄 Noël', 'Christmas'), j('evt-nouvel-an', '🎆 Nouvel An', 'New Year'), j('evt-saint-valentin', '💝 Saint-Valentin', 'Valentine’s Day'), j('evt-paques', '🐣 Pâques', 'Easter'), j('evt-musique', '🎶 Fête de la musique', 'Music Day'), j('evt-ete', '🏖️ Vacances d’été', 'Summer'), j('evt-rentree', '🎒 Rentrée', 'Back to school')],
+  },
   {
     k: 'geo', nom: { fr: 'Géographie', en: 'Geography' },
     icon: 'M12 3.5a8.5 8.5 0 1 0 0 17a8.5 8.5 0 1 0 0-17ZM3.5 12h17M12 3.5c2.4 2.6 3.5 5.4 3.5 8.5s-1.1 5.9-3.5 8.5c-2.4-2.6-3.5-5.4-3.5-8.5s1.1-5.9 3.5-8.5Z',
@@ -114,25 +120,25 @@ export const FAMILLES: { k: Famille; nom: Record<Lang, string>; icon: string; mo
     k: 'vie', nom: { fr: 'Vie quotidienne & mythes', en: 'Everyday life & myths' },
     icon: 'M5 20.5h14M7 20.5V11l5-6.5 5 6.5v9.5M10 20.5v-5h4v5',
     motif: 'M20 70h80M30 70V40l30-26 30 26v30M50 70V52h20v18',
-    subs: [j('voitures', 'Voitures : le constructeur', 'Cars: maker'), j('voitures-photo', 'Voitures en photo', 'Cars in pictures'), j('dieux', 'Divinités', 'Deities'), j('dieux-mythologie', 'Quelle mythologie ?', 'Which mythology?'), j('instruments', 'Instruments de musique', 'Musical instruments'), j('jeux-societe', 'Jeux de société et de café', 'Board & bar games'), j('legendes', 'Légendes urbaines et mythes', 'Urban legends & myths'), j('panneaux', 'Panneaux du code de la route', 'Road signs'), j('code-route', 'Code de la route : règles', 'Highway code')],
+    subs: [j('metiers', 'Métiers : qui fait quoi ?', 'Jobs'), j('records-monde', 'Records du monde', 'World records'), j('voitures', 'Voitures : le constructeur', 'Cars: maker'), j('voitures-photo', 'Voitures en photo', 'Cars in pictures'), j('dieux', 'Divinités', 'Deities'), j('dieux-mythologie', 'Quelle mythologie ?', 'Which mythology?'), j('instruments', 'Instruments de musique', 'Musical instruments'), j('jeux-societe', 'Jeux de société et de café', 'Board & bar games'), j('legendes', 'Légendes urbaines et mythes', 'Urban legends & myths'), j('panneaux', 'Panneaux du code de la route', 'Road signs'), j('code-route', 'Code de la route : règles', 'Highway code')],
   },
   {
     k: 'pop', nom: { fr: 'Pop culture & Internet', en: 'Pop culture & Internet' },
     icon: 'M4.5 5.5h15a1.5 1.5 0 0 1 1.5 1.5v10a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 17V7a1.5 1.5 0 0 1 1.5-1.5ZM10 9.3v5.4l4.6-2.7Z',
     motif: 'M14 14h92v52H14ZM52 28v24l20-12Z',
-    subs: [j('youtubeurs', 'Youtubeurs et streamers', 'YouTubers & streamers'), j('emojis-films', 'Films en émojis', 'Films in emojis'), j('repliques', 'Répliques cultes', 'Famous movie lines'), j('superheros', 'Super-héros : l’identité secrète', 'Superheroes: secret identity'), j('dessins-animes', 'Dessins animés : de quelle série ?', 'Cartoons: which show?'), j('dessins-animes-photo', 'Personnages de dessins animés', 'Cartoon characters'), j('mechants', 'Méchants : de quelle œuvre ?', 'Villains: which work?'), j('mechants-photo', 'Méchants en image', 'Villains in pictures'), j('slogans', 'Slogans publicitaires', 'Ad slogans')],
+    subs: [j('mascottes', 'Mascottes de marques', 'Brand mascots'), j('youtubeurs', 'Youtubeurs et streamers', 'YouTubers & streamers'), j('emojis-films', 'Films en émojis', 'Films in emojis'), j('repliques', 'Répliques cultes', 'Famous movie lines'), j('superheros', 'Super-héros : l’identité secrète', 'Superheroes: secret identity'), j('dessins-animes', 'Dessins animés : de quelle série ?', 'Cartoons: which show?'), j('dessins-animes-photo', 'Personnages de dessins animés', 'Cartoon characters'), j('mechants', 'Méchants : de quelle œuvre ?', 'Villains: which work?'), j('mechants-photo', 'Méchants en image', 'Villains in pictures'), j('slogans', 'Slogans publicitaires', 'Ad slogans')],
   },
   {
     k: 'cui', nom: { fr: 'Cuisine & saveurs', en: 'Food & flavours' },
     icon: 'M7 3.5v6.5M5 3.5V8a2 2 0 0 0 4 0V3.5M7 10v10.5M17 3.5c-1.8 1.3-2.8 3.6-2.8 6.4V13H17v7.5',
     motif: 'M30 10v30M22 10v18a8 8 0 0 0 16 0V10M30 40v34M86 10c-8 6-12 16-12 28v12h12v24',
-    subs: [j('fruits', 'Fruits', 'Fruits'), j('legumes', 'Légumes', 'Vegetables'), j('desserts', 'Desserts et pâtisseries', 'Desserts & pastries'), j('epices', 'Épices et herbes', 'Spices & herbs'), j('fromages', 'Fromages du monde', 'World cheeses'), j('plats-photo', 'Plats du monde en photo', 'World dishes in pictures')],
+    subs: [j('fast-food', 'Fast-food et chaînes', 'Fast food'), j('fruits', 'Fruits', 'Fruits'), j('legumes', 'Légumes', 'Vegetables'), j('desserts', 'Desserts et pâtisseries', 'Desserts & pastries'), j('epices', 'Épices et herbes', 'Spices & herbs'), j('fromages', 'Fromages du monde', 'World cheeses'), j('plats-photo', 'Plats du monde en photo', 'World dishes in pictures')],
   },
   {
     k: 'mot', nom: { fr: 'Mots & curiosités', en: 'Words & curiosities' },
     icon: 'M4.5 5h15A1.5 1.5 0 0 1 21 6.5v9a1.5 1.5 0 0 1-1.5 1.5H10l-4.5 3.5V17h-1A1.5 1.5 0 0 1 3 15.5v-9A1.5 1.5 0 0 1 4.5 5ZM8 10h8M8 13h5',
     motif: 'M14 14h92v44H50l-20 16V58H14ZM30 30h60M30 42h36',
-    subs: [j('idees-recues', 'Idées reçues : vrai ou faux ?', 'Myths: true or false?'), j('expressions', 'Expressions françaises', 'French expressions'), j('gentiles', 'Habitants des villes', 'What locals are called'), j('phobies', 'Phobies', 'Phobias'), j('cris', 'Cris des animaux', 'Animal sounds'), j('sigles', 'Sigles et acronymes', 'Acronyms')],
+    subs: [j('devinettes', 'Devinettes : qui suis-je ?', 'Riddles'), j('suites-logiques', 'Suites logiques', 'Logic sequences'), j('idees-recues', 'Idées reçues : vrai ou faux ?', 'Myths: true or false?'), j('expressions', 'Expressions françaises', 'French expressions'), j('gentiles', 'Habitants des villes', 'What locals are called'), j('phobies', 'Phobies', 'Phobias'), j('cris', 'Cris des animaux', 'Animal sounds'), j('sigles', 'Sigles et acronymes', 'Acronyms')],
   },
   {
     k: 'mot', nom: { fr: 'Mots & curiosités', en: 'Words & curiosities' },

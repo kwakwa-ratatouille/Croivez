@@ -8,7 +8,7 @@ import { ICONS, Icon } from './ui'
 import { RARETES, rareteDe } from '../progression'
 
 // Quiz sans photo (quiz « texte ») : une couverture en émojis, sur un dégradé aux couleurs de la famille
-const EMOJI_COUV: Record<string, string> = { 'emojis-films': '🦁👑🎬', slogans: '📣✨', expressions: '🐰💬', gentiles: '🏘️🙋', 'dessins-animes': '📺🧽' }
+const EMOJI_COUV: Record<string, string> = { 'emojis-films': '🦁👑🎬', slogans: '📣✨', expressions: '🐰💬', gentiles: '🏘️🙋', 'dessins-animes': '📺🧽', 'evt-halloween': '🎃👻🦇', 'evt-noel': '🎄🎅🎁', 'evt-nouvel-an': '🎆🥂', 'evt-saint-valentin': '💝🌹', 'evt-paques': '🐣🥚🍫', 'evt-musique': '🎶🎸', 'evt-ete': '🏖️🍦', 'evt-rentree': '🎒✏️📚', devinettes: '🤔❓', 'suites-logiques': '🔢➡️', metiers: '👩‍🚒🧑‍🍳', 'records-monde': '🏆🌍', mascottes: '🐯🤡', 'fast-food': '🍔🍟' }
 
 // Photos de couverture des quiz (public/packs/couvertures.json), chargées une seule fois
 let couvertures: Promise<Record<string, string>> | null = null

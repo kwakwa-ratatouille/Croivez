@@ -5,7 +5,7 @@ import { useAuth } from '../auth'
 import { usePrefs } from '../i18n'
 import { FAMILLES, type SousTheme } from '../themes'
 import { ICONS, Icon, Piece } from '../components/ui'
-import { PRIX_CAISSE, accesQuiz, legendeOuverte, progresFamille, progresLegende } from '../progression'
+import { prixCaisse, accesQuiz, legendeOuverte, progresFamille, progresLegende } from '../progression'
 import { evenementDeLaSemaine } from '../meta'
 import CarteCouverture, { proposerCaisse, useCouverture } from '../components/CarteCouverture'
 import Img from '../components/Img'
@@ -95,7 +95,7 @@ export default function Themes() {
 
         <div className="famille-actions">
           {ouverts.length >= 2 && <Link className="btn btn-p" to={`/partie?jeu=mix&f=${famille.k}&d=0&m=qcm`}>🎲 {fr ? 'Jouer au hasard dans la famille' : 'Random game in this family'}</Link>}
-          {fermes.length > 0 && <button className="btn btn-s" onClick={() => proposerCaisse(famille.k)}><Icon d={ICONS.sparkle} size={18} />{fr ? 'Ouvrir une caisse' : 'Open a crate'} · <Piece size={18} />{PRIX_CAISSE}</button>}
+          {fermes.length > 0 && <button className="btn btn-s" onClick={() => proposerCaisse(famille.k)}><Icon d={ICONS.sparkle} size={18} />{fr ? 'Ouvrir une caisse' : 'Open a crate'} · <Piece size={18} />{prixCaisse(profile)}</button>}
         </div>
 
         {/* Légende : ce qu'il reste à faire, en clair */}

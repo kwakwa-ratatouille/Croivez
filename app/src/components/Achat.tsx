@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useAuth } from '../auth'
 import { usePrefs } from '../i18n'
 import { FAMILLES, type Famille, type SousTheme } from '../themes'
-import { PRIX_CAISSE, POIDS, RARETES, ouvrirCaisse, quizVerrouilles, rareteDe, type Rarete } from '../progression'
+import { prixCaisse, POIDS, RARETES, ouvrirCaisse, quizVerrouilles, rareteDe, type Rarete } from '../progression'
 import Caisse from './Caisse'
 import Illustration from './Illustration'
 import { ICONS, Icon, Piece } from './ui'
@@ -19,7 +19,8 @@ export default function Achat({ k, onFermer }: { k: Famille; onFermer: () => voi
   if (ouverte) return <Caisse k={k} possibles={ouverte.possibles} gain={ouverte.gain} onFermer={onFermer} />
   const restants = quizVerrouilles(k, profile)
   const solde = profile?.pieces ?? 0
-  const assez = solde >= PRIX_CAISSE
+  const prix = prixCaisse(profile)
+  const assez = solde >= prix
   // Combien de quiz restent par rareté, et la vraie chance de tomber sur chacune
   const parRarete = (Object.keys(RARETES) as Rarete[]).map((r) => ({ r, n: restants.filter((s) => rareteDe(s.id) === r).length }))
   const total = parRarete.reduce((a, x) => a + x.n * POIDS[x.r], 0)
@@ -53,7 +54,7 @@ export default function Achat({ k, onFermer }: { k: Famille; onFermer: () => voi
           ))}
         </div>
         <button className="btn btn-p btn-lg" disabled={!assez || envoi || !restants.length} style={{ width: '100%' }} onClick={ouvrir}>
-          {!restants.length ? (fr ? 'Tout est débloqué !' : 'All unlocked!') : assez ? (fr ? 'Ouvrir la caisse' : 'Open crate') : (fr ? `Encore ${PRIX_CAISSE - solde} pièces` : `${PRIX_CAISSE - solde} more coins`)} · <Piece size={18} />{PRIX_CAISSE}
+          {!restants.length ? (fr ? 'Tout est débloqué !' : 'All unlocked!') : assez ? (fr ? 'Ouvrir la caisse' : 'Open crate') : (fr ? `Encore ${prix - solde} pièces` : `${prix - solde} more coins`)} · <Piece size={18} />{prix}
         </button>
       </div>
     </div>

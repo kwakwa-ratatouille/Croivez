@@ -33,7 +33,7 @@ export default function Aventure() {
     <div className="histoire">
       <header className="histoire-tete">
         <h1 className="t">🗺️ {fr ? 'Mode histoire' : 'Story mode'}</h1>
-        <p>{fr ? `Un tour du monde en ${ETAPES.length} étapes. 7/10 pour avancer, 8/10 contre les boss 👑.` : `A world tour in ${ETAPES.length} steps.`}</p>
+        <p>{fr ? `Un tour du monde en ${ETAPES.length} étapes. 7/10 pour avancer, 8/10 contre les boss 👑, 9/10 contre le boss ultime. Les 5 derniers mondes passent en Difficile puis Expert.` : `A world tour in ${ETAPES.length} steps.`}</p>
         <div className="bar" style={{ height: 8 }}><span style={{ width: `${(fait / ETAPES.length) * 100}%`, background: 'var(--esp)' }} /></div>
         <small>{Math.min(fait, ETAPES.length)} / {ETAPES.length} {fr ? 'étapes' : 'steps'}</small>
       </header>

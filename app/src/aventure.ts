@@ -1,7 +1,7 @@
 import { doc, increment, setDoc } from 'firebase/firestore'
 import { db } from './firebase'
 
-// Mode histoire : un tour du monde en 8 mondes de 8 étapes. Chaque étape est un quiz lié au monde ;
+// Mode histoire : un tour du monde en 13 mondes de 8 étapes (les 5 derniers, ajoutés après, sont de plus en plus durs). Chaque étape est un quiz lié au monde ;
 // la 8ᵉ étape d'un monde est un boss (plus dur, il faut 8/10). Les étapes se débloquent dans l'ordre.
 // La difficulté monte doucement : Facile au début, Expert pour les derniers boss.
 export type Etape = { s: string; d: 1 | 2 | 3 | 4; boss?: boolean; nom: { fr: string; en: string } }
@@ -32,14 +32,31 @@ export const REGIONS: Region[] = [
   { k: 'espace', nom: { fr: 'Les étoiles', en: 'The stars' }, emoji: '🚀', etapes: [
     e('planetes', 2, 'Le décollage'), e('constellations', 3, 'La carte du ciel'), e('astronautes', 3, 'La station spatiale'), e('missions', 3, 'Les grandes missions'),
     e('logos-tech', 3, 'Le centre de contrôle'), e('inventions', 3, 'Le laboratoire'), e('lunes', 4, 'Les lunes lointaines'), e('drapeaux-asie', 4, 'Le gardien des étoiles', true)] },
+  // ——— Au-delà des étoiles : Difficile puis Expert partout ———
+  { k: 'arcade', nom: { fr: 'L’arcade infinie', en: 'Endless arcade' }, emoji: '🕹️', etapes: [
+    e('consoles', 3, 'Le grenier aux consoles'), e('jeux', 3, 'La salle d’arcade'), e('pokemon', 3, 'Les hautes herbes'), e('persos-jeux', 3, 'Le sélecteur de personnage'),
+    e('lieux-jeux', 3, 'Les mondes ouverts'), e('jeux-societe', 3, 'La ludothèque'), e('persos-jeu', 4, 'Les PNJ oubliés'), e('jeux', 4, 'Le boss final du jeu', true)] },
+  { k: 'labo', nom: { fr: 'Le laboratoire secret', en: 'Secret lab' }, emoji: '🧪', etapes: [
+    e('elements', 3, 'Le tableau périodique'), e('corps', 3, 'La salle d’anatomie'), e('dinosaures', 3, 'Les fossiles'), e('mineraux', 3, 'La collection de pierres'),
+    e('scientifiques', 3, 'Les génies'), e('formules', 4, 'Le tableau noir'), e('maladies', 4, 'L’infirmerie'), e('inventions', 4, 'Le savant fou', true)] },
+  { k: 'arene', nom: { fr: 'L’arène des champions', en: 'Champions’ arena' }, emoji: '🏟️', etapes: [
+    e('balles', 3, 'Le vestiaire'), e('clubs', 3, 'Les blasons'), e('stades', 3, 'Les tribunes'), e('jo', 3, 'La flamme olympique'),
+    e('coupe-monde', 4, 'La Coupe du monde'), e('ballon-or', 4, 'Le Ballon d’or'), e('sportifs', 4, 'Le Hall of Fame'), e('sports-photo', 4, 'Le champion invaincu', true)] },
+  { k: 'temps', nom: { fr: 'La machine à remonter le temps', en: 'Time machine' }, emoji: '⏳', etapes: [
+    e('presidents', 3, 'L’Élysée'), e('dirigeants', 4, 'Les sommets mondiaux'), e('traites', 4, 'Les grands traités'), e('mouvements', 4, 'Les révolutions'),
+    e('batailles', 4, 'Les champs de bataille'), e('souverains', 4, 'La galerie des rois'), e('histoire', 4, 'Les dates oubliées'), e('personnalites', 4, 'Le gardien du temps', true)] },
+  { k: 'legendes', nom: { fr: 'Le royaume des légendes', en: 'Realm of legends' }, emoji: '🐉', etapes: [
+    e('livres', 4, 'La bibliothèque interdite'), e('auteurs', 4, 'Les plumes'), e('citations', 4, 'Le mur des citations'), e('repliques', 4, 'Les répliques cultes'),
+    e('proverbes', 4, 'La sagesse des anciens'), e('mangas', 4, 'Le dojo'), e('legendes', 4, 'Le dragon des contes'), e('dieux', 4, 'Le Panthéon : boss ultime', true)] },
 ]
 export const ETAPES = REGIONS.flatMap((r) => r.etapes.map((x) => ({ ...x, region: r.k })))
-export const seuilEtape = (x: Etape) => (x.boss ? 8 : 7)
+// Le boss ultime (dernière étape) demande 9/10
+export const seuilEtape = (x: Etape) => (x.boss && x.s === ETAPES[ETAPES.length - 1].s && x.d === 4 && x.nom.fr === ETAPES[ETAPES.length - 1].nom.fr ? 9 : x.boss ? 8 : 7)
 export const urlEtape = (n: number) => { const x = ETAPES[n]; return `/partie?s=${x.s}&m=auto&n=10&d=${x.d}&aventure=${n}` }
 
 // Étape réussie : on avance (seulement si c'est la prochaine étape), avec une récompense
 export async function validerEtape(uid: string, n: number, actuelle: number) {
   if (n !== actuelle) return false
-  await setDoc(doc(db, 'users', uid), { aventure: n + 1, pieces: increment(ETAPES[n].boss ? 60 : 20) }, { merge: true })
+  await setDoc(doc(db, 'users', uid), { aventure: n + 1, pieces: increment(ETAPES[n].boss ? (n >= 64 ? 120 : 60) : n >= 64 ? 40 : 20) }, { merge: true })
   return true
 }

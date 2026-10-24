@@ -1,14 +1,16 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { doc, deleteField, setDoc } from 'firebase/firestore'
 import { db } from '../firebase'
 import { useAuth } from '../auth'
 import { usePrefs } from '../i18n'
 import { BOUTIQUE, acheterObjet, equiper, possede, type Objet } from '../meta'
 import Avatar from '../components/Avatar'
+import { Particules, Pseudo, fondAnime } from '../components/Cosmetiques'
 import { ICONS, Icon, Piece, Pieces } from '../components/ui'
 
-type Onglet = 'avatar' | 'cadre' | 'titre'
+type Onglet = 'avatar' | 'cadre' | 'titre' | 'fond' | 'pseudo'
+const ONGLETS: Onglet[] = ['avatar', 'cadre', 'fond', 'pseudo', 'titre']
 const CATEGORIES: { k: NonNullable<Objet['categorie']>; fr: string; en: string }[] = [
   { k: 'metier', fr: 'Métiers et personnages', en: 'Jobs & characters' }, { k: 'animal', fr: 'Animaux', en: 'Animals' },
   { k: 'fun', fr: 'Fun', en: 'Fun' }, { k: 'famille', fr: 'Familles de quiz', en: 'Quiz families' },
@@ -20,7 +22,8 @@ export default function Boutique() {
   const fr = lang === 'fr'
   const { user, profile } = useAuth()
   const [msg, setMsg] = useState('')
-  const [onglet, setOnglet] = useState<Onglet>('avatar')
+  const [params] = useSearchParams()
+  const [onglet, setOnglet] = useState<Onglet>(ONGLETS.find((o) => o === params.get('o')) ?? 'avatar')
   const [filtre, setFiltre] = useState('tout')
 
   const action = async (o: Objet) => {
@@ -34,14 +37,16 @@ export default function Boutique() {
     if (!user) return
     await Promise.all([setDoc(doc(db, 'users', user.uid), { titre: deleteField() }, { merge: true }), setDoc(doc(db, 'profils', user.uid), { titre: '' }, { merge: true })])
   }
-  const equipe = (o: Objet) => (o.type === 'avatar' ? profile?.avatar : o.type === 'cadre' ? profile?.cadre : profile?.titre) === o.id
+  const equipe = (o: Objet) => ({ avatar: profile?.avatar, cadre: profile?.cadre, titre: profile?.titre, fond: profile?.vitrineFond, pseudo: profile?.pseudoStyle })[o.type] === o.id
 
   const Carte = ({ o }: { o: Objet }) => {
     const a = possede(profile, o)
     const porte = equipe(o)
     return (
       <button type="button" onClick={() => action(o)} className={`objet${porte ? ' porte' : ''}${!a ? ' bloque' : ''}`}>
-        <Avatar pseudo={profile?.pseudo} avatar={o.type === 'avatar' ? o.id : profile?.avatar} cadre={o.type === 'cadre' ? o.id : profile?.cadre} taille={76} anime={o.type === 'cadre'} />
+        {o.type === 'fond' ? (() => { const f = fondAnime(o.id)!; return <span className="apercu-fond" style={{ background: f.fond }}><Particules f={f} nb={8} /></span> })()
+          : o.type === 'pseudo' ? <span className="apercu-pseudo t"><Pseudo nom={profile?.pseudo || 'Croivez'} style={o.id} /></span>
+          : <Avatar pseudo={profile?.pseudo} avatar={o.type === 'avatar' ? o.id : profile?.avatar} cadre={o.type === 'cadre' ? o.id : profile?.cadre} taille={76} anime={o.type === 'cadre'} />}
         <span className="objet-nom">{o.nom[lang]}</span>
         <span className={`objet-etat${porte ? ' ok' : a ? '' : o.condition ? ' cond' : ' prix'}`}>
           {porte ? (fr ? 'Équipé' : 'Equipped') : a ? (fr ? 'Équiper' : 'Equip') : o.condition ? <><Icon d={ICONS.lock} size={13} />{o.condition.desc[lang]}</> : <><Piece size={15} />{o.prix}</>}
@@ -51,7 +56,7 @@ export default function Boutique() {
   }
 
   // Filtres : on trouve vite ce qu'on cherche (débloqués, à gagner, familles, histoire, événements…)
-  const groupe = (o: Objet) => /maitre-/.test(o.id) ? 'familles' : /tour-du-monde|mi-parcours|premier-boss|avatar-boss|astronaute-or/.test(o.id) ? 'histoire' : /halloween|saison|noel/.test(o.id) ? 'evenements' : o.condition ? 'gagner' : 'acheter'
+  const groupe = (o: Objet) => /maitre-/.test(o.id) ? 'familles' : /tour-du-monde|mi-parcours|premier-boss|avatar-boss|astronaute-or|legendes-histoire|legende-histoire|cadre-arcade/.test(o.id) ? 'histoire' : o.evenement || o.saison || /saison/.test(o.id) ? 'evenements' : o.condition ? 'gagner' : 'acheter'
   const garder = (o: Objet) => filtre === 'tout' || (filtre === 'debloques' ? possede(profile, o) : filtre === 'gagner' ? !!o.condition && !possede(profile, o) : filtre === 'acheter' ? !o.condition && !possede(profile, o) : groupe(o) === filtre)
   const liste = BOUTIQUE.filter((o) => o.type === onglet && garder(o))
   const gagnes = liste.filter((o) => o.condition && possede(profile, o)).length
@@ -65,12 +70,14 @@ export default function Boutique() {
         <Pieces n={profile?.pieces ?? 0} />
       </header>
       <div role="tablist" className="onglets">
-        {([['avatar', fr ? 'Avatars' : 'Avatars'], ['cadre', fr ? 'Cadres' : 'Frames'], ['titre', fr ? 'Titres' : 'Titles']] as [Onglet, string][]).map(([id, l]) => (
+        {([['avatar', fr ? 'Avatars' : 'Avatars'], ['cadre', fr ? 'Cadres' : 'Frames'], ['fond', fr ? '✨ Vitrines' : '✨ Showcases'], ['pseudo', fr ? '🌈 Pseudos' : '🌈 Names'], ['titre', fr ? 'Titres' : 'Titles']] as [Onglet, string][]).map(([id, l]) => (
           <button key={id} role="tab" aria-selected={onglet === id} className="onglet" onClick={() => { setOnglet(id); setMsg('') }}>{l}</button>
         ))}
       </div>
       <p style={{ color: 'var(--muted)', fontSize: 14 }}>
-        {onglet === 'titre'
+        {onglet === 'fond' ? (fr ? 'Des fonds animés pour ta vitrine de profil (pièces qui tombent, neige, confettis…), visibles par tous tes visiteurs. Un fond exclusif chaque mois au palier 15 du passe de combat.' : 'Animated backgrounds for your profile showcase. One exclusive each month at battle pass tier 15.')
+          : onglet === 'pseudo' ? (fr ? 'Ton pseudo en couleur sur ton profil et dans les classements.' : 'Your name in colour on your profile and leaderboards.')
+          : onglet === 'titre'
           ? (fr ? 'Les titres se gagnent par des exploits (succès secrets, multijoueur, maîtrise…) et s’affichent sous ton pseudo.' : 'Titles are earned through feats and shown under your name.')
           : (fr ? `Certains s’achètent avec des pièces, d’autres se gagnent en jouant : ${gagnes} / ${aGagner} gagnés.` : `Some are bought, others earned: ${gagnes} / ${aGagner} earned.`)}
       </p>
@@ -99,6 +106,7 @@ export default function Boutique() {
           })}
         </>
       )}
+      {(onglet === 'fond' || onglet === 'pseudo') && <div className="grille-objets large">{liste.map((o) => <Carte key={o.id} o={o} />)}</div>}
       {onglet === 'titre' && (
         <div className="liste-titres">
           {profile?.titre && <button type="button" className="titre-ligne" onClick={retirerTitre}><span className="titre-badge" style={{ opacity: .6 }}>—</span><span style={{ flex: 1 }}>{fr ? 'Ne pas afficher de titre' : 'No title'}</span></button>}

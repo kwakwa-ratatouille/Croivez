@@ -6,8 +6,9 @@ import { BONUS_LEGENDE, POINTS_NIVEAU, classementGlobal, classementRecord, class
 import { BOUTIQUE, LIGUES, ligueDe, ligueSuivante } from '../meta'
 import { ICONS, Icon } from '../components/ui'
 import Avatar from '../components/Avatar'
+import { Pseudo } from '../components/Cosmetiques'
 
-type Ligne = { uid: string; pseudo: string; valeur: number; niveau?: number; avatar?: string; cadre?: string; titre?: string }
+type Ligne = { uid: string; pseudo: string; valeur: number; niveau?: number; avatar?: string; cadre?: string; titre?: string; pseudoStyle?: string }
 type Onglet = 'ligue' | 'semaine' | 'records' | 'global' | 'amis'
 
 // Classements : la ligue et la semaine se jouent à l'XP (l'effort de la semaine),
@@ -129,7 +130,7 @@ export default function Classements() {
               <span className="t rang" style={{ background: n < 3 ? medaille[n] : 'var(--surface2)', color: n < 3 ? '#fff' : 'var(--muted)' }}>{n + 1}</span>
               <Avatar pseudo={l.pseudo} avatar={l.avatar} cadre={l.cadre} taille={40} />
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{l.pseudo}{moi && <span style={{ color: 'var(--muted)', fontWeight: 500 }}> ({fr ? 'toi' : 'you'})</span>}</div>
+                <div style={{ fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}><Pseudo nom={l.pseudo} style={l.pseudoStyle} />{moi && <span style={{ color: 'var(--muted)', fontWeight: 500 }}> ({fr ? 'toi' : 'you'})</span>}</div>
                 {l.niveau && <div style={{ fontSize: 13, color: 'var(--muted)' }}>{fr ? 'Niveau' : 'Level'} {l.niveau}{onglet === 'semaine' ? ` · ${ligueDe(l.valeur).nom[lang]}` : ''}{l.titre && BOUTIQUE.find((o) => o.id === l.titre) ? ` · ${BOUTIQUE.find((o) => o.id === l.titre)!.nom[lang]}` : ''}</div>}
               </div>
               <span className="t" style={{ fontWeight: 900, fontSize: 17, whiteSpace: 'nowrap' }}>{fmt.format(l.valeur)} {unite}</span>

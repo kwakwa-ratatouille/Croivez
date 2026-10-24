@@ -3,8 +3,10 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '../auth'
 import { usePrefs } from '../i18n'
 import { NB_PALIERS, XP_PALIER, etatSaison, finSaison, recompense, reclamerPalier } from '../saison'
+import { saisonDuMois } from '../evenements'
 import { retourFin } from '../retour'
 import Avatar from '../components/Avatar'
+import { Particules, fondAnime } from '../components/Cosmetiques'
 import { ICONS, Icon, Piece } from '../components/ui'
 
 // Pass de saison façon passe de combat : grand bandeau, piste horizontale de récompenses, palier actuel centré
@@ -15,6 +17,8 @@ export default function Saison() {
   const [envoi, setEnvoi] = useState<number | null>(null)
   const piste = useRef<HTMLDivElement>(null)
   const s = etatSaison(profile)
+  const theme = saisonDuMois()
+  const cadreSaison = `cadre-s-${theme.id}`
   const mois = new Date().toLocaleDateString(fr ? 'fr-FR' : 'en-GB', { month: 'long' })
   const dansPalier = s.palier >= NB_PALIERS ? XP_PALIER : s.xp % XP_PALIER
   const aRecuperer = Array.from({ length: s.palier }, (_, i) => i + 1).filter((n) => !s.recl.includes(n))
@@ -35,16 +39,17 @@ export default function Saison() {
   return (
     <div className="bp">
       <Link to="/" className="bp-retour"><Icon d={ICONS.arrowL} />{fr ? 'Accueil' : 'Home'}</Link>
-      <header className="bp-bandeau">
+      <header className="bp-bandeau" style={{ background: theme.fond }}>
+        <span className="bp-emoji-fond" aria-hidden="true">{theme.emoji}</span>
         <div className="bp-niveau"><small>{fr ? 'NIVEAU' : 'TIER'}</small><strong className="t">{s.palier}</strong></div>
         <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <span className="bp-saison">{fr ? 'SAISON' : 'SEASON'} · {mois.toUpperCase()}</span>
+          <span className="bp-saison">{theme.emoji} {theme.nom[lang].toUpperCase()} · {mois.toUpperCase()}</span>
           <strong className="t bp-titre">{fr ? 'Passe de combat' : 'Battle pass'}</strong>
           <div className="bp-xp"><span style={{ width: `${(dansPalier / XP_PALIER) * 100}%` }} /></div>
           <span className="bp-info">{s.palier >= NB_PALIERS ? (fr ? 'Passe terminé, légende !' : 'Pass complete!') : `${dansPalier} / ${XP_PALIER} XP ${fr ? 'avant le niveau' : 'to tier'} ${s.palier + 1}`} · ⏳ {finSaison()} {fr ? 'jours restants' : 'days left'}</span>
         </div>
         <div className="bp-apercu">
-          <Avatar pseudo={profile?.pseudo} avatar={profile?.avatar} cadre="cadre-saison" taille={86} anime />
+          <Avatar pseudo={profile?.pseudo} avatar={profile?.avatar} cadre={cadreSaison} taille={86} anime />
           <small>{fr ? 'Niveau 20' : 'Tier 20'}</small>
         </div>
       </header>
@@ -65,7 +70,9 @@ export default function Saison() {
             <div key={n} className={`bp-carte${atteint ? ' atteint' : ''}${pris ? ' pris' : ''}${actuelle ? ' actuelle' : ''}${r.objet ? ' rare' : ''}`}>
               <span className="bp-num t">{n}</span>
               <div className="bp-lot">
-                {r.objet === 'cadre-saison' ? <Avatar pseudo={profile?.pseudo} avatar={profile?.avatar} cadre="cadre-saison" taille={58} />
+                {r.objet?.startsWith('cadre-') ? <Avatar pseudo={profile?.pseudo} avatar={profile?.avatar} cadre={r.objet} taille={58} anime />
+                  : r.objet?.startsWith('avatar-') ? <Avatar pseudo={profile?.pseudo} avatar={r.objet} taille={58} />
+                  : r.objet?.startsWith('fond-') && fondAnime(r.objet) ? <span className="apercu-fond" style={{ background: fondAnime(r.objet)!.fond, width: 58, height: 58 }}><Particules f={fondAnime(r.objet)!} nb={5} /></span>
                   : r.objet ? <span className="bp-gros">🏷️</span>
                     : <span className="bp-gros"><Piece size={40} /></span>}
               </div>
@@ -80,7 +87,7 @@ export default function Saison() {
           )
         })}
       </div>
-      <p className="bp-aide">{fr ? 'Toute l’XP gagnée ce mois-ci fait monter le passe. Nouveau passe et nouvelles récompenses le 1er du mois.' : 'All XP earned this month levels up the pass. Resets on the 1st.'}</p>
+      <p className="bp-aide">{fr ? 'Toute l’XP gagnée ce mois-ci fait monter le passe. Chaque mois, une nouvelle saison avec son thème, son avatar, son titre et son cadre exclusifs : une fois le mois fini, ils ne reviennent pas avant un an.' : 'All XP earned this month levels up the pass. Resets on the 1st.'}</p>
     </div>
   )
 }
