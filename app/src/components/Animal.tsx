@@ -1,3 +1,5 @@
+import { useId } from 'react'
+
 // Avatars animaux en SVG pur : une tête ronde, des oreilles, un museau et quelques détails propres à chaque animal
 export type AnimalDef = { id: string; fr: string; en: string; tete: string; oreille: 'pointue' | 'ronde' | 'longue' | 'aucune' | 'cornes'; interieur?: string; museau?: string; nez?: string; extra?: string; fond: string }
 
@@ -71,17 +73,26 @@ function Details({ a }: { a: AnimalDef }) {
   }
 }
 
-export default function Animal({ a, taille = 40 }: { a: AnimalDef; taille?: number }) {
+export default function Animal({ a, taille = 40, anime = false }: { a: AnimalDef; taille?: number; anime?: boolean }) {
+  const id = useId().replace(/:/g, '')
   const yeuxHauts = a.extra === 'yeux-hauts'
   const grandsYeux = a.extra === 'grands-yeux'
   const alien = a.id === 'alien'
   return (
-    <svg viewBox="0 0 100 100" width={taille} height={taille} aria-hidden="true" style={{ background: a.fond }}>
+    <svg viewBox="0 0 100 100" width={taille} height={taille} aria-hidden="true" className={`animal animal-${a.id}${anime ? ' anime' : ''}`} style={{ background: a.fond }}>
+      <defs>
+        <radialGradient id={`f${id}`} cx=".5" cy=".3" r=".8"><stop offset="0" stopColor="#fff" stopOpacity=".85" /><stop offset="1" stopColor="#fff" stopOpacity="0" /></radialGradient>
+        <radialGradient id={`v${id}`} cx=".35" cy=".28" r=".8"><stop offset="0" stopColor="#fff" stopOpacity=".5" /><stop offset=".45" stopColor="#fff" stopOpacity="0" /><stop offset="1" stopColor="#000" stopOpacity=".14" /></radialGradient>
+      </defs>
+      <rect width="100" height="100" fill={`url(#f${id})`} />
+      <g className="etoiles-perso" fill="#fff"><path d="M12 16l1.4 3 3 1.4-3 1.4-1.4 3-1.4-3-3-1.4 3-1.4z" /><path d="M88 22l1 2.2 2.2 1-2.2 1-1 2.2-1-2.2-2.2-1 2.2-1z" /></g>
+      <g className="tete-animal">
       <defs><linearGradient id="corne" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#FFD84D" /><stop offset=".5" stopColor="#F28BA8" /><stop offset="1" stopColor="#8FD3F5" /></linearGradient></defs>
       {a.extra === 'criniere' && <circle cx="50" cy="54" r="40" fill="#C2701E" />}
       {(a.extra === 'branchies' || a.extra === 'aileron-dents' || a.extra === 'yeux-hauts' || a.extra === 'antennes-alien') && <Details a={a} />}
-      <Oreilles a={a} />
+      <g className="oreilles"><Oreilles a={a} /></g>
       {alien ? <ellipse cx="50" cy="56" rx="30" ry="34" fill={a.tete} /> : <circle cx="50" cy="56" r="32" fill={a.tete} />}
+      {alien ? <ellipse cx="50" cy="56" rx="30" ry="34" fill={`url(#v${id})`} /> : <circle cx="50" cy="56" r="32" fill={`url(#v${id})`} />}
       {a.extra !== 'branchies' && a.extra !== 'aileron-dents' && a.extra !== 'yeux-hauts' && a.extra !== 'antennes-alien' && a.extra !== 'groin' && a.extra !== 'bec-houppe' && <Details a={a} />}
       {a.museau && <ellipse cx="50" cy="68" rx="15" ry="11" fill={a.museau} />}
       {/* Yeux (avec reflet) */}
@@ -94,7 +105,8 @@ export default function Animal({ a, taille = 40 }: { a: AnimalDef; taille?: numb
       {(a.extra === 'groin' || a.extra === 'bec-houppe') && <Details a={a} />}
       {a.nez && !['bec', 'bec-houppe', 'gros-nez'].includes(a.extra ?? '') && <ellipse cx="50" cy="63" rx="4.5" ry="3.2" fill={a.nez} />}
       {!['bec', 'bec-houppe', 'groin', 'aileron-dents'].includes(a.extra ?? '') && <path d="M44 72q6 5 12 0" fill="none" stroke="#5A3A2A" strokeWidth="2" strokeLinecap="round" />}
-      <circle cx="28" cy="66" r="4.5" fill="#F28BA8" opacity=".35" /><circle cx="72" cy="66" r="4.5" fill="#F28BA8" opacity=".35" />
+      <circle className="joue" cx="28" cy="66" r="4.5" fill="#F28BA8" opacity=".4" /><circle className="joue" cx="72" cy="66" r="4.5" fill="#F28BA8" opacity=".4" />
+      </g>
     </svg>
   )
 }

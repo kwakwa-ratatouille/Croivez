@@ -47,6 +47,7 @@ export type Profile = {
   vitrineFond?: string // fond de la vitrine (dégradé ou fond animé « fond-… »)
   pseudoStyle?: string // style du pseudo acheté en boutique
   caisses?: number // caisses ouvertes (le prix augmente avec)
+  jetons?: number // jetons de rang (boutique des rangs)
   ligue?: EtatLigue // rang : points de rang, dernier jour joué, semaine en cours, semaines finies par rang
   farm?: Record<string, Record<string, number>> // parties du jour par niveau (XP dégressive), clé = date
   miniJeux?: string[] // mini-jeux déjà joués (cadre Holographique, titre Touche-à-tout)
@@ -213,6 +214,7 @@ export async function enregistrerPartie(uid: string, profile: Profile, p: Partie
     ...(evt ? { evenements: { [evt.id]: increment(1) } } : {}),
     ...(evt || ligue.objets.length ? { possede: arrayUnion(...(evt ? [evt.cadre.id, ...(partiesEvt + 1 >= 5 ? [evt.avatar.id, evt.titre.id] : [])] : []), ...ligue.objets) } : {}),
     ligue: ligue.etat,
+    ...(ligue.jetons ? { jetons: increment(ligue.jetons) } : {}),
     // Saison du mois : l'XP repart de zéro à chaque nouveau mois
     saison: (() => {
       const s = profile.saison?.id === saisonId() ? profile.saison : { id: saisonId(), xp: 0, recl: [] as number[] }

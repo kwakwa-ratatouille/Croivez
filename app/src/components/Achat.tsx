@@ -14,6 +14,7 @@ export default function Achat({ k, onFermer }: { k: Famille; onFermer: () => voi
   const { user, profile } = useAuth()
   const [ouverte, setOuverte] = useState<{ gain: SousTheme; possibles: SousTheme[] } | null>(null)
   const [envoi, setEnvoi] = useState(false)
+  const [confirmer, setConfirmer] = useState(false) // 2ᵉ étape avant de payer la caisse
   const f = FAMILLES.find((x) => x.k === k)
   if (!f) return null
   if (ouverte) return <Caisse k={k} possibles={ouverte.possibles} gain={ouverte.gain} onFermer={onFermer} />
@@ -53,9 +54,13 @@ export default function Achat({ k, onFermer }: { k: Famille; onFermer: () => voi
             </div>
           ))}
         </div>
-        <button className="btn btn-p btn-lg" disabled={!assez || envoi || !restants.length} style={{ width: '100%' }} onClick={ouvrir}>
-          {!restants.length ? (fr ? 'Tout est débloqué !' : 'All unlocked!') : assez ? (fr ? 'Ouvrir la caisse' : 'Open crate') : (fr ? `Encore ${prix - solde} pièces` : `${prix - solde} more coins`)} · <Piece size={18} />{prix}
-        </button>
+        {confirmer && <p className="confirmer-achat">{fr ? `Dépenser ${prix} pièces pour ouvrir cette caisse ? Il te restera ${solde - prix} pièces.` : `Spend ${prix} coins?`}</p>}
+        <div style={{ display: 'flex', gap: 8 }}>
+          {confirmer && <button className="btn btn-g btn-lg" onClick={() => setConfirmer(false)}>{fr ? 'Annuler' : 'Cancel'}</button>}
+          <button className="btn btn-p btn-lg" disabled={!assez || envoi || !restants.length} style={{ flex: 1 }} onClick={() => (confirmer ? ouvrir() : setConfirmer(true))}>
+            {!restants.length ? (fr ? 'Tout est débloqué !' : 'All unlocked!') : confirmer ? (fr ? '✓ Oui, ouvrir' : '✓ Yes, open') : assez ? (fr ? 'Ouvrir la caisse' : 'Open crate') : (fr ? `Encore ${prix - solde} pièces` : `${prix - solde} more coins`)} · <Piece size={18} />{prix}
+          </button>
+        </div>
       </div>
     </div>
   )

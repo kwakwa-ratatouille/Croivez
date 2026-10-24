@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { useAuth } from '../auth'
 import { usePrefs } from '../i18n'
 import { BONUS_LEGENDE, POINTS_NIVEAU, classementGlobal, classementRang, classementRecord, classementSemaine, erudition, profilsDe, type PeriodeRecord } from '../social'
-import { DIVISIONS, GRACE, TOUS_RANGS, infoRang, ptsEffectifs, recompensesRang, seuil } from '../ligues'
+import { DIVISIONS, GRACE, JETONS_RANG, TOUS_RANGS, infoRang, ptsEffectifs, recompensesRang, seuil } from '../ligues'
 import { jour } from '../auth'
 import BlasonRang from '../components/BlasonRang'
 import { BOUTIQUE } from '../meta'
@@ -87,6 +87,7 @@ export default function Classements() {
               <p>🪜 {fr ? '9 rangs (Bronze → Maître), chacun en 4 divisions : 1, 2, 3 puis 4, la meilleure. Au-dessus, un seul rang ultime : Légende.' : '9 ranks with 4 divisions each, then the ultimate rank.'}</p>
               <p>💤 {fr ? `Pas de remise à zéro : après ${GRACE} jours sans jouer, tu descends d’une division par jour d’absence.` : `No reset: after ${GRACE} idle days you drop one division per day.`}</p>
               <p>🎁 {fr ? 'Chaque lundi, le rang où tu as fini la semaine te donne son cadre et sa couleur de pseudo. Après 3 semaines finies dans un rang : son titre et sa vitrine animée.' : 'Each Monday your rank gives its frame and name colour; 3 weeks: its title and showcase.'}</p>
+              <p>🎖️ {fr ? 'Et chaque lundi, des jetons de rang, même si tu as déjà tout : 5 en Bronze, 8 en Argent, 12 en Or… jusqu’à 75 en Légende. Ils s’échangent contre des cosmétiques exclusifs dans la boutique des rangs.' : 'Every Monday you also get rank tokens for exclusive cosmetics.'}</p>
               <p>👥 {fr ? '« Mon rang » liste les joueurs du même rang que toi.' : 'This tab lists players of your rank.'}</p>
             </div>
           )}
@@ -101,6 +102,7 @@ export default function Classements() {
                   : (fr ? `${fmt.format(mesPts)} pts : rang ultime !` : `${mesPts} pts: top rank!`)}
               </span>
               {monRang.suivant && <div className="bar" style={{ height: 8 }}><span style={{ width: `${((mesPts - monRang.min) / (monRang.suivant - monRang.min)) * 100}%`, background: monRang.rang.couleur }} /></div>}
+              <span className="jetons-rang">🎖️ {profile?.jetons ?? 0} {fr ? 'jetons de rang' : 'rank tokens'} · {fr ? `+${JETONS_RANG[monRang.rang.id]} lundi si tu finis la semaine en ${monRang.rang.nom.fr}` : `+${JETONS_RANG[monRang.rang.id]} on Monday`}{profile?.ligue?.derniere ? (fr ? ` · la semaine dernière : +${profile.ligue.derniere.jetons}` : '') : ''}</span>
             </div>
           </div>
           {/* Échelle des rangs : 9 rangs de 4 divisions, puis le rang ultime */}

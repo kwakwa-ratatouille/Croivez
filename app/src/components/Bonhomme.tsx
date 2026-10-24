@@ -1,3 +1,5 @@
+import { useId } from 'react'
+
 // Personnages d'apprentissage en SVG pur (aucune image à charger) : tête, buste, et un accessoire de métier
 export type Perso = { id: string; peau: string; habit: string; cheveux: string; acc: string }
 
@@ -80,19 +82,35 @@ function Accessoire({ a, c }: { a: string; c: string }) {
 
 export default function Bonhomme({ p, taille = 40, anime = false }: { p: Perso; taille?: number; anime?: boolean }) {
   const lunettes = p.acc.startsWith('lunettes')
+  const id = useId().replace(/:/g, '')
   return (
-    <svg viewBox="0 0 100 100" width={taille} height={taille} aria-hidden="true" className={anime ? 'bonhomme anime' : 'bonhomme'}>
+    <svg viewBox="0 0 100 100" width={taille} height={taille} aria-hidden="true" className={`bonhomme acc-${p.acc}${anime ? ' anime' : ''}`}>
+      <defs>
+        <radialGradient id={`f${id}`} cx=".5" cy=".35" r=".75"><stop offset="0" stopColor="#fff" stopOpacity=".9" /><stop offset="1" stopColor={p.habit} stopOpacity=".35" /></radialGradient>
+        <radialGradient id={`v${id}`} cx=".35" cy=".3" r=".8"><stop offset="0" stopColor="#fff" stopOpacity=".45" /><stop offset=".5" stopColor="#fff" stopOpacity="0" /><stop offset="1" stopColor="#000" stopOpacity=".12" /></radialGradient>
+        <linearGradient id={`h${id}`} x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#fff" stopOpacity=".25" /><stop offset="1" stopColor="#000" stopOpacity=".15" /></linearGradient>
+      </defs>
+      {/* Fond doux aux couleurs du personnage, et deux petites étoiles qui scintillent */}
+      <rect width="100" height="100" fill={`url(#f${id})`} />
+      <g className="etoiles-perso" fill="#fff"><path d="M14 18l1.6 3.4 3.4 1.6-3.4 1.6L14 28l-1.6-3.4L9 23l3.4-1.6z" /><path d="M86 30l1.2 2.6 2.6 1.2-2.6 1.2L86 38l-1.2-2.6-2.6-1.2 2.6-1.2z" /></g>
+      <g className="corps">
       <path d="M14 100q4-30 36-30t36 30z" fill={p.habit} />
+      <path d="M14 100q4-30 36-30t36 30z" fill={`url(#h${id})`} />
+      <g className="tete">
       {p.acc === 'lunettes-fiole' && <path d="M70 80h8l3 14h-14z" fill="#8FD3B6" />}
       {p.cheveux !== 'none' && <ellipse cx="50" cy="40" rx="27" ry="27" fill={p.cheveux} />}
       {p.acc === 'lunettes-chignon' && <circle cx="50" cy="13" r="9" fill={p.cheveux} />}
       <circle cx="50" cy="46" r="22" fill={p.peau} />
+      <circle cx="50" cy="46" r="22" fill={`url(#v${id})`} />
       {p.cheveux !== 'none' && <path d="M28 40q4-18 22-18t22 18q-10-8-22-8t-22 8z" fill={p.cheveux} />}
-      <g className="yeux"><circle cx="42" cy="47" r="2.6" fill="#222" /><circle cx="58" cy="47" r="2.6" fill="#222" /></g>
+      {p.cheveux !== 'none' && <path d="M36 28q8-5 16-4" fill="none" stroke="#fff" strokeOpacity=".35" strokeWidth="2.4" strokeLinecap="round" />}
+      <g className="yeux"><circle cx="42" cy="47" r="3" fill="#222" /><circle cx="58" cy="47" r="3" fill="#222" /><circle cx="43.1" cy="45.9" r="1" fill="#fff" /><circle cx="59.1" cy="45.9" r="1" fill="#fff" /></g>
       {lunettes && <g fill="none" stroke="#333" strokeWidth="2"><circle cx="42" cy="47" r="6" /><circle cx="58" cy="47" r="6" /><path d="M48 47h4" /></g>}
-      <path d="M43 56q7 6 14 0" fill="none" stroke="#7A3B2E" strokeWidth="2.4" strokeLinecap="round" />
-      <circle cx="36" cy="54" r="3" fill="#F08A7A" opacity=".35" /><circle cx="64" cy="54" r="3" fill="#F08A7A" opacity=".35" />
-      <Accessoire a={p.acc} c={p.habit} />
+      <path className="bouche" d="M43 56q7 6 14 0" fill="none" stroke="#7A3B2E" strokeWidth="2.4" strokeLinecap="round" />
+      <circle className="joue" cx="36" cy="54" r="3.4" fill="#F08A7A" opacity=".4" /><circle className="joue" cx="64" cy="54" r="3.4" fill="#F08A7A" opacity=".4" />
+      <g className="accessoire"><Accessoire a={p.acc} c={p.habit} /></g>
+      </g>
+      </g>
     </svg>
   )
 }

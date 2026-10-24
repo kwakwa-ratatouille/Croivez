@@ -149,7 +149,7 @@ export const testToutDebloquer = (uid: string) => setDoc(doc(db, 'users', uid), 
 // Repartir de zéro côté progression : choix des 6 sous-thèmes, 50 pièces (XP et stats conservés)
 export const testReinitialiser = (uid: string) => setDoc(doc(db, 'users', uid), { familles: deleteField(), quiz: [], choixFait: false, sauts: deleteField(), toutDebloque: deleteField(), pieces: 50 }, { merge: true })
 // Remise à zéro complète (test) : toute la progression repart de rien ; compte, pseudo et amis conservés
-const EFFACES = ['familles', 'sauts', 'paliers', 'maitrise', 'revision', 'album', 'toutDebloque', 'farm', 'miniJeux', 'exploits', 'secrets', 'possede', 'avatar', 'cadre', 'titre', 'records', 'quetes', 'defiJour', 'vitrine', 'favori', 'bio', 'vitrineFond', 'pseudoStyle', 'caisses', 'ligue']
+const EFFACES = ['familles', 'sauts', 'paliers', 'maitrise', 'revision', 'album', 'toutDebloque', 'farm', 'miniJeux', 'exploits', 'secrets', 'possede', 'avatar', 'cadre', 'titre', 'records', 'quetes', 'defiJour', 'vitrine', 'favori', 'bio', 'vitrineFond', 'pseudoStyle', 'caisses', 'ligue', 'jetons']
 export async function testRemiseAZero(uid: string) {
   await setDoc(doc(db, 'users', uid), {
     ...Object.fromEntries(EFFACES.map((k) => [k, deleteField()])),

@@ -4,7 +4,7 @@ import { SAISONS } from '../evenements'
 import { TOUS_RANGS } from '../ligues'
 
 // ——— Fonds de vitrine animés : un dégradé et des particules qui tombent, montent ou flottent ———
-export type FondAnime = { id: string; nom: Record<Lang, string>; prix: number; fond: string; particules: string[]; mouvement: 'tombe' | 'monte' | 'flotte'; saison?: string; luxe?: 1 | 2; halo?: boolean; rang?: string }
+export type FondAnime = { id: string; nom: Record<Lang, string>; prix: number; fond: string; particules: string[]; mouvement: 'tombe' | 'monte' | 'flotte'; saison?: string; luxe?: 1 | 2; halo?: boolean; rang?: string; jetons?: number }
 export const FONDS_ANIMES: FondAnime[] = [
   { id: 'fond-pieces', nom: { fr: 'Pluie de pièces', en: 'Coin rain' }, prix: 400, fond: 'linear-gradient(140deg, #78350F, #D97706 55%, #FDE68A)', particules: ['🪙', '💰', '🪙'], mouvement: 'tombe' },
   { id: 'fond-neige', nom: { fr: 'Nuit enneigée', en: 'Snowy night' }, prix: 350, fond: 'linear-gradient(180deg, #0F172A, #1E3A8A)', particules: ['❄️', '❅', '❆'], mouvement: 'tombe' },
@@ -22,6 +22,11 @@ export const FONDS_ANIMES: FondAnime[] = [
   { id: 'fond-aurore', nom: { fr: 'Aurore boréale', en: 'Northern lights' }, prix: 3000, luxe: 1, halo: true, fond: 'linear-gradient(180deg, #020617, #064E3B 55%, #134E4A)', particules: ['✨', '⭐', '✨'], mouvement: 'flotte' },
   { id: 'fond-tresor', nom: { fr: 'Salle du trésor', en: 'Treasure room' }, prix: 7500, luxe: 1, halo: true, fond: 'radial-gradient(circle at 50% 110%, #FDE047, #B45309 45%, #451A03)', particules: ['💎', '👑', '🪙', '💰'], mouvement: 'tombe' },
   { id: 'fond-ultime', nom: { fr: 'Big Bang', en: 'Big Bang' }, prix: 30000, luxe: 2, halo: true, fond: 'conic-gradient(from 0deg at 50% 50%, #0F0C29, #6D28D9, #DB2777, #F59E0B, #22D3EE, #0F0C29)', particules: ['🌌', '💫', '🪐', '☄️', '⭐', '💎'], mouvement: 'flotte' },
+  // Boutique des rangs (jetons)
+  { id: 'fond-j-podium', nom: { fr: 'Podium', en: 'Podium' }, prix: 0, jetons: 45, fond: 'linear-gradient(180deg, #1E3A8A, #6D28D9)', particules: ['🏆', '🥇', '✨'], mouvement: 'monte' },
+  { id: 'fond-j-arene', nom: { fr: 'Arène en feu', en: 'Blazing arena' }, prix: 0, jetons: 90, halo: true, fond: 'radial-gradient(circle at 50% 120%, #F97316, #7F1D1D 55%, #111827)', particules: ['🔥', '⚔️', '🔥'], mouvement: 'monte' },
+  { id: 'fond-j-trophees', nom: { fr: 'Salle des trophées', en: 'Trophy room' }, prix: 0, jetons: 150, halo: true, fond: 'linear-gradient(160deg, #451A03, #B45309 60%, #FDE68A)', particules: ['🏆', '👑', '💎', '🥇'], mouvement: 'tombe' },
+  { id: 'fond-j-pantheon', nom: { fr: 'Panthéon', en: 'Pantheon' }, prix: 0, jetons: 280, luxe: 2, halo: true, fond: 'conic-gradient(from 0deg at 50% 50%, #312E81, #F4C430, #DB2777, #22D3EE, #312E81)', particules: ['👑', '🌟', '💫', '🏛️'], mouvement: 'flotte' },
   // Un fond par rang (finir 3 semaines dans ce rang)
   ...TOUS_RANGS.map((r, i): FondAnime => ({ id: `fond-rang-${r.id}`, nom: { fr: `Vitrine ${r.nom.fr}`, en: `${r.nom.en} showcase` }, prix: 0, rang: r.id, halo: i >= 4, luxe: r.id === 'legende' ? 2 : undefined, fond: `radial-gradient(circle at 50% 120%, ${r.couleur}, ${r.fonce} 60%, #0B0B12)`, particules: [r.emoji, '✨', r.emoji], mouvement: 'monte' })),
   // Un fond par saison du passe de combat (palier 15)
@@ -42,7 +47,7 @@ export function Particules({ f, nb = 14 }: { f: FondAnime; nb?: number }) {
 }
 
 // ——— Styles de pseudo : le nom affiché en dégradé, doré, néon… ———
-export type StylePseudo = { id: string; nom: Record<Lang, string>; prix: number; css: CSSProperties; classe?: string; luxe?: 1 | 2; rang?: string }
+export type StylePseudo = { id: string; nom: Record<Lang, string>; prix: number; css: CSSProperties; classe?: string; luxe?: 1 | 2; rang?: string; jetons?: number }
 export const STYLES_PSEUDO: StylePseudo[] = [
   { id: 'pseudo-or', nom: { fr: 'Doré', en: 'Golden' }, prix: 300, css: { backgroundImage: 'linear-gradient(90deg, #B8862E, #F4C430, #FFF2B8, #F4C430, #B8862E)' }, classe: 'brille' },
   { id: 'pseudo-arcenciel', nom: { fr: 'Arc-en-ciel', en: 'Rainbow' }, prix: 600, css: { backgroundImage: 'linear-gradient(90deg, #EF4444, #F59E0B, #22C55E, #3B82F6, #A855F7, #EF4444)' }, classe: 'defile' },
@@ -88,6 +93,10 @@ export const STYLES_PSEUDO: StylePseudo[] = [
   { id: 'pseudo-prisme', nom: { fr: 'Prisme', en: 'Prism' }, prix: 4000, css: { backgroundImage: 'linear-gradient(90deg, #EF4444, #F59E0B, #FDE047, #22C55E, #06B6D4, #3B82F6, #A855F7, #EF4444)' }, classe: 'defile rapide holo', luxe: 1 },
   { id: 'pseudo-soleil', nom: { fr: 'Soleil noir', en: 'Black sun' }, prix: 9000, css: { backgroundImage: 'linear-gradient(90deg, #000000, #F59E0B, #FFF7D6, #F59E0B, #000000)' }, classe: 'defile pulse-feu', luxe: 1 },
   { id: 'pseudo-divin', nom: { fr: 'Divin', en: 'Divine' }, prix: 50000, css: { backgroundImage: 'linear-gradient(90deg, #B8862E, #F4C430, #FFF2B8, #F472B6, #F4C430, #B8862E)' }, classe: 'defile ultra divin', luxe: 2 },
+  { id: 'pseudo-j-champion', nom: { fr: 'Champion', en: 'Champion' }, prix: 0, jetons: 30, css: { backgroundImage: 'linear-gradient(90deg, #B45309, #FDE047, #DC2626, #FDE047, #B45309)' }, classe: 'defile pulse-feu' },
+  { id: 'pseudo-j-arene', nom: { fr: 'Arène', en: 'Arena' }, prix: 0, jetons: 60, css: { backgroundImage: 'linear-gradient(90deg, #111827, #F97316, #FDE047, #F97316, #111827)' }, classe: 'defile' },
+  { id: 'pseudo-j-eclipse', nom: { fr: 'Éclipse', en: 'Eclipse' }, prix: 0, jetons: 120, css: { backgroundImage: 'linear-gradient(90deg, #1E1B4B, #F59E0B, #FFF7D6, #F59E0B, #1E1B4B)' }, classe: 'defile pulse-violet' },
+  { id: 'pseudo-j-couronne', nom: { fr: 'Couronné', en: 'Crowned' }, prix: 0, jetons: 220, luxe: 2, css: { backgroundImage: 'linear-gradient(90deg, #7C3AED, #F4C430, #FFFFFF, #F4C430, #7C3AED)' }, classe: 'defile ultra divin' },
   { id: 'pseudo-bonbon', nom: { fr: 'Bonbon', en: 'Candy' }, prix: 350, css: { backgroundImage: 'linear-gradient(90deg, #F472B6, #A5F3FC, #F472B6)' }, classe: 'defile' },
 ]
 // Couleurs de rang (finir une semaine dans ce rang)

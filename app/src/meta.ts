@@ -101,6 +101,7 @@ export type Objet = {
   evenement?: string; saison?: string // récompense d'un événement ou d'une saison
   luxe?: 1 | 2 // 1 = cher, 2 = ultra (le plus beau de sa catégorie, très cher)
   fondAvatar?: string // fond animé des avatars de luxe
+  jetons?: number // prix en jetons de rang (boutique des rangs) au lieu de pièces
 }
 const NOMS_PERSOS: Record<string, [string, string]> = {
   eleve: ['Élève', 'Pupil'], savante: ['Savante', 'Scientist'], explorateur: ['Explorateur', 'Explorer'], astronaute: ['Astronaute', 'Astronaut'],
@@ -298,13 +299,32 @@ export const BOUTIQUE: Objet[] = [
     ? { id: f.id, type: 'fond', nom: f.nom, prix: 0, luxe: f.luxe, condition: { desc: { fr: `Finir 3 semaines au rang ${TOUS_RANGS.find((r) => r.id === f.rang)?.nom.fr} (ou plus haut)`, en: 'Finish 3 weeks at this rank' }, test: (p) => !!p.possede?.includes(f.id) } }
     : f.saison
     ? { id: f.id, type: 'fond', nom: f.nom, prix: 0, saison: f.saison, condition: { desc: { fr: `${SAISONS.find((s) => s.id === f.saison)?.emoji} ${f.nom.fr} : passe de combat, palier 15`, en: `${f.nom.en}: battle pass tier 15` }, test: (p) => !!p.possede?.includes(f.id) } }
-    : { id: f.id, type: 'fond', nom: f.nom, prix: f.prix, luxe: f.luxe }),
-  ...STYLES_PSEUDO.map((s): Objet => ({ id: s.id, type: 'pseudo', nom: s.nom, prix: s.prix, luxe: s.luxe, ...(s.rang ? { condition: { desc: { fr: `Finir une semaine au rang ${TOUS_RANGS.find((r) => r.id === s.rang)?.nom.fr} (ou plus haut)`, en: 'Finish a week at this rank' }, test: (p: Profile) => !!p.possede?.includes(s.id) } } : {}) })),
+    : { id: f.id, type: 'fond', nom: f.nom, prix: f.prix, luxe: f.luxe, ...(f.jetons ? { jetons: f.jetons } : {}) }),
+  ...STYLES_PSEUDO.map((s): Objet => ({ id: s.id, type: 'pseudo', nom: s.nom, prix: s.prix, luxe: s.luxe, ...(s.jetons ? { jetons: s.jetons } : {}), ...(s.rang ? { condition: { desc: { fr: `Finir une semaine au rang ${TOUS_RANGS.find((r) => r.id === s.rang)?.nom.fr} (ou plus haut)`, en: 'Finish a week at this rank' }, test: (p: Profile) => !!p.possede?.includes(s.id) } } : {}) })),
   // ——— Rangs : un cadre par rang (finir une semaine dedans), un titre (finir 3 semaines) ———
   ...TOUS_RANGS.flatMap((r, i): Objet[] => [
     { id: `cadre-rang-${r.id}`, type: 'cadre', nom: { fr: `Cadre ${r.nom.fr}`, en: `${r.nom.en} frame` }, prix: 0, couleur: r.id === 'legende' ? 'conic-gradient(#F4C430, #F472B6, #A78BFA, #22D3EE, #F4C430)' : `conic-gradient(${r.couleur}, ${r.fonce}, ${r.couleur}, #fff, ${r.couleur})`, anim: i >= 6 ? 'tourne brille' : i >= 3 ? 'tourne' : 'brille', orbite: i >= 2 ? [r.emoji, '✨', r.emoji] : undefined, luxe: r.id === 'legende' ? 2 : undefined, condition: { desc: { fr: `Finir une semaine au rang ${r.nom.fr} (ou plus haut)`, en: `Finish a week at ${r.nom.en}` }, test: (p: Profile) => !!p.possede?.includes(`cadre-rang-${r.id}`) } },
     { id: `titre-rang-${r.id}`, type: 'titre', nom: { fr: `${r.emoji} ${r.id === 'legende' ? 'Légende éternelle' : `Habitué·e ${r.nom.fr}`}`, en: `${r.emoji} ${r.nom.en} regular` }, prix: 0, condition: { desc: { fr: `Finir 3 semaines au rang ${r.nom.fr} (ou plus haut)`, en: `Finish 3 weeks at ${r.nom.en}` }, test: (p: Profile) => !!p.possede?.includes(`titre-rang-${r.id}`) } },
   ]),
+  // ——— Boutique des rangs : cosmétiques exclusifs, payés en jetons de rang ———
+  { id: 'cadre-j-laurier', type: 'cadre', nom: { fr: 'Lauriers d’or', en: 'Golden laurels' }, prix: 0, jetons: 20, couleur: 'conic-gradient(#B8862E, #FDE68A, #4D7C0F, #FDE68A, #B8862E)' },
+  { id: 'cadre-j-trophee', type: 'cadre', nom: { fr: 'Trophée', en: 'Trophy' }, prix: 0, jetons: 40, couleur: 'conic-gradient(#F4C430, #FFF7D6, #B45309, #FFF7D6, #F4C430)' },
+  { id: 'cadre-j-arene', type: 'cadre', nom: { fr: 'Arène', en: 'Arena' }, prix: 0, jetons: 70, couleur: 'conic-gradient(#7F1D1D, #F97316, #111827, #F97316, #7F1D1D)' },
+  { id: 'cadre-j-cristal', type: 'cadre', nom: { fr: 'Cristal', en: 'Crystal' }, prix: 0, jetons: 110, couleur: 'conic-gradient(#E0F2FE, #A5B4FC, #FFFFFF, #67E8F9, #E0F2FE)' },
+  { id: 'cadre-j-eclipse', type: 'cadre', nom: { fr: 'Éclipse', en: 'Eclipse' }, prix: 0, jetons: 160, couleur: 'conic-gradient(#020617, #F59E0B, #020617, #FDE68A, #020617)' },
+  { id: 'cadre-j-supernova', type: 'cadre', nom: { fr: 'Supernova', en: 'Supernova' }, prix: 0, jetons: 300, luxe: 2, couleur: 'conic-gradient(#F472B6, #FDE047, #22D3EE, #A78BFA, #F472B6)' },
+  ...([
+    ['champion', '🏆', 'Champion·ne', 'Champion', 25, 'fun', 'linear-gradient(160deg, #B45309, #FDE047)'],
+    ['gladiateur', '🛡️', 'Gladiateur·rice', 'Gladiator', 50, 'metier', 'linear-gradient(160deg, #7F1D1D, #F97316)'],
+    ['genie', '🧞', 'Génie', 'Genie', 90, 'metier', 'linear-gradient(160deg, #1E3A8A, #22D3EE)'],
+    ['aigle', '🦅', 'Aigle royal', 'Royal eagle', 130, 'animal', 'linear-gradient(160deg, #78350F, #FDE68A)'],
+    ['souverain', '🫅', 'Souverain·e', 'Sovereign', 200, 'metier', 'conic-gradient(#7C3AED, #F4C430, #7C3AED, #F4C430, #7C3AED)'],
+  ] as const).map(([id, emoji, fr, en, jetons, categorie, fondAvatar]): Objet => ({ id: 'avatar-j-' + id, type: 'avatar', categorie, nom: { fr, en }, prix: 0, jetons, emoji, fondAvatar, luxe: jetons >= 200 ? 2 : 1 })),
+  { id: 'titre-j-competiteur', type: 'titre', nom: { fr: '🎖️ Compétiteur·rice', en: '🎖️ Competitor' }, prix: 0, jetons: 15 },
+  { id: 'titre-j-acharne', type: 'titre', nom: { fr: '🎖️ Acharné·e du classé', en: '🎖️ Ranked grinder' }, prix: 0, jetons: 40 },
+  { id: 'titre-j-gladiateur', type: 'titre', nom: { fr: '⚔️ Gladiateur·rice', en: '⚔️ Gladiator' }, prix: 0, jetons: 80 },
+  { id: 'titre-j-intouchable', type: 'titre', nom: { fr: '💎 Intouchable', en: '💎 Untouchable' }, prix: 0, jetons: 150 },
+  { id: 'titre-j-immortel', type: 'titre', nom: { fr: '👑 Immortel·le', en: '👑 Immortal' }, prix: 0, jetons: 300, luxe: 2 },
   { id: 'titre-mecene', type: 'titre', nom: { fr: 'Mécène', en: 'Patron' }, prix: 3000, luxe: 1 },
   { id: 'titre-milliardaire', type: 'titre', nom: { fr: 'Milliardaire du savoir', en: 'Knowledge billionaire' }, prix: 10000, luxe: 1 },
   { id: 'titre-empereur', type: 'titre', nom: { fr: '👑 Empereur·rice de Croivez', en: '👑 Emperor of Croivez' }, prix: 30000, luxe: 2 },
@@ -335,6 +355,9 @@ const EFFETS: Record<string, string> = {
   'cadre-rang-bronze': 'brille', 'cadre-rang-argent': 'brille scintille', 'cadre-rang-or': 'brille rayons', 'cadre-rang-platine': 'tourne comete', 'cadre-rang-emeraude': 'tourne bulles ondes',
   'cadre-rang-saphir': 'vague ondes double', 'cadre-rang-rubis': 'battement double flamme', 'cadre-rang-diamant': 'brille scintille rayons comete', 'cadre-rang-maitre': 'tourne double comete ondes',
   'cadre-rang-legende': 'holo arcenciel ultra rayons scintille',
+  // Boutique des rangs
+  'cadre-j-laurier': 'brille scintille', 'cadre-j-trophee': 'brille rayons', 'cadre-j-arene': 'tourne flamme', 'cadre-j-cristal': 'brille glace double scintille',
+  'cadre-j-eclipse': 'tourne comete rayons', 'cadre-j-supernova': 'holo arcenciel ultra rayons ondes',
 }
 for (const o of BOUTIQUE) {
   if (o.type !== 'cadre') continue
@@ -343,14 +366,16 @@ for (const o of BOUTIQUE) {
   if (!ORBITE_GARDEE.has(o.id)) delete o.orbite
 }
 
-export const possede = (p: Profile | null | undefined, o: Objet) => (o.condition ? !!p && o.condition.test(p) : o.prix === 0 || !!p?.possede?.includes(o.id))
+export const possede = (p: Profile | null | undefined, o: Objet) => (o.condition ? !!p && o.condition.test(p) : (o.prix === 0 && !o.jetons) || !!p?.possede?.includes(o.id))
 
 export async function acheterObjet(uid: string, o: Objet) {
   return runTransaction(db, async (tx) => {
     const ref = doc(db, 'users', uid)
-    const solde = ((await tx.get(ref)).data()?.pieces as number | undefined) ?? 0
-    if (solde < o.prix) return false
-    tx.update(ref, { pieces: increment(-o.prix), possede: arrayUnion(o.id) })
+    const d = (await tx.get(ref)).data() ?? {}
+    // Boutique des rangs : on paie en jetons ; sinon en pièces
+    const [champ, cout] = o.jetons ? ['jetons', o.jetons] : ['pieces', o.prix]
+    if (((d[champ] as number | undefined) ?? 0) < cout) return false
+    tx.update(ref, { [champ]: increment(-cout), possede: arrayUnion(o.id) })
     return true
   })
 }

@@ -1,5 +1,31 @@
 [
  {
+  "id": "2026-10-24p",
+  "titre": "Avatars vivants et boutique des rangs",
+  "points": [
+   [
+    "✨",
+    "Avatars vivants",
+    "Les personnages respirent, penchent la tête, clignent des yeux et sourient ; les animaux bougent les oreilles ; les émojis sautillent. Volume, reflets et petites étoiles en plus."
+   ],
+   [
+    "📂",
+    "Avatars rangés",
+    "Par catégorie dans des menus déroulants : métiers, animaux, fun, familles, luxe et boutique des rangs."
+   ],
+   [
+    "🎖️",
+    "Boutique des rangs",
+    "Chaque lundi, des jetons selon ton rang (5 en Bronze… 75 en Légende), même si tu as déjà les récompenses. À dépenser dans des cosmétiques exclusifs : cadres Supernova, Éclipse, avatars, vitrines, pseudos, titres."
+   ],
+   [
+    "✅",
+    "Confirmation des achats",
+    "Plus d’achat par erreur : il faut confirmer avant de dépenser des pièces ou des jetons, y compris pour les caisses."
+   ]
+  ]
+ },
+ {
   "id": "2026-10-24o",
   "titre": "Chromecast",
   "points": [

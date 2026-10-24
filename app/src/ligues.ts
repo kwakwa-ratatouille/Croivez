@@ -38,7 +38,7 @@ export function infoRang(pts: number, lang: Lang = 'fr'): InfoRang {
 // Inactivité : 3 jours de grâce, puis une division perdue par jour (on retombe au début de la division du dessous)
 export const GRACE = 3
 const jours = (a: string, b: string) => Math.round((Date.parse(b) - Date.parse(a)) / 864e5)
-export type EtatLigue = { pts: number; jour: string; semaine?: string; fins?: Record<string, number> }
+export type EtatLigue = { pts: number; jour: string; semaine?: string; fins?: Record<string, number>; derniere?: { rang: string; jetons: number; semaine: string } }
 export function ptsEffectifs(l: Pick<EtatLigue, 'pts' | 'jour'> | undefined, aujourdhui: string) {
   if (!l) return 0
   const absence = jours(l.jour, aujourdhui) - GRACE
@@ -50,6 +50,8 @@ export function ptsEffectifs(l: Pick<EtatLigue, 'pts' | 'jour'> | undefined, auj
 // ——— Récompenses de fin de semaine ———
 // Finir une semaine dans un rang (n'importe quelle division) : cadre et couleur de pseudo du rang (et de ceux du dessous).
 // Le finir 3 fois : titre et fond de vitrine du rang.
+// Jetons de rang gagnés à chaque fin de semaine (même si on a déjà les récompenses du rang) : plus le rang est haut, plus on en gagne
+export const JETONS_RANG: Record<string, number> = { bronze: 5, argent: 8, or: 12, platine: 16, emeraude: 20, saphir: 25, rubis: 30, diamant: 40, maitre: 50, legende: 75 }
 export const recompensesRang = (r: Rang) => ({ cadre: `cadre-rang-${r.id}`, pseudo: `pseudo-rang-${r.id}`, titre: `titre-rang-${r.id}`, fond: `fond-rang-${r.id}` })
 export const TOUS_RANGS = [...RANGS, ULTIME]
 
@@ -58,10 +60,14 @@ export function avancerLigue(l: EtatLigue | undefined, gain: number, aujourdhui:
   const sem = semaine()
   const objets: string[] = []
   const fins = { ...(l?.fins ?? {}) }
+  let jetons = 0
+  let derniere = l?.derniere
   if (l && l.semaine && l.semaine !== sem) {
     // Rang de fin de semaine (avant cette partie) : ce rang et ceux du dessous comptent comme « finis »
     const fin = infoRang(ptsEffectifs(l, aujourdhui))
     const jusqua = fin.ultime ? TOUS_RANGS.length : RANGS.indexOf(fin.rang) + 1
+    jetons = JETONS_RANG[fin.rang.id] ?? 0
+    derniere = { rang: fin.rang.id, jetons, semaine: l.semaine }
     for (const r of TOUS_RANGS.slice(0, jusqua)) {
       const rec = recompensesRang(r)
       fins[r.id] = (fins[r.id] ?? 0) + 1
@@ -70,5 +76,5 @@ export function avancerLigue(l: EtatLigue | undefined, gain: number, aujourdhui:
     }
   }
   const pts = ptsEffectifs(l, aujourdhui) + Math.max(0, gain)
-  return { etat: { pts, jour: aujourdhui, semaine: sem, fins } as EtatLigue, objets }
+  return { etat: { pts, jour: aujourdhui, semaine: sem, fins, ...(derniere ? { derniere } : {}) } as EtatLigue, objets, jetons }
 }

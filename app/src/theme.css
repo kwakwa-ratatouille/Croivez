@@ -1263,3 +1263,42 @@ button.rang-palier[aria-pressed="true"] { background: color-mix(in srgb, var(--r
 
 /* Anneau façon Saturne : derrière l'avatar, en couleur claire (il ne barre plus le visage) */
 .fx-anneau { z-index: -1; border-color: color-mix(in srgb, var(--fx) 45%, #fff); box-shadow: 0 0 10px color-mix(in srgb, var(--fx) 70%, transparent); }
+
+/* ——— Avatars vivants (seulement en grand : profil, boutique, accueil) ——— */
+.bonhomme .corps, .bonhomme .tete, .animal .tete-animal, .animal .oreilles, .bonhomme .accessoire { transform-box: view-box; }
+.bonhomme .etoiles-perso, .animal .etoiles-perso { opacity: 0; }
+.bonhomme.anime .etoiles-perso, .animal.anime .etoiles-perso { animation: scintille-perso 2.6s ease-in-out infinite; }
+.bonhomme.anime .etoiles-perso path:last-child, .animal.anime .etoiles-perso path:last-child { animation: scintille-perso 2.6s ease-in-out 1.3s infinite; }
+.bonhomme.anime .corps { animation: respire 3.4s ease-in-out infinite; transform-origin: 50px 100px; }
+.bonhomme.anime .tete { animation: penche 5s ease-in-out infinite; transform-origin: 50px 68px; }
+.bonhomme.anime .joue, .animal.anime .joue { animation: rougit 3s ease-in-out infinite alternate; }
+.bonhomme.anime .bouche { animation: sourit 6s ease-in-out infinite; transform-origin: 50px 57px; transform-box: view-box; }
+.animal.anime .yeux { transform-origin: 50px 50px; transform-box: view-box; animation: cligne 4.4s infinite; }
+.animal.anime .tete-animal { animation: balance 4.2s ease-in-out infinite; transform-origin: 50px 92px; }
+.animal.anime .oreilles { animation: oreilles 3.6s ease-in-out infinite; transform-origin: 50px 40px; }
+.animal-licorne.anime .oreilles, .animal-dragon.anime .oreilles { animation-duration: 2.4s; }
+/* Accessoires qui vivent */
+.acc-antenne.anime .accessoire, .acc-feuille.anime .accessoire, .acc-chapeau-pointu.anime .accessoire, .acc-chapeau-sorciere.anime .accessoire { animation: balance 2.8s ease-in-out infinite; transform-origin: 50px 30px; }
+.acc-couronne.anime .accessoire, .acc-casque-viking.anime .accessoire { animation: brillance 3s ease-in-out infinite; }
+.acc-casque-audio.anime .accessoire, .acc-micro.anime .accessoire { animation: rythme .9s ease-in-out infinite alternate; transform-origin: 50px 50px; }
+@keyframes respire { 0%, 100% { transform: translateY(0) scale(1, 1) } 50% { transform: translateY(-1.5px) scale(1.01, 1.025) } }
+@keyframes penche { 0%, 100% { transform: rotate(0) } 25% { transform: rotate(-4deg) } 60% { transform: rotate(3deg) } }
+@keyframes balance { 0%, 100% { transform: rotate(0) } 30% { transform: rotate(-3deg) } 70% { transform: rotate(3deg) } }
+@keyframes oreilles { 0%, 70%, 100% { transform: rotate(0) } 76% { transform: rotate(-5deg) } 82% { transform: rotate(4deg) } 88% { transform: rotate(0) } }
+@keyframes rougit { from { opacity: .3 } to { opacity: .6 } }
+@keyframes sourit { 0%, 80%, 100% { transform: scale(1) } 86% { transform: scale(1.25, 1.4) } 94% { transform: scale(1) } }
+@keyframes scintille-perso { 0%, 100% { opacity: 0; transform: scale(.6) } 50% { opacity: .95; transform: scale(1) } }
+@keyframes brillance { 0%, 100% { filter: none } 50% { filter: brightness(1.35) drop-shadow(0 0 2px #fff) } }
+@keyframes rythme { from { transform: scale(1) } to { transform: scale(1.04) } }
+.bonhomme .etoiles-perso path, .animal .etoiles-perso path { transform-box: fill-box; transform-origin: center; }
+/* Emojis : petit saut et balancement */
+.avatar-emoji.anime { display: inline-block; animation: sautille 2.4s ease-in-out infinite; transform-origin: 50% 90%; filter: drop-shadow(0 3px 3px rgba(0,0,0,.18)); }
+@keyframes sautille { 0%, 100% { transform: translateY(0) rotate(0) scale(1) } 20% { transform: translateY(-6%) rotate(-6deg) scale(1.04, .97) } 40% { transform: translateY(0) rotate(0) scale(.98, 1.02) } 60% { transform: translateY(-3%) rotate(5deg) } }
+@media (prefers-reduced-motion: reduce) { .bonhomme *, .animal *, .avatar-emoji { animation: none !important; } }
+
+.confirmer-achat { font-weight: 800; padding: 10px 14px; border-radius: 14px; background: #FEF3C7; color: #78350F; }
+
+/* Jetons de rang */
+.solde-jetons { display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px; border-radius: 999px; background: #EDE9FE; color: #4C1D95; font: 900 15px Nunito, sans-serif; }
+.prix-jetons { font-weight: 900; color: #6D28D9; }
+.jetons-rang { font-size: 13px; font-weight: 700; color: #6D28D9; }
