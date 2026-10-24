@@ -9,7 +9,7 @@ import BlasonRang from '../components/BlasonRang'
 import { BOUTIQUE } from '../meta'
 import { ICONS, Icon } from '../components/ui'
 import Avatar from '../components/Avatar'
-import { Pseudo } from '../components/Cosmetiques'
+import { Particules, Pseudo, fondAnime } from '../components/Cosmetiques'
 
 type Ligne = { uid: string; pseudo: string; valeur: number; niveau?: number; avatar?: string; cadre?: string; titre?: string; pseudoStyle?: string }
 type Onglet = 'ligue' | 'semaine' | 'records' | 'global' | 'amis'
@@ -24,6 +24,8 @@ export default function Classements() {
   const [lignes, setLignes] = useState<Ligne[] | null>(null)
   const [erreur, setErreur] = useState('')
   const [aide, setAide] = useState(false)
+  const [infoRangs, setInfoRangs] = useState(false) // bouton « ? » du classé
+  const [rangVu, setRangVu] = useState<string | null>(null) // rang dont on regarde les récompenses (par défaut le sien)
   const [jeuRecord, setJeuRecord] = useState<'express' | 'survie'>('express')
   const [periode, setPeriode] = useState<PeriodeRecord>('jour')
 
@@ -76,7 +78,18 @@ export default function Classements() {
         </section>
       )}
       {onglet === 'ligue' && (
-        <section className="card rise ligue-carte" style={{ ['--lc' as string]: monRang.rang.couleur }}>
+        <section className="card rise ligue-carte" style={{ ['--lc' as string]: monRang.rang.couleur, position: 'relative' }}>
+          <button type="button" className="btn-aide-rang" aria-expanded={infoRangs} aria-label={fr ? 'Comment marche le classé ?' : 'How ranked works'} onClick={() => setInfoRangs((v) => !v)}>?</button>
+          {infoRangs && (
+            <div className="aide-rang rise" role="note">
+              <strong className="t">{fr ? 'Comment marche le classé ?' : 'How ranked works'}</strong>
+              <p>🎮 {fr ? 'Chaque XP gagnée en partie te rapporte 1 point de rang.' : 'Each XP earned is 1 rank point.'}</p>
+              <p>🪜 {fr ? '9 rangs (Bronze → Maître), chacun en 4 divisions : 1, 2, 3 puis 4, la meilleure. Au-dessus, un seul rang ultime : Légende de Croivez.' : '9 ranks with 4 divisions each, then the ultimate rank.'}</p>
+              <p>💤 {fr ? `Pas de remise à zéro : après ${GRACE} jours sans jouer, tu descends d’une division par jour d’absence.` : `No reset: after ${GRACE} idle days you drop one division per day.`}</p>
+              <p>🎁 {fr ? 'Chaque lundi, le rang où tu as fini la semaine te donne son cadre et sa couleur de pseudo. Après 3 semaines finies dans un rang : son titre et sa vitrine animée.' : 'Each Monday your rank gives its frame and name colour; 3 weeks: its title and showcase.'}</p>
+              <p>👥 {fr ? '« Mon rang » liste les joueurs du même rang que toi.' : 'This tab lists players of your rank.'}</p>
+            </div>
+          )}
           <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
             <BlasonRang pts={mesPts} taille={64} />
             <div style={{ flex: '1 1 220px', display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -96,27 +109,48 @@ export default function Classements() {
               const min = seuil(i * DIVISIONS)
               const n = profile?.ligue?.fins?.[r.id] ?? 0
               return (
-                <div key={r.id} className={`rang-palier${r.id === monRang.rang.id ? ' actuelle' : ''}${mesPts >= min ? ' atteinte' : ''}`} style={{ ['--rc' as string]: r.couleur }}>
+                <button type="button" key={r.id} onClick={() => setRangVu(r.id)} aria-pressed={(rangVu ?? monRang.rang.id) === r.id} className={`rang-palier${r.id === monRang.rang.id ? ' actuelle' : ''}${mesPts >= min ? ' atteinte' : ''}`} style={{ ['--rc' as string]: r.couleur }}>
                   <BlasonRang pts={r.id === 'legende' ? min : seuil(i * DIVISIONS + DIVISIONS - 1)} taille={34} />
                   <strong>{r.nom[lang]}</strong>
                   <small>{fmt.format(min)}</small>
                   {n > 0 && <small className="rang-fins">{n}× ✓</small>}
-                </div>
+                </button>
               )
             })}
           </div>
-          <div className="rang-regles">
-            <p>🎮 {fr ? 'Chaque XP gagnée en partie rapporte 1 point de rang. Chaque rang a 4 divisions (4 = la meilleure), puis vient le rang ultime.' : 'Each XP earned is 1 rank point. Each rank has 4 divisions, then the ultimate rank.'}</p>
-            <p>💤 {fr ? `Pas de remise à zéro : après ${GRACE} jours sans jouer, tu descends d’une division par jour d’absence.` : `No reset: after ${GRACE} idle days you drop one division per day.`}</p>
-            <p>🎁 {fr ? 'Chaque lundi, selon le rang où tu as fini la semaine : cadre et couleur de pseudo du rang. 3 semaines finies dans un rang : son titre et sa vitrine animée.' : 'Each Monday: the frame and name colour of your rank. 3 weeks: its title and animated showcase.'}</p>
-            <div className="rang-lots">
-              {[recompensesRang(monRang.rang)].map((rec) => [rec.cadre, rec.pseudo, rec.titre, rec.fond].map((id) => {
-                const o = BOUTIQUE.find((x) => x.id === id)
-                const a = !!profile?.possede?.includes(id)
-                return o && <Link key={id} to={`/boutique?o=${o.type}`} className={`pill${a ? ' ok' : ''}`}>{a ? '✅' : '🔒'} {o.nom[lang]}</Link>
-              }))}
-            </div>
-          </div>
+          {/* Récompenses du rang choisi (le sien par défaut) : on voit tout sur place */}
+          {(() => {
+            const r = TOUS_RANGS.find((x) => x.id === (rangVu ?? monRang.rang.id))!
+            const rec = recompensesRang(r)
+            const n = profile?.ligue?.fins?.[r.id] ?? 0
+            const a = (id: string) => !!profile?.possede?.includes(id)
+            const f = fondAnime(rec.fond)
+            const titre = BOUTIQUE.find((o) => o.id === rec.titre)
+            const lots = [
+              { id: rec.cadre, nom: fr ? 'Cadre' : 'Frame', quand: fr ? '1 semaine' : '1 week', apercu: <Avatar pseudo={profile?.pseudo} avatar={profile?.avatar} cadre={rec.cadre} taille={58} anime /> },
+              { id: rec.pseudo, nom: fr ? 'Couleur de pseudo' : 'Name colour', quand: fr ? '1 semaine' : '1 week', apercu: <span className="t" style={{ fontWeight: 900, fontSize: 18 }}><Pseudo nom={profile?.pseudo || 'Croivez'} style={rec.pseudo} /></span> },
+              { id: rec.titre, nom: fr ? 'Titre' : 'Title', quand: fr ? '3 semaines' : '3 weeks', apercu: <span className="titre-apercu">{titre?.nom[lang]}</span> },
+              { id: rec.fond, nom: fr ? 'Vitrine animée' : 'Animated showcase', quand: fr ? '3 semaines' : '3 weeks', apercu: f && <span className="apercu-fond" style={{ background: f.fond, height: 58 }}><Particules f={f} nb={6} /></span> },
+            ]
+            return (
+              <div className="rang-recompenses" style={{ ['--rc' as string]: r.couleur }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' }}>
+                  <strong className="t">{r.emoji} {fr ? `Récompenses du rang ${r.nom.fr}` : `${r.nom.en} rewards`}</strong>
+                  <small style={{ color: 'var(--muted)' }}>{fr ? `Semaines finies dans ce rang (ou plus haut) : ${Math.min(n, 3)} / 3` : `Weeks finished: ${Math.min(n, 3)} / 3`}</small>
+                </div>
+                <div className="rang-lots">
+                  {lots.map((l) => (
+                    <div key={l.id} className={`rang-lot${a(l.id) ? ' ok' : ''}`}>
+                      <div className="rang-lot-apercu">{l.apercu}</div>
+                      <strong>{l.nom}</strong>
+                      <small>{a(l.id) ? (fr ? '✅ Obtenu' : '✅ Owned') : `🔒 ${fr ? 'Finir' : 'Finish'} ${l.quand} ${fr ? 'en' : 'at'} ${r.nom[lang]}`}</small>
+                    </div>
+                  ))}
+                </div>
+                <small style={{ color: 'var(--muted)' }}>{fr ? 'Touche un rang dans l’échelle pour voir ses récompenses. Ce que tu as gagné s’équipe dans la boutique.' : 'Tap a rank to see its rewards.'}</small>
+              </div>
+            )
+          })()}
         </section>
       )}
 

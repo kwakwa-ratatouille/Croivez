@@ -313,6 +313,36 @@ export const BOUTIQUE: Objet[] = [
   { id: 'cadre-musique', type: 'cadre', nom: { fr: 'Mélodie', en: 'Melody' }, prix: 700, couleur: 'conic-gradient(#6D28D9, #DB2777, #6D28D9)', anim: 'tourne', orbite: ['🎵', '🎶', '🎵'] },
   { id: 'cadre-hiver', type: 'cadre', nom: { fr: 'Hiver', en: 'Winter' }, prix: 700, couleur: 'conic-gradient(#E0F2FE, #93C5FD, #E0F2FE)', anim: 'brille glace', orbite: ['❄️', '⛄', '❄️'] },
 ]
+// ——— Refonte des cadres : chacun a ses effets (ondes, rayons, comète, étincelles, flammes…).
+// L'orbite d'emojis n'est gardée que pour les cadres de l'espace, où des planètes qui tournent ont du sens.
+const ORBITE_GARDEE = new Set(['cadre-galaxie', 'cadre-cosmos'])
+const EFFETS: Record<string, string> = {
+  'cadre-bronze': 'brille', 'cadre-argent': 'brille scintille', 'cadre-or': 'brille rayons', 'cadre-bonbon': 'tourne pointilles', 'cadre-ocean': 'vague ondes bulles',
+  'cadre-arcenciel': 'tourne arcenciel', 'cadre-aurore': 'vague arcenciel double', 'cadre-flamme': 'pulse flamme', 'cadre-erudit': 'tourne comete', 'cadre-perfection': 'brille scintille ondes',
+  'cadre-medailles': 'brille rayons scintille', 'cadre-legende': 'tourne double comete', 'cadre-brasier': 'tourne feu flamme', 'cadre-royal': 'brille double rayons', 'cadre-foyer': 'tourne ondes',
+  'cadre-neon': 'neon pointilles', 'cadre-givre': 'brille glace scintille', 'cadre-foudre': 'eclair glitch', 'cadre-lave': 'tourne flamme bulles', 'cadre-holo': 'holo arcenciel comete',
+  'cadre-galaxie': 'tourne etoiles anneau', 'cadre-pixel': 'pixel', 'cadre-seve': 'vague bulles', 'cadre-tour-du-monde': 'tourne holo anneau', 'cadre-mi-parcours': 'vague pointilles',
+  'cadre-legendes-histoire': 'tourne flamme double rayons', 'cadre-arcade': 'pixel glitch', 'cadre-diamant': 'brille scintille rayons', 'cadre-tresor': 'tourne brille rayons scintille',
+  'cadre-cosmos': 'tourne holo ultra anneau etoiles', 'cadre-rare-saison': 'tourne etoiles comete', 'cadre-coeurs': 'battement ondes', 'cadre-musique': 'tourne ondes pointilles', 'cadre-hiver': 'brille glace scintille',
+  // Événements
+  'cadre-nouvel-an': 'eclair scintille rayons', 'cadre-saint-valentin': 'battement ondes', 'cadre-paques': 'holo pointilles', 'cadre-fete-musique': 'neon ondes', 'cadre-ete': 'rayons vague',
+  'cadre-rentree': 'tourne pointilles', 'cadre-halloween': 'flamme glitch', 'cadre-noel': 'brille scintille double',
+  // Saisons du passe de combat
+  'cadre-s-givre': 'glace scintille', 'cadre-s-amour': 'battement ondes', 'cadre-s-eveil': 'vague bulles', 'cadre-s-chocolat': 'tourne pointilles', 'cadre-s-floraison': 'tourne scintille',
+  'cadre-s-musique': 'neon ondes', 'cadre-s-soleil': 'rayons feu', 'cadre-s-ocean': 'vague ondes bulles', 'cadre-s-rentree': 'pointilles comete', 'cadre-s-halloween': 'flamme ondes',
+  'cadre-s-automne': 'vague comete', 'cadre-s-noel': 'brille scintille double',
+  // Rangs : de plus en plus spectaculaires
+  'cadre-rang-bronze': 'brille', 'cadre-rang-argent': 'brille scintille', 'cadre-rang-or': 'brille rayons', 'cadre-rang-platine': 'tourne comete', 'cadre-rang-emeraude': 'tourne bulles ondes',
+  'cadre-rang-saphir': 'vague ondes double', 'cadre-rang-rubis': 'battement double flamme', 'cadre-rang-diamant': 'brille scintille rayons comete', 'cadre-rang-maitre': 'tourne double comete ondes',
+  'cadre-rang-legende': 'holo arcenciel ultra rayons scintille',
+}
+for (const o of BOUTIQUE) {
+  if (o.type !== 'cadre') continue
+  const fx = EFFETS[o.id] ?? (o.id.startsWith('cadre-maitre-') ? 'tourne comete' : undefined)
+  if (fx) o.anim = fx
+  if (!ORBITE_GARDEE.has(o.id)) delete o.orbite
+}
+
 export const possede = (p: Profile | null | undefined, o: Objet) => (o.condition ? !!p && o.condition.test(p) : o.prix === 0 || !!p?.possede?.includes(o.id))
 
 export async function acheterObjet(uid: string, o: Objet) {

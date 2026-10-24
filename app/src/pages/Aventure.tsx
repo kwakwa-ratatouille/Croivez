@@ -15,7 +15,14 @@ const DECOR: Record<string, { fond: string; deco: string[] }> = {
   montagne: { fond: 'linear-gradient(180deg, #DDEBF7, #9DB6CC)', deco: ['🏔️', '🌋', '🦅', '🧀', '⛷️'] },
   studio: { fond: 'linear-gradient(180deg, #3B1F2B, #7A2E4A)', deco: ['🎬', '🍿', '🎥', '⭐', '🎞️'] },
   scene: { fond: 'linear-gradient(180deg, #1E1B4B, #6D28D9)', deco: ['🎤', '🎸', '🥁', '🎧', '🎶'] },
+  arcade: { fond: 'linear-gradient(180deg, #0F172A, #312E81)', deco: ['🕹️', '👾', '🎮', '🏆', '💾'] },
+  labo: { fond: 'linear-gradient(180deg, #CCFBF1, #5EEAD4)', deco: ['🧪', '🔬', '🧬', '⚗️', '🦖'] },
+  arene: { fond: 'linear-gradient(180deg, #14532D, #22C55E)', deco: ['🏟️', '⚽', '🏅', '🏀', '🎾'] },
+  temps: { fond: 'linear-gradient(180deg, #FDE68A, #B45309)', deco: ['⏳', '🏰', '📜', '⚔️', '👑'] },
+  legendes: { fond: 'linear-gradient(180deg, #450A0A, #7C2D12)', deco: ['🐉', '📚', '🔥', '🏛️', '⚡'] },
 }
+// Région sans décor prévu : un décor neutre plutôt qu'un plantage
+const DECOR_DEFAUT = { fond: 'linear-gradient(180deg, #E2E8F0, #94A3B8)', deco: ['⭐', '🗺️', '✨', '🧭', '⭐'] }
 // Positions en zigzag (en % de la largeur) pour 8 étapes par région
 const X = [22, 62, 80, 48, 18, 40, 75, 50]
 
@@ -40,10 +47,10 @@ export default function Aventure() {
 
       {REGIONS.map((r) => {
         const debut = n
-        const d = DECOR[r.k]
+        const d = DECOR[r.k] ?? DECOR_DEFAUT
         const verrouillee = fait < debut
         return (
-          <section key={r.k} className={`carte-region${verrouillee ? ' fermee' : ''}`} style={{ background: d.fond, color: ['espace', 'foret', 'ocean', 'studio', 'scene'].includes(r.k) ? '#fff' : '#2a2a2a' }}>
+          <section key={r.k} className={`carte-region${verrouillee ? ' fermee' : ''}`} style={{ background: d.fond, color: ['espace', 'foret', 'ocean', 'studio', 'scene', 'arcade', 'arene', 'legendes'].includes(r.k) ? '#fff' : '#2a2a2a' }}>
             <h2 className="t carte-region-titre">{r.emoji} {r.nom[lang]}</h2>
             {d.deco.map((e, i) => <span key={i} className="carte-deco" style={{ left: `${[6, 84, 40, 90, 8][i]}%`, top: `${[12, 22, 46, 70, 82][i]}%` }}>{e}</span>)}
             {/* Le chemin pointillé qui relie les étapes */}

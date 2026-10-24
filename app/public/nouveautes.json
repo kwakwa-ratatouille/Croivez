@@ -1,5 +1,31 @@
 [
  {
+  "id": "2026-10-24n",
+  "titre": "Cadres refaits et boutique plus claire",
+  "points": [
+   [
+    "🖼️",
+    "Cadres refaits",
+    "Chaque cadre a ses propres effets : ondes, rayons de soleil, comète, étincelles, flammes, bulles, double anneau, anneau façon Saturne, glitch, arc-en-ciel, battement… Les planètes qui tournent restent sur les cadres de l’espace."
+   ],
+   [
+    "🛍️",
+    "Boutique plus claire",
+    "Recherche, filtre (Tout, À moi, À acheter, À gagner), tri par origine, prix ou nom, et une fiche avec confirmation avant chaque achat."
+   ],
+   [
+    "❓",
+    "Classé expliqué",
+    "Un bouton « ? » explique le classé, et on voit les récompenses de chaque rang directement, sans changer de page."
+   ],
+   [
+    "🗺️",
+    "Mode histoire réparé",
+    "Les 5 nouveaux mondes faisaient planter la page : c’est corrigé, avec un décor pour chacun."
+   ]
+  ]
+ },
+ {
   "id": "2026-10-24m",
   "titre": "Nouveaux rangs",
   "points": [
