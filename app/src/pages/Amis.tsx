@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { auth } from '../firebase'
 import { useAuth } from '../auth'
 import { usePrefs } from '../i18n'
-import { ajouterAmi, profilsDe, retirerAmi, trouverParPseudo, type ProfilPublic } from '../social'
+import { ajouterAmi, prevenirAmi, profilsDe, retirerAmi, trouverParPseudo, type ProfilPublic } from '../social'
 import { inviter } from '../duel'
 import { creerSalon, inviterAuSalon } from '../salon'
 import { ecouterMessages, envoyerMessage, type Message } from '../chat'
@@ -31,6 +31,7 @@ export default function Amis() {
     if (!p) { setMsg(fr ? 'Aucun joueur avec ce pseudo.' : 'No player with this name.'); return }
     if (p.uid === uid) { setMsg(fr ? 'C’est toi 😄' : 'That’s you!'); return }
     await ajouterAmi(uid, p.uid)
+    prevenirAmi(uid, profile?.pseudo ?? '?', p.uid).catch(() => {})
     setPseudo(''); setMsg(fr ? `${p.pseudo} ajouté·e !` : `${p.pseudo} added!`)
   }
   const partagerPseudo = async () => {
@@ -62,7 +63,7 @@ export default function Amis() {
             <Link to={`/joueur/${a.uid}`} className="ami-identite"><Avatar pseudo={a.pseudo} avatar={a.avatar} cadre={a.cadre} taille={46} /><span><strong>{a.pseudo}</strong><small>{fr ? 'Niveau' : 'Level'} {a.niveau}</small></span></Link>
             <div className="ami-actions">
               <button className="btn btn-s" title={fr ? 'Message' : 'Message'} onClick={() => setOuvert(a)}>💬<span className="ami-txt">{fr ? 'Message' : 'Chat'}</span></button>
-              <button className="btn btn-s" title={fr ? 'Défier en duel' : 'Duel'} onClick={async () => { await inviter(uid, profile?.pseudo ?? '', a.uid); nav('/duels') }}>⚔️<span className="ami-txt">{fr ? 'Duel' : 'Duel'}</span></button>
+              <button className="btn btn-s" title={fr ? 'Défier en duel' : 'Duel'} onClick={async () => { const id = await inviter(uid, profile?.pseudo ?? '', a.uid); nav(`/duels?attente=${id}`) }}>⚔️<span className="ami-txt">{fr ? 'Duel' : 'Duel'}</span></button>
               <button className="btn btn-s" title={fr ? 'Inviter dans un salon' : 'Invite to a room'} onClick={async () => { const m = { uid, pseudo: profile?.pseudo ?? '', avatar: profile?.avatar, cadre: profile?.cadre }; const code = await creerSalon(m); await inviterAuSalon(code, m, a.uid); nav(`/salon/${code}`) }}>👥<span className="ami-txt">{fr ? 'Salon' : 'Room'}</span></button>
               <button className="btn btn-g" aria-label={fr ? 'Retirer' : 'Remove'} onClick={() => retirerAmi(uid, a.uid)}><Icon d={ICONS.close} size={16} /></button>
             </div>

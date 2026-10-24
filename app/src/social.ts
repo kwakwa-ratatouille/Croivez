@@ -1,3 +1,5 @@
+import { ref as rref, set } from 'firebase/database'
+import { rtdb } from './firebase'
 import { arrayRemove, arrayUnion, collection, doc, getDoc, getDocs, increment, limit, orderBy, query, runTransaction, setDoc, where, documentId } from 'firebase/firestore'
 import { db } from './firebase'
 import { niveau, type Profile } from './auth'
@@ -93,6 +95,8 @@ export async function trouverParPseudo(pseudo: string): Promise<ProfilPublic | n
 }
 
 export const ajouterAmi = (moi: string, ami: string) => setDoc(doc(db, 'users', moi), { amis: arrayUnion(ami) }, { merge: true })
+// Prévient le joueur ajouté (notification « X t'a ajouté·e », avec un bouton pour l'ajouter en retour)
+export const prevenirAmi = (moi: string, pseudo: string, ami: string) => set(rref(rtdb, `invitations/${ami}/ami-${moi}`), { type: 'ami', de: pseudo, uid: moi, t: Date.now() })
 export const retirerAmi = (moi: string, ami: string) => setDoc(doc(db, 'users', moi), { amis: arrayRemove(ami) }, { merge: true })
 
 export async function profilsDe(uids: string[]): Promise<ProfilPublic[]> {

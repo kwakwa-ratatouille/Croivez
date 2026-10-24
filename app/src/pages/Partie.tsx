@@ -1,5 +1,5 @@
 import { createPortal } from 'react-dom'
-import { ETAPES, seuilEtape, validerEtape } from '../aventure'
+import { ETAPES, seuilEtape, urlEtape, validerEtape } from '../aventure'
 import { publierScoreJour } from '../jour'
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
@@ -32,6 +32,16 @@ type Reponse = { q: Question; donnee: string; juste: boolean; clic?: Clic; km?: 
 // Combo : bonnes réponses d'affilée → multiplicateur de points
 const multiplicateur = (combo: number) => (combo >= 8 ? 3 : combo >= 5 ? 2 : combo >= 3 ? 1.5 : 1)
 const PRIX_BONUS = 15
+
+// Quitter une partie ramène d'où l'on vient : mode histoire, révision, quiz du jour, ou la famille du quiz
+function retourVers(p: URLSearchParams) {
+  if (p.get('aventure') !== null) return '/aventure'
+  if (p.get('rev') === '1') return '/revision'
+  if (p.get('defi') === '1') return '/jour'
+  if (p.get('jeu')) return '/'
+  const t = trouverSousTheme(p.get('s') ?? '')
+  return t ? `/themes/${t.famille.k}` : '/'
+}
 
 export default function Partie() {
   const [params] = useSearchParams()
@@ -305,7 +315,7 @@ export default function Partie() {
   return (
     <div className="partie" onTouchStart={toucher} onTouchEnd={relacher} style={{ minHeight: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '28px 40px 48px', gap: 24 }}>
       <header style={{ width: '100%', maxWidth: 1040, display: 'flex', alignItems: 'center', gap: 20 }}>
-        <Link to="/" className="btn btn-g" aria-label={t('q.quit')} style={{ minHeight: 44, padding: '0 14px' }}><Icon d={ICONS.close} /></Link>
+        <Link to={retourVers(params)} className="btn btn-g" aria-label={t('q.quit')} style={{ minHeight: 44, padding: '0 14px' }}><Icon d={ICONS.close} /></Link>
         <div className="bar" style={{ flex: 1 }}><span style={{ width: `${((i + (courante ? 1 : 0)) / questions.length) * 100}%`, background: `var(--${k})` }} /></div>
         {jeu === 'express'
           ? <span className="t" style={{ fontWeight: 900, fontSize: 20, whiteSpace: 'nowrap', color: finExpress - Date.now() < 10_000 ? 'var(--ko-i)' : 'var(--text)' }}>{Math.max(0, Math.ceil((finExpress - Date.now()) / 1000))} s · {bonnes} ✓</span>
@@ -508,9 +518,18 @@ function Resultat({ reponses, xp, pieces, score, comboMax, k, reduit, onReplay }
           {reduit && reduit.f < 1 && !reduit.premiere && <p style={{ position: 'relative', fontSize: 13.5, color: 'var(--muted)', maxWidth: 460 }}>{lang === 'fr' ? `XP réduite (×${reduit.f.toFixed(2).replace('.', ',')}) : ${reduit.dejaValide ? 'niveau déjà réussi' : ''}${reduit.dejaValide && reduit.n ? ', ' : ''}${reduit.n ? `déjà joué ${reduit.n} fois aujourd’hui` : ''}. Pour gagner plus, essaie d’autres quiz ou un niveau plus dur.` : 'Reduced XP: try other quizzes or a harder level.'}</p>}
           <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center', position: 'relative' }}>
             {/* Rejouer : tout le niveau, mêmes réglages, nouvelles questions (les erreurs vont en révision) */}
+            {/* Mode histoire : étape réussie → on enchaîne directement sur la suivante */}
+            {(() => {
+              const n = Number(new URLSearchParams(location.hash.split('?')[1] ?? '').get('aventure') ?? NaN)
+              if (Number.isNaN(n) || !ETAPES[n]) return null
+              const reussi = bonnes >= seuilEtape(ETAPES[n])
+              return reussi && ETAPES[n + 1]
+                ? <Link className="btn btn-p btn-lg" to={urlEtape(n + 1)} autoFocus>{lang === 'fr' ? 'Étape suivante' : 'Next step'}<Icon d={ICONS.arrowR} /></Link>
+                : <Link className="btn btn-s btn-lg" to="/aventure">🗺️ {lang === 'fr' ? (reussi ? 'Voir la carte' : `Il faut ${seuilEtape(ETAPES[n])}/10 : retour à la carte`) : 'Back to map'}</Link>
+            })()}
             <button className="btn btn-p btn-lg" onClick={() => onReplay()} autoFocus>{t('res.replay')}<Icon d={ICONS.review} /></button>
             <button className="btn btn-s btn-lg" onClick={async () => { const r = await partagerDefi({ quiz: trouverSousTheme(reponses[0]?.q.s ?? new URLSearchParams(location.hash.split('?')[1]).get('s') ?? '')?.sous.id, nom: trouverSousTheme(reponses[0]?.q.s ?? new URLSearchParams(location.hash.split('?')[1]).get('s') ?? '')?.sous.nom[lang] ?? 'Mix', resultats: reponses.map((x) => x.juste), score, parrain: user?.uid }); setPartage(r) }}>{partage === 'copie' ? (lang === 'fr' ? 'Copié !' : 'Copied!') : (lang === 'fr' ? 'Défier un ami' : 'Challenge a friend')}</button>
-            <Link className="btn btn-g" to="/">{t('res.home')}</Link>
+            <Link className="btn btn-g" to={retourVers(new URLSearchParams(location.hash.split('?')[1] ?? ''))}>{lang === 'fr' ? 'Retour' : 'Back'}</Link>
           </div>
         </section>
         {erreurs.length > 0 && (

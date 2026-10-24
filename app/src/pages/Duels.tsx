@@ -4,7 +4,7 @@ import { onValue, ref, remove } from 'firebase/database'
 import { rtdb } from '../firebase'
 import { useAuth } from '../auth'
 import { usePrefs } from '../i18n'
-import { ajouterAmi, profilsDe, retirerAmi, trouverParPseudo, type ProfilPublic } from '../social'
+import { ajouterAmi, prevenirAmi, profilsDe, retirerAmi, trouverParPseudo, type ProfilPublic } from '../social'
 import { annulerRecherche, chercherAdversaire, inviter, refuser, rejoindre, type Duel } from '../duel'
 import { ICONS, Icon, Logo } from '../components/ui'
 import { MAX_JOUEURS, creerSalon, normaliserCode, rejoindreSalon } from '../salon'
@@ -21,15 +21,15 @@ export default function Duels() {
   const [pseudo, setPseudo] = useState('')
   const [message, setMessage] = useState('')
   const [recherche, setRecherche] = useState<string | null>(null)
-  const [attenteAmi, setAttenteAmi] = useState<string | null>(null)
+  const [attenteAmi, setAttenteAmi] = useState<string | null>(() => new URLSearchParams(location.hash.split('?')[1] ?? '').get('attente'))
   const uid = user!.uid
   const moi = profile?.pseudo ?? '?'
 
   useEffect(() => { profilsDe(profile?.amis ?? []).then(setAmis).catch(console.error) }, [profile?.amis])
 
   useEffect(() => onValue(ref(rtdb, `invitations/${uid}`), (s) => {
-    const v = (s.val() ?? {}) as Record<string, { de: string; salon?: string }>
-    setInvitations(Object.entries(v).map(([id, x]) => ({ id, de: x.de, salon: x.salon })))
+    const v = (s.val() ?? {}) as Record<string, { de: string; salon?: string; type?: string }>
+    setInvitations(Object.entries(v).filter(([, x]) => x.type !== 'ami').map(([id, x]) => ({ id, de: x.de, salon: x.salon })))
   }), [uid])
 
   // Dès que l'adversaire rejoint (recherche ou invitation), on part au duel
@@ -50,6 +50,7 @@ export default function Duels() {
     if (!p) return setMessage(fr ? 'Aucun joueur avec ce pseudo.' : 'No player with this username.')
     if (p.uid === uid) return setMessage(fr ? 'C’est vous !' : 'That’s you!')
     await ajouterAmi(uid, p.uid)
+    prevenirAmi(uid, moi, p.uid).catch(() => {})
     setPseudo('')
     setMessage(fr ? `${p.pseudo} ajouté à vos amis.` : `${p.pseudo} added to your friends.`)
   }

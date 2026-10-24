@@ -161,6 +161,10 @@ const CULTURE = {
   'code-route': { type: 'attribut', q: { fr: (n) => `${n} ?`, en: (n) => `${n}?` } },
   'artistes-recents': { type: 'image', q: { fr: (_, g) => (g === 'f' ? 'Qui est cette artiste ?' : 'Qui est cet artiste ?'), en: () => 'Who is this artist?' } },
   'artistes-fr': { type: 'image', q: { fr: (_, g) => (g === 'f' ? 'Qui est cette artiste française ?' : 'Qui est cet artiste français ?'), en: () => 'Who is this French artist?' } },
+  'photo-technique': { type: 'attribut', q: { fr: (n) => `Photo : ${n.charAt(0).toLowerCase() + n.slice(1)} ?`, en: (n) => `Photography: ${n}?` } },
+  'plans-cinema': { type: 'attribut', q: { fr: (n) => `Cadrage : ${n.charAt(0).toLowerCase() + n.slice(1)} ?`, en: (n) => `Framing: ${n}?` } },
+  lumiere: { type: 'attribut', q: { fr: (n) => `Lumière : ${n.charAt(0).toLowerCase() + n.slice(1)} ?`, en: (n) => `Lighting: ${n}?` } },
+  'video-montage': { type: 'attribut', q: { fr: (n) => `Vidéo : ${n.charAt(0).toLowerCase() + n.slice(1)} ?`, en: (n) => `Video: ${n}?` } },
   volcans: { type: 'image', q: { fr: () => 'Quel est ce volcan ?', en: () => 'Which volcano is this?' } },
   'volcans-pays': { type: 'attribut', pack: 'volcans', montrer: true, q: { fr: (n) => `Dans quel pays se trouve le volcan ${n} ?`, en: (n) => `Which country is ${n} in?` } },
   fleurs: { type: 'image', q: { fr: () => 'Quelle est cette fleur ?', en: () => 'Which flower is this?' } },
@@ -211,7 +215,8 @@ const CULTURE = {
   'idees-recues': { type: 'attribut', grand: true, fixe: true, q: { fr: () => 'Vrai ou faux ?', en: () => 'True or false?' } },
   'persos-univers': { type: 'attribut', pack: 'persos-jeu', montrer: true, groupe: 'genre', q: { fr: (n) => `De quel jeu vient ce personnage : ${n} ?`, en: (n) => `Which game is ${n} from?` } },
 } satisfies Record<string, { type: TypeCulture; montrer?: boolean; pack?: string; champ?: string; grand?: boolean; fixe?: boolean; groupe?: string; q: Record<Lang, (nom: string, genre?: string) => string> }>
-const TRAHIT = new Set(['albums', 'livres', 'livres-annee', 'jeux', 'jeux-annee', 'studios', 'studios-annee', 'logos', 'bd'])
+// (les quiz de dates gardent l'image : le titre est déjà dans la question)
+const TRAHIT = new Set(['albums', 'livres', 'jeux', 'studios', 'logos', 'bd'])
 export type CultureId = keyof typeof CULTURE
 export const estCulture = (s: string): s is CultureId => s in CULTURE
 export const packCulture = (s: CultureId) => (CULTURE[s] as { pack?: string }).pack ?? s
@@ -588,7 +593,7 @@ function culture(o: Opts, tousItems: ItemCulture[]): Question[] {
   const avecTexte = cfg.type === 'attribut' || cfg.type === 'annee'
   // Quiz en image : on écarte les images où la réponse est écrite (repérées par scripts/ocr-tout.sh)
   const lisibles = tousItems.filter((it) => !it.x?.nomVisible)
-  const items = cfg.type === 'image' ? (lisibles.length >= 30 ? lisibles : tousItems) : tousItems.filter((it) => val(it) && !(sousTheme.startsWith('traduction') && simple(texte(val(it), 'fr')) === simple(it.n.fr))
+  const items = cfg.type === 'image' ? (lisibles.length >= 30 ? lisibles : tousItems).filter((it) => it.img) : tousItems.filter((it) => val(it) && !(sousTheme.startsWith('traduction') && simple(texte(val(it), 'fr')) === simple(it.n.fr))
     // Question où la réponse se lit dans l'énoncé et ne peut pas être masquée : écartée
     && (!avecTexte || masquer(it.n.fr, texte(val(it), 'fr'), cfg.type === 'annee') !== null))
   const { cibles, pool } = tirer(items, (d) => Math.min(items.length, POOL_CULTURE[d]), o, (it) => it.id)

@@ -1,3 +1,4 @@
+import Invitations from './Invitations'
 import { planifierRappels } from '../rappels'
 import { reclamerParrainages } from '../parrainage'
 import { auth } from '../firebase'
@@ -24,6 +25,7 @@ const LIENS: { to: string; k: Key; icon: string }[] = [
   { to: '/aventure', k: 'nav.story', icon: 'M9 4.5 3.5 6.5v13l5.5-2 6 2 5.5-2v-13l-5.5 2-6-2ZM9 4.5v13M15 6.5v13' },
   { to: '/revision', k: 'nav.review', icon: ICONS.review },
   { to: '/duels', k: 'nav.duels', icon: ICONS.duels },
+  { to: '/amis', k: 'nav.friends', icon: 'M9 11a3.5 3.5 0 1 0 0-7a3.5 3.5 0 1 0 0 7ZM2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6M16 4.3a3.5 3.5 0 0 1 0 6.4M18 14.4c2.2.7 3.5 2.8 3.5 5.6' },
   { to: '/classements', k: 'nav.ranking', icon: ICONS.ranking },
   { to: '/profil', k: 'nav.profile', icon: ICONS.profile },
   { to: '/parametres', k: 'nav.settings', icon: ICONS.settings },
@@ -109,6 +111,7 @@ export default function Layout() {
           <Pieces n={profile?.pieces ?? 0} />
         </div>
         <MiseAJour />
+        <Invitations />
         <Outlet />
       </main>
     </div>

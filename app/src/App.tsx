@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { HashRouter, Navigate, Route, Routes, useParams } from 'react-router-dom'
+import { HashRouter, Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom'
 import { AuthProvider, useAuth } from './auth'
 import { PrefsProvider, usePrefs } from './i18n'
 import Layout from './components/Layout'
@@ -50,6 +50,9 @@ function OuvrirQuiz() {
   return <Navigate to={`/themes/${trouverSousTheme(sous)?.famille.k ?? ''}`} replace />
 }
 
+// Une nouvelle adresse de partie (étape suivante, rejouer…) recrée la partie de zéro
+function PartieCle() { const l = useLocation(); return <Partie key={l.search} /> }
+
 function Routeur() {
   const { user, profile, loading } = useAuth()
   if (loading) return <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center' }}><Logo width={72} /></div>
@@ -72,7 +75,7 @@ function Routeur() {
   return (
     <HashRouter>
       <Routes>
-        <Route path="/partie" element={<Partie />} />
+        <Route path="/partie" element={<PartieCle />} />
         <Route path="/duel/:id" element={<Duel />} />
         <Route path="/salon/:code" element={<Salon />} />
         <Route path="/tv" element={<Tv />} />

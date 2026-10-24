@@ -1,7 +1,7 @@
 import type { Lang } from './i18n'
 import type { SousThemeId } from './quiz/engine'
 
-export type Famille = 'tec' | 'esp' | 'mot' | 'geo' | 'cine' | 'mus' | 'nat' | 'sci' | 'his' | 'brd' | 'spo' | 'lit' | 'jv' | 'ani' | 'vie' | 'pop' | 'cui' | 'mot'
+export type Famille = 'pho' | 'tec' | 'esp' | 'mot' | 'geo' | 'cine' | 'mus' | 'nat' | 'sci' | 'his' | 'brd' | 'spo' | 'lit' | 'jv' | 'ani' | 'vie' | 'pop' | 'cui' | 'mot'
 
 export type SousTheme = { id: string; nom: Record<Lang, string>; jouable?: SousThemeId }
 
@@ -151,6 +151,12 @@ export const FAMILLES: { k: Famille; nom: Record<Lang, string>; icon: string; mo
     icon: 'M12 8.5a3.5 3.5 0 1 0 0 7a3.5 3.5 0 1 0 0-7ZM3.5 14c3-3.5 13-7 17-6.5M18.5 4.5l.7 1.6 1.6.7-1.6.7-.7 1.6-.7-1.6-1.6-.7 1.6-.7Z',
     motif: 'M60 30a14 14 0 1 0 0 28a14 14 0 1 0 0-28M20 52c14-14 56-26 80-24',
     subs: [j('planetes', 'Planètes et astres', 'Planets & stars'), j('missions', 'Missions spatiales : l’année', 'Space missions: year'), j('astronautes', 'Astronautes', 'Astronauts'), j('constellations', 'Constellations', 'Constellations'), j('lunes', 'Planètes et lunes', 'Planets & moons')],
+  },
+  {
+    k: 'pho', nom: { fr: 'Photo & vidéo', en: 'Photo & video' },
+    icon: 'M4 8.5h3l1.5-2.5h7L17 8.5h3v10H4ZM12 11a3 3 0 1 0 0 6a3 3 0 1 0 0-6Z',
+    motif: 'M20 30h20l8-12h24l8 12h20v40H20ZM60 38a12 12 0 1 0 0 24a12 12 0 1 0 0-24',
+    subs: [j('photo-technique', 'Technique photo', 'Photo technique'), j('plans-cinema', 'Plans et cadrages', 'Shots & framing'), j('lumiere', 'Lumière et éclairage', 'Lighting'), j('video-montage', 'Vidéo et montage', 'Video & editing')],
   },
 ]
 

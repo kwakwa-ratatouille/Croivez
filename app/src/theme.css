@@ -9,7 +9,7 @@
   --ko:#E0997A;--ko-t:#FBE9E1;--ko-i:#97482A;
   /* Familles ajoutées : même douceur que les couleurs de la DA */
   --spo:#7FC8A9;--spo-t:#E4F4EC;--spo-i:#245E47;--lit:#D9A07E;--lit-t:#F8EADF;--lit-i:#7D4424;
-  --jv:#C8A2D6;--jv-t:#F4EAF7;--jv-i:#6B3E7C;--lan:#C7B47E;--lan-t:#F4EEDD;--lan-i:#66552A;--tec:#7FB3D5;--tec-t:#E6F1F8;--tec-i:#22506E;--esp:#8E8CD8;--esp-t:#ECEBFA;--esp-i:#3A3780;--mot:#E8B86A;--mot-t:#FBF1DE;--mot-i:#7A5212;--ani:#F29BB0;--ani-t:#FCE9EE;--ani-i:#8A2F49;--vie:#9CC28A;--vie-t:#EAF3E4;--vie-i:#3F6230;
+  --jv:#C8A2D6;--jv-t:#F4EAF7;--jv-i:#6B3E7C;--lan:#C7B47E;--lan-t:#F4EEDD;--lan-i:#66552A;--pho:#E88E6F;--pho-t:#FCECE5;--pho-i:#7A3018;--tec:#7FB3D5;--tec-t:#E6F1F8;--tec-i:#22506E;--esp:#8E8CD8;--esp-t:#ECEBFA;--esp-i:#3A3780;--mot:#E8B86A;--mot-t:#FBF1DE;--mot-i:#7A5212;--ani:#F29BB0;--ani-t:#FCE9EE;--ani-i:#8A2F49;--vie:#9CC28A;--vie-t:#EAF3E4;--vie-i:#3F6230;
   --pop:#F07FA8;--pop-t:#FDE6EF;--pop-i:#8C2450;--cui:#EBA64F;--cui-t:#FCEEDB;--cui-i:#7F4A0E;--mot:#7FA6E8;--mot-t:#E5EEFC;--mot-i:#294F8F;
   --fond-logo:#D9D4CB;
   color-scheme: light;
@@ -23,7 +23,7 @@
   --brd:#9DADDA;--brd-t:#232F50;--brd-i:#BFCBEF;--ok:#93D9BB;--ok-t:#1D3B35;--ok-i:#A8E6CB;
   --ko:#E9A585;--ko-t:#3E2C29;--ko-i:#F3BCA2;
   --spo:#8ED6B7;--spo-t:#1C3B32;--spo-i:#A9E6CC;--lit:#E6B293;--lit-t:#3D2D27;--lit-i:#F2C8AE;
-  --jv:#D4B2E1;--jv-t:#33283F;--jv-i:#E4CCED;--lan:#D6C590;--lan-t:#36311F;--lan-i:#E8DAAE;--tec:#93C1DF;--tec-t:#1F2E38;--tec-i:#C4DDEE;--esp:#A3A1E2;--esp-t:#25243D;--esp-i:#D1D0F2;--mot:#EBC47F;--mot-t:#3A3020;--mot-i:#F2D9A8;--ani:#F4AFC0;--ani-t:#3E2730;--ani-i:#F8CBD6;--vie:#AFD09F;--vie-t:#283523;--vie-i:#CFE5C4;
+  --jv:#D4B2E1;--jv-t:#33283F;--jv-i:#E4CCED;--lan:#D6C590;--lan-t:#36311F;--lan-i:#E8DAAE;--pho:#EFA286;--pho-t:#3A2620;--pho-i:#F6CDBE;--tec:#93C1DF;--tec-t:#1F2E38;--tec-i:#C4DDEE;--esp:#A3A1E2;--esp-t:#25243D;--esp-i:#D1D0F2;--mot:#EBC47F;--mot-t:#3A3020;--mot-i:#F2D9A8;--ani:#F4AFC0;--ani-t:#3E2730;--ani-i:#F8CBD6;--vie:#AFD09F;--vie-t:#283523;--vie-i:#CFE5C4;
   --pop:#F59BBC;--pop-t:#3E2433;--pop-i:#F9C3D7;--cui:#F0BA72;--cui-t:#3B2E1E;--cui-i:#F6D3A2;--mot:#9DBCF0;--mot-t:#1F2D48;--mot-i:#C3D6F6;
   color-scheme: dark;
 }
@@ -992,3 +992,47 @@ body.glisse-en-cours { user-select: none; }
 .orbite { position: absolute; inset: -14%; z-index: 3; pointer-events: none; animation: tourne 9s linear infinite; }
 .orbite > span { position: absolute; left: 50%; top: 50%; font-size: calc(var(--t) * .26); line-height: 1; transform: rotate(calc(360deg / var(--n) * var(--i))) translateY(calc(var(--t) * -.62)) rotate(calc(-360deg / var(--n) * var(--i))); margin: calc(var(--t) * -.13) 0 0 calc(var(--t) * -.13); }
 @media (prefers-reduced-motion: reduce) { .orbite { animation: none; } }
+
+/* Profil sur téléphone : chiffres qui tiennent dans leurs cases, thème favori centré */
+.profil-stats div { min-width: 0; }
+.profil-stats strong { font-size: clamp(14px, 4.2vw, 18px); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+@media (max-width: 560px) {
+  .profil-tete { padding: 14px; gap: 12px; }
+  .profil-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .vitrine-favori { align-items: center; text-align: center; }
+  .vitrine-favori > * { max-width: 220px; width: 100%; }
+}
+
+/* Boutique : filtres et groupes dépliables */
+.filtres-boutique { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; }
+.filtres-boutique .pill { flex: none; }
+.groupe-objets > summary { cursor: pointer; list-style: none; display: flex; align-items: center; gap: 8px; font-size: 18px; font-weight: 900; min-height: 44px; }
+.groupe-objets > summary::after { content: '▾'; margin-left: auto; color: var(--muted); transition: transform .2s; }
+.groupe-objets:not([open]) > summary::after { transform: rotate(-90deg); }
+.groupe-objets > summary span { font-size: 13px; color: var(--muted); font-weight: 700; }
+.groupe-objets { padding-bottom: 6px; border-bottom: 1px solid var(--line); }
+
+/* Thèmes : « À faire pour toi » (défile tout seul) */
+.a-faire { display: flex; flex-direction: column; gap: 8px; }
+.a-faire-tete { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.a-faire-tete h2 { font-size: 19px; font-weight: 900; }
+.a-faire-tete .btn { min-height: 40px; }
+.a-faire-rangee { display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x proximity; padding-bottom: 4px; scrollbar-width: none; }
+.a-faire-rangee::-webkit-scrollbar { display: none; }
+.a-faire-carte { flex: none; width: 226px; scroll-snap-align: start; display: flex; align-items: center; gap: 10px; padding: 12px; border-radius: 18px; border: 0; background: var(--kt); color: var(--ki); text-align: left; cursor: pointer; text-decoration: none; font: inherit; transition: transform .15s; }
+.a-faire-carte:hover { transform: translateY(-2px); }
+.a-faire-carte > span:last-child { display: flex; flex-direction: column; min-width: 0; }
+.a-faire-carte strong { font: 900 15px Nunito, sans-serif; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.a-faire-carte small { font-size: 12.5px; font-weight: 600; opacity: .85; line-height: 1.3; }
+.a-faire-emoji { font-size: 28px; flex: none; }
+
+/* Invitations reçues : visibles partout, en haut de l'écran */
+.invitations { position: fixed; top: calc(10px + env(safe-area-inset-top)); left: 50%; transform: translateX(-50%); z-index: 50; width: min(440px, calc(100% - 20px)); display: flex; flex-direction: column; gap: 8px; }
+.invitation { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 18px; background: var(--surface); border: 2px solid var(--mus); box-shadow: 0 12px 30px rgba(0,0,0,.2); }
+.invitation-emoji { font-size: 26px; }
+.invitation-texte { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.invitation-texte strong { font: 900 15px Nunito, sans-serif; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.invitation-texte small { font-size: 13px; color: var(--muted); }
+.invitation .btn { min-height: 38px; padding: 0 12px; }
+/* Menu du bas sur téléphone : Réglages est dans le profil, on garde la place pour Amis */
+@media (max-width: 760px) { .side a[href$="/parametres"], .side a[href="#/parametres"] { display: none !important; } }

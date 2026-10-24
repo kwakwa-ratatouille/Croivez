@@ -49,6 +49,7 @@ export type Profile = {
   histo?: Record<string, { p: number; b: number; t: number; xp: number }> // 30 derniers jours (statistiques)
   precision?: Record<string, { b: number; t: number }> // bonnes réponses / questions par famille
   aventure?: number // étapes du mode aventure réussies
+  halloween?: number // parties jouées pendant l'événement Halloween
   exploits?: { salons?: number; victoiresMulti?: number; tv?: number; tvHote?: number; duelsGagnes?: number } // compteurs des récompenses multijoueur
 }
 
@@ -136,6 +137,9 @@ type Partie = {
 }
 
 // Enregistre une partie : XP, série, maîtrise, statistiques des badges et cartes de révision
+// Événement Halloween : du 25 octobre au 1er novembre
+export const halloween = (d = new Date()) => (d.getMonth() === 9 && d.getDate() >= 25) || (d.getMonth() === 10 && d.getDate() <= 1)
+
 // Identifiant de saison : le mois en cours (« 2026-10 »)
 export const saisonId = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
 
@@ -191,6 +195,8 @@ export async function enregistrerPartie(uid: string, profile: Profile, p: Partie
     ...(Object.keys(revision).length ? { revision } : {}),
     ...(p.stats ? { quetes: avancerQuetes(profile.quetes, p.stats) } : {}),
     partiesJour: partiesJour,
+    // Événement Halloween : le cadre dès la 1ʳᵉ partie, l'avatar et le titre à la 5ᵉ
+    ...(halloween() ? { halloween: increment(1), possede: arrayUnion('cadre-halloween', ...((profile.halloween ?? 0) + 1 >= 5 ? ['avatar-citrouille', 'titre-halloween'] : [])) } : {}),
     // Saison du mois : l'XP repart de zéro à chaque nouveau mois
     saison: profile.saison?.id === saisonId() ? { ...profile.saison, xp: profile.saison.xp + p.xp } : { id: saisonId(), xp: p.xp, recl: [] },
     // Historique des 30 derniers jours et précision par famille (statistiques)

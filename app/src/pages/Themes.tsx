@@ -1,3 +1,4 @@
+import AFaire from '../components/AFaire'
 import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useAuth } from '../auth'
@@ -140,6 +141,7 @@ export default function Themes() {
         </div>
         {!n && <div role="tablist" className="onglets">{FILTRES.map(([id, l]) => <button key={id} role="tab" aria-selected={filtre === id} className="onglet" onClick={() => setFiltre(id)}>{l}</button>)}</div>}
       </header>
+      {!n && <AFaire />}
       {/* Accès direct à une famille, sans tout faire défiler : la barre reste en haut de l'écran */}
       {!n && (
         <nav className="barre-familles" aria-label={fr ? 'Aller à une famille' : 'Jump to a family'}>
