@@ -64,7 +64,6 @@ export const FAMILLES: { k: Famille; nom: Record<Lang, string>; icon: string; mo
       j('chiens', 'Races de chiens', 'Dog breeds'),
       j('chats', 'Races de chats', 'Cat breeds'),
       j('chevaux', 'Races de chevaux', 'Horse breeds'),
-      j('noms-scientifiques', 'Noms scientifiques', 'Scientific names'),
     ],
   },
   {
