@@ -1707,3 +1707,12 @@ button.rang-palier[aria-pressed="true"] { background: color-mix(in srgb, var(--r
 .effet-prisme::before { inset: -50%; background: conic-gradient(from 0deg, transparent, rgba(255, 255, 255, .4) 4%, transparent 8%, transparent 20%, rgba(244, 114, 182, .4) 24%, transparent 28%, transparent 45%, rgba(34, 211, 238, .45) 49%, transparent 53%, transparent 70%, rgba(250, 204, 21, .4) 74%, transparent 78%); animation: tourne 12s linear infinite; }
 .effet-prisme::after { inset: 0; background: linear-gradient(60deg, transparent 0 40%, rgba(255, 255, 255, .25) 45%, transparent 50%) 0 0 / 300% 100%, repeating-linear-gradient(60deg, rgba(255, 255, 255, .06) 0 2px, transparent 2px 40px), repeating-linear-gradient(-60deg, rgba(255, 255, 255, .06) 0 2px, transparent 2px 40px); animation: titre-glisse 5s linear infinite; }
 @media (prefers-reduced-motion: reduce) { .fond-effet::before, .fond-effet::after, [class*="titre-fx-"], [class*="titre-fx-"]::after, .fx-aura, .fx-scanner, .fx-pulsar::before, .fx-pulsar::after, .fx-reflet::before, .fx-sceau::before, .fx-sceau::after, .fx-satellites, .fx-contresens, .fx-etincelles::before, .fx-etincelles::after, .fx-eclipse, .fx-eclipse::after { animation: none !important; } }
+
+/* Signaler une question : discret, sous la fiche */
+.signaler { position: relative; align-self: flex-start; }
+.signaler-btn { border: 0; background: none; padding: 4px 0; font: 700 13px Nunito, sans-serif; color: var(--muted); cursor: pointer; }
+.signaler-btn:hover { color: var(--ko); }
+.signaler-menu { position: absolute; bottom: 100%; left: 0; z-index: 20; display: flex; flex-direction: column; min-width: 190px; padding: 6px; border-radius: 14px; background: var(--surface); border: 1px solid var(--line); box-shadow: var(--shadow); }
+.signaler-menu button { border: 0; background: none; text-align: left; padding: 8px 10px; border-radius: 8px; font: 700 14px Nunito, sans-serif; color: var(--text); cursor: pointer; }
+.signaler-menu button:hover { background: var(--surface2); }
+.signaler-ok { font-size: 13px; font-weight: 700; color: var(--ok); }

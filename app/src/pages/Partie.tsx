@@ -1,3 +1,4 @@
+import Signaler from '../components/Signaler'
 import { createPortal } from 'react-dom'
 import { ETAPES, seuilEtape, urlEtape, validerEtape } from '../aventure'
 import { publierScoreJour } from '../jour'
@@ -506,6 +507,7 @@ function Fiche({ r, onNext, dernier, k, onFermer }: { r: Reponse; onNext: () => 
         <a href={f.wiki} target="_blank" rel="noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontWeight: 600, fontSize: 14, color: 'var(--muted)', alignSelf: 'flex-start', minHeight: 32 }}>
           <Icon d={ICONS.link} size={16} />{f.wiki.includes('wikipedia') ? t('q.more') : (lang === 'fr' ? 'En savoir plus' : 'Learn more')}
         </a>
+        <Signaler id={r.q.id} enonce={r.q.enonce} reponse={r.q.reponse} image={r.q.image} />
       </div>
       <button className="btn btn-p btn-lg btn-suivant-fiche" onClick={onNext} autoFocus>{dernier ? t('res.title') : t('q.next')}<span className="kbd">Entrée</span></button>
     </div>
