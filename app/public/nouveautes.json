@@ -1,5 +1,36 @@
 [
  {
+  "id": "2026-10-24m",
+  "titre": "Nouveaux rangs",
+  "points": [
+   [
+    "🏆",
+    "10 rangs façon Rocket League",
+    "Bronze, Argent, Or, Platine, Émeraude, Saphir, Rubis, Diamant et Maître, chacun en 4 divisions (4 = la meilleure), puis le rang ultime : Légende de Croivez."
+   ],
+   [
+    "📈",
+    "Points de rang",
+    "Chaque XP gagnée en partie rapporte 1 point. Il faut beaucoup plus jouer : Argent vers 9 000, Or vers 28 000, Légende vers 309 000. Ta progression de départ reprend ton XP, jusqu’à Argent 1."
+   ],
+   [
+    "💤",
+    "Pas de remise à zéro",
+    "Après 3 jours sans jouer, tu descends d’une division par jour d’absence."
+   ],
+   [
+    "🎁",
+    "Récompenses chaque lundi",
+    "Selon le rang où tu as fini la semaine : le cadre et la couleur de pseudo du rang. 3 semaines finies dans un rang : son titre et sa vitrine animée."
+   ],
+   [
+    "⚔️",
+    "Choisis le thème des duels",
+    "En défiant un ami, choisis un thème ou laisse « Aléatoire »."
+   ]
+  ]
+ },
+ {
   "id": "2026-10-24l",
   "titre": "Héros et défis Légende plus fluides",
   "points": [

@@ -57,7 +57,7 @@ export default function Boutique() {
   }
 
   // Filtres : on trouve vite ce qu'on cherche (débloqués, à gagner, familles, histoire, événements…)
-  const groupe = (o: Objet) => /maitre-/.test(o.id) ? 'familles' : /tour-du-monde|mi-parcours|premier-boss|avatar-boss|astronaute-or|legendes-histoire|legende-histoire|cadre-arcade/.test(o.id) ? 'histoire' : o.evenement || o.saison || /saison/.test(o.id) ? 'evenements' : o.condition ? 'gagner' : 'acheter'
+  const groupe = (o: Objet) => /maitre-/.test(o.id) ? 'familles' : /tour-du-monde|mi-parcours|premier-boss|avatar-boss|astronaute-or|legendes-histoire|legende-histoire|cadre-arcade/.test(o.id) ? 'histoire' : /-rang-/.test(o.id) ? 'rangs' : o.evenement || o.saison || /saison/.test(o.id) ? 'evenements' : o.condition ? 'gagner' : 'acheter'
   const garder = (o: Objet) => filtre === 'tout' || (filtre === 'debloques' ? possede(profile, o) : filtre === 'gagner' ? !!o.condition && !possede(profile, o) : filtre === 'acheter' ? !o.condition && !possede(profile, o) : groupe(o) === filtre)
   const liste = BOUTIQUE.filter((o) => o.type === onglet && garder(o))
   const gagnes = liste.filter((o) => o.condition && possede(profile, o)).length
@@ -83,7 +83,7 @@ export default function Boutique() {
           : (fr ? `Certains s’achètent avec des pièces, d’autres se gagnent en jouant : ${gagnes} / ${aGagner} gagnés.` : `Some are bought, others earned: ${gagnes} / ${aGagner} earned.`)}
       </p>
       <div className="filtres-boutique" role="group" aria-label={fr ? 'Filtrer' : 'Filter'}>
-        {([['tout', fr ? 'Tout' : 'All'], ['debloques', fr ? '✅ Débloqués' : '✅ Unlocked'], ['gagner', fr ? '🎯 À gagner' : '🎯 To earn'], ['acheter', fr ? '🪙 À acheter' : '🪙 To buy'], ['familles', fr ? '👑 Familles' : '👑 Families'], ['histoire', fr ? '🗺️ Histoire' : '🗺️ Story'], ['evenements', fr ? '🎃 Événements' : '🎃 Events']] as [string, string][]).map(([k, l]) => <button key={k} type="button" className="pill" aria-pressed={filtre === k} onClick={() => setFiltre(k)}>{l}</button>)}
+        {([['tout', fr ? 'Tout' : 'All'], ['debloques', fr ? '✅ Débloqués' : '✅ Unlocked'], ['gagner', fr ? '🎯 À gagner' : '🎯 To earn'], ['acheter', fr ? '🪙 À acheter' : '🪙 To buy'], ['familles', fr ? '👑 Familles' : '👑 Families'], ['histoire', fr ? '🗺️ Histoire' : '🗺️ Story'], ['evenements', fr ? '🎃 Événements' : '🎃 Events'], ['rangs', fr ? '🏆 Rangs' : '🏆 Ranks']] as [string, string][]).map(([k, l]) => <button key={k} type="button" className="pill" aria-pressed={filtre === k} onClick={() => setFiltre(k)}>{l}</button>)}
       </div>
       {liste.length === 0 && <p style={{ color: 'var(--muted)' }}>{fr ? 'Rien dans ce filtre pour l’instant.' : 'Nothing here yet.'}</p>}
       {msg && <p role="status" className="card" style={{ padding: '12px 16px', fontWeight: 700, color: 'var(--ko-i)' }}>{msg}</p>}
@@ -96,7 +96,7 @@ export default function Boutique() {
       ))}
       {onglet === 'cadre' && (
         <>
-          {([['gagner', fr ? 'À gagner en jouant (animés)' : 'Earned (animated)'], ['familles', fr ? 'Maîtres des familles' : 'Family masters'], ['histoire', fr ? 'Mode histoire' : 'Story mode'], ['evenements', fr ? 'Événements et saisons' : 'Events & seasons'], ['acheter', fr ? 'À acheter' : 'To buy']] as [string, string][]).map(([g, titre]) => {
+          {([['gagner', fr ? 'À gagner en jouant (animés)' : 'Earned (animated)'], ['familles', fr ? 'Maîtres des familles' : 'Family masters'], ['histoire', fr ? 'Mode histoire' : 'Story mode'], ['evenements', fr ? 'Événements et saisons' : 'Events & seasons'], ['rangs', fr ? 'Récompenses de rang' : 'Rank rewards'], ['acheter', fr ? 'À acheter' : 'To buy']] as [string, string][]).map(([g, titre]) => {
             const l = liste.filter((o) => groupe(o) === g)
             return l.length > 0 && (
               <details key={g} className="groupe-objets" open>

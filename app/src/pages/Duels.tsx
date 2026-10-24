@@ -8,6 +8,8 @@ import { ajouterAmi, prevenirAmi, profilsDe, retirerAmi, trouverParPseudo, type 
 import { annulerRecherche, chercherAdversaire, inviter, refuser, rejoindre, type Duel } from '../duel'
 import { ICONS, Icon, Logo } from '../components/ui'
 import { MAX_JOUEURS, creerSalon, normaliserCode, rejoindreSalon } from '../salon'
+import { FAMILLES } from '../themes'
+import { natureQuiz, type SousThemeId } from '../quiz/engine'
 
 export default function Duels() {
   const { lang } = usePrefs()
@@ -19,6 +21,7 @@ export default function Duels() {
   const [codeSalon, setCodeSalon] = useState('')
   const [msgSalon, setMsgSalon] = useState('')
   const [pseudo, setPseudo] = useState('')
+  const [themeDuel, setThemeDuel] = useState('mix') // thème des duels contre un ami (« mix » = au hasard)
   const [message, setMessage] = useState('')
   const [recherche, setRecherche] = useState<string | null>(null)
   const [attenteAmi, setAttenteAmi] = useState<string | null>(() => new URLSearchParams(location.hash.split('?')[1] ?? '').get('attente'))
@@ -138,12 +141,18 @@ export default function Duels() {
             <button className="btn btn-s" style={{ minHeight: 48 }}>{fr ? 'Ajouter' : 'Add'}</button>
           </form>
           {message && <p role="status" style={{ fontSize: 14, color: 'var(--muted)' }}>{message}</p>}
+          <label className="salon-champ"><span>{fr ? 'Thème du duel' : 'Duel topic'}</span>
+            <select className="input" value={themeDuel} onChange={(e) => setThemeDuel(e.target.value)}>
+              <option value="mix">{fr ? '🎲 Aléatoire' : '🎲 Random'}</option>
+              {FAMILLES.map((f) => ({ f, subs: f.subs.filter((s) => s.jouable && natureQuiz(s.id) !== 'carte') })).filter((x) => x.subs.length).map(({ f, subs }) => <optgroup key={f.k} label={f.nom[lang]}>{subs.map((s) => <option key={s.id} value={s.id}>{s.nom[lang]}</option>)}</optgroup>)}
+            </select>
+          </label>
           {amis.length === 0 && <p style={{ color: 'var(--muted)', fontSize: 15 }}>{fr ? `Partagez votre pseudo « ${moi} » pour qu’on vous ajoute.` : `Share your username “${moi}” so friends can add you.`}</p>}
           {amis.map((a) => (
             <div key={a.uid} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 10, borderRadius: 16, background: 'var(--surface2)' }}>
               <span className="t" style={{ width: 40, height: 40, borderRadius: '50%', background: 'var(--geo-t)', color: 'var(--geo-i)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800 }}>{a.pseudo[0]?.toUpperCase()}</span>
               <div style={{ flex: 1, cursor: 'pointer' }} onClick={() => nav(`/joueur/${a.uid}`)}><div style={{ fontWeight: 700 }}>{a.pseudo}</div><div style={{ fontSize: 13, color: 'var(--muted)' }}>{fr ? 'Niveau' : 'Level'} {a.niveau}</div></div>
-              <button className="btn btn-p" style={{ minHeight: 44 }} onClick={async () => setAttenteAmi(await inviter(uid, moi, a.uid))}>{fr ? 'Défier' : 'Challenge'}</button>
+              <button className="btn btn-p" style={{ minHeight: 44 }} onClick={async () => setAttenteAmi(await inviter(uid, moi, a.uid, themeDuel === 'mix' ? undefined : themeDuel as SousThemeId))}>{fr ? 'Défier' : 'Challenge'}</button>
               <button className="btn btn-g" style={{ minHeight: 44, padding: '0 12px' }} aria-label={fr ? 'Retirer' : 'Remove'} onClick={() => retirerAmi(uid, a.uid)}><Icon d={ICONS.close} size={18} /></button>
             </div>
           ))}

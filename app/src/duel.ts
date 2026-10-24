@@ -19,9 +19,10 @@ export const QUESTIONS_DUEL = 10
 export const SECONDES_DUEL = 15
 const THEMES: SousThemeId[] = ['drapeaux', 'capitales', 'drapeaux-inverse', 'capitales-inverse', 'pays-carte', 'acteurs', 'films', 'artistes', 'logos', 'animaux', 'personnalites', 'monuments', 'elements', 'extraits', 'plats', 'films-annee', 'personnalites-pays', 'tableaux', 'monnaies']
 
-function nouveauDuel(uid: string, pseudo: string, invite?: string): Duel {
+// Thème choisi par celui qui invite, ou au hasard
+function nouveauDuel(uid: string, pseudo: string, invite?: string, theme?: SousThemeId): Duel {
   return {
-    etat: 'attente', createur: uid, s: THEMES[Math.floor(Math.random() * THEMES.length)],
+    etat: 'attente', createur: uid, s: theme ?? THEMES[Math.floor(Math.random() * THEMES.length)],
     seed: Math.floor(Math.random() * 2 ** 31), n: QUESTIONS_DUEL,
     joueurs: { [uid]: { pseudo, score: 0 } }, cree: Date.now(),
     ...(invite ? { invite } : {}),
@@ -29,9 +30,9 @@ function nouveauDuel(uid: string, pseudo: string, invite?: string): Duel {
 }
 
 // Invitation d'un ami : le duel attend, l'ami le voit dans ses invitations
-export async function inviter(uid: string, pseudo: string, ami: string) {
+export async function inviter(uid: string, pseudo: string, ami: string, theme?: SousThemeId) {
   const r = push(ref(rtdb, 'duels'))
-  await set(r, nouveauDuel(uid, pseudo, ami))
+  await set(r, nouveauDuel(uid, pseudo, ami, theme))
   await set(ref(rtdb, `invitations/${ami}/${r.key}`), { de: pseudo, uid, t: serverTimestamp() })
   return r.key!
 }

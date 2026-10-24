@@ -2,7 +2,7 @@ import { ETAPES } from '../aventure'
 import { etatSaison } from '../saison'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { niveau, useAuth } from '../auth'
+import { jour, niveau, useAuth } from '../auth'
 import { usePrefs } from '../i18n'
 import { FAMILLES, type Famille, type SousTheme } from '../themes'
 import { defiDuJour } from '../quiz/defi'
@@ -10,7 +10,9 @@ import { aReviser } from '../quiz/revision'
 import { accesQuiz } from '../progression'
 import { Coche, ICONS, Icon, Piece } from '../components/ui'
 import { etatDuJour, quetesDuJour, recupererQuete } from '../quetes'
-import { evenementDeLaSemaine, ligueDe, ligueSuivante } from '../meta'
+import { evenementDeLaSemaine } from '../meta'
+import { infoRang, ptsEffectifs } from '../ligues'
+import BlasonRang from '../components/BlasonRang'
 import BandeauEvenement from '../components/BandeauEvenement'
 import { monXpSemaine } from '../social'
 import CarteCouverture from '../components/CarteCouverture'
@@ -62,8 +64,8 @@ export default function Accueil() {
   const dues = aReviser(profile?.revision).length
   const [xpSemaine, setXpSemaine] = useState<number | null>(null)
   useEffect(() => { if (user) monXpSemaine(user.uid).then(setXpSemaine).catch(() => setXpSemaine(0)) }, [user, profile?.xp])
-  const ligue = ligueDe(xpSemaine ?? 0)
-  const suivante = ligueSuivante(xpSemaine ?? 0)
+  const ptsRang = ptsEffectifs(profile?.ligue, jour())
+  const rang = infoRang(ptsRang, lang)
 
   const tous = FAMILLES.flatMap((f) => f.subs.filter((s) => s.jouable).map((s) => ({ s, k: f.k })))
   const ouverts = tous.filter((x) => accesQuiz(x.s.id, profile))
@@ -124,13 +126,13 @@ export default function Accueil() {
 
       {/* Ma semaine : ligue, quêtes, révision, événement */}
       <section className="accueil-semaine">
-        <Link to="/classements" className="card bloc-ligue" style={{ ['--lc' as string]: ligue.couleur }}>
-          <span className="ligue-blason" style={{ width: 52, height: 52 }}><Icon d={ICONS.sparkle} size={26} /></span>
+        <Link to="/classements" className="card bloc-ligue" style={{ ['--lc' as string]: rang.rang.couleur }}>
+          <BlasonRang pts={ptsRang} taille={50} />
           <span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
-            <span className="eyebrow">{fr ? 'Ta ligue de la semaine' : 'Your weekly league'}</span>
-            <strong className="t" style={{ fontSize: 20 }}>{fr ? 'Ligue' : 'League'} {ligue.nom[lang]}</strong>
-            <span style={{ fontSize: 13, color: 'var(--muted)' }}>{xpSemaine === null ? '…' : suivante ? (fr ? `${xpSemaine} XP · encore ${suivante.min - xpSemaine} pour ${suivante.nom.fr}` : `${xpSemaine} XP · ${suivante.min - xpSemaine} to ${suivante.nom.en}`) : `${xpSemaine} XP · ${fr ? 'tout en haut !' : 'top league!'}`}</span>
-            {suivante && xpSemaine !== null && <span className="bar" style={{ height: 6 }}><span style={{ width: `${((xpSemaine - ligue.min) / (suivante.min - ligue.min)) * 100}%`, background: suivante.couleur }} /></span>}
+            <span className="eyebrow">{fr ? 'Ton rang' : 'Your rank'}{xpSemaine !== null ? ` · ${xpSemaine} XP ${fr ? 'cette semaine' : 'this week'}` : ''}</span>
+            <strong className="t" style={{ fontSize: 20 }}>{rang.nom}</strong>
+            <span style={{ fontSize: 13, color: 'var(--muted)' }}>{rang.suivant ? (fr ? `${ptsRang.toLocaleString('fr-FR')} pts · encore ${(rang.suivant - ptsRang).toLocaleString('fr-FR')} pour monter` : `${ptsRang} pts · ${rang.suivant - ptsRang} to go`) : (fr ? 'Rang ultime atteint !' : 'Top rank!')}</span>
+            {rang.suivant && <span className="bar" style={{ height: 6 }}><span style={{ width: `${((ptsRang - rang.min) / (rang.suivant - rang.min)) * 100}%`, background: rang.rang.couleur }} /></span>}
           </span>
         </Link>
 

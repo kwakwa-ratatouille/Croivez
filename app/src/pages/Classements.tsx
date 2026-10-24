@@ -2,8 +2,11 @@ import { Link } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { useAuth } from '../auth'
 import { usePrefs } from '../i18n'
-import { BONUS_LEGENDE, POINTS_NIVEAU, classementGlobal, classementRecord, classementSemaine, erudition, profilsDe, type PeriodeRecord } from '../social'
-import { BOUTIQUE, LIGUES, ligueDe, ligueSuivante } from '../meta'
+import { BONUS_LEGENDE, POINTS_NIVEAU, classementGlobal, classementRang, classementRecord, classementSemaine, erudition, profilsDe, type PeriodeRecord } from '../social'
+import { DIVISIONS, GRACE, TOUS_RANGS, infoRang, ptsEffectifs, recompensesRang, seuil } from '../ligues'
+import { jour } from '../auth'
+import BlasonRang from '../components/BlasonRang'
+import { BOUTIQUE } from '../meta'
 import { ICONS, Icon } from '../components/ui'
 import Avatar from '../components/Avatar'
 import { Pseudo } from '../components/Cosmetiques'
@@ -29,7 +32,9 @@ export default function Classements() {
     setErreur('')
     const charger: Promise<Ligne[]> = onglet === 'records'
       ? classementRecord(jeuRecord, periode).then((l) => l.map((x) => ({ ...x, valeur: x.score })))
-      : onglet === 'semaine' || onglet === 'ligue'
+      : onglet === 'ligue'
+      ? classementRang().then((l) => l.map((x) => ({ ...x, valeur: ptsEffectifs(x.ligue, jour()) })).sort((a, b) => b.valeur - a.valeur))
+      : onglet === 'semaine'
       ? classementSemaine().then((l) => l.map((x) => ({ ...x, valeur: x.xp })))
       : onglet === 'global'
         ? classementGlobal().then((l) => l.map((x) => ({ ...x, valeur: x.erudition ?? 0 })))
@@ -37,13 +42,13 @@ export default function Classements() {
     charger.then(setLignes).catch((e) => { console.error(e); setErreur(fr ? 'Classement indisponible (connexion ou règles Firebase).' : 'Leaderboard unavailable.') })
   }, [onglet, user, profile, fr, jeuRecord, periode])
 
-  const ONGLETS: [Onglet, string][] = [['ligue', fr ? 'Ma ligue' : 'My league'], ['semaine', fr ? 'Semaine' : 'Week'], ['records', 'Records'], ['global', fr ? 'Érudition' : 'Knowledge'], ['amis', fr ? 'Amis' : 'Friends']]
+  const ONGLETS: [Onglet, string][] = [['ligue', fr ? 'Mon rang' : 'My rank'], ['semaine', fr ? 'Semaine' : 'Week'], ['records', 'Records'], ['global', fr ? 'Érudition' : 'Knowledge'], ['amis', fr ? 'Amis' : 'Friends']]
   const medaille = ['#E3A72F', '#9AA3AD', '#C98B5A']
-  const xpSemaine = onglet === 'ligue' || onglet === 'semaine' ? lignes?.find((l) => l.uid === user?.uid)?.valeur ?? 0 : 0
-  const maLigue = ligueDe(xpSemaine)
-  const suivante = ligueSuivante(xpSemaine)
-  const affichees = onglet === 'ligue' ? lignes?.filter((l) => ligueDe(l.valeur).id === maLigue.id) : lignes
-  const unite = onglet === 'records' ? (fr ? 'bonnes' : 'correct') : onglet === 'global' || onglet === 'amis' ? 'pts' : 'XP'
+  const mesPts = ptsEffectifs(profile?.ligue, jour())
+  const monRang = infoRang(mesPts, lang)
+  // Ma ligue : les joueurs du même rang (toutes divisions)
+  const affichees = onglet === 'ligue' ? lignes?.filter((l) => infoRang(l.valeur).rang.id === monRang.rang.id) : lignes
+  const unite = onglet === 'records' ? (fr ? 'bonnes' : 'correct') : onglet === 'global' || onglet === 'amis' || onglet === 'ligue' ? 'pts' : 'XP'
   const fmt = new Intl.NumberFormat(fr ? 'fr-FR' : 'en-GB')
 
   return (
@@ -52,7 +57,7 @@ export default function Classements() {
         <h1 className="t" style={{ fontSize: 34, fontWeight: 900 }}>{fr ? 'Classements' : 'Leaderboards'}</h1>
         <p style={{ color: 'var(--muted)' }}>{onglet === 'records' ? (fr ? 'Les meilleurs scores en Express (60 secondes) et en Survie (3 vies).' : 'Best Express and Survival scores.') : onglet === 'global' || onglet === 'amis'
           ? (fr ? 'Classés à l’érudition : les niveaux réussis au sans-faute, pas le temps passé.' : 'Ranked by knowledge: levels passed flawlessly, not time spent.')
-          : (fr ? 'Classés à l’XP gagnée cette semaine. Remise à zéro chaque lundi.' : 'Ranked by XP earned this week. Resets every Monday.')}</p>
+          : onglet === 'ligue' ? (fr ? 'Les joueurs de ton rang, classés aux points de rang. Pas de remise à zéro : on baisse seulement si on ne joue plus.' : 'Players of your rank, by rank points.') : (fr ? 'Classés à l’XP gagnée cette semaine. Remise à zéro chaque lundi.' : 'Ranked by XP earned this week. Resets every Monday.')}</p>
       </header>
       <div role="tablist" className="onglets">
         {ONGLETS.map(([id, l]) => <button key={id} role="tab" aria-selected={onglet === id} className="onglet" onClick={() => setOnglet(id)}>{l}</button>)}
@@ -70,32 +75,48 @@ export default function Classements() {
           <Link to={`/partie?jeu=${jeuRecord}&d=0&m=qcm`} className="btn btn-p" style={{ alignSelf: 'flex-start' }}>{fr ? 'Battre le record' : 'Beat the record'}<Icon d={ICONS.arrowR} /></Link>
         </section>
       )}
-      {onglet === 'ligue' && lignes && (
-        <section className="card rise ligue-carte" style={{ ['--lc' as string]: maLigue.couleur }}>
+      {onglet === 'ligue' && (
+        <section className="card rise ligue-carte" style={{ ['--lc' as string]: monRang.rang.couleur }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
-            <span className="ligue-blason"><Icon d={ICONS.sparkle} size={30} /></span>
+            <BlasonRang pts={mesPts} taille={64} />
             <div style={{ flex: '1 1 220px', display: 'flex', flexDirection: 'column', gap: 6 }}>
-              <span className="eyebrow">{fr ? 'Ta ligue cette semaine' : 'Your league this week'}</span>
-              <strong className="t" style={{ fontSize: 24 }}>{fr ? 'Ligue' : 'League'} {maLigue.nom[lang]}</strong>
+              <span className="eyebrow">{fr ? 'Ton rang' : 'Your rank'}</span>
+              <strong className="t" style={{ fontSize: 26 }}>{monRang.nom}</strong>
               <span style={{ color: 'var(--muted)', fontSize: 14 }}>
-                {suivante
-                  ? (fr ? `${fmt.format(xpSemaine)} XP · encore ${fmt.format(suivante.min - xpSemaine)} XP pour la ligue ${suivante.nom.fr}` : `${xpSemaine} XP · ${suivante.min - xpSemaine} XP to ${suivante.nom.en}`)
-                  : (fr ? `${fmt.format(xpSemaine)} XP : ligue la plus haute !` : `${xpSemaine} XP: top league!`)}
+                {monRang.suivant
+                  ? (fr ? `${fmt.format(mesPts)} pts · encore ${fmt.format(monRang.suivant - mesPts)} pts pour ${infoRang(monRang.suivant, lang).nom}` : `${mesPts} pts · ${monRang.suivant - mesPts} to ${infoRang(monRang.suivant, lang).nom}`)
+                  : (fr ? `${fmt.format(mesPts)} pts : rang ultime !` : `${mesPts} pts: top rank!`)}
               </span>
-              {suivante && <div className="bar" style={{ height: 8 }}><span style={{ width: `${((xpSemaine - maLigue.min) / (suivante.min - maLigue.min)) * 100}%`, background: suivante.couleur }} /></div>}
+              {monRang.suivant && <div className="bar" style={{ height: 8 }}><span style={{ width: `${((mesPts - monRang.min) / (monRang.suivant - monRang.min)) * 100}%`, background: monRang.rang.couleur }} /></div>}
             </div>
           </div>
-          {/* Échelle des ligues : on voit d'un coup d'œil où l'on est et ce qui reste */}
-          <div className="ligue-echelle">
-            {LIGUES.map((l) => (
-              <div key={l.id} className={`ligue-palier${l.id === maLigue.id ? ' actuelle' : ''}${xpSemaine >= l.min ? ' atteinte' : ''}`} style={{ ['--lc' as string]: l.couleur }}>
-                <span className="ligue-point" />
-                <strong>{l.nom[lang]}</strong>
-                <small>{fmt.format(l.min)} XP</small>
-              </div>
-            ))}
+          {/* Échelle des rangs : 9 rangs de 4 divisions, puis le rang ultime */}
+          <div className="rang-echelle">
+            {TOUS_RANGS.map((r, i) => {
+              const min = seuil(i * DIVISIONS)
+              const n = profile?.ligue?.fins?.[r.id] ?? 0
+              return (
+                <div key={r.id} className={`rang-palier${r.id === monRang.rang.id ? ' actuelle' : ''}${mesPts >= min ? ' atteinte' : ''}`} style={{ ['--rc' as string]: r.couleur }}>
+                  <BlasonRang pts={r.id === 'legende' ? min : seuil(i * DIVISIONS + DIVISIONS - 1)} taille={34} />
+                  <strong>{r.nom[lang]}</strong>
+                  <small>{fmt.format(min)}</small>
+                  {n > 0 && <small className="rang-fins">{n}× ✓</small>}
+                </div>
+              )
+            })}
           </div>
-          <p style={{ fontSize: 13, color: 'var(--muted)' }}>{fr ? 'Chaque partie rapporte de l’XP. Ta ligue dépend de l’XP gagnée depuis lundi : chaque semaine, une nouvelle chance de monter.' : 'Every game earns XP. Your league depends on XP earned since Monday.'}</p>
+          <div className="rang-regles">
+            <p>🎮 {fr ? 'Chaque XP gagnée en partie rapporte 1 point de rang. Chaque rang a 4 divisions (4 = la meilleure), puis vient le rang ultime.' : 'Each XP earned is 1 rank point. Each rank has 4 divisions, then the ultimate rank.'}</p>
+            <p>💤 {fr ? `Pas de remise à zéro : après ${GRACE} jours sans jouer, tu descends d’une division par jour d’absence.` : `No reset: after ${GRACE} idle days you drop one division per day.`}</p>
+            <p>🎁 {fr ? 'Chaque lundi, selon le rang où tu as fini la semaine : cadre et couleur de pseudo du rang. 3 semaines finies dans un rang : son titre et sa vitrine animée.' : 'Each Monday: the frame and name colour of your rank. 3 weeks: its title and animated showcase.'}</p>
+            <div className="rang-lots">
+              {[recompensesRang(monRang.rang)].map((rec) => [rec.cadre, rec.pseudo, rec.titre, rec.fond].map((id) => {
+                const o = BOUTIQUE.find((x) => x.id === id)
+                const a = !!profile?.possede?.includes(id)
+                return o && <Link key={id} to={`/boutique?o=${o.type}`} className={`pill${a ? ' ok' : ''}`}>{a ? '✅' : '🔒'} {o.nom[lang]}</Link>
+              }))}
+            </div>
+          </div>
         </section>
       )}
 
@@ -131,7 +152,7 @@ export default function Classements() {
               <Avatar pseudo={l.pseudo} avatar={l.avatar} cadre={l.cadre} taille={40} />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}><Pseudo nom={l.pseudo} style={l.pseudoStyle} />{moi && <span style={{ color: 'var(--muted)', fontWeight: 500 }}> ({fr ? 'toi' : 'you'})</span>}</div>
-                {l.niveau && <div style={{ fontSize: 13, color: 'var(--muted)' }}>{fr ? 'Niveau' : 'Level'} {l.niveau}{onglet === 'semaine' ? ` · ${ligueDe(l.valeur).nom[lang]}` : ''}{l.titre && BOUTIQUE.find((o) => o.id === l.titre) ? ` · ${BOUTIQUE.find((o) => o.id === l.titre)!.nom[lang]}` : ''}</div>}
+                {l.niveau && <div style={{ fontSize: 13, color: 'var(--muted)' }}>{fr ? 'Niveau' : 'Level'} {l.niveau}{onglet === 'ligue' ? ` · ${infoRang(l.valeur, lang).nom}` : ''}{l.titre && BOUTIQUE.find((o) => o.id === l.titre) ? ` · ${BOUTIQUE.find((o) => o.id === l.titre)!.nom[lang]}` : ''}</div>}
               </div>
               <span className="t" style={{ fontWeight: 900, fontSize: 17, whiteSpace: 'nowrap' }}>{fmt.format(l.valeur)} {unite}</span>
             </Link>

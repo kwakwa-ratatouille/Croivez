@@ -1,9 +1,10 @@
 import type { CSSProperties } from 'react'
 import type { Lang } from '../i18n'
 import { SAISONS } from '../evenements'
+import { TOUS_RANGS } from '../ligues'
 
 // ——— Fonds de vitrine animés : un dégradé et des particules qui tombent, montent ou flottent ———
-export type FondAnime = { id: string; nom: Record<Lang, string>; prix: number; fond: string; particules: string[]; mouvement: 'tombe' | 'monte' | 'flotte'; saison?: string; luxe?: 1 | 2; halo?: boolean }
+export type FondAnime = { id: string; nom: Record<Lang, string>; prix: number; fond: string; particules: string[]; mouvement: 'tombe' | 'monte' | 'flotte'; saison?: string; luxe?: 1 | 2; halo?: boolean; rang?: string }
 export const FONDS_ANIMES: FondAnime[] = [
   { id: 'fond-pieces', nom: { fr: 'Pluie de pièces', en: 'Coin rain' }, prix: 400, fond: 'linear-gradient(140deg, #78350F, #D97706 55%, #FDE68A)', particules: ['🪙', '💰', '🪙'], mouvement: 'tombe' },
   { id: 'fond-neige', nom: { fr: 'Nuit enneigée', en: 'Snowy night' }, prix: 350, fond: 'linear-gradient(180deg, #0F172A, #1E3A8A)', particules: ['❄️', '❅', '❆'], mouvement: 'tombe' },
@@ -21,6 +22,8 @@ export const FONDS_ANIMES: FondAnime[] = [
   { id: 'fond-aurore', nom: { fr: 'Aurore boréale', en: 'Northern lights' }, prix: 3000, luxe: 1, halo: true, fond: 'linear-gradient(180deg, #020617, #064E3B 55%, #134E4A)', particules: ['✨', '⭐', '✨'], mouvement: 'flotte' },
   { id: 'fond-tresor', nom: { fr: 'Salle du trésor', en: 'Treasure room' }, prix: 7500, luxe: 1, halo: true, fond: 'radial-gradient(circle at 50% 110%, #FDE047, #B45309 45%, #451A03)', particules: ['💎', '👑', '🪙', '💰'], mouvement: 'tombe' },
   { id: 'fond-ultime', nom: { fr: 'Big Bang', en: 'Big Bang' }, prix: 30000, luxe: 2, halo: true, fond: 'conic-gradient(from 0deg at 50% 50%, #0F0C29, #6D28D9, #DB2777, #F59E0B, #22D3EE, #0F0C29)', particules: ['🌌', '💫', '🪐', '☄️', '⭐', '💎'], mouvement: 'flotte' },
+  // Un fond par rang (finir 3 semaines dans ce rang)
+  ...TOUS_RANGS.map((r, i): FondAnime => ({ id: `fond-rang-${r.id}`, nom: { fr: `Vitrine ${r.nom.fr}`, en: `${r.nom.en} showcase` }, prix: 0, rang: r.id, halo: i >= 4, luxe: r.id === 'legende' ? 2 : undefined, fond: `radial-gradient(circle at 50% 120%, ${r.couleur}, ${r.fonce} 60%, #0B0B12)`, particules: [r.emoji, '✨', r.emoji], mouvement: 'monte' })),
   // Un fond par saison du passe de combat (palier 15)
   ...SAISONS.map((s): FondAnime => ({ id: `fond-s-${s.id}`, nom: s.nom, prix: 0, fond: s.fond, particules: s.cadre.orbite, mouvement: s.id === 'givre' || s.id === 'automne' || s.id === 'noel' ? 'tombe' : 'flotte', saison: s.id })),
 ]
@@ -39,7 +42,7 @@ export function Particules({ f, nb = 14 }: { f: FondAnime; nb?: number }) {
 }
 
 // ——— Styles de pseudo : le nom affiché en dégradé, doré, néon… ———
-export type StylePseudo = { id: string; nom: Record<Lang, string>; prix: number; css: CSSProperties; classe?: string; luxe?: 1 | 2 }
+export type StylePseudo = { id: string; nom: Record<Lang, string>; prix: number; css: CSSProperties; classe?: string; luxe?: 1 | 2; rang?: string }
 export const STYLES_PSEUDO: StylePseudo[] = [
   { id: 'pseudo-or', nom: { fr: 'Doré', en: 'Golden' }, prix: 300, css: { backgroundImage: 'linear-gradient(90deg, #B8862E, #F4C430, #FFF2B8, #F4C430, #B8862E)' }, classe: 'brille' },
   { id: 'pseudo-arcenciel', nom: { fr: 'Arc-en-ciel', en: 'Rainbow' }, prix: 600, css: { backgroundImage: 'linear-gradient(90deg, #EF4444, #F59E0B, #22C55E, #3B82F6, #A855F7, #EF4444)' }, classe: 'defile' },
@@ -87,6 +90,8 @@ export const STYLES_PSEUDO: StylePseudo[] = [
   { id: 'pseudo-divin', nom: { fr: 'Divin', en: 'Divine' }, prix: 50000, css: { backgroundImage: 'linear-gradient(90deg, #B8862E, #F4C430, #FFF2B8, #F472B6, #F4C430, #B8862E)' }, classe: 'defile ultra divin', luxe: 2 },
   { id: 'pseudo-bonbon', nom: { fr: 'Bonbon', en: 'Candy' }, prix: 350, css: { backgroundImage: 'linear-gradient(90deg, #F472B6, #A5F3FC, #F472B6)' }, classe: 'defile' },
 ]
+// Couleurs de rang (finir une semaine dans ce rang)
+STYLES_PSEUDO.push(...TOUS_RANGS.map((r): StylePseudo => ({ id: `pseudo-rang-${r.id}`, nom: { fr: `Couleur ${r.nom.fr}`, en: `${r.nom.en} colour` }, prix: 0, rang: r.id, css: { backgroundImage: r.id === 'legende' ? 'linear-gradient(90deg, #B8862E, #F4C430, #F472B6, #A78BFA, #22D3EE, #B8862E)' : `linear-gradient(90deg, ${r.fonce}, ${r.couleur}, ${r.fonce})`, filter: `drop-shadow(0 0 5px ${r.couleur}99)` }, classe: r.id === 'legende' ? 'defile ultra divin' : 'defile' })))
 STYLES_PSEUDO.sort((a, b) => a.prix - b.prix)
 export const stylePseudo = (id?: string) => STYLES_PSEUDO.find((s) => s.id === id)
 

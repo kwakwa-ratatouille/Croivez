@@ -9,6 +9,7 @@ import { erudition, semaine } from './social'
 import { EVENEMENTS, SAISONS, evenementActif } from './evenements'
 import { ANIMAUX } from './components/Animal'
 import { FONDS_ANIMES, STYLES_PSEUDO } from './components/Cosmetiques'
+import { TOUS_RANGS } from './ligues'
 
 // ——— Ligues hebdomadaires : selon l'XP gagnée cette semaine (classement de la semaine) ———
 export const LIGUES = [
@@ -293,10 +294,17 @@ export const BOUTIQUE: Objet[] = [
     ]
   }),
   // ——— Fonds de vitrine animés et styles de pseudo (achetables ; un fond par saison au palier 15) ———
-  ...FONDS_ANIMES.map((f): Objet => f.saison
+  ...FONDS_ANIMES.map((f): Objet => f.rang
+    ? { id: f.id, type: 'fond', nom: f.nom, prix: 0, luxe: f.luxe, condition: { desc: { fr: `Finir 3 semaines au rang ${TOUS_RANGS.find((r) => r.id === f.rang)?.nom.fr} (ou plus haut)`, en: 'Finish 3 weeks at this rank' }, test: (p) => !!p.possede?.includes(f.id) } }
+    : f.saison
     ? { id: f.id, type: 'fond', nom: f.nom, prix: 0, saison: f.saison, condition: { desc: { fr: `${SAISONS.find((s) => s.id === f.saison)?.emoji} ${f.nom.fr} : passe de combat, palier 15`, en: `${f.nom.en}: battle pass tier 15` }, test: (p) => !!p.possede?.includes(f.id) } }
     : { id: f.id, type: 'fond', nom: f.nom, prix: f.prix, luxe: f.luxe }),
-  ...STYLES_PSEUDO.map((s): Objet => ({ id: s.id, type: 'pseudo', nom: s.nom, prix: s.prix, luxe: s.luxe })),
+  ...STYLES_PSEUDO.map((s): Objet => ({ id: s.id, type: 'pseudo', nom: s.nom, prix: s.prix, luxe: s.luxe, ...(s.rang ? { condition: { desc: { fr: `Finir une semaine au rang ${TOUS_RANGS.find((r) => r.id === s.rang)?.nom.fr} (ou plus haut)`, en: 'Finish a week at this rank' }, test: (p: Profile) => !!p.possede?.includes(s.id) } } : {}) })),
+  // ——— Rangs : un cadre par rang (finir une semaine dedans), un titre (finir 3 semaines) ———
+  ...TOUS_RANGS.flatMap((r, i): Objet[] => [
+    { id: `cadre-rang-${r.id}`, type: 'cadre', nom: { fr: `Cadre ${r.nom.fr}`, en: `${r.nom.en} frame` }, prix: 0, couleur: r.id === 'legende' ? 'conic-gradient(#F4C430, #F472B6, #A78BFA, #22D3EE, #F4C430)' : `conic-gradient(${r.couleur}, ${r.fonce}, ${r.couleur}, #fff, ${r.couleur})`, anim: i >= 6 ? 'tourne brille' : i >= 3 ? 'tourne' : 'brille', orbite: i >= 2 ? [r.emoji, '✨', r.emoji] : undefined, luxe: r.id === 'legende' ? 2 : undefined, condition: { desc: { fr: `Finir une semaine au rang ${r.nom.fr} (ou plus haut)`, en: `Finish a week at ${r.nom.en}` }, test: (p: Profile) => !!p.possede?.includes(`cadre-rang-${r.id}`) } },
+    { id: `titre-rang-${r.id}`, type: 'titre', nom: { fr: `${r.emoji} ${r.id === 'legende' ? 'Légende éternelle' : `Habitué·e ${r.nom.fr}`}`, en: `${r.emoji} ${r.nom.en} regular` }, prix: 0, condition: { desc: { fr: `Finir 3 semaines au rang ${r.nom.fr} (ou plus haut)`, en: `Finish 3 weeks at ${r.nom.en}` }, test: (p: Profile) => !!p.possede?.includes(`titre-rang-${r.id}`) } },
+  ]),
   { id: 'titre-mecene', type: 'titre', nom: { fr: 'Mécène', en: 'Patron' }, prix: 3000, luxe: 1 },
   { id: 'titre-milliardaire', type: 'titre', nom: { fr: 'Milliardaire du savoir', en: 'Knowledge billionaire' }, prix: 10000, luxe: 1 },
   { id: 'titre-empereur', type: 'titre', nom: { fr: '👑 Empereur·rice de Croivez', en: '👑 Emperor of Croivez' }, prix: 30000, luxe: 2 },

@@ -5,7 +5,8 @@ import { arrayUnion, deleteField, doc, getDoc, onSnapshot, serverTimestamp, setD
 import { auth, db } from './firebase'
 import { cleRevision, planifier, type CarteRevision } from './quiz/revision'
 import type { SousThemeId } from './quiz/engine'
-import { publierRecord, publierXp, resumePublic, synchroniserProfilPublic } from './social'
+import { publierRecord, publierXp, resumePublic, semaine, synchroniserProfilPublic } from './social'
+import { avancerLigue, type EtatLigue } from './ligues'
 import { avancerQuetes, type EtatQuetes, type StatsPartie } from './quetes'
 import { secretsObtenus } from './meta'
 import { evenementActif } from './evenements'
@@ -46,6 +47,7 @@ export type Profile = {
   vitrineFond?: string // fond de la vitrine (dégradé ou fond animé « fond-… »)
   pseudoStyle?: string // style du pseudo acheté en boutique
   caisses?: number // caisses ouvertes (le prix augmente avec)
+  ligue?: EtatLigue // rang : points de rang, dernier jour joué, semaine en cours, semaines finies par rang
   farm?: Record<string, Record<string, number>> // parties du jour par niveau (XP dégressive), clé = date
   miniJeux?: string[] // mini-jeux déjà joués (cadre Holographique, titre Touche-à-tout)
   saison?: { id: string; xp: number; recl: number[]; jour?: string; xpJour?: number } // saison en cours (un mois) : XP gagnée, paliers récupérés, XP du jour (plafonnée)
@@ -185,6 +187,9 @@ export async function enregistrerPartie(uid: string, profile: Profile, p: Partie
 
   const defiReussi = p.defi && taux >= 0.5 && profile.defiJour !== today
   const evt = evenementActif()
+  // Rang : points de rang (avec l'inactivité) et récompenses de la semaine précédente
+  // (premier passage : on part de l'XP déjà gagnée, au plus Argent 1)
+  const ligue = avancerLigue(profile.ligue ?? (profile.xp ? { pts: Math.min(profile.xp, 9200), jour: today, semaine: semaine() } : undefined), p.xp, today)
   const partiesEvt = evt ? profile.evenements?.[evt.id] ?? (evt.id === 'halloween' ? profile.halloween ?? 0 : 0) : 0
   const valide = !p.revision && p.difficulte && p.difficulte <= 4 && taux >= 1
   // Paliers après cette partie : l'érudition publique est recalculée tout de suite
@@ -205,7 +210,9 @@ export async function enregistrerPartie(uid: string, profile: Profile, p: Partie
     partiesJour: partiesJour,
     // Événement Halloween : le cadre dès la 1ʳᵉ partie, l'avatar et le titre à la 5ᵉ
     // Événement en cours (Halloween, Noël…) : le cadre dès la 1ʳᵉ partie, l'avatar et le titre à la 5ᵉ
-    ...(evt ? { evenements: { [evt.id]: increment(1) }, possede: arrayUnion(evt.cadre.id, ...(partiesEvt + 1 >= 5 ? [evt.avatar.id, evt.titre.id] : [])) } : {}),
+    ...(evt ? { evenements: { [evt.id]: increment(1) } } : {}),
+    ...(evt || ligue.objets.length ? { possede: arrayUnion(...(evt ? [evt.cadre.id, ...(partiesEvt + 1 >= 5 ? [evt.avatar.id, evt.titre.id] : [])] : []), ...ligue.objets) } : {}),
+    ligue: ligue.etat,
     // Saison du mois : l'XP repart de zéro à chaque nouveau mois
     saison: (() => {
       const s = profile.saison?.id === saisonId() ? profile.saison : { id: saisonId(), xp: 0, recl: [] as number[] }
@@ -230,5 +237,5 @@ export async function enregistrerPartie(uid: string, profile: Profile, p: Partie
     ...(valide ? { paliers: { [p.sousTheme]: arrayUnion(...[1, 2, 3, 4].filter((d) => d <= p.difficulte!)) } } : {}),
   }, { merge: true })
   if (p.record && (p.record.jeu === 'express' || p.record.jeu === 'survie')) publierRecord(uid, profile.pseudo, { avatar: profile.avatar, cadre: profile.cadre }, p.record.jeu, p.record.score).catch(console.error)
-  await publierXp(uid, profile.pseudo, p.xp, (profile.xp ?? 0) + p.xp, serie, { avatar: profile.avatar, cadre: profile.cadre }, resumePublic({ ...profile, parties: (profile.parties ?? 0) + 1, maitrise: p.revision ? profile.maitrise : { ...profile.maitrise, [p.sousTheme]: maitrise }, paliers: nouveauxPaliers })).catch(console.error)
+  await publierXp(uid, profile.pseudo, p.xp, (profile.xp ?? 0) + p.xp, serie, { avatar: profile.avatar, cadre: profile.cadre }, resumePublic({ ...profile, parties: (profile.parties ?? 0) + 1, maitrise: p.revision ? profile.maitrise : { ...profile.maitrise, [p.sousTheme]: maitrise }, paliers: nouveauxPaliers, ligue: ligue.etat })).catch(console.error)
 }

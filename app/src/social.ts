@@ -6,7 +6,7 @@ import { niveau, type Profile } from './auth'
 import { FAMILLES } from './themes'
 
 // Profil public (lisible par tous les joueurs connectés) : sert aux classements et à la recherche d'amis
-export type ProfilPublic = { uid: string; pseudo: string; xp: number; niveau: number; serie: number; avatar?: string; cadre?: string; vitrine?: string[]; favori?: string; familles?: Record<string, number>; parties?: number; bonnes?: number; meilleureSerie?: number; erudition?: number; titre?: string; bio?: string; vitrineFond?: string; pseudoStyle?: string }
+export type ProfilPublic = { uid: string; pseudo: string; xp: number; niveau: number; serie: number; avatar?: string; cadre?: string; vitrine?: string[]; favori?: string; familles?: Record<string, number>; parties?: number; bonnes?: number; meilleureSerie?: number; erudition?: number; titre?: string; bio?: string; vitrineFond?: string; pseudoStyle?: string; ligue?: { pts: number; jour: string } }
 
 // ——— Érudition : le classement global récompense le savoir, pas le temps passé ———
 // Chaque niveau réussi au sans-faute rapporte des points (les niveaux sautés en payant ne comptent pas),
@@ -31,7 +31,7 @@ export function resumePublic(p: Profile) {
     const j = f.subs.filter((s) => s.jouable)
     familles[f.k] = j.length ? Math.round(j.reduce((a, s) => a + (p.maitrise?.[s.id] ?? 0), 0) / j.length) : 0
   }
-  return { familles, vitrine: p.vitrine ?? [], favori: p.favori ?? '', parties: p.parties ?? 0, bonnes: p.bonnes ?? 0, meilleureSerie: p.meilleureSerie ?? p.serie ?? 0, erudition: erudition(p), titre: p.titre ?? '', bio: p.bio ?? '', vitrineFond: p.vitrineFond ?? '', pseudoStyle: p.pseudoStyle ?? '' }
+  return { familles, vitrine: p.vitrine ?? [], favori: p.favori ?? '', parties: p.parties ?? 0, bonnes: p.bonnes ?? 0, meilleureSerie: p.meilleureSerie ?? p.serie ?? 0, erudition: erudition(p), titre: p.titre ?? '', bio: p.bio ?? '', vitrineFond: p.vitrineFond ?? '', pseudoStyle: p.pseudoStyle ?? '', ...(p.ligue ? { ligue: { pts: p.ligue.pts, jour: p.ligue.jour } } : {}) }
 }
 export const publierVitrine = (uid: string, p: Profile, maj: { vitrine?: string[]; favori?: string; bio?: string; vitrineFond?: string }) => Promise.all([
   setDoc(doc(db, 'users', uid), maj, { merge: true }),
@@ -109,6 +109,11 @@ export async function profilsDe(uids: string[]): Promise<ProfilPublic[]> {
   return out
 }
 
+// Classement des rangs : les meilleurs points de rang (l'inactivité est appliquée à l'affichage)
+export async function classementRang(): Promise<ProfilPublic[]> {
+  const snap = await getDocs(query(collection(db, 'profils'), orderBy('ligue.pts', 'desc'), limit(200)))
+  return snap.docs.map((d) => ({ uid: d.id, ...d.data() } as ProfilPublic))
+}
 export async function classementGlobal(): Promise<ProfilPublic[]> {
   const snap = await getDocs(query(collection(db, 'profils'), orderBy('erudition', 'desc'), limit(50)))
   return snap.docs.map((d) => ({ uid: d.id, ...d.data() } as ProfilPublic))

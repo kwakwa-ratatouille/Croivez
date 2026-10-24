@@ -1147,3 +1147,23 @@ body.glisse-en-cours { user-select: none; }
 @keyframes glitch-pseudo { 0%, 100% { transform: none; filter: drop-shadow(2px 0 0 rgba(244, 114, 182, .9)) drop-shadow(-2px 0 0 rgba(34, 211, 238, .9)) } 20% { transform: translate(-1px, 1px) skewX(-6deg); filter: drop-shadow(-3px 0 0 rgba(244, 114, 182, .9)) drop-shadow(3px 0 0 rgba(34, 211, 238, .9)) } 22% { transform: none } 60% { transform: translate(1px, -1px); filter: drop-shadow(3px 1px 0 rgba(244, 114, 182, .9)) drop-shadow(-3px -1px 0 rgba(34, 211, 238, .9)) } 62% { transform: none } }
 
 .pseudo-style:not(.defile):not(.brille) { background-size: 100% 100%; }
+
+/* ——— Rangs ——— */
+.blason-rang { position: relative; flex: none; display: inline-flex; align-items: center; justify-content: center; clip-path: polygon(50% 0, 100% 14%, 100% 62%, 50% 100%, 0 62%, 0 14%); background: linear-gradient(160deg, var(--rc), var(--rf)); box-shadow: inset 0 0 0 3px rgba(255,255,255,.35); }
+.blason-rang::before { content: ''; position: absolute; inset: 4px; clip-path: inherit; background: linear-gradient(160deg, rgba(255,255,255,.35), transparent 55%); }
+.blason-emoji { position: relative; line-height: 1; margin-top: -10%; filter: drop-shadow(0 2px 2px rgba(0,0,0,.3)); }
+.blason-divs { position: absolute; bottom: 22%; display: flex; gap: 2px; }
+.blason-divs i { width: 5px; height: 5px; border-radius: 2px; background: rgba(0,0,0,.35); }
+.blason-divs i.on { background: #fff; box-shadow: 0 0 4px #fff; }
+.blason-rang.ultime { background: conic-gradient(from var(--angle-luxe, 0deg), #F4C430, #F472B6, #A78BFA, #22D3EE, #F4C430); animation: luxe-bord 4s linear infinite; }
+.rang-echelle { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px 4px; }
+.rang-palier { display: flex; flex-direction: column; align-items: center; gap: 2px; text-align: center; opacity: .45; }
+.rang-palier.atteinte { opacity: 1; }
+.rang-palier.actuelle strong { color: var(--rc); }
+.rang-palier.actuelle .blason-rang { transform: scale(1.15); filter: drop-shadow(0 0 8px var(--rc)); }
+.rang-palier strong { font-size: 12px; font-weight: 800; }
+.rang-palier small { font-size: 10.5px; color: var(--muted); }
+.rang-fins { color: var(--ok-i, #15803D) !important; font-weight: 800; }
+.rang-regles { display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: var(--muted); }
+.rang-lots { display: flex; flex-wrap: wrap; gap: 6px; }
+.rang-lots .pill { text-decoration: none; }
