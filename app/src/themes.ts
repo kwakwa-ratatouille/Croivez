@@ -44,7 +44,7 @@ export const FAMILLES: { k: Famille; nom: Record<Lang, string>; icon: string; mo
     k: 'mus', nom: { fr: 'Musique', en: 'Music' },
     icon: 'M9 18V6l10-2v12M9 18a2.5 2.5 0 1 1-5 0a2.5 2.5 0 1 1 5 0ZM19 16a2.5 2.5 0 1 1-5 0a2.5 2.5 0 1 1 5 0Z',
     motif: 'M30 60V20l40-8v40M30 60a8 6 0 1 1-16 0a8 6 0 1 1 16 0M70 52a8 6 0 1 1-16 0a8 6 0 1 1 16 0M96 40V14l14 6',
-    subs: [{ id: 'artistes', nom: { fr: 'Artistes', en: 'Artists' }, jouable: 'artistes' }, { id: 'extraits', nom: { fr: 'Extraits musicaux', en: 'Music clips' }, jouable: 'extraits' }, { id: 'albums', nom: { fr: 'Albums', en: 'Albums' }, jouable: 'albums' }, j('compositeurs', 'Compositeurs classiques', 'Classical composers'), j('blind-titre', 'Blind test : le titre', 'Blind test: title'), j('blind-album', 'Blind test : l’album', 'Blind test: album'), j('artistes-genre', 'Genres musicaux', 'Music genres')],
+    subs: [{ id: 'artistes', nom: { fr: 'Artistes', en: 'Artists' }, jouable: 'artistes' }, { id: 'extraits', nom: { fr: 'Extraits musicaux', en: 'Music clips' }, jouable: 'extraits' }, { id: 'albums', nom: { fr: 'Albums', en: 'Albums' }, jouable: 'albums' }, j('compositeurs', 'Compositeurs classiques', 'Classical composers'), j('blind-titre', 'Blind test : le titre', 'Blind test: title'), j('blind-album', 'Blind test : l’album', 'Blind test: album'), j('artistes-genre', 'Genres musicaux', 'Music genres'), j('groupes', 'Groupes', 'Bands')],
   },
   {
     k: 'nat', nom: { fr: 'Nature', en: 'Nature' },
@@ -89,7 +89,7 @@ export const FAMILLES: { k: Famille; nom: Record<Lang, string>; icon: string; mo
     k: 'spo', nom: { fr: 'Sport', en: 'Sport' },
     icon: 'M12 3.5a8.5 8.5 0 1 0 0 17a8.5 8.5 0 1 0 0-17ZM12 3.5v4l3.5 2.5-1.3 4h-4.4L8.5 10 12 7.5M15.5 10l4.5-1M8.5 10 4 9M9.8 14l-2.3 4.5M14.2 14l2.3 4.5',
     motif: 'M10 70h100M20 70V30M100 70V30M20 30h80M60 30v40M40 50a20 20 0 0 1 40 0',
-    subs: [j('sportifs', 'Sportifs', 'Athletes'), j('sportifs-sport', 'Quel sport ?', 'Which sport?'), j('clubs', 'Clubs de football', 'Football clubs')],
+    subs: [j('sportifs', 'Sportifs', 'Athletes'), j('sportifs-sport', 'Quel sport ?', 'Which sport?'), j('clubs', 'Clubs de football', 'Football clubs'), j('stades', 'Stades', 'Stadiums')],
   },
   {
     k: 'lit', nom: { fr: 'Littérature & BD', en: 'Books & comics' },

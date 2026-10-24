@@ -3,11 +3,11 @@ import { Link, useParams } from 'react-router-dom'
 import { useAuth } from '../auth'
 import { usePrefs } from '../i18n'
 import { FAMILLES, type SousTheme } from '../themes'
-import { ICONS, Icon } from '../components/ui'
-import { accesQuiz, progresFamille } from '../progression'
+import { ICONS, Icon, Piece } from '../components/ui'
+import { PRIX_CAISSE, accesQuiz, progresFamille } from '../progression'
 import { evenementDeLaSemaine } from '../meta'
 import Illustration from '../components/Illustration'
-import CarteCouverture from '../components/CarteCouverture'
+import CarteCouverture, { proposerCaisse } from '../components/CarteCouverture'
 import { normaliser } from '../quiz/match'
 
 const pctFamille = (subs: SousTheme[], maitrise: Record<string, number> = {}) => {
@@ -51,6 +51,7 @@ export default function Themes() {
             <h1 className="t" style={{ fontSize: 34, fontWeight: 900 }}>{famille.nom[lang]}</h1>
             <span style={{ fontWeight: 600 }}>{jouables.length} quiz · {pctFamille(famille.subs, m)} % {fr ? 'maîtrisé' : 'mastered'}</span>
             <div className="bar" style={{ background: 'var(--surface)', maxWidth: 320 }}><span style={{ width: `${pctFamille(famille.subs, m)}%`, background: `var(--${famille.k})` }} /></div>
+            {possedes < total && <button className="btn btn-p" style={{ alignSelf: 'flex-start' }} onClick={() => proposerCaisse(famille.k)}><Icon d={ICONS.sparkle} size={18} />{fr ? 'Ouvrir une caisse' : 'Open a crate'} · <Piece size={18} />{PRIX_CAISSE}</button>}
             <span className="chip" style={{ alignSelf: 'flex-start', background: 'var(--surface)', color: 'inherit', fontWeight: 800 }}><Icon d={ICONS.lock} size={14} />{possedes} / {total} {fr ? 'débloqués' : 'unlocked'}</span>
           </div>
         </header>

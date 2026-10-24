@@ -105,6 +105,8 @@ const CULTURE = {
   'artistes-genre': { type: 'attribut', pack: 'artistes', champ: 'genre', montrer: true, q: { fr: (n) => `Quel est le genre musical de ${n} ?`, en: (n) => `What music genre is ${n} known for?` } },
   studios: { type: 'attribut', q: { fr: (n) => `Quel studio a produit « ${n} » ?`, en: (n) => `Which studio produced “${n}”?` } },
   'studios-annee': { type: 'annee', pack: 'studios', champ: 'annee', q: { fr: (n) => `En quelle année est sorti « ${n} » ?`, en: (n) => `In what year was “${n}” released?` } },
+  groupes: { type: 'image', q: { fr: () => 'Quel est ce groupe ?', en: () => 'Which band is this?' } },
+  stades: { type: 'attribut', montrer: true, q: { fr: (n) => `Dans quelle ville se trouve : ${n} ?`, en: (n) => `Which city is ${n} in?` } },
   'lieux-jeux': { type: 'attribut', q: { fr: (n) => `Dans quel jeu trouve-t-on : ${n} ?`, en: (n) => `Which game features ${n}?` } },
   sagas: { type: 'attribut', montrer: true, q: { fr: (n) => `Quel éditeur publie la saga « ${n} » ?`, en: (n) => `Who publishes the “${n}” series?` } },
   'persos-univers': { type: 'attribut', pack: 'persos-jeux', champ: 'univers', montrer: true, q: { fr: (n) => `De quel univers vient ${n} ?`, en: (n) => `Which franchise is ${n} from?` } },

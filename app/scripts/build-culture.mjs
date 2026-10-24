@@ -350,6 +350,15 @@ SELECT ?item ?sl ?nFr ?nEn ?dFr ?dEn ?img WHERE {
   // Sagas de jeux vidéo et leur éditeur
   sagas: () => sparql(req('?item wdt:P31 wd:Q7058673; wdt:P123 ?x. OPTIONAL { ?item wdt:P18 ?img }', { sl: 15, select: libSelect('x'), extra: lib('x') }))
     .then((l) => finaliser(l, (b) => paire(b, 'x') && ({ ...base(b), img: image(b), r: paire(b, 'x') }))),
+  // Super-héros et méchants de comics : Marvel ou DC (ou autre éditeur) ?
+  heros: () => sparql(req('VALUES ?t { wd:Q188784 wd:Q1062258 wd:Q15711870 } ?item wdt:P31 ?t; wdt:P123 ?x. OPTIONAL { ?item wdt:P18 ?img }', { sl: 15, select: libSelect('x'), extra: lib('x') }))
+    .then((l) => finaliser(l, (b) => paire(b, 'x') && ({ ...base(b), img: image(b), r: paire(b, 'x') }))),
+  // Groupes de musique en photo
+  groupes: () => sparql(req('?item wdt:P31 wd:Q215380; wdt:P18 ?img.', { sl: 40 }))
+    .then((l) => finaliser(l, (b) => ({ ...base(b), img: image(b) }))),
+  // Stades : dans quelle ville ?
+  stades: () => sparql(req('?item wdt:P31/wdt:P279? wd:Q483110; wdt:P131 ?x; wdt:P18 ?img.', { sl: 20, select: libSelect('x'), extra: lib('x') }))
+    .then((l) => finaliser(l, (b) => paire(b, 'x') && ({ ...base(b), img: image(b), r: paire(b, 'x') }))),
   // Licences : films des grands studios (Pixar, Disney, Marvel, DreamWorks, Ghibli, Illumination, Lucasfilm)
   studios: () => sparql(req('VALUES ?x { wd:Q127552 wd:Q1047410 wd:Q367466 wd:Q238557 wd:Q182950 wd:Q1136155 wd:Q242446 } ?item wdt:P31/wdt:P279* wd:Q11424; wdt:P272 ?x. OPTIONAL { ?item wdt:P577 ?date }', { sl: 20, select: `?date ${libSelect('x')}`, extra: lib('x') }))
     .then((l) => finaliser(l, (b) => paire(b, 'x') && ({ ...base(b), r: paire(b, 'x'), x: { annee: annee(b) }, ...(annee(b) ? { f: [[{ fr: 'Sortie', en: 'Released' }, annee(b)]] } : {}) }))),

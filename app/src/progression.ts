@@ -18,18 +18,22 @@ export const RARETES: Record<Rarete, { nom: Record<Lang, string>; prix: number; 
   epique: { nom: { fr: 'Épique', en: 'Epic' }, prix: 200, couleur: '#A35BE0' },
   legendaire: { nom: { fr: 'Légendaire', en: 'Legendary' }, prix: 350, couleur: '#E3A72F' },
 }
-// Rareté d'un quiz : selon sa difficulté et sa richesse (par défaut : commun)
+// Rareté d'un quiz = son attrait : les plus connus et populaires sont légendaires (les plus durs à obtenir),
+// les plus pointus sont communs. Par défaut : rare.
 const RARETE: Record<string, Rarete> = {
-  'drapeaux-inverse': 'rare', 'capitales-inverse': 'rare', 'films-annee': 'rare', albums: 'rare', papillons: 'rare', araignees: 'rare',
-  champignons: 'rare', sculptures: 'rare', mouvements: 'rare', 'livres-annee': 'rare', 'jeux-annee': 'rare', 'personnalites-naissance': 'rare',
-  clubs: 'rare', 'departements-region': 'rare', monnaies: 'rare', chevaux: 'rare', chats: 'rare', presidents: 'rare',
-  'villes-monde': 'epique', 'pays-carte': 'epique', extraits: 'epique', insectes: 'epique', plantes: 'epique', constellations: 'epique',
-  inventions: 'epique', architecture: 'epique', mangas: 'epique', 'persos-jeux': 'epique', fleuves: 'epique', iles: 'epique',
-  'departements-prefecture': 'epique', compositeurs: 'epique', 'sportifs-sport': 'epique', 'personnalites-metier': 'epique',
-  'noms-scientifiques': 'legendaire', 'departements-numero': 'legendaire', elements: 'legendaire', 'villes-fr': 'legendaire',
-  tableaux: 'legendaire', 'blind-album': 'legendaire', 'blind-titre': 'epique', 'artistes-genre': 'rare', studios: 'commun', 'studios-annee': 'rare', lunes: 'epique', jo: 'rare', 'persos-univers': 'rare', 'lieux-jeux': 'epique', sagas: 'rare', consoles: 'rare', logos: 'legendaire', 'personnalites-pays': 'legendaire',
+  drapeaux: 'legendaire', capitales: 'legendaire', films: 'legendaire', acteurs: 'legendaire', artistes: 'legendaire', logos: 'legendaire',
+  personnalites: 'legendaire', extraits: 'legendaire', animaux: 'legendaire', jeux: 'legendaire', 'persos-jeux': 'legendaire', studios: 'legendaire', 'blind-titre': 'legendaire',
+  series: 'epique', monuments: 'epique', clubs: 'epique', sportifs: 'epique', chiens: 'epique', mangas: 'epique', albums: 'epique', groupes: 'epique',
+  'pays-carte': 'epique', plats: 'epique', marques: 'epique', mammiferes: 'epique', 'villes-fr': 'epique', bd: 'epique', 'persos-univers': 'epique', chats: 'epique', 'lieux-jeux': 'epique',
+  'noms-scientifiques': 'commun', 'departements-numero': 'commun', 'departements-region': 'commun', 'departements-prefecture': 'commun', compositeurs: 'commun',
+  papillons: 'commun', araignees: 'commun', champignons: 'commun', sculptures: 'commun', architecture: 'commun', mouvements: 'commun', monnaies: 'commun',
+  'livres-annee': 'commun', 'jeux-annee': 'commun', 'films-annee': 'commun', 'studios-annee': 'commun', 'personnalites-naissance': 'commun', lunes: 'commun',
+  chevaux: 'commun', constellations: 'commun', 'artistes-genre': 'commun', fleuves: 'commun', iles: 'commun', 'etats-us': 'commun', sagas: 'commun', stades: 'commun',
 }
-export const rareteDe = (id: string): Rarete => RARETE[id] ?? 'commun'
+export const rareteDe = (id: string): Rarete => RARETE[id] ?? 'rare'
+// Chances relatives à l'ouverture d'une caisse (parmi les quiz encore verrouillés : on finit forcément par tout avoir)
+export const POIDS: Record<Rarete, number> = { commun: 60, rare: 25, epique: 11, legendaire: 4 }
+export const PRIX_CAISSE = 100
 
 // 2 pièces par bonne réponse, + bonus défi du jour réussi et sans-faute
 export const piecesGagnees = (bonnes: number, total: number, defi: boolean) =>
@@ -91,7 +95,19 @@ async function depenser(uid: string, montant: number, maj: Record<string, unknow
 }
 
 export const choisirQuiz = (uid: string, ids: string[]) => setDoc(doc(db, 'users', uid), { quiz: ids, choixFait: true }, { merge: true })
-export const acheterQuiz = (uid: string, id: string) => depenser(uid, RARETES[rareteDe(id)].prix, { quiz: arrayUnion(id) })
+// Caisse d'une famille : prix fixe, gain tiré selon la rareté parmi les quiz encore verrouillés
+export function tirerGain<T extends { id: string }>(possibles: T[]): T {
+  const total = possibles.reduce((n, x) => n + POIDS[rareteDe(x.id)], 0)
+  let x = Math.random() * total
+  for (const q of possibles) { x -= POIDS[rareteDe(q.id)]; if (x <= 0) return q }
+  return possibles[possibles.length - 1]
+}
+export async function ouvrirCaisse(uid: string, k: Famille, p?: Profile | null) {
+  const possibles = quizVerrouilles(k, p)
+  if (!possibles.length) return null
+  const gain = tirerGain(possibles)
+  return (await depenser(uid, PRIX_CAISSE, { quiz: arrayUnion(gain.id) })) ? gain : false
+}
 export const sauterDifficulte = async (uid: string, id: string, d: number) => d >= 2 && d <= 4 && depenser(uid, PRIX_SAUT, { [`sauts.${id}`]: arrayUnion(d) })
 export const payerIndice = (uid: string) => depenser(uid, PRIX_INDICE)
 // Dépense de pièces pour un bonus en partie

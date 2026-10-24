@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { ouvrirFiche } from './FicheLancement'
+import { RARETES, POIDS, rareteDe, tirerGain } from '../progression'
+import { useCouverture } from './CarteCouverture'
+import Img from './Img'
+import Revelation from './Revelation'
 import { usePrefs } from '../i18n'
 import type { Famille, SousTheme } from '../themes'
 import { prefsRetour, retourFin } from '../retour'
 import Illustration from './Illustration'
-import { ICONS, Icon } from './ui'
 
 const CASE = 150 // largeur d'une case (px), espace compris
 const GAGNANTE = 34 // position de la case gagnante dans la bande
@@ -26,15 +28,30 @@ function tic() {
 }
 
 // Ouverture de caisse : une bande de quiz défile, ralentit et s'arrête sur le gain sous le repère central
+// Une case de la bande : photo du quiz, liseré et fond de sa rareté
+function Case({ s, k, gagnante }: { s: SousTheme; k: Famille; gagnante: boolean }) {
+  const { lang } = usePrefs()
+  const src = useCouverture(s.id)
+  const rr = RARETES[rareteDe(s.id)]
+  return (
+    <div className={`caisse-case${gagnante ? ' gagnante' : ''}`} style={{ width: CASE - 10, ['--r' as string]: rr.couleur }}>
+      <span className="caisse-photo">{src ? <Img src={src} alt="" /> : <Illustration k={k} taille={80} fond={false} />}</span>
+      <span>{s.nom[lang]}</span>
+    </div>
+  )
+}
+
 export default function Caisse({ k, possibles, gain, onFermer }: { k: Famille; possibles: SousTheme[]; gain: SousTheme; onFermer: () => void }) {
   const { lang } = usePrefs()
   const fr = lang === 'fr'
   const fenetre = useRef<HTMLDivElement>(null)
   const bande = useRef<HTMLDivElement>(null)
   const [fini, setFini] = useState(false)
+  const [revele, setRevele] = useState(false)
 
   // Bande : cases au hasard parmi les quiz possibles, le gain placé à la position prévue
-  const cases = useMemo(() => Array.from({ length: GAGNANTE + 6 }, (_, i) => (i === GAGNANTE ? gain : possibles[Math.floor(Math.random() * possibles.length)])), [gain, possibles])
+  // Les cases suivent les mêmes chances que le tirage : beaucoup de communs, quelques légendaires qui frôlent le repère
+  const cases = useMemo(() => Array.from({ length: GAGNANTE + 6 }, (_, i) => (i === GAGNANTE ? gain : tirerGain(possibles))), [gain, possibles])
   // Arrêt légèrement décalé dans la case gagnante, comme une vraie roue
   const decalage = useMemo(() => (Math.random() - 0.5) * CASE * 0.6, [])
 
@@ -57,10 +74,11 @@ export default function Caisse({ k, possibles, gain, onFermer }: { k: Famille; p
       raf = requestAnimationFrame(suivre)
     }
     raf = requestAnimationFrame(suivre)
-    const t = setTimeout(() => { cancelAnimationFrame(raf); setFini(true); retourFin(true) }, DUREE + 150)
+    const t = setTimeout(() => { cancelAnimationFrame(raf); setFini(true); retourFin(true); setTimeout(() => setRevele(true), 900) }, DUREE + 150)
     return () => { clearTimeout(t); cancelAnimationFrame(raf) }
   }, [decalage])
 
+  if (revele) return <Revelation id={gain.id} onFermer={onFermer} />
   return (
     <div role="dialog" aria-modal="true" aria-label={fr ? 'Ouverture de caisse' : 'Opening crate'} className="caisse-fond">
       <div className="caisse rise" style={{ ['--k' as string]: `var(--${k})`, ['--kt' as string]: `var(--${k}-t)`, ['--ki' as string]: `var(--${k}-i)` }}>
@@ -70,23 +88,12 @@ export default function Caisse({ k, possibles, gain, onFermer }: { k: Famille; p
           <div className="caisse-repere" />
           <div ref={bande} className="caisse-bande">
             {cases.map((s, i) => (
-              <div key={i} className={`caisse-case${fini && i === GAGNANTE ? ' gagnante' : ''}`} style={{ width: CASE - 10 }}>
-                <Illustration k={k} taille={90} fond={false} />
-                <span>{s.nom[lang]}</span>
-              </div>
+              <Case key={i} s={s} k={k} gagnante={fini && i === GAGNANTE} />
             ))}
           </div>
         </div>
 
-        {fini && (
-          <div className="rise" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14, textAlign: 'center' }}>
-            <p className="t" style={{ fontSize: 26, fontWeight: 900, color: 'var(--ki)' }}>{gain.nom[lang]}</p>
-            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'center' }}>
-              <button className="btn btn-p btn-lg" onClick={() => { onFermer(); ouvrirFiche(gain.id) }}>{fr ? 'Jouer maintenant' : 'Play now'}<Icon d={ICONS.arrowR} /></button>
-              <button className="btn btn-g btn-lg" onClick={onFermer}>{fr ? 'Plus tard' : 'Later'}</button>
-            </div>
-          </div>
-        )}
+        <div className="caisse-chances">{(Object.keys(RARETES) as (keyof typeof RARETES)[]).map((x) => <span key={x} style={{ color: RARETES[x].couleur }}>{RARETES[x].nom[lang]} {POIDS[x]} %</span>)}</div>
       </div>
     </div>
   )

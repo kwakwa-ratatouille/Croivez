@@ -49,7 +49,9 @@ jobs:
           gh release create "web-$WEB" app/web.zip --target main --title "Contenu web $WEB" --notes "Mise à jour à chaud (sans réinstallation)." --latest=false
           NATIF_MIN=$(tr -d '[:space:]' < app/natif-min.txt)
           NATIF_MIN_ANDROID=$(tr -d '[:space:]' < app/natif-min-android.txt)
-          printf '{\n  "web": %s,\n  "url": "https://github.com/%s/releases/download/web-%s/web.zip",\n  "natifMin": %s,\n  "natifMinAndroid": %s\n}\n' "$WEB" "${{ github.repository }}" "$WEB" "$NATIF_MIN" "$NATIF_MIN_ANDROID" > sidestore/web.json
+          # Empreinte SHA-256 du paquet : exigée par le module de mise à jour (sinon « Checksum required »)
+          SUM=$(sha256sum app/web.zip | cut -d' ' -f1)
+          printf '{\n  "web": %s,\n  "url": "https://github.com/%s/releases/download/web-%s/web.zip",\n  "checksum": "%s",\n  "natifMin": %s,\n  "natifMinAndroid": %s\n}\n' "$WEB" "${{ github.repository }}" "$WEB" "$SUM" "$NATIF_MIN" "$NATIF_MIN_ANDROID" > sidestore/web.json
           git config user.name "github-actions"
           git config user.email "github-actions@users.noreply.github.com"
           git add sidestore/web.json

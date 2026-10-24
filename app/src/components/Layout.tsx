@@ -63,7 +63,7 @@ export default function Layout() {
   return (
     <div className="shell">
       {test && <MenuTest onFermer={() => setTest(false)} />}
-      {achat && <Achat id={achat} onFermer={() => setAchat(null)} />}
+      {achat && <Achat k={achat as Famille} onFermer={() => setAchat(null)} />}
       {fiche && <FicheLancement id={fiche} onFermer={() => setFiche(null)} />}
       <nav className="side" aria-label="Navigation principale">
         <NavLink to="/" aria-label="Croivez" className="side-logo" onClick={appuiLogo} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '4px 12px 28px', textDecoration: 'none' }}>

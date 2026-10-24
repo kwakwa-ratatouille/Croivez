@@ -10,7 +10,7 @@ import { ICONS, Icon } from './ui'
 const WEB = Number(import.meta.env.VITE_WEB ?? 0)
 const BASE = 'https://raw.githubusercontent.com/kwakwa-ratatouille/Croivez/main/sidestore'
 
-type Manifeste = { web: number; url: string; natifMin: number; natifMinAndroid?: number }
+type Manifeste = { web: number; url: string; checksum?: string; natifMin: number; natifMinAndroid?: number }
 const android = Capacitor.getPlatform() === 'android'
 export type Resultat =
   | { type: 'pret'; id: string; web: number } // nouveau contenu téléchargé, appliqué au prochain lancement
@@ -51,7 +51,7 @@ export async function verifierMiseAJour(journal: (ligne: string) => void = () =>
   let paquet = bundles.find((b) => b.version === String(m.web) && b.status === 'success')
   if (!paquet) {
     journal(`Téléchargement du contenu n°${m.web}…`)
-    paquet = await CapacitorUpdater.download({ url: m.url, version: String(m.web) })
+    paquet = await CapacitorUpdater.download({ url: m.url, version: String(m.web), ...(m.checksum ? { checksum: m.checksum } : {}) })
     journal(`Téléchargé (statut : ${paquet.status}).`)
   }
   await CapacitorUpdater.next({ id: paquet.id })
