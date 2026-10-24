@@ -45,6 +45,10 @@ export type Profile = {
   vitrineFond?: string // fond de la vitrine
   farm?: Record<string, Record<string, number>> // parties du jour par niveau (XP dégressive), clé = date
   miniJeux?: string[] // mini-jeux déjà joués (cadre Holographique, titre Touche-à-tout)
+  saison?: { id: string; xp: number; recl: number[] } // saison en cours (un mois) : XP gagnée et paliers récupérés
+  histo?: Record<string, { p: number; b: number; t: number; xp: number }> // 30 derniers jours (statistiques)
+  precision?: Record<string, { b: number; t: number }> // bonnes réponses / questions par famille
+  aventure?: number // étapes du mode aventure réussies
   exploits?: { salons?: number; victoiresMulti?: number; tv?: number; tvHote?: number; duelsGagnes?: number } // compteurs des récompenses multijoueur
 }
 
@@ -132,6 +136,9 @@ type Partie = {
 }
 
 // Enregistre une partie : XP, série, maîtrise, statistiques des badges et cartes de révision
+// Identifiant de saison : le mois en cours (« 2026-10 »)
+export const saisonId = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+
 export async function enregistrerPartie(uid: string, profile: Profile, p: Partie) {
   const today = jour()
   const hier = jour(new Date(Date.now() - 864e5))
@@ -184,6 +191,11 @@ export async function enregistrerPartie(uid: string, profile: Profile, p: Partie
     ...(Object.keys(revision).length ? { revision } : {}),
     ...(p.stats ? { quetes: avancerQuetes(profile.quetes, p.stats) } : {}),
     partiesJour: partiesJour,
+    // Saison du mois : l'XP repart de zéro à chaque nouveau mois
+    saison: profile.saison?.id === saisonId() ? { ...profile.saison, xp: profile.saison.xp + p.xp } : { id: saisonId(), xp: p.xp, recl: [] },
+    // Historique des 30 derniers jours et précision par famille (statistiques)
+    histo: { ...Object.fromEntries(Object.keys(profile.histo ?? {}).filter((j) => j < jour(new Date(Date.now() - 30 * 864e5))).map((j) => [j, deleteField()])), [today]: { p: increment(1), b: increment(bonnes), t: increment(p.resultats.length), xp: increment(p.xp) } },
+    ...(p.stats?.famille ? { precision: { [p.stats.famille]: { b: increment(bonnes), t: increment(p.resultats.length) } } } : {}),
     ...(p.miniJeu ? { miniJeux: arrayUnion(p.miniJeu) } : {}),
     // Compteur du jour pour l'XP dégressive (les jours précédents sont effacés)
     ...(p.cleFarm ? { farm: { ...Object.fromEntries(Object.keys(profile.farm ?? {}).filter((j) => j !== today).map((j) => [j, deleteField()])), [today]: { [p.cleFarm]: increment(1) } } } : {}),

@@ -17,6 +17,9 @@ import Revision from './pages/Revision'
 import Fiches from "./pages/Fiches"
 import ClassementJour from "./pages/ClassementJour"
 import Soiree from "./pages/Soiree"
+import Stats from "./pages/Stats"
+import Saison from "./pages/Saison"
+import Aventure from "./pages/Aventure"
 import Profil, { Joueur } from './pages/Profil'
 import Duels from './pages/Duels'
 import Duel from './pages/Duel'
@@ -83,6 +86,9 @@ function Routeur() {
           <Route path="/fiches" element={<Fiches />} />
           <Route path="/jour" element={<ClassementJour />} />
           <Route path="/soiree" element={<Soiree />} />
+          <Route path="/stats" element={<Stats />} />
+          <Route path="/saison" element={<Saison />} />
+          <Route path="/aventure" element={<Aventure />} />
           <Route path="/profil" element={<Profil />} />
           <Route path="/joueur/:uid" element={<Joueur />} />
           <Route path="/duels" element={<Duels />} />

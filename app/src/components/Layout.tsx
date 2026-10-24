@@ -1,3 +1,4 @@
+import { planifierRappels } from '../rappels'
 import { reclamerParrainages } from '../parrainage'
 import { auth } from '../firebase'
 import { NavLink, Outlet } from 'react-router-dom'
@@ -48,6 +49,8 @@ export default function Layout() {
   // Bonus des filleuls inscrits avec mon lien
   const uid = profile ? auth.currentUser?.uid : undefined
   useEffect(() => { if (uid) reclamerParrainages(uid).catch(() => {}) }, [uid])
+  // Rappels du lendemain (série, quiz du jour, révisions), replanifiés à chaque ouverture
+  useEffect(() => { if (profile) planifierRappels(profile).catch(() => {}) }, [profile?.dernierJour, profile?.serie]) // eslint-disable-line react-hooks/exhaustive-deps
   const appuis = useRef<number[]>([])
   const appuiLogo = (e: React.MouseEvent) => {
     const t = Date.now()

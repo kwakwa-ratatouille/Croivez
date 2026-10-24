@@ -224,6 +224,9 @@ export const BOUTIQUE: Objet[] = [
     ['centurion', 'Centurion', 'Centurion', EXPLOITS.parties100],
     ['riche', 'Picsou', 'Moneybags', EXPLOITS.riche],
   ] as [string, string, string, Objet['condition']][]).map(([id, fr, en, condition]): Objet => ({ id: `titre-${id}`, type: 'titre', nom: { fr, en }, prix: 0, condition })),
+  // Pass de saison : palier 10 (titre) et palier 20 (cadre animé)
+  { id: 'titre-saison', type: 'titre', nom: { fr: 'De la saison', en: 'Of the season' }, prix: 0, condition: { desc: { fr: 'Pass de saison : palier 10', en: 'Season pass tier 10' }, test: (p) => !!p.possede?.includes('titre-saison') } },
+  { id: 'cadre-saison', type: 'cadre', nom: { fr: 'Saison', en: 'Season' }, prix: 0, couleur: 'conic-gradient(#8E8CD8, #6BB8C4, #F29BB0, #8E8CD8)', anim: 'tourne brille', condition: { desc: { fr: 'Pass de saison : palier 20', en: 'Season pass tier 20' }, test: (p) => !!p.possede?.includes('cadre-saison') } },
 ]
 export const possede = (p: Profile | null | undefined, o: Objet) => (o.condition ? !!p && o.condition.test(p) : o.prix === 0 || !!p?.possede?.includes(o.id))
 

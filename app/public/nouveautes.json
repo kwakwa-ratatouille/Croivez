@@ -1,5 +1,41 @@
 [
  {
+  "id": "2026-10-24e",
+  "titre": "Aventure, pass de saison et statistiques",
+  "points": [
+   [
+    "🗺️",
+    "Mode aventure",
+    "Un tour du monde en 30 étapes et 5 régions, avec un boss au bout de chacune."
+   ],
+   [
+    "🎟️",
+    "Pass de saison",
+    "Chaque mois, 20 paliers de récompenses gagnés avec ton XP, dont un titre et un cadre animé exclusifs."
+   ],
+   [
+    "📊",
+    "Statistiques",
+    "Ta précision par famille, tes points forts, ce qu’il faut travailler et ton activité sur 30 jours."
+   ],
+   [
+    "👥",
+    "Jusqu’à 8 équipes",
+    "Dans les salons et en mode télé, choisis le nombre d’équipes."
+   ],
+   [
+    "🖱️",
+    "Défilement sur PC",
+    "Clique et glisse les rangées horizontales ; la molette fait toujours défiler la page."
+   ],
+   [
+    "🔕",
+    "Plus de bip",
+    "Le bip du chrono a été retiré."
+   ]
+  ]
+ },
+ {
   "id": "2026-10-24d",
   "titre": "Équipes, Légende piégeuse et 20 nouveaux quiz",
   "points": [

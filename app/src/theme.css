@@ -729,3 +729,48 @@ html, body { overflow-x: clip; }
   .grille-reponses.images.six { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
   .grille-reponses.images > button { padding: 6px !important; min-height: 0 !important; }
 }
+
+/* Statistiques */
+.stats-chiffres { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.stats-chiffres .card { padding: 12px; display: flex; flex-direction: column; gap: 2px; }
+.stats-chiffres strong { font-size: 22px; font-weight: 900; }
+.stats-chiffres span { font-size: 12px; color: var(--muted); font-weight: 600; }
+@media (max-width: 560px) { .stats-chiffres { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.stats-barres { display: flex; align-items: flex-end; gap: 3px; height: 110px; }
+.stats-barres span { flex: 1; border-radius: 4px 4px 0 0; background: var(--mus); min-height: 3px; }
+
+/* Pass de saison */
+.saison-tete { padding: 20px; display: flex; flex-direction: column; gap: 10px; color: #fff; border: 0; background: linear-gradient(135deg, var(--esp), var(--ani)); }
+.saison-paliers { display: flex; flex-direction: column; gap: 8px; }
+.saison-palier { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 16px; background: var(--surface); border: 1px solid var(--line); opacity: .6; }
+.saison-palier.atteint { opacity: 1; }
+.saison-palier.special { border-color: var(--esp); box-shadow: inset 4px 0 0 var(--esp); }
+.saison-num { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: var(--surface2); font-weight: 900; flex: none; }
+.saison-palier.atteint .saison-num { background: var(--esp); color: #fff; }
+
+.salon-equipes { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+.salon-duel-equipes { grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); }
+
+/* Cliquer-glisser des rangées : curseur main, pas de sélection de texte pendant le glissé */
+@media (pointer: fine) { .carrousel, .album-onglets, .fiche-defile { cursor: grab; } }
+.glisse { cursor: grabbing !important; scroll-snap-type: none !important; scroll-behavior: auto !important; }
+.glisse * { pointer-events: none; }
+body.glisse-en-cours { user-select: none; }
+.carrousel img { -webkit-user-drag: none; user-select: none; }
+
+/* Mode aventure */
+.aventure-region { display: flex; flex-direction: column; gap: 10px; }
+.aventure-region h2 { font-size: 19px; font-weight: 900; }
+.aventure-region h2 small { color: var(--muted); font-size: 13px; font-weight: 700; }
+.aventure-region.fermee { opacity: .55; }
+.aventure-chemin { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+.aventure-etape { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 16px; background: var(--surface); border: 1px solid var(--line); text-decoration: none; color: inherit; }
+.aventure-rond { width: 34px; height: 34px; flex: none; border-radius: 50%; display: flex; align-items: center; justify-content: center; font: 900 14px Nunito, sans-serif; background: var(--surface2); }
+.aventure-etape.faite .aventure-rond { background: var(--ok); color: #fff; }
+.aventure-etape.actuelle { border-color: var(--esp); box-shadow: 0 0 0 3px color-mix(in srgb, var(--esp) 35%, transparent); animation: pulse-etape 1.6s ease-in-out infinite alternate; }
+.aventure-etape.actuelle .aventure-rond { background: var(--esp); color: #fff; }
+.aventure-etape.boss { background: linear-gradient(120deg, color-mix(in srgb, #E3A72F 14%, var(--surface)), var(--surface)); }
+.aventure-etape.fermee { opacity: .6; }
+.aventure-nom { display: flex; flex-direction: column; font-weight: 700; font-size: 14px; line-height: 1.2; }
+.aventure-nom small { color: var(--esp-i); font-size: 11.5px; }
+@keyframes pulse-etape { to { box-shadow: 0 0 0 6px color-mix(in srgb, var(--esp) 15%, transparent); } }

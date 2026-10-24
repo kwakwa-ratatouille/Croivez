@@ -139,6 +139,8 @@ export default function Profil() {
     <>
       <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
         <Link className="btn btn-s" to="/album">Album</Link>
+        <Link className="btn btn-s" to="/stats">{fr ? "Stats" : "Stats"}</Link>
+        <Link className="btn btn-s" to="/saison">{fr ? "Saison" : "Season"}</Link>
         <Link className="btn btn-s" to="/boutique">{fr ? 'Boutique' : 'Shop'}</Link>
         <Link className="btn btn-g" to="/parametres" aria-label={fr ? 'Paramètres' : 'Settings'}><Icon d={ICONS.settings} /></Link>
       </div>

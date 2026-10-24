@@ -8,7 +8,7 @@ import { natureQuiz, type Question, type SousThemeId } from '../quiz/engine'
 import { infoMiniJeu } from '../quiz/formats'
 import { profilsDe, type ProfilPublic } from '../social'
 import {
-  EQUIPES, choisirEquipe, repartirEquipes, scoresEquipes, MAX_JOUEURS, MINI_JEUX_SALON, REVELATION_MS, avancerSalon, ecouterDecalage, ecouterSalon, inviterAuSalon, lancerSalon, lienRejoindre, majRegles,
+  EQUIPES, listeEquipes, choisirEquipe, repartirEquipes, scoresEquipes, MAX_JOUEURS, MINI_JEUX_SALON, REVELATION_MS, avancerSalon, ecouterDecalage, ecouterSalon, inviterAuSalon, lancerSalon, lienRejoindre, majRegles,
   pointsSalon, questionsSalon, quitterSalon, rejoindreSalon, rejouerSalon, repondreSalon, type JoueurSalon, type ReglesSalon, type Salon as SalonT,
 } from '../salon'
 import { retourFin, retourReponse, retourTic } from '../retour'
@@ -119,7 +119,8 @@ function Regles({ code, salon, modifiable }: { code: string; salon: SalonT; modi
       {!infoMiniJeu(r.mj)?.chrono && (
         <div className="salon-champ"><span>{fr ? 'Temps par question' : 'Time per question'}</span>
           <div className="salon-choix">{[10, 15, 20, 30].map((n) => <button key={n} type="button" className="pill" aria-pressed={r.secondes === n} onClick={() => maj({ secondes: n })}>{n} s</button>)}</div>
-          <div className="salon-choix"><button type="button" className="pill" aria-pressed={!r.equipes} onClick={() => maj({ equipes: false })}>{fr ? 'Chacun pour soi' : 'Free for all'}</button><button type="button" className="pill" aria-pressed={!!r.equipes} onClick={() => maj({ equipes: true })}>{fr ? 'Bleus contre Rouges' : 'Blue vs Red'}</button></div>
+          <div className="salon-choix"><button type="button" className="pill" aria-pressed={!r.equipes} onClick={() => maj({ equipes: false })}>{fr ? 'Chacun pour soi' : 'Free for all'}</button><button type="button" className="pill" aria-pressed={!!r.equipes} onClick={() => maj({ equipes: true, nbEquipes: r.nbEquipes ?? 2 })}>{fr ? 'En équipes' : 'Teams'}</button></div>
+          {r.equipes && <div className="salon-choix">{[2, 3, 4, 5, 6, 8].map((n) => <button key={n} type="button" className="pill" aria-pressed={(r.nbEquipes ?? 2) === n} onClick={() => maj({ nbEquipes: n })}>{n} {fr ? 'équipes' : 'teams'}</button>)}</div>}
         </div>
       )}
     </>
@@ -171,7 +172,7 @@ function Lobby({ code, salon, suisHote, hote, onQuitter, moi }: { code: string; 
           <h2 className="t" style={{ fontSize: 19, fontWeight: 900 }}>{fr ? 'Joueurs' : 'Players'} · {joueurs.length}/{MAX_JOUEURS}</h2>
           {salon.regles.equipes && (
             <div className="salon-equipes">
-              {(['a', 'b'] as const).map((e) => (
+              {listeEquipes(salon.regles.nbEquipes).map((e) => (
                 <div key={e} className="salon-equipe" style={{ ['--e' as string]: EQUIPES[e].couleur }}>
                   <strong>{EQUIPES[e][lang]} · {joueurs.filter(([, j]) => (j.equipe ?? 'a') === e).length}</strong>
                   {joueurs.filter(([, j]) => (j.equipe ?? 'a') === e).map(([id, j]) => <span key={id} className="salon-equipe-joueur"><Avatar pseudo={j.pseudo} avatar={j.avatar} cadre={j.cadre} taille={28} />{j.pseudo}</span>)}
@@ -248,6 +249,17 @@ function LobbyTv({ code, salon, onQuitter }: { code: string; salon: SalonT; onQu
               ))}
             </div>
           </div>
+          {salon.regles.equipes && (
+            <div className="salon-equipes">
+              {listeEquipes(salon.regles.nbEquipes).map((e) => (
+                <div key={e} className="salon-equipe" style={{ ['--e' as string]: EQUIPES[e].couleur }}>
+                  <strong>{EQUIPES[e][lang]} · {joueurs.filter(([, j]) => (j.equipe ?? 'a') === e).length}</strong>
+                  {joueurs.filter(([, j]) => (j.equipe ?? 'a') === e).map(([id, j]) => <span key={id} className="salon-equipe-joueur"><Avatar pseudo={j.pseudo} avatar={j.avatar} cadre={j.cadre} taille={28} />{j.pseudo}</span>)}
+                </div>
+              ))}
+              <button className="btn btn-g" style={{ gridColumn: '1 / -1' }} onClick={() => repartirEquipes(code, salon)}>🎲 {fr ? 'Répartir au hasard' : 'Shuffle teams'}</button>
+            </div>
+          )}
           <div className="card tv-regles"><Regles code={code} salon={salon} modifiable /></div>
           <button className="btn btn-lg tv-lancer" disabled={!joueurs.length} onClick={() => lancerSalon(code, salon)}>{fr ? 'C’est parti !' : 'Let’s go!'}<Icon d={ICONS.arrowR} /></button>
         </section>
@@ -348,11 +360,12 @@ function Jeu({ code, salon, suisHote, ecranTv, maintenant, onQuitter }: { code: 
           {ecranTv ? `🏆 ${classement[0]?.pseudo ?? ''} ${fr ? 'gagne !' : 'wins!'}` : rang === 1 ? (fr ? 'Tu gagnes ! 🏆' : 'You win! 🏆') : (fr ? `Tu finis ${rang}${rang === 1 ? 'er' : 'e'}` : `You finished #${rang}`)}
         </h1>
         {r.equipes && (() => {
-          const sc = scoresEquipes(classement)
-          const gagnante = sc.a.moyenne === sc.b.moyenne ? null : sc.a.moyenne > sc.b.moyenne ? 'a' : 'b'
+          const sc = scoresEquipes(classement, r.nbEquipes)
+          const ordre = listeEquipes(r.nbEquipes).filter((e) => sc[e].n).sort((x, y) => sc[y].moyenne - sc[x].moyenne)
+          const gagnante = ordre.length > 1 && sc[ordre[0]].moyenne === sc[ordre[1]].moyenne ? null : ordre[0]
           return (
             <section className="salon-duel-equipes rise">
-              {(['a', 'b'] as const).map((e) => <div key={e} style={{ ['--e' as string]: EQUIPES[e].couleur }} className={gagnante === e ? 'gagne' : ''}><strong>{EQUIPES[e][lang]}</strong><span className="t">{sc[e].moyenne}</span><small>{fr ? 'pts / joueur' : 'pts / player'} · {sc[e].n}</small></div>)}
+              {ordre.map((e) => <div key={e} style={{ ['--e' as string]: EQUIPES[e].couleur }} className={gagnante === e ? 'gagne' : ''}><strong>{EQUIPES[e][lang]}</strong><span className="t">{sc[e].moyenne}</span><small>{fr ? 'pts / joueur' : 'pts / player'} · {sc[e].n}</small></div>)}
               <p className="t" style={{ gridColumn: '1 / -1', fontSize: 22, fontWeight: 900, textAlign: 'center' }}>{gagnante ? `🏆 ${EQUIPES[gagnante][lang]} ${fr ? 'gagnent !' : 'win!'}` : (fr ? 'Égalité !' : 'Draw!')}</p>
             </section>
           )

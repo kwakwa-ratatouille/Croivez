@@ -1,3 +1,4 @@
+import { planifierRappels, rappelsActifs, reglerRappels } from '../rappels'
 import { TAILLES, appliquerTaille, lireTaille } from '../taille'
 import { useEffect, useState } from 'react'
 import { signOut } from 'firebase/auth'
@@ -21,6 +22,7 @@ export default function Parametres() {
   const { user, profile } = useAuth()
   const [zoom, setZoom] = useState(lireTaille)
   const [son, setSon] = useState(prefsRetour.son)
+  const [rappels, setRappels] = useState(rappelsActifs)
   const [vibration, setVibration] = useState(prefsRetour.vibration)
   const [taille, setTaille] = useState<number | null>(null)
   const [enCours, setEnCours] = useState<{ k: string; fait: number; total: number } | null>(null)
@@ -115,6 +117,10 @@ export default function Parametres() {
         <div style={ligne}>
           <span className="t" style={titre}>{fr ? 'Sons' : 'Sounds'}</span>
           <Toggle on={son} label={fr ? 'Sons' : 'Sounds'} onChange={(v) => { setSon(v); reglerRetour('son', v); if (v) retourReponse(true) }} />
+        </div>
+        <div style={ligne}>
+          <span className="t" style={titre}>{fr ? 'Rappels (téléphone)' : 'Reminders (phone)'}</span>
+          <Toggle on={rappels} label={fr ? 'Rappels' : 'Reminders'} onChange={(v) => { setRappels(v); reglerRappels(v); planifierRappels(v ? profile : null).catch(() => {}) }} />
         </div>
         <div style={ligne}>
           <span className="t" style={titre}>{fr ? 'Vibrations' : 'Haptics'}</span>

@@ -1,3 +1,4 @@
+import { ETAPES, seuilEtape, validerEtape } from '../aventure'
 import { publierScoreJour } from '../jour'
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
@@ -243,6 +244,9 @@ export default function Partie() {
   useEffect(() => {
     if (!fini || enregistre.current || !user || !profile || !questions) return
     enregistre.current = true
+    // Mode aventure : l'étape est validée avec assez de bonnes réponses (7/10, boss 8/10)
+    const etapeAventure = params.get('aventure')
+    if (etapeAventure !== null && ETAPES[Number(etapeAventure)] && bonnes >= seuilEtape(ETAPES[Number(etapeAventure)])) validerEtape(user.uid, Number(etapeAventure), profile.aventure ?? 0).catch(console.error)
     if (defi) publierScoreJour(jour(), { uid: user.uid, pseudo: profile.pseudo, score, bonnes, total: reponses.length, grille: reponses.map((r) => (r.juste ? '🟩' : '🟥')).join(''), ...(profile.avatar ? { avatar: profile.avatar } : {}), ...(profile.cadre ? { cadre: profile.cadre } : {}) }).catch(console.error)
     enregistrerPartie(user.uid, profile, { sousTheme, xp, pieces, stats: { bonnes, comboMax, jeu: jeu ?? undefined, famille: k, difficulte },  defi, revision: revision || !!jeu, sansRevision: !!jeu, record: jeu && jeu !== 'mix' ? { jeu, score: bonnes } : undefined, difficulte: jeu ? undefined : difficulte, resultats: reponses.map((r) => ({ id: r.q.id, juste: r.juste, s: r.q.s ?? sousTheme })), bossReussi, difficulteJouee: difficulte, miniJeu: mj ?? undefined, cleFarm: revision ? undefined : cleFarm }).catch(console.error)
   }, [fini, user, profile, sousTheme, xp, pieces, defi, revision, reponses, questions])

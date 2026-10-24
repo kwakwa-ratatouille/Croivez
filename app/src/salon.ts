@@ -12,9 +12,9 @@ export const MAX_JOUEURS = 20
 export const REVELATION_MS = 3500 // temps pour voir la bonne réponse et le classement entre deux questions
 const chemin = (code: string) => `duels/salon-${code}`
 
-export type Equipe = 'a' | 'b'
+export type Equipe = 'a' | 'b' | 'c' | 'd' | 'e' | 'f' | 'g' | 'h'
 export type JoueurSalon = { equipe?: Equipe; pseudo: string; avatar?: string; cadre?: string; score: number; parti?: boolean; rejoint: number; r?: Record<string, { j: boolean; ms: number; pts: number }> }
-export type ReglesSalon = { s: string; n: number; d: 1 | 2 | 3 | 4; mj: MiniJeu; secondes: number; equipes?: boolean }
+export type ReglesSalon = { s: string; n: number; d: 1 | 2 | 3 | 4; mj: MiniJeu; secondes: number; equipes?: boolean; nbEquipes?: number }
 export type Salon = {
   hote: string
   etat: 'attente' | 'jeu' | 'fini'
@@ -71,18 +71,24 @@ export async function rejoindreSalon(code: string, m: Moi): Promise<'ok' | 'intr
 }
 
 // Équipes : chacun choisit la sienne, ou l'hôte répartit au hasard (équilibré)
-export const EQUIPES: Record<Equipe, { fr: string; en: string; couleur: string }> = { a: { fr: 'Bleus', en: 'Blue', couleur: '#5B8DEF' }, b: { fr: 'Rouges', en: 'Red', couleur: '#E3574B' } }
+export const EQUIPES: Record<Equipe, { fr: string; en: string; couleur: string }> = {
+  a: { fr: 'Bleus', en: 'Blue', couleur: '#5B8DEF' }, b: { fr: 'Rouges', en: 'Red', couleur: '#E3574B' }, c: { fr: 'Verts', en: 'Green', couleur: '#4FAE6A' }, d: { fr: 'Jaunes', en: 'Yellow', couleur: '#E3A72F' },
+  e: { fr: 'Violets', en: 'Purple', couleur: '#A35BE0' }, f: { fr: 'Orange', en: 'Orange', couleur: '#EF8A3C' }, g: { fr: 'Roses', en: 'Pink', couleur: '#E86AA6' }, h: { fr: 'Turquoise', en: 'Teal', couleur: '#2FB5B0' },
+}
+export const listeEquipes = (n = 2) => (Object.keys(EQUIPES) as Equipe[]).slice(0, Math.min(8, Math.max(2, n)))
 export const choisirEquipe = (code: string, uid: string, e: Equipe) => update(ref(rtdb, `${chemin(code)}/joueurs/${uid}`), { equipe: e })
 export async function repartirEquipes(code: string, s: Salon) {
+  const eq = listeEquipes(s.regles.nbEquipes)
   const ids = Object.entries(s.joueurs ?? {}).filter(([, j]) => !j.parti).map(([id]) => id).sort(() => Math.random() - 0.5)
   const maj: Record<string, Equipe> = {}
-  ids.forEach((id, i) => { maj[`joueurs/${id}/equipe`] = i % 2 ? 'b' : 'a' })
+  ids.forEach((id, i) => { maj[`joueurs/${id}/equipe`] = eq[i % eq.length] })
   await update(ref(rtdb, chemin(code)), maj)
 }
 // Score d'une équipe : moyenne par joueur (une équipe plus nombreuse n'est pas avantagée)
-export function scoresEquipes(joueurs: { equipe?: Equipe; score: number }[]) {
-  const out = { a: { total: 0, n: 0, moyenne: 0 }, b: { total: 0, n: 0, moyenne: 0 } }
-  for (const j of joueurs) { const e = out[j.equipe ?? 'a']; e.total += j.score; e.n++ }
+export function scoresEquipes(joueurs: { equipe?: Equipe; score: number }[], n = 2) {
+  const eq = listeEquipes(n)
+  const out = Object.fromEntries(eq.map((e) => [e, { total: 0, n: 0, moyenne: 0 }])) as Record<Equipe, { total: number; n: number; moyenne: number }>
+  for (const j of joueurs) { const e = out[eq.includes(j.equipe as Equipe) ? (j.equipe as Equipe) : 'a']; e.total += j.score; e.n++ }
   for (const e of Object.values(out)) e.moyenne = e.n ? Math.round(e.total / e.n) : 0
   return out
 }

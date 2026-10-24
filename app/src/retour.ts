@@ -47,9 +47,8 @@ export function retourReponse(juste: boolean) {
   vibrer(juste)
 }
 
-// Tic du chrono dans les dernières secondes : plus aigu et plus fort quand il ne reste presque rien
+// Fin du chrono : plus de bip (jugé pénible), seulement une légère vibration sur téléphone dans les 3 dernières secondes
 export function retourTic(secondes: number) {
-  notes([secondes <= 3 ? 1320 : 990], 0.05, 'square', secondes <= 3 ? 0.05 : 0.03)
   if (secondes <= 3 && prefsRetour.vibration) {
     try { if (natif) Haptics.impact({ style: ImpactStyle.Light }); else navigator.vibrate?.(12) } catch { /* pas de vibreur */ }
   }

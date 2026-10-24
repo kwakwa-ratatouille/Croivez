@@ -1,3 +1,4 @@
+import { activerGlisser } from './glisser'
 import { appliquerTaille } from './taille'
 import { retenirParrain } from './parrainage'
 import { Component, StrictMode, type ReactNode } from 'react'
@@ -34,6 +35,7 @@ surveillerPlantages()
 if (Capacitor.isNativePlatform()) CapacitorUpdater.notifyAppReady().catch(() => {})
 
 appliquerTaille()
+activerGlisser() // cliquer-glisser des rangées horizontales à la souris
 retenirParrain() // lien d'invitation « ?parrain=… » mémorisé avant l'inscription
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
