@@ -17,6 +17,15 @@
       "category": "education",
       "versions": [
         {
+          "version": "0.8.0",
+          "buildVersion": "8",
+          "date": "2026-10-24T09:13:51.530Z",
+          "localizedDescription": "Croivez 0.8.0, build 8.",
+          "downloadURL": "https://github.com/kwakwa-ratatouille/Croivez/releases/download/ios-0.8.0-8/Croivez.ipa",
+          "size": 5753078,
+          "minOSVersion": "15.0"
+        },
+        {
           "version": "0.7.0",
           "buildVersion": "7",
           "date": "2026-10-23T21:43:57.685Z",
@@ -80,10 +89,10 @@
           "minOSVersion": "15.0"
         }
       ],
-      "version": "0.7.0",
-      "versionDate": "2026-10-23T21:43:57.685Z",
-      "downloadURL": "https://github.com/kwakwa-ratatouille/Croivez/releases/download/ios-0.7.0-7/Croivez.ipa",
-      "size": 4322446
+      "version": "0.8.0",
+      "versionDate": "2026-10-24T09:13:51.530Z",
+      "downloadURL": "https://github.com/kwakwa-ratatouille/Croivez/releases/download/ios-0.8.0-8/Croivez.ipa",
+      "size": 5753078
     }
   ],
   "news": []
