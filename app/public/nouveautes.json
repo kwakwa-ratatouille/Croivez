@@ -1,18 +1,94 @@
 [
   {
+    "id": "2026-10-24b",
+    "titre": "Soirée télé et récompenses",
+    "points": [
+      [
+        "📺",
+        "Mode télé",
+        "Multi → Mode télé : un grand QR code s’affiche, chacun rejoint avec son téléphone et son pseudo (même sans compte), les questions passent en grand, podium à la fin."
+      ],
+      [
+        "🦊",
+        "Nouveaux avatars",
+        "Métiers (pilote de F1, pompier, ninja, viking…), animaux dessinés, avatars fun : à acheter ou à gagner."
+      ],
+      [
+        "🔥",
+        "Cadres animés",
+        "Brasier, Néon, Galaxie, Foudre, Holographique… chacun se gagne par un exploit précis (multijoueur, soirées télé, records, érudition…)."
+      ],
+      [
+        "🏅",
+        "Titres",
+        "Plus de 25 titres à débloquer (succès secrets, maîtrise, multijoueur) et à afficher sous ton pseudo."
+      ],
+      [
+        "🔍",
+        "Faux logos refaits",
+        "Une seule partie du logo est retouchée : couleur, morceau effacé, moitié écrasée ou décalée, trait plus gras… plus fin en Expert."
+      ],
+      [
+        "💡",
+        "Le saviez-vous des jeux vidéo",
+        "Chaque personnage et lieu a sa vraie anecdote."
+      ]
+    ]
+  },
+  {
     "id": "2026-10-24",
     "titre": "La grosse mise à jour",
     "points": [
-      ["👥", "Multijoueur en salon", "Crée un salon, partage le code : jusqu’à 12 joueurs répondent aux mêmes questions, classement en direct et podium."],
-      ["🎲", "Mini-jeux surprises", "Jouer au hasard tire un mini-jeu pour toute la série : vrai ou faux, photo floue, éclair, pile ou face, avant ou après…"],
-      ["🔀", "Format Auto qui change", "En Auto, le format change à chaque question."],
-      ["✨", "Plein de nouveaux thèmes", "Youtubeurs, films en émojis, faux logos, idées reçues, fruits, légumes, desserts, dinosaures, pierres, jeux de société, répliques, super-héros, expressions, gentilés…"],
-      ["🎮", "Jeux vidéo à fond", "Plus de 1 400 personnages et 700 lieux et cartes (Fortnite, Call of Duty, Zelda, Elden Ring, Dofus, Overwatch…), avec une image à chaque question."],
-      ["⏱️", "Chrono bien visible", "Il grossit, change de couleur, pulse et l’écran rougit dans les dernières secondes."],
-      ["🏆", "Classement à l’érudition", "Le classement de tous les temps compte les niveaux réussis au sans-faute, pas le temps passé. Ta ligue est visible dès l’accueil."],
-      ["🙈", "Plus de réponse dans la question", "Les dates et les mots qui trahissaient la réponse sont masqués."],
-      ["💡", "De vrais « Le saviez-vous ? »", "Une vraie anecdote au lieu de la réponse répétée."],
-      ["🏠", "Nouvel accueil et nouveaux thèmes", "Tout est plus clair, avec de meilleures images et plus de réglages dans les paramètres."]
+      [
+        "👥",
+        "Multijoueur en salon",
+        "Crée un salon, partage le code : jusqu’à 12 joueurs répondent aux mêmes questions, classement en direct et podium."
+      ],
+      [
+        "🎲",
+        "Mini-jeux surprises",
+        "Jouer au hasard tire un mini-jeu pour toute la série : vrai ou faux, photo floue, éclair, pile ou face, avant ou après…"
+      ],
+      [
+        "🔀",
+        "Format Auto qui change",
+        "En Auto, le format change à chaque question."
+      ],
+      [
+        "✨",
+        "Plein de nouveaux thèmes",
+        "Youtubeurs, films en émojis, faux logos, idées reçues, fruits, légumes, desserts, dinosaures, pierres, jeux de société, répliques, super-héros, expressions, gentilés…"
+      ],
+      [
+        "🎮",
+        "Jeux vidéo à fond",
+        "Plus de 1 400 personnages et 700 lieux et cartes (Fortnite, Call of Duty, Zelda, Elden Ring, Dofus, Overwatch…), avec une image à chaque question."
+      ],
+      [
+        "⏱️",
+        "Chrono bien visible",
+        "Il grossit, change de couleur, pulse et l’écran rougit dans les dernières secondes."
+      ],
+      [
+        "🏆",
+        "Classement à l’érudition",
+        "Le classement de tous les temps compte les niveaux réussis au sans-faute, pas le temps passé. Ta ligue est visible dès l’accueil."
+      ],
+      [
+        "🙈",
+        "Plus de réponse dans la question",
+        "Les dates et les mots qui trahissaient la réponse sont masqués."
+      ],
+      [
+        "💡",
+        "De vrais « Le saviez-vous ? »",
+        "Une vraie anecdote au lieu de la réponse répétée."
+      ],
+      [
+        "🏠",
+        "Nouvel accueil et nouveaux thèmes",
+        "Tout est plus clair, avec de meilleures images et plus de réglages dans les paramètres."
+      ]
     ]
   }
 ]

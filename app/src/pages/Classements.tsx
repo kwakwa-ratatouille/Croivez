@@ -3,11 +3,11 @@ import { useEffect, useState } from 'react'
 import { useAuth } from '../auth'
 import { usePrefs } from '../i18n'
 import { BONUS_LEGENDE, POINTS_NIVEAU, classementGlobal, classementSemaine, erudition, profilsDe } from '../social'
-import { LIGUES, ligueDe, ligueSuivante } from '../meta'
+import { BOUTIQUE, LIGUES, ligueDe, ligueSuivante } from '../meta'
 import { ICONS, Icon } from '../components/ui'
 import Avatar from '../components/Avatar'
 
-type Ligne = { uid: string; pseudo: string; valeur: number; niveau?: number; avatar?: string; cadre?: string }
+type Ligne = { uid: string; pseudo: string; valeur: number; niveau?: number; avatar?: string; cadre?: string; titre?: string }
 type Onglet = 'ligue' | 'semaine' | 'global' | 'amis'
 
 // Classements : la ligue et la semaine se jouent à l'XP (l'effort de la semaine),
@@ -114,7 +114,7 @@ export default function Classements() {
               <Avatar pseudo={l.pseudo} avatar={l.avatar} cadre={l.cadre} taille={40} />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{l.pseudo}{moi && <span style={{ color: 'var(--muted)', fontWeight: 500 }}> ({fr ? 'toi' : 'you'})</span>}</div>
-                {l.niveau && <div style={{ fontSize: 13, color: 'var(--muted)' }}>{fr ? 'Niveau' : 'Level'} {l.niveau}{onglet === 'semaine' ? ` · ${ligueDe(l.valeur).nom[lang]}` : ''}</div>}
+                {l.niveau && <div style={{ fontSize: 13, color: 'var(--muted)' }}>{fr ? 'Niveau' : 'Level'} {l.niveau}{onglet === 'semaine' ? ` · ${ligueDe(l.valeur).nom[lang]}` : ''}{l.titre && BOUTIQUE.find((o) => o.id === l.titre) ? ` · ${BOUTIQUE.find((o) => o.id === l.titre)!.nom[lang]}` : ''}</div>}
               </div>
               <span className="t" style={{ fontWeight: 900, fontSize: 17, whiteSpace: 'nowrap' }}>{fmt.format(l.valeur)} {unite}</span>
             </Link>

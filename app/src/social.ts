@@ -4,7 +4,7 @@ import { niveau, type Profile } from './auth'
 import { FAMILLES } from './themes'
 
 // Profil public (lisible par tous les joueurs connectés) : sert aux classements et à la recherche d'amis
-export type ProfilPublic = { uid: string; pseudo: string; xp: number; niveau: number; serie: number; avatar?: string; cadre?: string; vitrine?: string[]; favori?: string; familles?: Record<string, number>; parties?: number; bonnes?: number; meilleureSerie?: number; erudition?: number }
+export type ProfilPublic = { uid: string; pseudo: string; xp: number; niveau: number; serie: number; avatar?: string; cadre?: string; vitrine?: string[]; favori?: string; familles?: Record<string, number>; parties?: number; bonnes?: number; meilleureSerie?: number; erudition?: number; titre?: string }
 
 // ——— Érudition : le classement global récompense le savoir, pas le temps passé ———
 // Chaque niveau réussi au sans-faute rapporte des points (les niveaux sautés en payant ne comptent pas),
@@ -29,7 +29,7 @@ export function resumePublic(p: Profile) {
     const j = f.subs.filter((s) => s.jouable)
     familles[f.k] = j.length ? Math.round(j.reduce((a, s) => a + (p.maitrise?.[s.id] ?? 0), 0) / j.length) : 0
   }
-  return { familles, vitrine: p.vitrine ?? [], favori: p.favori ?? '', parties: p.parties ?? 0, bonnes: p.bonnes ?? 0, meilleureSerie: p.meilleureSerie ?? p.serie ?? 0, erudition: erudition(p) }
+  return { familles, vitrine: p.vitrine ?? [], favori: p.favori ?? '', parties: p.parties ?? 0, bonnes: p.bonnes ?? 0, meilleureSerie: p.meilleureSerie ?? p.serie ?? 0, erudition: erudition(p), titre: p.titre ?? '' }
 }
 export const publierVitrine = (uid: string, p: Profile, maj: { vitrine?: string[]; favori?: string }) => Promise.all([
   setDoc(doc(db, 'users', uid), maj, { merge: true }),

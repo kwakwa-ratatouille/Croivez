@@ -9,6 +9,7 @@ import { appliquerFormat, appliquerMiniJeu, infoMiniJeu, tirerMiniJeu, type Form
 import { memoriser } from '../quiz/memoire'
 import { retourFin, retourReponse, retourTic } from '../retour'
 import Chrono, { BarreChrono } from '../components/Chrono'
+import LogoTruque, { type EffetLogo } from '../components/LogoTruque'
 import { lirePrefsJeu } from '../prefsJeu'
 import { saviezFaible, useResume } from '../quiz/resume'
 import { PRIX_INDICE, accesQuiz, payerIndice, payerPieces, piecesGagnees, plafonner } from '../progression'
@@ -233,7 +234,7 @@ export default function Partie() {
   useEffect(() => {
     if (!fini || enregistre.current || !user || !profile || !questions) return
     enregistre.current = true
-    enregistrerPartie(user.uid, profile, { sousTheme, xp, pieces, stats: { bonnes, comboMax, jeu: jeu ?? undefined, famille: k, difficulte },  defi, revision: revision || !!jeu, sansRevision: !!jeu, record: jeu && jeu !== 'mix' ? { jeu, score: bonnes } : undefined, difficulte: jeu ? undefined : difficulte, resultats: reponses.map((r) => ({ id: r.q.id, juste: r.juste, s: r.q.s ?? sousTheme })), bossReussi, difficulteJouee: difficulte }).catch(console.error)
+    enregistrerPartie(user.uid, profile, { sousTheme, xp, pieces, stats: { bonnes, comboMax, jeu: jeu ?? undefined, famille: k, difficulte },  defi, revision: revision || !!jeu, sansRevision: !!jeu, record: jeu && jeu !== 'mix' ? { jeu, score: bonnes } : undefined, difficulte: jeu ? undefined : difficulte, resultats: reponses.map((r) => ({ id: r.q.id, juste: r.juste, s: r.q.s ?? sousTheme })), bossReussi, difficulteJouee: difficulte, miniJeu: mj ?? undefined }).catch(console.error)
   }, [fini, user, profile, sousTheme, xp, pieces, defi, revision, reponses, questions])
 
   if (!questions) return <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center' }}><Logo width={72} /></div>
@@ -312,7 +313,7 @@ export default function Partie() {
           <Img src={q.image} alt="" className={q.flou && !courante ? 'image-floue' : undefined} style={{ height: 220, maxWidth: '100%', borderRadius: 18, boxShadow: 'var(--shadow)', border: '1px solid var(--line)', objectFit: 'contain', background: q.fondGris ? 'var(--fond-logo)' : 'var(--surface)', padding: q.fondGris ? 14 : 0 }} />
         )}
         {/* Question sans image : illustration de la famille pour garder l'écran vivant (sans dévoiler la réponse) */}
-        {!q.image && !q.carte && !q.audio && !q.grand && <div className="illus-question"><Illustration k={k as Famille} taille={170} /></div>}
+        {!q.image && !q.carte && !q.audio && !q.grand && !q.imagesOnly && <div className="illus-question"><Illustration k={k as Famille} taille={170} /></div>}
         {q.carte && <CarteQuiz carte={q.carte} clic={courante?.clic} repondu={!!courante} onClic={repondreCarte} />}
         {q.audio && <Extrait id={q.audio} />}
 
@@ -337,7 +338,9 @@ export default function Partie() {
                     opacity: etat === 'dim' ? .55 : 1, transition: 'all .2s ease-out',
                   }}>
                   <span className="kbd" style={{ flex: 'none' }}>{n + 1}</span>
-                  {o.image && <Img src={o.image} alt="" style={{ width: '100%', aspectRatio: '3 / 2', objectFit: 'contain', borderRadius: 10, padding: q.fondGris ? 10 : 0, background: q.fondGris ? 'var(--fond-logo)' : undefined, ...o.effet }} />}
+                  {o.image && (o.effet?.truc
+                    ? <LogoTruque src={o.image} effet={o.effet as EffetLogo} style={{ width: '100%', aspectRatio: '3 / 2', borderRadius: 10, padding: 10, background: 'var(--fond-logo)' }} />
+                    : <Img src={o.image} alt="" style={{ width: '100%', aspectRatio: '3 / 2', objectFit: 'contain', borderRadius: 10, padding: q.fondGris ? 10 : 0, background: q.fondGris ? 'var(--fond-logo)' : undefined }} />)}
                   {(!q.imagesOnly || courante) && <span style={{ flex: 1 }}>{o.label}</span>}
                   {etat === 'ok' && <Coche />}
                   {etat === 'ko' && <Croix />}
@@ -442,7 +445,7 @@ function Fiche({ r, onNext, dernier, k }: { r: Reponse; onNext: () => void; dern
         </div>
         <p style={{ fontSize: 15, color: `var(--${k}-i)`, background: `var(--${k}-t)`, padding: '10px 14px', borderRadius: 12 }}><strong>{t('q.didyouknow')}</strong> {saviez}</p>
         <a href={f.wiki} target="_blank" rel="noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontWeight: 600, fontSize: 14, color: 'var(--muted)', alignSelf: 'flex-start', minHeight: 32 }}>
-          <Icon d={ICONS.link} size={16} />{t('q.more')}
+          <Icon d={ICONS.link} size={16} />{f.wiki.includes('wikipedia') ? t('q.more') : (lang === 'fr' ? 'En savoir plus' : 'Learn more')}
         </a>
       </div>
       <button className="btn btn-p btn-lg btn-suivant-fiche" onClick={onNext} autoFocus>{dernier ? t('res.title') : t('q.next')}<span className="kbd">Entrée</span></button>

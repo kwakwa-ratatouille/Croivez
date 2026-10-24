@@ -205,7 +205,7 @@ export function masquer(nom: string, reponse: string, annee: boolean): string | 
 export const quizFixe = (s: string) => estCulture(s) && !!(CULTURE[s] as { fixe?: boolean }).fixe
 
 // effet : retouche CSS de l'image (faux logos : couleurs décalées, inversé, écrasé…)
-export type Option = { label: string; image?: string; effet?: { filter?: string; transform?: string } }
+export type Option = { label: string; image?: string; effet?: { filter?: string; transform?: string; truc?: string; force?: number; graine?: number; secours?: string } }
 export type Fiche = { image?: string; faits: { l: string; v: string }[]; saviez: string; wiki: string }
 export type Carte = {
   vue: 'france' | 'monde'
@@ -564,18 +564,17 @@ function culture(o: Opts, tousItems: ItemCulture[]): Question[] {
 }
 
 // ——— Le vrai logo : le nom de la marque, le vrai logo et des faux tirés de lui ———
-// Plus c'est dur, plus les retouches sont fines (Facile : couleurs inversées ; Expert : quelques degrés de teinte).
-// Index de force : 0 = Facile … 3 = Expert / Légende
-const RETOUCHES: { l: Record<Lang, string>; effet: (f: number) => { filter?: string; transform?: string }; facileSeulement?: boolean }[] = [
-  { l: { fr: 'Faux : couleurs changées', en: 'Fake: colours changed' }, effet: (f) => ({ filter: `hue-rotate(${[160, 90, 45, 24][f]}deg)` }) },
-  { l: { fr: 'Faux : à l’envers', en: 'Fake: mirrored' }, effet: () => ({ transform: 'scaleX(-1)' }), facileSeulement: true },
-  { l: { fr: 'Faux : écrasé', en: 'Fake: squashed' }, effet: (f) => ({ transform: `scaleX(${[0.7, 0.8, 0.88, 0.93][f]})` }) },
-  { l: { fr: 'Faux : étiré', en: 'Fake: stretched' }, effet: (f) => ({ transform: `scaleY(${[0.65, 0.78, 0.87, 0.92][f]})` }) },
-  { l: { fr: 'Faux : penché', en: 'Fake: tilted' }, effet: (f) => ({ transform: `rotate(${[14, 9, 5, 3][f]}deg)` }) },
-  { l: { fr: 'Faux : délavé', en: 'Fake: faded' }, effet: (f) => ({ filter: `saturate(${[0.05, 0.3, 0.5, 0.62][f]})` }) },
-  { l: { fr: 'Faux : trop foncé', en: 'Fake: too dark' }, effet: (f) => ({ filter: `brightness(${[0.35, 0.6, 0.75, 0.84][f]})` }) },
-  { l: { fr: 'Faux : teinte et forme', en: 'Fake: hue and shape' }, effet: (f) => ({ filter: `hue-rotate(${[120, 60, 30, 16][f]}deg)`, transform: `scaleX(${[0.8, 0.88, 0.93, 0.96][f]})` }) },
-]
+// Les faux sont fabriqués dans l'appli (components/LogoTruque) : une partie seulement du logo est retouchée
+// (couleur principale, deux couleurs échangées, une moitié écrasée ou décalée, un morceau effacé, trait plus gras…).
+// force : 0 = Facile (retouche bien visible) … 3 = Expert / Légende (retouche fine).
+const TRUCS_FACILES = ['teinte', 'echange', 'gomme', 'miroir', 'ecrase', 'decale', 'gras']
+const TRUCS_DURS = ['teinte', 'echange', 'gomme', 'ecrase', 'decale', 'gras', 'maigre']
+const NOMS_TRUCS: Record<string, Record<Lang, string>> = {
+  teinte: { fr: 'Faux : une couleur changée', en: 'Fake: one colour changed' }, echange: { fr: 'Faux : couleurs inversées', en: 'Fake: colours swapped' },
+  gomme: { fr: 'Faux : un morceau manque', en: 'Fake: a piece is missing' }, miroir: { fr: 'Faux : une partie retournée', en: 'Fake: part mirrored' },
+  ecrase: { fr: 'Faux : une partie écrasée', en: 'Fake: part squashed' }, decale: { fr: 'Faux : une partie décalée', en: 'Fake: part shifted' },
+  gras: { fr: 'Faux : trait trop épais', en: 'Fake: too bold' }, maigre: { fr: 'Faux : trait trop fin', en: 'Fake: too thin' },
+}
 function logosVrai(o: Opts, tous: ItemCulture[]): Question[] {
   const items = tous.filter((it) => it.img)
   const { cibles } = tirer(items, (d) => Math.min(items.length, POOL_CULTURE[d]), o, (it) => it.id)
@@ -583,13 +582,14 @@ function logosVrai(o: Opts, tous: ItemCulture[]): Question[] {
   const nbFaux = nbLeurres(o.difficulte)
   return cibles.map((it): Question => {
     const nom = it.n[o.lang]
-    const possibles = RETOUCHES.filter((r) => !r.facileSeulement || force <= 1)
-    const faux = melanger(possibles).slice(0, nbFaux).map((r) => ({ label: r.l[o.lang], image: it.img, effet: r.effet(force) }))
+    const secours = texte(it.x?.orig, 'fr') || undefined
+    const graine = Math.floor(rand() * 1e9)
+    const faux = melanger(force <= 1 ? TRUCS_FACILES : TRUCS_DURS).slice(0, nbFaux).map((t, k) => ({ label: NOMS_TRUCS[t][o.lang], image: it.img, effet: { truc: t, force, graine: graine + k * 7, secours } }))
     const vrai = o.lang === 'fr' ? 'Le vrai logo' : 'The real logo'
     return {
       id: it.id, enonce: o.lang === 'fr' ? `Quel est le vrai logo de ${nom} ?` : `Which is the real ${nom} logo?`,
       reponse: vrai, acceptees: [vrai], imagesOnly: true, fondGris: true,
-      options: melanger([{ label: vrai, image: it.img }, ...faux]),
+      options: melanger([{ label: vrai, image: it.img, effet: { truc: 'aucun', force, graine, secours } }, ...faux]),
       fiche: { image: it.img, faits: [{ l: o.lang === 'fr' ? 'Marque' : 'Brand', v: nom }], saviez: it.d?.[o.lang] ? `${nom} : ${it.d[o.lang]}.` : nom, wiki: wiki(nom, o.lang) },
     }
   })

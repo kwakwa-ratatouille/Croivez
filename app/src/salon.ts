@@ -22,6 +22,7 @@ export type Salon = {
   etape?: { q: number; debut: number }
   joueurs: Record<string, JoueurSalon>
   cree: number
+  tv?: boolean // mode télé : l'hôte est l'écran (il ne joue pas), les joueurs répondent sur leur téléphone
 }
 export const REGLES_DEFAUT: ReglesSalon = { s: 'mix', n: 10, d: 2, mj: 'qcm', secondes: 15 }
 // Mini-jeux jouables à plusieurs (pas de saisie : tout le monde répond au même rythme)
@@ -42,14 +43,15 @@ function surveillerPresence(code: string, uid: string) {
   onDisconnect(ref(rtdb, `${chemin(code)}/joueurs/${uid}/parti`)).set(true)
 }
 
-export async function creerSalon(m: Moi) {
+export async function creerSalon(m: Moi, opts: { tv?: boolean } = {}) {
   for (let essai = 0; essai < 8; essai++) {
     const code = nouveauCode()
     const r = ref(rtdb, chemin(code))
     if ((await get(r)).exists()) continue
-    const salon: Salon = { hote: m.uid, etat: 'attente', regles: REGLES_DEFAUT, seed: 0, joueurs: { [m.uid]: joueur(m) }, cree: Date.now() }
+    // Mode télé : l'écran n'est pas un joueur
+    const salon: Salon = { hote: m.uid, etat: 'attente', regles: REGLES_DEFAUT, seed: 0, joueurs: opts.tv ? {} : { [m.uid]: joueur(m) }, cree: Date.now(), ...(opts.tv ? { tv: true } : {}) }
     await set(r, salon)
-    surveillerPresence(code, m.uid)
+    if (!opts.tv) surveillerPresence(code, m.uid)
     return code
   }
   throw new Error('code')
@@ -58,6 +60,7 @@ export async function creerSalon(m: Moi) {
 export async function rejoindreSalon(code: string, m: Moi): Promise<'ok' | 'introuvable' | 'commence' | 'plein'> {
   const s = (await get(ref(rtdb, chemin(code)))).val() as Salon | null
   if (!s) return 'introuvable'
+  if (s.tv && s.hote === m.uid) return 'ok' // l'écran télé ne rejoint pas comme joueur
   const deja = s.joueurs?.[m.uid]
   if (!deja && s.etat !== 'attente') return 'commence'
   if (!deja && Object.values(s.joueurs ?? {}).filter((j) => !j.parti).length >= MAX_JOUEURS) return 'plein'
@@ -101,6 +104,10 @@ export const rejouerSalon = (code: string) => update(ref(rtdb, chemin(code)), { 
 export async function inviterAuSalon(code: string, m: Moi, ami: string) {
   await set(ref(rtdb, `invitations/${ami}/salon-${code}`), { de: m.pseudo, uid: m.uid, t: serverTimestamp(), salon: code })
 }
+
+// Adresse publique de la version web (pour le QR code du mode télé)
+export const URL_WEB = 'https://kwakwa-ratatouille.github.io/Croivez/'
+export const lienRejoindre = (code: string) => `${URL_WEB}#/rejoindre/${code}`
 
 // Décalage entre l'horloge de l'appareil et celle du serveur (chrono identique pour tous)
 export const ecouterDecalage = (cb: (ms: number) => void) => onValue(ref(rtdb, '.info/serverTimeOffset'), (s) => cb(Number(s.val() ?? 0)))

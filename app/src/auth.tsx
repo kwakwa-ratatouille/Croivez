@@ -39,6 +39,9 @@ export type Profile = {
   partiesJour?: number // parties jouées aujourd'hui (succès Marathonien)
   paliers?: Record<string, number[]> // difficultés réussies (sans-faute, cumulatif) par quiz : ouvre la Légende
   toutDebloque?: boolean // menu de test : tous les quiz, toutes les difficultés et la Légende ouverts
+  titre?: string // titre équipé (affiché sous le pseudo)
+  miniJeux?: string[] // mini-jeux déjà joués (cadre Holographique, titre Touche-à-tout)
+  exploits?: { salons?: number; victoiresMulti?: number; tv?: number; tvHote?: number; duelsGagnes?: number } // compteurs des récompenses multijoueur
 }
 
 type Ctx = { user: User | null; profile: Profile | null; loading: boolean }
@@ -95,6 +98,9 @@ export async function ensureProfile(user: User, pseudo?: string) {
   })
 }
 
+// Exploit hors partie (ex. : animer une soirée télé)
+export const noterExploit = (uid: string, k: keyof NonNullable<Profile['exploits']>) => setDoc(doc(db, 'users', uid), { exploits: { [k]: increment(1) } }, { merge: true })
+
 export const niveau = (xp: number) => Math.floor(Math.sqrt(xp / 100)) + 1
 export const xpPourNiveau = (n: number) => (n - 1) ** 2 * 100
 
@@ -113,6 +119,8 @@ type Partie = {
   bossReussi?: boolean
   difficulteJouee?: number
   record?: { jeu: string; score: number }
+  multi?: { mode: 'salon' | 'tv' | 'duel'; gagne: boolean } // partie à plusieurs (récompenses)
+  miniJeu?: string
 }
 
 // Enregistre une partie : XP, série, maîtrise, statistiques des badges et cartes de révision
@@ -168,6 +176,11 @@ export async function enregistrerPartie(uid: string, profile: Profile, p: Partie
     ...(Object.keys(revision).length ? { revision } : {}),
     ...(p.stats ? { quetes: avancerQuetes(profile.quetes, p.stats) } : {}),
     partiesJour: partiesJour,
+    ...(p.miniJeu ? { miniJeux: arrayUnion(p.miniJeu) } : {}),
+    ...(p.multi ? { exploits: {
+      ...(p.multi.mode === 'duel' ? (p.multi.gagne ? { duelsGagnes: increment(1) } : {}) : { salons: increment(1), ...(p.multi.gagne ? { victoiresMulti: increment(1) } : {}) }),
+      ...(p.multi.mode === 'tv' ? { tv: increment(1) } : {}),
+    } } : {}),
     ...(Object.keys(album).length ? { album } : {}),
     ...(nouveauxSecrets.length ? { secrets: arrayUnion(...nouveauxSecrets) } : {}),
     ...(p.record && p.record.score > (profile.records?.[p.record.jeu] ?? 0) ? { records: { [p.record.jeu]: p.record.score } } : {}),

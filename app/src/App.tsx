@@ -19,6 +19,8 @@ import Profil, { Joueur } from './pages/Profil'
 import Duels from './pages/Duels'
 import Duel from './pages/Duel'
 import Salon from './pages/Salon'
+import Rejoindre from './pages/Rejoindre'
+import Tv from './pages/Tv'
 import Classements from './pages/Classements'
 import Album from './pages/Album'
 import Boutique from './pages/Boutique'
@@ -45,6 +47,19 @@ function OuvrirQuiz() {
 function Routeur() {
   const { user, profile, loading } = useAuth()
   if (loading) return <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center' }}><Logo width={72} /></div>
+  // Invités (QR code du mode télé) : rejoindre un salon ou lancer la télé sans compte
+  const pageInvite = /^#\/(rejoindre|tv|salon)/.test(location.hash)
+  if ((!user && pageInvite) || user?.isAnonymous) return (
+    <HashRouter>
+      <Routes>
+        <Route path="/rejoindre" element={<Rejoindre />} />
+        <Route path="/rejoindre/:code" element={<Rejoindre />} />
+        <Route path="/tv" element={<Tv />} />
+        <Route path="/salon/:code" element={user ? <Salon /> : <Navigate to="/rejoindre" replace />} />
+        <Route path="*" element={<Navigate to="/rejoindre" replace />} />
+      </Routes>
+    </HashRouter>
+  )
   if (!user) return <Connexion />
   // Nouveau compte : choisir ses 3 familles de départ avant de jouer
   if (choixAFaire(profile)) return <ChoixFamilles />
@@ -54,6 +69,8 @@ function Routeur() {
         <Route path="/partie" element={<Partie />} />
         <Route path="/duel/:id" element={<Duel />} />
         <Route path="/salon/:code" element={<Salon />} />
+        <Route path="/tv" element={<Tv />} />
+        <Route path="/rejoindre/:code" element={<Rejoindre />} />
         <Route element={<Layout />}>
           <Route path="/" element={<Accueil />} />
           <Route path="/themes" element={<Themes />} />

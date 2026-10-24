@@ -4,7 +4,7 @@ import { niveau, useAuth, xpPourNiveau } from '../auth'
 import { usePrefs, type Lang } from '../i18n'
 import { FAMILLES } from '../themes'
 import { BADGES, PALIERS, palierAtteint } from '../badges'
-import { SECRETS } from '../meta'
+import { BOUTIQUE, SECRETS } from '../meta'
 import { accesQuiz } from '../progression'
 import { profilPublic, publierVitrine, resumePublic, type ProfilPublic } from '../social'
 import Avatar from '../components/Avatar'
@@ -47,6 +47,9 @@ export function CarteJoueur({ p, moi = false }: { p: ProfilPublic; moi?: boolean
         {moi ? <Link to="/boutique" aria-label={fr ? 'Changer d’avatar' : 'Change avatar'}><Avatar pseudo={p.pseudo} avatar={p.avatar} cadre={p.cadre} taille={84} anime /></Link> : <Avatar pseudo={p.pseudo} avatar={p.avatar} cadre={p.cadre} taille={84} anime />}
         <div style={{ flex: '1 1 220px', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
           <h1 className="t" style={{ fontSize: 26, fontWeight: 900, overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.pseudo}</h1>
+          {/* Titre équipé (gagné par un exploit) */}
+          {p.titre && BOUTIQUE.find((o) => o.id === p.titre) && <span className="titre-affiche">🏅 {BOUTIQUE.find((o) => o.id === p.titre)!.nom[lang]}</span>}
+          {moi && !p.titre && <Link to="/boutique" className="titre-affiche vide">+ {fr ? 'Choisir un titre' : 'Pick a title'}</Link>}
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <span className="chip" style={{ background: 'var(--mus-t)', color: 'var(--mus-i)' }}>{fr ? 'Niv.' : 'Lv.'} {nv}</span>
             <div className="bar" style={{ flex: 1 }}><span style={{ width: `${pct}%`, background: 'var(--mus)' }} /></div>
@@ -103,7 +106,7 @@ export default function Profil() {
   const { user, profile } = useAuth()
   const [edition, setEdition] = useState(false)
   if (!profile || !user) return null
-  const pub: ProfilPublic = { uid: user.uid, pseudo: profile.pseudo, xp: profile.xp, niveau: niveau(profile.xp), serie: profile.serie, avatar: profile.avatar, cadre: profile.cadre, ...resumePublic(profile) }
+  const pub: ProfilPublic = { uid: user.uid, pseudo: profile.pseudo, xp: profile.xp, niveau: niveau(profile.xp), serie: profile.serie, avatar: profile.avatar, cadre: profile.cadre, ...resumePublic(profile), titre: profile.titre }
   const obtenus = BADGES.map((b) => ({ b, n: palierAtteint(b, profile) })).filter((x) => x.n > 0)
   const vitrine = profile.vitrine ?? []
   const basculer = (v: string) => {

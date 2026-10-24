@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { onValue, ref, remove } from 'firebase/database'
 import { rtdb } from '../firebase'
 import { useAuth } from '../auth'
@@ -94,6 +94,15 @@ export default function Duels() {
           {msgSalon && <p role="status" style={{ fontSize: 14, fontWeight: 700 }}>{msgSalon}</p>}
         </form>
       </section>
+      {/* Mode télé : QR code sur la télé, tout le monde joue sur son téléphone, même sans compte */}
+      <Link to="/tv" className="card tv-carte rise">
+        <span style={{ fontSize: 42 }} aria-hidden="true">📺</span>
+        <span style={{ flex: 1 }}>
+          <strong className="t" style={{ display: 'block', fontSize: 21 }}>{fr ? 'Mode télé' : 'TV mode'}</strong>
+          <span style={{ fontSize: 14, opacity: .9 }}>{fr ? 'Affiche la partie sur la télé : chacun scanne le QR code et joue sur son téléphone, même sans compte. Parfait en famille ou entre potes.' : 'Show the game on the TV, everyone plays on their phone.'}</span>
+        </span>
+        <Icon d={ICONS.arrowR} />
+      </Link>
       <h2 className="t" style={{ fontSize: 22, fontWeight: 900 }}>{fr ? 'Duels en face à face' : 'One-on-one duels'}</h2>
 
       {invitations.length > 0 && (
