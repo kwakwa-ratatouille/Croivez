@@ -24,7 +24,9 @@ export type Profile = {
   amis?: string[]
   pieces?: number
   familles?: string[] // familles choisies au départ (entièrement ouvertes) ; absent = ancien compte, tout ouvert
-  quiz?: string[] // quiz gagnés dans les caisses
+  quiz?: string[] // sous-thèmes possédés (choisis au départ ou achetés)
+  choixFait?: boolean // false : le joueur doit encore choisir ses 6 sous-thèmes de départ
+  sauts?: Record<string, number[]> // difficultés débloquées en payant, par quiz
   records?: Record<string, number> // meilleurs scores Express / Survie
   quetes?: EtatQuetes // quêtes du jour
   album?: Record<string, string[]> // cartes collectionnées (bonnes réponses) par quiz
@@ -33,7 +35,7 @@ export type Profile = {
   avatar?: string
   cadre?: string
   partiesJour?: number // parties jouées aujourd'hui (succès Marathonien)
-  paliers?: Record<string, number[]> // difficultés réussies (≥ 70 %) par quiz : ouvre la Légende
+  paliers?: Record<string, number[]> // difficultés réussies (sans-faute, cumulatif) par quiz : ouvre la Légende
 }
 
 type Ctx = { user: User | null; profile: Profile | null; loading: boolean }
@@ -73,7 +75,7 @@ export async function ensureProfile(user: User, pseudo?: string) {
   if ((await getDoc(ref)).exists()) return
   await setDoc(ref, {
     pseudo: pseudo || user.displayName || user.email?.split('@')[0] || 'Explorateur',
-    xp: 0, serie: 0, dernierJour: '', maitrise: {}, pieces: 50, familles: [], creeLe: serverTimestamp(),
+    xp: 0, serie: 0, dernierJour: '', maitrise: {}, pieces: 50, quiz: [], choixFait: false, creeLe: serverTimestamp(),
   })
 }
 
@@ -89,7 +91,7 @@ type Partie = {
   revision?: boolean // partie de révision : ne compte pas dans la maîtrise
   defi?: boolean
   pieces?: number // pièces gagnées pendant la partie
-  difficulte?: number // 1 à 4 : réussir à 70 % valide le palier (Légende)
+  difficulte?: number // 1 à 4 : un sans-faute valide le palier (Légende)
   sansRevision?: boolean // Mix / Express / Survie : questions de plusieurs quiz
   stats?: StatsPartie // pour les quêtes du jour
   bossReussi?: boolean
@@ -149,7 +151,8 @@ export async function enregistrerPartie(uid: string, profile: Profile, p: Partie
     ...(Object.keys(album).length ? { album } : {}),
     ...(nouveauxSecrets.length ? { secrets: arrayUnion(...nouveauxSecrets) } : {}),
     ...(p.record && p.record.score > (profile.records?.[p.record.jeu] ?? 0) ? { records: { [p.record.jeu]: p.record.score } } : {}),
-    ...(p.difficulte && p.difficulte <= 4 && taux >= 0.7 ? { paliers: { [p.sousTheme]: arrayUnion(p.difficulte) } } : {}),
+    // Sans-faute obligatoire ; valider un niveau valide aussi tous ceux du dessous
+    ...(p.difficulte && p.difficulte <= 4 && taux >= 1 ? { paliers: { [p.sousTheme]: arrayUnion(...[1, 2, 3, 4].filter((d) => d <= p.difficulte!)) } } : {}),
   }, { merge: true })
   await publierXp(uid, profile.pseudo, p.xp, (profile.xp ?? 0) + p.xp, serie, { avatar: profile.avatar, cadre: profile.cadre }).catch(console.error)
 }

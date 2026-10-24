@@ -8,6 +8,7 @@ import { useEffect, useRef, useState } from 'react'
 import MenuTest from './MenuTest'
 import Avatar from './Avatar'
 import FicheLancement from './FicheLancement'
+import Achat from './Achat'
 import { telechargerEnFond, surveillerWifi } from '../telechargementFond'
 import { familleOuverte } from '../progression'
 import type { Famille } from '../themes'
@@ -32,10 +33,13 @@ export default function Layout() {
   // 3 appuis rapides sur le logo : menu de test
   const [test, setTest] = useState(false)
   const [fiche, setFiche] = useState<string | null>(null)
+  const [achat, setAchat] = useState<string | null>(null)
   useEffect(() => {
     const h = (e: Event) => setFiche((e as CustomEvent<string>).detail)
+    const a = (e: Event) => setAchat((e as CustomEvent<string>).detail)
     window.addEventListener('croivez:fiche', h)
-    return () => window.removeEventListener('croivez:fiche', h)
+    window.addEventListener('croivez:acheter', a)
+    return () => { window.removeEventListener('croivez:fiche', h); window.removeEventListener('croivez:acheter', a) }
   }, [])
   const appuis = useRef<number[]>([])
   const appuiLogo = (e: React.MouseEvent) => {
@@ -59,6 +63,7 @@ export default function Layout() {
   return (
     <div className="shell">
       {test && <MenuTest onFermer={() => setTest(false)} />}
+      {achat && <Achat id={achat} onFermer={() => setAchat(null)} />}
       {fiche && <FicheLancement id={fiche} onFermer={() => setFiche(null)} />}
       <nav className="side" aria-label="Navigation principale">
         <NavLink to="/" aria-label="Croivez" className="side-logo" onClick={appuiLogo} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '4px 12px 28px', textDecoration: 'none' }}>

@@ -127,6 +127,11 @@ export type Question = {
   boss?: boolean // question finale très dure (+30 pièces)
   carte?: Carte
   fiche: Fiche
+  format?: 'qcm' | 'libre' | 'assistee' | 'vf' | 'lettres'
+  propose?: string // vrai / faux : la réponse proposée
+  vraie?: string // vrai / faux : la vraie réponse
+  leurres?: string[] // saisie assistée : suggestions pièges
+  lettres?: string[] // lettres mélangées
 }
 
 export const drapeau = (id: string, w = 320) => `https://flagcdn.com/w${w}/${id}.png`

@@ -3,23 +3,27 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth'
 import { usePrefs } from '../i18n'
 import { trouverSousTheme } from '../themes'
-import { difficulteOuverte, legendeOuverte } from '../progression'
-import type { Difficulte, Mode } from '../quiz/engine'
+import { PRIX_SAUT, difficulteOuverte, legendeOuverte, plafonner, reussie, sauterDifficulte } from '../progression'
+import type { Difficulte } from '../quiz/engine'
+import { FORMATS, type Format } from '../quiz/formats'
+
 import Illustration from './Illustration'
-import { ICONS, Icon, Toggle } from './ui'
+import { ICONS, Icon, Piece, Toggle } from './ui'
 
 // Derniers réglages : la fiche se rouvre comme on l'a laissée
-type Reglages = { d: Difficulte; m: Mode; rapide: boolean; chrono: boolean }
-const lire = (): Reglages => { try { return { d: 0, m: 'qcm', rapide: false, chrono: false, ...JSON.parse(localStorage.getItem('reglages') ?? '{}') } } catch { return { d: 0, m: 'qcm', rapide: false, chrono: false } } }
+type Reglages = { d: Difficulte; m: Format; rapide: boolean; chrono: boolean }
+const lire = (): Omit<Reglages, 'd'> => { const def = { m: 'auto' as Format, rapide: false, chrono: false }; try { const v = { ...def, ...JSON.parse(localStorage.getItem('reglages') ?? '{}') }; return { m: FORMATS.some((x) => x.v === v.m) ? v.m : 'auto', rapide: v.rapide, chrono: v.chrono } } catch { return def } }
 
 // Fiche rapide : un quiz se lance en deux appuis (le quiz, puis « Jouer »), réglages à portée de pouce
 export default function FicheLancement({ id, onFermer }: { id: string; onFermer: () => void }) {
   const { t, lang } = usePrefs()
   const fr = lang === 'fr'
-  const { profile } = useAuth()
+  const { user, profile } = useAuth()
   const nav = useNavigate()
   const trouve = trouverSousTheme(id)
-  const [r, setR] = useState<Reglages>(lire)
+  // Par défaut : la plus haute difficulté ouverte de ce quiz, format auto
+  const [r, setR] = useState<Reglages>(() => ({ ...lire(), d: plafonner(4, profile, id) }))
+  const [msg, setMsg] = useState('')
   if (!trouve) return null
   const { famille, sous } = trouve
   const k = famille.k
@@ -30,12 +34,14 @@ export default function FicheLancement({ id, onFermer }: { id: string; onFermer:
     { v: 0, label: t('diff.auto') }, { v: 1, label: t('diff.1') }, { v: 2, label: t('diff.2') }, { v: 3, label: t('diff.3') }, { v: 4, label: t('diff.4') },
     ...(legende ? [{ v: 5 as Difficulte, label: fr ? 'Légende' : 'Legend' }] : []),
   ]
+  // Première difficulté fermée (1 à 4) : on peut la sauter pour 100 pièces, jamais la Légende
+  const verrou = ([2, 3, 4] as const).find((d) => !difficulteOuverte(d, profile, id)) ?? 0
   const maj = (x: Partial<Reglages>) => setR((v) => ({ ...v, ...x }))
 
   const jouer = () => {
     try { localStorage.setItem('reglages', JSON.stringify(r)) } catch { /* stockage indisponible */ }
     const m = carte ? 'libre' : qcmSeul ? 'qcm' : r.m
-    const d = difficulteOuverte(r.d, profile) || (r.d === 5 && legende) ? r.d : 0
+    const d = difficulteOuverte(r.d, profile, id) ? r.d : 0
     nav(`/partie?s=${id}&m=${m}&n=10&d=${d}&t=${r.chrono ? 15 : 0}${r.rapide ? '&r=1' : ''}`)
   }
 
@@ -54,19 +60,27 @@ export default function FicheLancement({ id, onFermer }: { id: string; onFermer:
 
         <div className="fiche-defile" role="radiogroup" aria-label={t('cfg.diff')}>
           {diffs.map((d) => {
-            const ouvert = d.v === 5 ? legende : difficulteOuverte(d.v, profile)
+            const ouvert = d.v === 5 ? legende : difficulteOuverte(d.v, profile, id)
             return (
-              <button key={d.v} type="button" role="radio" aria-checked={r.d === d.v} className={`pill${d.v === 5 ? ' pill-legende' : ''}`} aria-pressed={r.d === d.v} disabled={!ouvert} onClick={() => maj({ d: d.v })} style={{ flex: 'none', opacity: ouvert ? 1 : 0.45 }}>
-                {!ouvert && <Icon d={ICONS.lock} size={14} />}{d.label}
+              <button key={d.v} type="button" role="radio" aria-checked={r.d === d.v} className={`pill${d.v === 5 ? ' pill-legende' : ''}`} aria-pressed={r.d === d.v} disabled={!ouvert && d.v !== verrou} onClick={() => ouvert ? maj({ d: d.v }) : setMsg('')} style={{ flex: 'none', opacity: ouvert ? 1 : 0.45 }}>
+                {!ouvert && <Icon d={ICONS.lock} size={14} />}{reussie(d.v, profile, id) && <span aria-label={fr ? 'réussi' : 'passed'}>✓</span>}{d.label}
               </button>
             )
           })}
         </div>
 
+        {verrou > 0 && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', fontSize: 13, fontWeight: 600, color: 'var(--muted)' }}>
+            <span style={{ flex: 1 }}>{fr ? `Sans-faute en ${diffs.find((x) => x.v === verrou - 1)?.label} (ou plus haut) pour ouvrir ${diffs.find((x) => x.v === verrou)?.label}` : `Perfect run on ${diffs.find((x) => x.v === verrou - 1)?.label} to unlock ${diffs.find((x) => x.v === verrou)?.label}`}</span>
+            <button type="button" className="btn btn-s" onClick={async () => { if (!user) return; const ok = await sauterDifficulte(user.uid, id, verrou).catch(() => false); if (ok) maj({ d: verrou as Difficulte }); else setMsg(fr ? `Il faut ${PRIX_SAUT} pièces.` : `You need ${PRIX_SAUT} coins.`) }}>{fr ? 'Sauter' : 'Skip'} · <Piece size={15} />{PRIX_SAUT}</button>
+            {msg && <span role="status" style={{ flexBasis: '100%', color: 'var(--ko-i)' }}>{msg}</span>}
+          </div>
+        )}
+
         {!carte && !qcmSeul && (
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-            {(['qcm', 'libre'] as const).map((m) => (
-              <button key={m} type="button" className="pill" aria-pressed={r.m === m} onClick={() => maj({ m })}>{m === 'qcm' ? t('cfg.qcm') : t('cfg.free')}</button>
+          <div className="fiche-defile" role="radiogroup" aria-label={fr ? 'Format de réponse' : 'Answer format'}>
+            {FORMATS.map((x) => (
+              <button key={x.v} type="button" role="radio" aria-checked={r.m === x.v} className="pill" aria-pressed={r.m === x.v} onClick={() => maj({ m: x.v })} style={{ flex: 'none' }}>{x[lang]}</button>
             ))}
           </div>
         )}

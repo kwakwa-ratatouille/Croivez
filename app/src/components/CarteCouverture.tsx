@@ -4,7 +4,8 @@ import { trouverSousTheme } from '../themes'
 import Img from './Img'
 import Illustration from './Illustration'
 import { ouvrirFiche } from './FicheLancement'
-import { ICONS, Icon } from './ui'
+import { ICONS, Icon, Piece } from './ui'
+import { RARETES, rareteDe } from '../progression'
 
 // Photos de couverture des quiz (public/packs/couvertures.json), chargées une seule fois
 let couvertures: Promise<Record<string, string>> | null = null
@@ -17,7 +18,8 @@ export function useCouverture(id: string) {
 }
 
 // Carte d'un quiz : vraie photo en haut, bandeau aux couleurs de la famille, progression.
-// Un appui ouvre la fiche de lancement (ou rien si le quiz est verrouillé).
+// Un appui ouvre la fiche de lancement, ou la proposition d'achat si le quiz est verrouillé.
+export const proposerAchat = (id: string) => window.dispatchEvent(new CustomEvent('croivez:acheter', { detail: id }))
 export default function CarteCouverture({ id, pct = 0, verrou = false, largeur }: { id: string; pct?: number; verrou?: boolean; largeur?: number }) {
   const { lang } = usePrefs()
   const src = useCouverture(id)
@@ -25,7 +27,7 @@ export default function CarteCouverture({ id, pct = 0, verrou = false, largeur }
   if (!t) return null
   const k = t.famille.k
   return (
-    <button type="button" onClick={() => !verrou && ouvrirFiche(id)} disabled={verrou} className="couverture famille"
+    <button type="button" onClick={() => (verrou ? proposerAchat(id) : ouvrirFiche(id))} className={`couverture famille${verrou ? ' verrouillee' : ''}`}
       style={{ width: largeur, ['--k' as string]: `var(--${k})`, ['--kt' as string]: `var(--${k}-t)`, ['--ki' as string]: `var(--${k}-i)` }}>
       <span className="couverture-photo">
         {src
@@ -33,7 +35,7 @@ export default function CarteCouverture({ id, pct = 0, verrou = false, largeur }
           : <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%', background: 'var(--kt)' }}><Illustration k={k} taille={150} fond={false} /></span>}
         {/* Pastille de la famille, pour différencier d'un coup d'œil */}
         <span className="couverture-famille"><Icon d={t.famille.icon} size={14} />{t.famille.nom[lang].split(/[ ,&]/)[0]}</span>
-        {verrou && <span className="couverture-verrou"><Icon d={ICONS.lock} size={22} /></span>}
+        {verrou && <span className="couverture-verrou" style={{ background: RARETES[rareteDe(id)].couleur }}><Icon d={ICONS.lock} size={16} /><Piece size={15} />{RARETES[rareteDe(id)].prix}</span>}
       </span>
       <span className="couverture-bas">
         <span className="t couverture-titre">{t.sous.nom[lang]}</span>

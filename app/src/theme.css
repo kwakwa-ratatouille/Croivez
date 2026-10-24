@@ -100,9 +100,39 @@ button { font-family: inherit; }
 .couverture-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
 .couverture-photo::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 55%, color-mix(in srgb, var(--kt) 85%, transparent)); pointer-events: none; }
 .couverture-famille { position: absolute; top: 8px; left: 8px; z-index: 1; display: inline-flex; align-items: center; gap: 5px; padding: 4px 9px; border-radius: 999px; background: var(--k); color: var(--surface); font: 700 11.5px 'DM Sans', sans-serif; box-shadow: 0 2px 6px rgba(0,0,0,.12); }
-.couverture-verrou { position: absolute; inset: 0; z-index: 1; display: flex; align-items: center; justify-content: center; background: rgba(30, 30, 30, .45); color: #fff; }
+.couverture-verrou { position: absolute; right: 8px; bottom: 8px; z-index: 1; display: inline-flex; align-items: center; gap: 4px; padding: 4px 9px; border-radius: 999px; color: #fff; font: 800 13px Nunito, sans-serif; box-shadow: 0 2px 8px rgba(0,0,0,.25); }
+.couverture.verrouillee .couverture-photo img { filter: grayscale(.85) brightness(.8); }
+.couverture.verrouillee .couverture-titre { opacity: .7; }
 .couverture-bas { display: flex; flex-direction: column; gap: 8px; padding: 10px 12px 12px; }
 .couverture-titre { font-weight: 800; font-size: 15px; line-height: 1.25; min-height: 38px; }
+
+/* Choix de départ : petites vignettes photo sélectionnables */
+.vignette-choix { width: 128px; flex: none; display: flex; flex-direction: column; gap: 6px; padding: 0; border: 0; background: none; cursor: pointer; font: inherit; color: var(--ki); text-align: left; transition: opacity .2s; }
+.vignette-photo { position: relative; display: flex; align-items: center; justify-content: center; aspect-ratio: 1; border-radius: 18px; overflow: hidden; background: var(--kt); border: 3px solid transparent; transition: border-color .2s, transform .2s; }
+.vignette-choix[aria-pressed="true"] .vignette-photo { border-color: var(--k); transform: scale(.96); }
+.vignette-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.vignette-coche { position: absolute; top: 6px; right: 6px; background: var(--surface); border-radius: 50%; padding: 3px; display: flex; }
+.vignette-nom { font: 700 13px/1.25 Nunito, sans-serif; }
+
+/* Révélation d'un déblocage : rayons tournants, carte qui se retourne, confettis (GPU : transform/opacity) */
+.revelation { position: fixed; inset: 0; z-index: 60; display: flex; align-items: center; justify-content: center; overflow: hidden; background: radial-gradient(circle at 50% 45%, color-mix(in srgb, var(--r) 45%, #12141c), #0c0e14 70%); animation: rise .25s ease-out; }
+@keyframes tourne { to { transform: rotate(360deg); } }
+.revelation-rayons { position: absolute; width: 160vmax; height: 160vmax; background: repeating-conic-gradient(from 0deg, color-mix(in srgb, var(--r) 55%, transparent) 0deg 8deg, transparent 8deg 22deg); opacity: .35; animation: tourne 18s linear infinite; mask-image: radial-gradient(circle, #000 0, transparent 60%); }
+.revelation-rayons.niveau-2 { opacity: .5; animation-duration: 12s; }
+.revelation-rayons.niveau-3 { opacity: .7; animation-duration: 8s; }
+.revelation-contenu { position: relative; display: flex; flex-direction: column; align-items: center; gap: 18px; padding: 16px; }
+.revelation-rarete { font: 900 14px Nunito, sans-serif; letter-spacing: .3em; text-transform: uppercase; color: var(--r); text-shadow: 0 0 18px var(--r); opacity: 0; transform: scale(.6); transition: opacity .4s, transform .4s cubic-bezier(.2, 1.6, .4, 1); }
+.revelation-rarete.visible { opacity: 1; transform: scale(1.4); }
+.revelation-carte { position: relative; width: 220px; height: 300px; transform-style: preserve-3d; animation: flotte 1.1s ease-in-out infinite alternate; transition: transform .7s cubic-bezier(.3, 1.4, .5, 1); }
+@keyframes flotte { from { translate: 0 -6px; } to { translate: 0 6px; } }
+.revelation-carte.retournee { transform: rotateY(180deg); }
+.revelation-dos, .revelation-face { position: absolute; inset: 0; border-radius: 22px; backface-visibility: hidden; box-shadow: 0 0 0 3px var(--r), 0 0 40px var(--r); overflow: hidden; }
+.revelation-dos { display: flex; align-items: center; justify-content: center; color: #fff; background: linear-gradient(135deg, color-mix(in srgb, var(--r) 70%, #000), #1b1e28); }
+.revelation-face { transform: rotateY(180deg); display: flex; flex-direction: column; }
+.revelation-photo { position: relative; height: 180px; display: flex; align-items: center; justify-content: center; }
+.revelation-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+@keyframes tombe { from { transform: translateY(-10vh) rotate(0); opacity: 1; } to { transform: translateY(110vh) rotate(540deg); opacity: .8; } }
+.confetti { position: absolute; top: 0; border-radius: 2px; animation: tombe 2.6s ease-in forwards; z-index: 1; }
 
 /* Carrousels : rangées qui défilent horizontalement */
 .carrousel { display: flex; gap: 14px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; margin: 0 -56px; padding: 4px 56px 8px; }

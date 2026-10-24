@@ -4,7 +4,8 @@ import { enregistrerPartie, jour, useAuth } from '../auth'
 import { usePrefs } from '../i18n'
 import { trouverSousTheme } from '../themes'
 import { calculerXp, distanceKm, genererMix, genererPartie, type Difficulte, type Mode, type Question, type SousThemeId } from '../quiz/engine'
-import { estCorrect } from '../quiz/match'
+import { estCorrect, normaliser } from '../quiz/match'
+import { appliquerFormat, type Format } from '../quiz/formats'
 import { memoriser } from '../quiz/memoire'
 import { retourFin, retourReponse } from '../retour'
 import { PRIX_INDICE, accesQuiz, payerIndice, payerPieces, piecesGagnees, plafonner } from '../progression'
@@ -33,7 +34,8 @@ export default function Partie() {
   // Modes de jeu : quiz classique, ou Mix / Express (1 min) / Survie (3 vies) sur des thèmes variés
   const jeu = params.get('jeu') as 'mix' | 'express' | 'survie' | null
   const sousTheme = (params.get('s') ?? (jeu ? 'mix' : 'drapeaux')) as SousThemeId
-  const mode = (params.get('m') ?? 'qcm') as Mode
+  const format = (params.get('m') ?? 'qcm') as Format
+  const mode: Mode = format === 'libre' ? 'libre' : 'qcm' // le moteur fait un QCM, transformé ensuite
   const nombre = Number(params.get('n') ?? 10)
   const diffChoisie = Number(params.get('d') ?? 0) as Difficulte
   const legende = Number(params.get('d') ?? 0) === 5
@@ -45,7 +47,7 @@ export default function Partie() {
   const rapide = params.get('r') === '1' || jeu === 'express' || jeu === 'survie'
   const seed = defi ? Number(jour().replace(/-/g, '')) : undefined
   const difficulte = diffChoisie // 0 = tout mélangé
-  const max = plafonner(4, profile) // difficulté la plus haute débloquée
+  const max = plafonner(4, profile, sousTheme) // difficulté la plus haute débloquée
   const k = trouverSousTheme(sousTheme)?.famille.k ?? (jeu ? 'jv' : 'geo')
   const EXPRESS_MS = 60_000
   const [finExpress, setFinExpress] = useState(0)
@@ -94,7 +96,7 @@ export default function Partie() {
         const boss = candidats.find((c) => !qs.some((x) => x.id === c.id))
         if (boss) qs = [...qs, { ...boss, boss: true }]
       }
-      setQuestions(qs)
+      setQuestions(qs.map((x) => appliquerFormat(x, format, difficulte, lang)))
       debutQuestion.current = Date.now()
     })
   }, [sousTheme, difficulte, max, nombre, mode, lang, chrono, seed, jeu, profile])
@@ -290,6 +292,8 @@ export default function Partie() {
         {q.carte && <CarteQuiz carte={q.carte} clic={courante?.clic} repondu={!!courante} onClic={repondreCarte} />}
         {q.audio && <Extrait id={q.audio} />}
 
+        {q.format === 'vf' && <p className="t" style={{ fontSize: 24, fontWeight: 900, textAlign: 'center' }}>{q.propose} ?{courante && !courante.juste && <span style={{ display: 'block', fontSize: 16, color: 'var(--ok-i)' }}>→ {q.vraie}</span>}</p>}
+        {q.format === 'lettres' && !courante && <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, justifyContent: 'center' }}>{q.lettres?.map((l, n) => <span key={n} className="kbd" style={{ fontSize: 18, minWidth: 34 }}>{l}</span>)}</div>}
         {q.options.length > 0 ? (
           <div style={{ width: '100%', display: 'grid', gridTemplateColumns: q.imagesOnly ? 'repeat(auto-fit, minmax(200px, 1fr))' : 'repeat(2, minmax(0, 1fr))', gap: 14 }}>
             {q.options.map((o, n) => {
@@ -321,6 +325,11 @@ export default function Partie() {
             <label htmlFor="rep" className="sr">{t('q.placeholder')}</label>
             <input id="rep" ref={inputRef} className="input" value={saisie} onChange={(e) => setSaisie(e.target.value)} disabled={!!courante} placeholder={t('q.placeholder')} autoComplete="off" spellCheck={false}
               style={{ flex: '1 1 260px', width: 'auto', fontSize: 20, minHeight: 64, borderColor: courante ? (courante.juste ? 'var(--ok)' : 'var(--ko)') : undefined }} />
+            {q.format === 'assistee' && !courante && normaliser(saisie).length >= 2 && (
+              <div style={{ flexBasis: '100%', display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                {[q.reponse, ...(q.leurres ?? [])].filter((l) => normaliser(l).includes(normaliser(saisie))).sort().slice(0, 5).map((l) => <button key={l} type="button" className="pill" onClick={() => repondre(l)}>{l}</button>)}
+              </div>
+            )}
             {!courante && <button className="btn btn-p" style={{ minHeight: 64 }}>{t('q.validate')}</button>}
             {!courante && <button type="button" className="btn btn-g" style={{ minHeight: 64 }} onClick={() => repondre('')}>{t('q.skip')}</button>}
           </form>
