@@ -1,7 +1,7 @@
 {
-  "web": 98,
-  "url": "https://github.com/kwakwa-ratatouille/Croivez/releases/download/web-98/web.zip",
-  "checksum": "79498d289e6d141c5ccf049d9411b67ed41d48a7fd0515b43c2d0a0beff761e1",
+  "web": 100,
+  "url": "https://github.com/kwakwa-ratatouille/Croivez/releases/download/web-100/web.zip",
+  "checksum": "8a61a83ed52c308074e3afa0d6f89c354f8e030ff1f07bcb5ba99a210216e807",
   "natifMin": 5,
   "natifMinAndroid": 1
 }
