@@ -397,7 +397,7 @@ export function distanceKm([lat1, lng1]: [number, number], [lat2, lng2]: [number
 }
 
 // max : difficulté la plus haute débloquée (pour le mode Tout)
-type Opts = { sousTheme: SousThemeId; difficulte: Difficulte; max?: Palier; nombre: number; mode: Mode; lang: Lang; ids?: string[]; seed?: number }
+type Opts = { exclus?: string[]; sousTheme: SousThemeId; difficulte: Difficulte; max?: Palier; nombre: number; mode: Mode; lang: Lang; ids?: string[]; seed?: number }
 
 // Paliers cumulatifs : chaque difficulté contient celles d'en dessous, mais 60 % des questions
 // viennent de son propre palier (Expert = surtout du très pointu). Mode Tout : tout ce qui est débloqué.
@@ -406,6 +406,8 @@ function tirer<T>(liste: T[], fin: (d: Palier) => number, o: Opts, idDe: (x: T) 
   const max = o.max ?? 4
   const d = o.difficulte
   const haut = d === 0 ? max : d === LEGENDE ? 4 : d
+  // Duels : on écarte les questions vues récemment par les deux joueurs (s'il en reste assez)
+  if (o.exclus?.length) { const ex = new Set(o.exclus); const reste = liste.filter((x) => !ex.has(idDe(x))); if (reste.slice(0, fin(o.difficulte === 0 ? (o.max ?? 4) : o.difficulte === LEGENDE ? 4 : o.difficulte)).length >= o.nombre * 2) liste = reste }
   const pool = liste.slice(0, fin(haut))
   if (o.ids) return { cibles: liste.filter((x) => o.ids!.includes(idDe(x))), pool }
   const debut = d === LEGENDE ? fin(3) : d <= 1 ? 0 : fin((d - 1) as Palier)

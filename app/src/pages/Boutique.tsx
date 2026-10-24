@@ -39,7 +39,7 @@ const origine = (o: Objet): Origine =>
           : o.condition ? 'exploits'
             : o.luxe ? 'luxe' : 'boutique'
 const CATEGORIES: { k: NonNullable<Objet['categorie']>; nom: Record<Lang, string>; emoji: string }[] = [
-  { k: 'metier', nom: { fr: 'Métiers et personnages', en: 'Jobs & characters' }, emoji: '🧑‍🚀' }, { k: 'animal', nom: { fr: 'Animaux', en: 'Animals' }, emoji: '🐾' },
+  { k: 'portrait', nom: { fr: 'Personnages illustrés', en: 'Illustrated characters' }, emoji: '🎨' }, { k: 'metier', nom: { fr: 'Métiers et personnages', en: 'Jobs & characters' }, emoji: '🧑‍🚀' }, { k: 'animal', nom: { fr: 'Animaux', en: 'Animals' }, emoji: '🐾' },
   { k: 'fun', nom: { fr: 'Fun', en: 'Fun' }, emoji: '🎈' }, { k: 'famille', nom: { fr: 'Familles de quiz', en: 'Quiz families' }, emoji: '📚' },
 ]
 const sansAccents = (s: string) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
@@ -53,6 +53,9 @@ export default function Boutique() {
   const [params] = useSearchParams()
   const [onglet, setOnglet] = useState<Onglet>(ONGLETS.find((o) => o === params.get('o')) ?? 'avatar')
   const [vue, setVue] = useState<Vue>('tout')
+  const [rangs, setRangs] = useState(params.get('rangs') === '1') // boutique des rangs (jetons) ou boutique des pièces
+  const [filtres, setFiltres] = useState(false)
+  const [cat, setCat] = useState('')
   const [tri, setTri] = useState<Tri>('conseil')
   const [cherche, setCherche] = useState('')
   const [confirmer, setConfirmer] = useState(false) // 2ᵉ étape avant de payer
@@ -84,7 +87,7 @@ export default function Boutique() {
     setChoisi(o)
   }
 
-  const duType = useMemo(() => BOUTIQUE.filter((o) => o.type === onglet && !o.cache), [onglet])
+  const duType = useMemo(() => BOUTIQUE.filter((o) => o.type === onglet && !o.cache && !!o.jetons === rangs), [onglet, rangs])
   const liste = useMemo(() => {
     const q = sansAccents(cherche.trim())
     const l = duType.filter((o) => {
@@ -132,10 +135,8 @@ export default function Boutique() {
   const sections = tri !== 'conseil' ? null
     : onglet === 'avatar'
       // Avatars : par catégorie (métiers, animaux, fun, familles), le luxe à part
-      ? [...CATEGORIES.map((c) => ({ g: { k: c.k, nom: c.nom, emoji: c.emoji }, l: liste.filter((o) => o.categorie === c.k && !o.luxe && !o.jetons) })), { g: { k: 'luxe', nom: { fr: 'Luxe et ultra', en: 'Luxury & ultra' }, emoji: '👑' }, l: liste.filter((o) => o.luxe && !o.jetons) }, { g: { k: 'jetons', nom: { fr: 'Boutique des rangs (jetons)', en: 'Rank shop (tokens)' }, emoji: '🎖️' }, l: liste.filter((o) => o.jetons) }].filter((s) => s.l.length)
+      ? [...CATEGORIES.map((c) => ({ g: { k: c.k, nom: c.nom, emoji: c.emoji }, l: liste.filter((o) => o.categorie === c.k && !o.luxe) })), { g: { k: 'luxe', nom: { fr: 'Luxe et ultra', en: 'Luxury & ultra' }, emoji: '👑' }, l: liste.filter((o) => o.luxe) }].filter((s) => s.l.length)
       : ORIGINES.map((g) => ({ g, l: liste.filter((o) => origine(o) === g.k) })).filter((s) => s.l.length)
-  // Menus déroulants : ouverts si la recherche est active, ou s'ils contiennent l'objet porté (sinon le premier)
-  const ouvert = (l: Objet[], i: number) => !!cherche.trim() || vue !== 'tout' || l.some(equipe) || (i === 0 && !sections?.some((s) => s.l.some(equipe)))
 
   return (
     <>
@@ -148,13 +149,24 @@ export default function Boutique() {
         </span>
       </header>
 
-      <div role="tablist" className="onglets onglets-boutique">
+      {/* Deux boutiques : pièces ou jetons de rang, un seul interrupteur */}
+      <div className="bascule-boutique" role="tablist">
+        <button type="button" role="tab" aria-selected={!rangs} onClick={() => { setRangs(false); setCat('') }}>🪙 {fr ? 'Boutique' : 'Shop'}</button>
+        <button type="button" role="tab" aria-selected={rangs} onClick={() => { setRangs(true); setCat('') }}>🎖️ {fr ? 'Boutique des rangs' : 'Rank shop'}</button>
+      </div>
+      {rangs && <p className="aide-rangs">{fr ? 'Objets exclusifs, payés en jetons de rang : tu en gagnes chaque lundi selon ton rang en classé.' : 'Exclusive items paid with rank tokens.'}</p>}
+
+      {/* Types d'objets en grosses tuiles */}
+      <div className="tuiles-boutique" role="tablist">
         {ONGLETS.map((id) => {
-          const l = BOUTIQUE.filter((o) => o.type === id)
-          return <button key={id} role="tab" aria-selected={onglet === id} className="onglet" onClick={() => { setOnglet(id); setMsg('') }}>{NOMS_ONGLETS[id][lang]}<small>{nb(l)}</small></button>
+          const l = BOUTIQUE.filter((o) => o.type === id && !o.cache && !!o.jetons === rangs)
+          if (!l.length) return null
+          return <button key={id} type="button" role="tab" aria-selected={onglet === id} className="tuile-boutique" onClick={() => { setOnglet(id); setCat(''); setMsg('') }}><span>{{ avatar: '🧑‍🎨', cadre: '🖼️', fond: '🌈', pseudo: '✍️', titre: '🏷️' }[id]}</span><strong>{NOMS_ONGLETS[id][lang]}</strong><small>{nb(l)}</small></button>
         })}
       </div>
 
+      <div style={{ display: 'flex', justifyContent: 'flex-end' }}><button type="button" className="btn btn-g" style={{ minHeight: 36, fontSize: 14 }} onClick={() => setFiltres((x) => !x)}>🔍 {filtres ? (fr ? 'Masquer les filtres' : 'Hide filters') : (fr ? 'Chercher et trier' : 'Search & sort')}</button></div>
+      {filtres && (
       <div className="barre-boutique">
         <label className="recherche-boutique">
           <Icon d="M10.5 4a6.5 6.5 0 1 1 0 13 6.5 6.5 0 0 1 0-13ZM15.5 15.5 20 20" size={16} />
@@ -174,18 +186,18 @@ export default function Boutique() {
         </label>
       </div>
 
+      )}
+
       {msg && <p role="status" className="card" style={{ padding: '12px 16px', fontWeight: 700 }}>{msg}</p>}
       {onglet === 'titre' && profile?.titre && <button type="button" className="btn btn-g" style={{ alignSelf: 'flex-start' }} onClick={retirerTitre}>{fr ? 'Ne plus afficher de titre' : 'Hide my title'}</button>}
       {liste.length === 0 && <p style={{ color: 'var(--muted)' }}>{fr ? 'Rien ici avec ces filtres.' : 'Nothing matches.'}</p>}
 
-      {sections
-        ? sections.map(({ g, l }, i) => (
-          <details key={g.k + vue + cherche} className="groupe-objets" open={ouvert(l, i)}>
-            <summary className="t">{g.emoji} {g.nom[lang]} <span>{nb(l)}</span></summary>
-            <div className={grille}>{l.map((o) => <Carte key={o.id} o={o} />)}</div>
-          </details>
-        ))
-        : <div className={grille}>{liste.map((o) => <Carte key={o.id} o={o} />)}</div>}
+      {sections && sections.length > 1 && (
+        <div className="pastilles-boutique">
+          {sections.map(({ g, l }) => <button key={g.k} type="button" className="pill" aria-pressed={(cat || sections[0].g.k) === g.k} onClick={() => setCat(g.k)}>{g.emoji} {g.nom[lang]} <small>{nb(l)}</small></button>)}
+        </div>
+      )}
+      <div className={grille}>{(sections ? (sections.find((x) => x.g.k === cat) ?? sections[0])?.l ?? [] : liste).map((o) => <Carte key={o.id} o={o} />)}</div>
 
       {/* Fiche d'un objet pas encore possédé : acheter (avec confirmation) ou voir comment le gagner */}
       {choisi && (

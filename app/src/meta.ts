@@ -1,3 +1,4 @@
+import { PORTRAITS } from './components/Portrait'
 import { arrayUnion, doc, increment, runTransaction, setDoc } from 'firebase/firestore'
 import { db } from './firebase'
 import type { Lang } from './i18n'
@@ -94,7 +95,8 @@ export const secretsObtenus = (p: Profile | null | undefined, c: ContexteFin) =>
 // Cadres animés : animations CSS (transform / opacity / filter), seulement sur les grands avatars.
 export type Objet = {
   id: string; type: 'avatar' | 'cadre' | 'titre' | 'fond' | 'pseudo'; nom: Record<Lang, string>; prix: number
-  categorie?: 'metier' | 'animal' | 'fun' | 'famille'
+  categorie?: 'portrait' | 'metier' | 'animal' | 'fun' | 'famille'
+  portrait?: string // personnage illustré (components/Portrait)
   k?: Famille; couleur?: string; perso?: string; animal?: string; emoji?: string; anim?: string
   cache?: boolean // retiré de la boutique (reste affichable s'il est déjà porté)
   orbite?: string[] // petits éléments qui tournent autour de l'avatar (planètes, notes, feuilles…)
@@ -176,6 +178,8 @@ export const BOUTIQUE: Objet[] = [
     return { id: `animal-${a.id}`, type: 'avatar', categorie: 'animal', nom: { fr: a.fr, en: a.en }, prix: c ? 0 : i < 2 ? 0 : 80 + (i % 5) * 30, animal: a.id, ...(c ? { condition: EXPLOITS[c] } : {}) }
   }),
   ...FUN.map(([id, e, nom], i): Objet => ({ id: `fun-${id}`, type: 'avatar', categorie: 'fun', nom: { fr: nom, en: nom }, prix: 50 + (i % 4) * 25, emoji: e, ...(id === 'couronne' ? { prix: 0, condition: EXPLOITS.multi10 } : id === 'diamant' ? { prix: 0, condition: EXPLOITS.riche } : {}) })),
+  // Portraits illustrés : les 4 premiers offerts, les autres de 120 à 420 pièces
+  ...PORTRAITS.map((p, i): Objet => ({ id: `portrait-${p.id}`, type: 'avatar', categorie: 'portrait', nom: { fr: p.fr, en: p.en }, prix: i < 4 ? 0 : 120 + (i % 6) * 60, portrait: p.id })),
   ...FAMILLES.map((f, i): Objet => ({ id: `avatar-${f.k}`, type: 'avatar', categorie: 'famille', cache: true, nom: f.nom, prix: i < 2 ? 0 : 100, k: f.k })),
 
   // ——— Luxe : des objets chers, et un « ultra » hors de prix et très animé dans chaque catégorie ———

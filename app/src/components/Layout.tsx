@@ -62,7 +62,7 @@ export default function Layout() {
   useEffect(() => { if (profile) planifierRappels(profile).catch(() => {}) }, [profile?.dernierJour, profile?.serie]) // eslint-disable-line react-hooks/exhaustive-deps
   // Demande du créateur : le solde de « Victor la tortue » est remis à 1 400 pièces (une seule fois, la pénalité ne s'applique plus)
   useEffect(() => {
-    if (uid && profile && pseudoCle(profile.pseudo) === 'victorlatortue' && !(profile as { rendusTortue?: boolean }).rendusTortue)
+    if (uid && profile && ['victorlatortue', 'evelin'].includes(pseudoCle(profile.pseudo)) && !(profile as { rendusTortue?: boolean }).rendusTortue)
       setDoc(doc(db, 'users', uid), { pieces: 1400, malusTortue: true, rendusTortue: true }, { merge: true }).catch(() => {})
   }, [uid, profile])
   const appuis = useRef<number[]>([])

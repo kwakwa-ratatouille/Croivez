@@ -1,3 +1,4 @@
+import { memoriser, vuesRecemment } from '../quiz/memoire'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { onValue, ref } from 'firebase/database'
@@ -30,10 +31,11 @@ export default function Duel() {
   // Mêmes graine et thème des deux côtés : les questions sont identiques
   const seed = duel?.seed
   const theme = duel?.s
+  const exclus = duel?.etat === 'jeu' ? Object.values(duel.exclus ?? {}).flat().join(',') : null
   useEffect(() => {
-    if (!seed || !theme) return
-    genererPartie({ sousTheme: theme, seed, nombre: duel?.n ?? QUESTIONS_DUEL, difficulte: (duel?.d ?? 2) as 2, mode: 'qcm', lang }).then((q) => { setQuestions(q); setDebut(Date.now()) })
-  }, [seed, theme, lang]) // eslint-disable-line react-hooks/exhaustive-deps
+    if (!seed || !theme || exclus === null) return
+    genererPartie({ exclus: exclus ? exclus.split(',') : undefined, sousTheme: theme, seed, nombre: duel?.n ?? QUESTIONS_DUEL, difficulte: (duel?.d ?? 2) as 2, mode: 'qcm', lang }).then((q) => { setQuestions(q); setDebut(Date.now()) })
+  }, [seed, theme, lang, exclus]) // eslint-disable-line react-hooks/exhaustive-deps
   // Départ commun quand les deux ont dit « prêt »
   useEffect(() => { if (duel?.etat === 'jeu' && duel.debut) setDebut(Math.max(Date.now(), duel.debut)) }, [duel?.etat, duel?.debut])
 
@@ -52,6 +54,7 @@ export default function Duel() {
   const repondre = useCallback((label: string | null) => {
     if (!q || maReponse || !moi) return
     retourReponse(label === q.reponse)
+    memoriser(theme ?? '', q.id, label === q.reponse)
     repondreDuel(id, uid, i, label === q.reponse, Date.now() - debut, moi.score, secondes)
   }, [q, maReponse, moi, id, uid, i, debut])
 
@@ -77,7 +80,7 @@ export default function Duel() {
     enregistrerPartie(uid, profile, { sousTheme: theme, xp: (gagne ? 60 : 25) + resultats.filter((r) => r.juste).length * 5, pieces: gagne ? 50 : 20, resultats, revision: true, multi: { mode: 'duel', gagne } }).catch(console.error)
   }, [fini, profile, moi, autre, questions, theme, id, uid])
 
-  if (!duel || !questions || !moi) return <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center' }}><Logo width={72} /></div>
+  if (!duel || !moi) return <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center' }}><Logo width={72} /></div>
 
   // Salle d'attente : chacun confirme ; le duel ne part que quand les deux sont prêts
   if (duel.etat === 'pret' || duel.etat === 'attente') {
@@ -93,12 +96,14 @@ export default function Duel() {
           </div>
           {moi.pret
             ? <p style={{ color: 'var(--muted)', fontWeight: 700 }}>{fr ? 'En attente de l’autre joueur…' : 'Waiting for the other player…'}</p>
-            : <button className="btn btn-p btn-lg" disabled={joueurs.length < 2} onClick={() => marquerPret(id, uid)}>{fr ? 'Je suis prêt !' : 'I’m ready!'}</button>}
+            : <button className="btn btn-p btn-lg" disabled={joueurs.length < 2} onClick={() => marquerPret(id, uid, vuesRecemment(duel.s))}>{fr ? 'Je suis prêt !' : 'I’m ready!'}</button>}
           <Link to="/duels" className="btn btn-g" onClick={() => terminerDuel(id).catch(() => {})}>{fr ? 'Annuler le duel' : 'Cancel'}</Link>
         </section>
       </div>
     )
   }
+  if (!questions) return <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center' }}><Logo width={72} /></div>
+
 
   const Score = ({ j, moiAussi }: { j?: { pseudo: string; score: number }; moiAussi?: boolean }) => (
     <div className="card duel-score" style={{ flex: 1, minWidth: 0, padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 12, background: moiAussi ? 'var(--geo-t)' : 'var(--cine-t)', borderColor: 'transparent' }}>

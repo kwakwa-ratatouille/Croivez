@@ -52,3 +52,10 @@ export function bilanMemoire(s: string) {
   const v = Object.values(lire(s))
   return { vues: v.length, retenues: v.filter(([, serie]) => serie >= 3).length }
 }
+
+// Questions vues ces 3 derniers jours sur un quiz (les plus récentes d'abord) : un duel les évite
+export function vuesRecemment(s: string, max = 80): string[] {
+  const m = lire(s)
+  const limite = Date.now() - 3 * JOUR
+  return Object.entries(m).filter(([, t]) => t[0] >= limite).sort((a, b) => b[1][0] - a[1][0]).slice(0, max).map(([id]) => id)
+}

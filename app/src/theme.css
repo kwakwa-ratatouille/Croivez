@@ -1452,3 +1452,55 @@ button.rang-palier[aria-pressed="true"] { background: color-mix(in srgb, var(--r
 .multi-aleatoire { padding: 16px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; background: linear-gradient(135deg, color-mix(in srgb, #5B8DEF 14%, var(--surface)), var(--surface)); }
 .multi-aleatoire h2 { font-size: 19px; font-weight: 900; }
 .multi-aleatoire p { font-size: 13px; color: var(--muted); }
+
+/* Portraits illustrés : clignement et léger balancement (seulement en grand) */
+.portrait { display: block; }
+.portrait.anime .portrait-yeux { transform-box: fill-box; transform-origin: center; animation: cligne 4.5s infinite; }
+.portrait.anime .portrait-corps { transform-origin: 50% 100%; animation: balance 3.2s ease-in-out infinite alternate; }
+.portrait.anime .portrait-motif { animation: motif-glisse 14s linear infinite; }
+@keyframes balance { from { transform: rotate(-2deg); } to { transform: rotate(2deg); } }
+@keyframes motif-glisse { to { transform: translate(-14px, -14px); } }
+/* Stickers d'émojis : reflet, ombre et motif propre à chacun */
+.avatar-emoji.sticker { filter: drop-shadow(0 3px 2px rgba(0,0,0,.28)); position: relative; z-index: 1; }
+.avatar > .t:has(.sticker) { box-shadow: inset 0 -6px 12px rgba(0,0,0,.18), inset 0 6px 10px rgba(255,255,255,.35); }
+.avatar > .t:has(.sticker-points) { background-image: radial-gradient(rgba(255,255,255,.25) 18%, transparent 20%), var(--x, none); background-size: 12px 12px, auto; }
+.avatar > .t:has(.sticker-rayures)::before, .avatar > .t:has(.sticker-damier)::before, .avatar > .t:has(.sticker-rayons)::before, .avatar > .t:has(.sticker-vagues)::before, .avatar > .t:has(.sticker-points)::before { content: ''; position: absolute; inset: 0; pointer-events: none; }
+.avatar > .t:has(.sticker-points)::before { background: radial-gradient(rgba(255,255,255,.28) 22%, transparent 24%) 0 0 / 11px 11px; }
+.avatar > .t:has(.sticker-rayures)::before { background: repeating-linear-gradient(45deg, rgba(255,255,255,.18) 0 5px, transparent 5px 11px); }
+.avatar > .t:has(.sticker-damier)::before { background: conic-gradient(rgba(255,255,255,.16) 25%, transparent 0 50%, rgba(255,255,255,.16) 0 75%, transparent 0) 0 0 / 14px 14px; }
+.avatar > .t:has(.sticker-rayons)::before { background: repeating-conic-gradient(rgba(255,255,255,.2) 0 12deg, transparent 12deg 30deg); }
+.avatar > .t:has(.sticker-vagues)::before { background: radial-gradient(circle at 50% 120%, rgba(255,255,255,.22) 0 30%, transparent 31%) 0 0 / 22px 12px; }
+
+/* Boutique simplifiée : interrupteur, tuiles de types, pastilles de catégorie */
+.bascule-boutique { display: grid; grid-template-columns: 1fr 1fr; padding: 4px; border-radius: 16px; background: var(--surface2); }
+.bascule-boutique button { min-height: 46px; border: 0; border-radius: 12px; background: none; font: 800 15px Nunito, sans-serif; color: var(--muted); cursor: pointer; }
+.bascule-boutique button[aria-selected='true'] { background: var(--surface); color: var(--text); box-shadow: var(--shadow); }
+.aide-rangs { font-size: 13px; color: var(--muted); }
+.tuiles-boutique { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px; }
+.tuile-boutique { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 12px 6px; border-radius: 18px; border: 2px solid var(--line); background: var(--surface); cursor: pointer; font: inherit; color: var(--text); transition: transform .12s, border-color .2s; }
+.tuile-boutique span { font-size: 28px; }
+.tuile-boutique strong { font: 900 14px Nunito, sans-serif; }
+.tuile-boutique small { font-size: 11.5px; color: var(--muted); font-weight: 700; }
+.tuile-boutique[aria-selected='true'] { border-color: var(--mus); background: color-mix(in srgb, var(--mus) 12%, var(--surface)); transform: translateY(-2px); }
+.pastilles-boutique { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; }
+.pastilles-boutique .pill { flex: none; }
+.pastilles-boutique small { opacity: .6; margin-left: 2px; }
+.onglets-boutique { display: none !important; }
+@media (max-width: 560px) { .tuiles-boutique { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; } .tuile-boutique { padding: 8px 2px; } .tuile-boutique span { font-size: 22px; } .tuile-boutique strong { font-size: 11px; } .tuile-boutique small { display: none; } }
+
+/* Choix du thème : bouton + sélecteur visuel */
+.choix-theme-bouton { width: 100%; display: grid; grid-template-columns: 1fr auto; grid-template-rows: auto auto; align-items: center; column-gap: 8px; padding: 10px 14px; border-radius: 14px; border: 1.5px solid var(--line); background: var(--surface); text-align: left; cursor: pointer; font: inherit; color: var(--text); }
+.choix-theme-bouton span { font: 800 15px Nunito, sans-serif; }
+.choix-theme-bouton small { grid-row: 2; font-size: 12px; color: var(--muted); }
+.choix-theme-bouton svg { grid-row: 1 / 3; grid-column: 2; color: var(--muted); }
+.choix-theme { width: 100%; max-width: 720px; max-height: 86vh; padding: 16px; display: flex; flex-direction: column; gap: 10px; overflow: hidden; }
+.choix-theme-tete { display: flex; align-items: center; justify-content: space-between; }
+.choix-theme-tete strong { font-size: 20px; }
+.choix-theme-familles { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; flex: none; }
+.choix-theme-familles .pill { flex: none; min-height: 36px; }
+.choix-theme-grille { overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px; padding: 2px; }
+.choix-vignette { display: flex; flex-direction: column; gap: 4px; padding: 0; border: 0; background: none; cursor: pointer; font: 700 12.5px/1.2 'DM Sans', sans-serif; color: var(--text); text-align: left; }
+.choix-vignette-img { position: relative; aspect-ratio: 4 / 3; border-radius: 12px; overflow: hidden; background: var(--kt, var(--surface2)); display: flex; align-items: center; justify-content: center; font-size: 34px; box-shadow: 0 0 0 2px transparent; transition: box-shadow .15s; }
+.choix-vignette-img img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.choix-vignette.choisi .choix-vignette-img { box-shadow: 0 0 0 3px var(--mus); }
+.choix-vignette.hasard .choix-vignette-img { background: linear-gradient(135deg, #7B5CF0, #E25FA8); }

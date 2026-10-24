@@ -1,3 +1,4 @@
+import ChoixTheme from '../components/ChoixTheme'
 import { legendeOuverte } from '../progression'
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
@@ -108,10 +109,7 @@ export default function Duels() {
         <div className="multi-duel-tete"><span className="multi-duel-icone">🤝</span><div><h2 className="t">{fr ? 'Défier un ami' : 'Challenge a friend'}</h2><p>{fr ? 'Tu choisis tout : thème, difficulté, nombre de questions et temps. Ton ami confirme « Prêt » et c’est parti.' : 'You pick the rules, your friend confirms.'}</p></div></div>
         <div className="multi-duel-reglages">
           <label><span>{fr ? 'Thème' : 'Topic'}</span>
-            <select className="input" value={themeDuel} onChange={(e) => setThemeDuel(e.target.value)}>
-              <option value="mix">{fr ? '🎲 Au hasard' : '🎲 Random'}</option>
-              {FAMILLES.map((f) => ({ f, subs: f.subs.filter((s) => s.jouable && natureQuiz(s.id) !== 'carte') })).filter((x) => x.subs.length).map(({ f, subs }) => <optgroup key={f.k} label={f.nom[lang]}>{subs.map((s) => <option key={s.id} value={s.id}>{s.nom[lang]}</option>)}</optgroup>)}
-            </select>
+            <ChoixTheme valeur={themeDuel} onChange={setThemeDuel} quiz={FAMILLES.flatMap((f) => f.subs.filter((s) => s.jouable && natureQuiz(s.id) !== 'carte').map((s) => s.id))} />
           </label>
         </div>
         <div className="multi-duel-grille">

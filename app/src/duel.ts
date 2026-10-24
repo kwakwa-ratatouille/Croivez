@@ -9,6 +9,7 @@ export type Duel = {
   d?: number // difficulté (5 = Légende)
   secondes?: number // temps par question
   debut?: number // heure de départ commune
+  exclus?: Record<string, string[]> // questions vues récemment par chaque joueur (évitées dans ce duel)
   createur: string
   invite?: string
   s: SousThemeId
@@ -50,8 +51,8 @@ export async function rejoindre(id: string, uid: string, pseudo: string) {
 }
 
 // « Je suis prêt » : le duel ne démarre que quand les deux joueurs ont confirmé (transaction : un seul départ)
-export async function marquerPret(id: string, uid: string) {
-  await update(ref(rtdb, `duels/${id}/joueurs/${uid}`), { pret: true })
+export async function marquerPret(id: string, uid: string, vues: string[] = []) {
+  await update(ref(rtdb, `duels/${id}`), { [`joueurs/${uid}/pret`]: true, [`exclus/${uid}`]: vues.slice(0, 80) })
   await runTransaction(ref(rtdb, `duels/${id}`), (d: Duel | null) => {
     if (!d || d.etat !== 'pret') return d
     const j = Object.values(d.joueurs ?? {})

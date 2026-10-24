@@ -1,3 +1,4 @@
+import ChoixTheme from '../components/ChoixTheme'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import QRCode from 'qrcode'
@@ -105,12 +106,9 @@ function Regles({ code, salon, modifiable }: { code: string; salon: SalonT; modi
   )
   return (
     <>
-      <label className="salon-champ"><span>{fr ? 'Thème' : 'Topic'}</span>
-        <select className="input" value={r.s} onChange={(e) => maj({ s: e.target.value })}>
-          <option value="mix">{fr ? '🎲 Aléatoire, tous thèmes' : '🎲 Random, all topics'}</option>
-          {quizPossibles.map(({ f, subs }) => <optgroup key={f.k} label={f.nom[lang]}>{subs.map((s) => <option key={s.id} value={s.id}>{s.nom[lang]}</option>)}</optgroup>)}
-        </select>
-      </label>
+      <div className="salon-champ"><span>{fr ? 'Thème' : 'Topic'}</span>
+        <ChoixTheme valeur={r.s} onChange={(s) => maj({ s })} quiz={quizPossibles.flatMap(({ subs }) => subs.map((s) => s.id))} />
+      </div>
       <div className="salon-champ"><span>{fr ? 'Mini-jeu' : 'Mini-game'}</span>
         <div className="salon-choix">{MINI_JEUX_SALON.map((v) => { const m = infoMiniJeu(v)!; return <button key={v} type="button" className="pill" aria-pressed={r.mj === v} onClick={() => maj({ mj: v, secondes: m.chrono ?? (r.secondes < 10 ? 15 : r.secondes) })}>{m.icone} {m.nom[lang]}</button> })}</div>
       </div>
