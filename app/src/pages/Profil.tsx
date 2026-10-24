@@ -79,6 +79,13 @@ export const FONDS_VITRINE: Record<string, string> = {
   aurore: 'linear-gradient(120deg, #7B5CF0, #E25FA8 55%, #F39A4E)', ocean: 'linear-gradient(120deg, #0EA5E9, #6366F1)', foret: 'linear-gradient(120deg, #14532D, #22C55E)',
   braise: 'linear-gradient(120deg, #7F1D1D, #F97316)', nuit: 'linear-gradient(120deg, #0F0C29, #302B63 60%, #24243E)', or: 'linear-gradient(120deg, #B8862E, #F4C430 60%, #FFF2B8)',
   bonbon: 'linear-gradient(120deg, #F472B6, #FBCFE8 50%, #A5F3FC)', ardoise: 'linear-gradient(120deg, #334155, #64748B)',
+  // Fonds à motifs
+  etoiles: 'radial-gradient(circle at 20% 30%, #fff 0 1.5px, transparent 2px) 0 0 / 46px 46px, radial-gradient(circle at 70% 60%, #fff 0 1px, transparent 1.5px) 0 0 / 31px 31px, linear-gradient(140deg, #0F0C29, #3B2B8C)',
+  pois: 'radial-gradient(circle, rgba(255,255,255,.35) 0 6px, transparent 7px) 0 0 / 34px 34px, linear-gradient(120deg, #F97316, #EC4899)',
+  rayures: 'repeating-linear-gradient(135deg, rgba(255,255,255,.14) 0 16px, transparent 16px 32px), linear-gradient(120deg, #0EA5E9, #22C55E)',
+  damier: 'conic-gradient(rgba(255,255,255,.12) 25%, transparent 0 50%, rgba(255,255,255,.12) 0 75%, transparent 0) 0 0 / 40px 40px, linear-gradient(120deg, #7C3AED, #2563EB)',
+  vagues: 'radial-gradient(circle at 50% 120%, rgba(255,255,255,.25) 0 30%, transparent 31%) 0 0 / 80px 40px, linear-gradient(180deg, #38BDF8, #1E3A8A)',
+  coucher: 'radial-gradient(circle at 70% 75%, #FFE08A 0 12%, transparent 13%), linear-gradient(180deg, #F97316, #DB2777 55%, #4C1D95)',
 }
 
 // Vitrine : une bannière personnalisable (fond, phrase, 3 badges, thème favori, chiffres forts)
@@ -137,14 +144,16 @@ export default function Profil() {
 
   return (
     <>
-      <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
-        <Link className="btn btn-s" to="/album">Album</Link>
-        <Link className="btn btn-s" to="/stats">{fr ? "Stats" : "Stats"}</Link>
-        <Link className="btn btn-s" to="/saison">{fr ? "Saison" : "Season"}</Link>
-        <Link className="btn btn-s" to="/boutique">{fr ? 'Boutique' : 'Shop'}</Link>
-        <Link className="btn btn-g" to="/parametres" aria-label={fr ? 'Paramètres' : 'Settings'}><Icon d={ICONS.settings} /></Link>
-      </div>
       <CarteJoueur p={pub} moi />
+      {/* Raccourcis du profil : la boutique en grand, puis amis, album, stats, saison, réglages */}
+      <nav className="profil-raccourcis" aria-label={fr ? 'Raccourcis du profil' : 'Profile shortcuts'}>
+        <Link to="/boutique" className="raccourci grand" style={{ ['--c' as string]: '#E3A72F' }}><span>🛍️</span><strong>{fr ? 'Boutique' : 'Shop'}</strong><small>{fr ? 'Avatars, cadres, titres' : 'Avatars, frames, titles'}</small></Link>
+        <Link to="/amis" className="raccourci" style={{ ['--c' as string]: '#5B8DEF' }}><span>👋</span><strong>{fr ? 'Amis' : 'Friends'}</strong><small>{profile.amis?.length ?? 0}</small></Link>
+        <Link to="/album" className="raccourci" style={{ ['--c' as string]: '#A35BE0' }}><span>🃏</span><strong>Album</strong><small>{Object.values(profile.album ?? {}).reduce((n, l) => n + l.length, 0)} {fr ? 'cartes' : 'cards'}</small></Link>
+        <Link to="/stats" className="raccourci" style={{ ['--c' as string]: '#4FAE6A' }}><span>📊</span><strong>Stats</strong><small>{profile.parties ?? 0} {fr ? 'parties' : 'games'}</small></Link>
+        <Link to="/saison" className="raccourci" style={{ ['--c' as string]: '#E86AA6' }}><span>🎟️</span><strong>{fr ? 'Saison' : 'Season'}</strong><small>{fr ? 'Passe de combat' : 'Battle pass'}</small></Link>
+        <Link to="/parametres" className="raccourci" style={{ ['--c' as string]: '#64748B' }}><span>⚙️</span><strong>{fr ? 'Réglages' : 'Settings'}</strong><small>{fr ? 'Taille, sons…' : 'Size, sounds…'}</small></Link>
+      </nav>
       <Vitrine p={pub} moi onModifier={() => setEdition((e) => !e)} />
       {edition && (
         <section className="card rise" style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>

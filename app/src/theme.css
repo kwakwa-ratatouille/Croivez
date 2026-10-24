@@ -869,3 +869,66 @@ body.glisse-en-cours { user-select: none; }
 .carte-libelle { max-width: 130px; text-align: center; font: 800 12.5px/1.2 Nunito, sans-serif; padding: 3px 8px; border-radius: 10px; background: rgba(0,0,0,.28); color: #fff; display: flex; flex-direction: column; }
 .carte-libelle small { color: #FFE08A; font-size: 11px; }
 .carte-voile { position: absolute; inset: auto 0 0 0; z-index: 3; padding: 14px; text-align: center; font-weight: 800; color: #fff; background: linear-gradient(transparent, rgba(0,0,0,.55)); }
+
+/* Album en double page (classeur ouvert) */
+.album { max-width: 1060px !important; }
+.album-classeur { padding: 18px; background: linear-gradient(90deg, color-mix(in srgb, var(--k) 55%, #3b2a1a), color-mix(in srgb, var(--k) 40%, #3b2a1a)); border-radius: 24px; box-shadow: 0 16px 34px rgba(0,0,0,.2); }
+.album-double { display: grid; grid-template-columns: 1fr; gap: 0; transform-origin: center; }
+.album-double.tourne-d { animation: page-d .45s ease-out; transform-origin: left center; }
+.album-double.tourne-g { animation: page-g .45s ease-out; transform-origin: right center; }
+@media (min-width: 900px) { .album-double { grid-template-columns: 1fr 1fr; } }
+.album-double .album-page { position: relative; padding: 16px 16px 30px; background: var(--kt); animation: none !important; }
+.album-page.gauche { border-radius: 14px 4px 4px 14px; box-shadow: inset -18px 0 22px -16px rgba(0,0,0,.35); }
+.album-page.droite { border-radius: 4px 14px 14px 4px; box-shadow: inset 18px 0 22px -16px rgba(0,0,0,.35); }
+@media (max-width: 899px) { .album-page.gauche { border-radius: 14px; box-shadow: none; } }
+.album-folio { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); font: 800 12px Nunito, sans-serif; color: color-mix(in srgb, var(--ki) 60%, transparent); }
+
+/* Statistiques colorées */
+.stats-tuile { display: flex; flex-direction: column; gap: 2px; padding: 12px 14px; border-radius: 18px; background: var(--ct); color: color-mix(in srgb, var(--c) 55%, var(--text)); }
+.stats-tuile strong { font-size: 24px; font-weight: 900; }
+.stats-tuile span:last-child { font-size: 12px; font-weight: 700; opacity: .85; }
+.stats-emo { font-size: 20px; }
+.stats-duo { display: grid; grid-template-columns: 1fr 2fr; gap: 10px; }
+@media (max-width: 640px) { .stats-duo { grid-template-columns: 1fr; } }
+.stats-anneau-bloc, .stats-donut-bloc { padding: 18px; display: flex; align-items: center; justify-content: center; gap: 18px; flex-wrap: wrap; }
+.stats-anneau { width: 140px; height: 140px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; background: radial-gradient(closest-side, var(--surface) 76%, transparent 78%), conic-gradient(#4FAE6A, #E3A72F var(--p), var(--surface2) 0); }
+.stats-anneau strong { font-size: 32px; font-weight: 900; line-height: 1; }
+.stats-anneau small { font-size: 11px; color: var(--muted); font-weight: 700; text-align: center; }
+.stats-donut { width: 150px; height: 150px; flex: none; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+.stats-donut span { width: 96px; height: 96px; border-radius: 50%; background: var(--surface); display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 22px; font-weight: 900; }
+.stats-donut small { font-size: 11px; color: var(--muted); font-weight: 700; }
+.stats-legende { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; min-width: 180px; flex: 1; }
+.stats-legende li { display: flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 600; }
+.stats-legende i { width: 12px; height: 12px; border-radius: 4px; flex: none; }
+.stats-legende b { margin-left: auto; }
+
+/* Amis et messagerie */
+.amis-ajout { padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+.ami-ligne { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 18px; background: var(--surface); border: 1px solid var(--line); flex-wrap: wrap; }
+.ami-identite { flex: 1; min-width: 160px; display: flex; align-items: center; gap: 10px; text-decoration: none; color: inherit; }
+.ami-identite span { display: flex; flex-direction: column; }
+.ami-identite small { color: var(--muted); font-size: 12px; }
+.ami-actions { display: flex; gap: 6px; }
+.ami-actions .btn { min-height: 38px; padding: 0 10px; gap: 4px; }
+@media (max-width: 560px) { .ami-txt { display: none; } }
+.chat { display: flex; flex-direction: column; gap: 10px; height: calc(100vh - 140px); max-width: 680px; width: 100%; margin: 0 auto; }
+.chat-tete { display: flex; align-items: center; gap: 10px; }
+.chat-fil { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; padding: 10px; border-radius: 20px; background: var(--surface2); }
+.chat-bulle { align-self: flex-start; max-width: 78%; padding: 8px 12px; border-radius: 16px 16px 16px 4px; background: var(--surface); font-size: 15px; display: flex; flex-direction: column; gap: 2px; }
+.chat-bulle.moi { align-self: flex-end; border-radius: 16px 16px 4px 16px; background: var(--mus); color: #fff; }
+.chat-bulle small { font-size: 10.5px; opacity: .7; align-self: flex-end; }
+.chat-rapides { display: flex; gap: 6px; overflow-x: auto; }
+.chat-rapides .pill { flex: none; }
+.chat-saisie { display: flex; gap: 8px; }
+
+/* Raccourcis du profil */
+.profil-raccourcis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.raccourci { display: flex; flex-direction: column; gap: 2px; padding: 12px; border-radius: 18px; text-decoration: none; color: color-mix(in srgb, var(--c) 60%, var(--text)); background: color-mix(in srgb, var(--c) 14%, var(--surface)); border: 1px solid color-mix(in srgb, var(--c) 30%, transparent); transition: transform .15s; }
+.raccourci:hover { transform: translateY(-2px); }
+.raccourci span { font-size: 24px; }
+.raccourci strong { font: 900 15px Nunito, sans-serif; }
+.raccourci small { font-size: 12px; font-weight: 600; opacity: .8; }
+.raccourci.grand { grid-column: span 2; grid-row: span 2; justify-content: flex-end; background: linear-gradient(140deg, #FFE08A, #E3A72F); color: #3A2A00; border: 0; }
+.raccourci.grand span { font-size: 44px; }
+.raccourci.grand strong { font-size: 22px; }
+@media (max-width: 560px) { .profil-raccourcis { grid-template-columns: repeat(3, minmax(0, 1fr)); } .raccourci.grand { grid-column: span 3; grid-row: auto; flex-direction: row; align-items: center; gap: 10px; } .raccourci.grand small { margin-left: auto; } }

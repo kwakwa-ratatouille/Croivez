@@ -432,6 +432,12 @@ SELECT ?item ?sl ?nFr ?nEn ?dFr ?dEn ?img WHERE {
     .then((l) => finaliser(l, (b) => annee(b) && ({ ...base(b), img: image(b), x: { annee: annee(b) }, g: annee(b)?.slice(0, 3) }))),
   astronautes: () => sparql(req('?item wdt:P106 wd:Q11631; wdt:P18 ?img; wdt:P21 ?genre.', { sl: 25, select: '?genre' }))
     .then((l) => finaliser(l, (b) => ({ ...base(b), img: image(b), g: GENRES[b.genre.value.split('/').pop()] }))),
+
+  // ——— Artistes récents (nés après 1988) : monde et France ———
+  'artistes-recents': () => sparql(req('VALUES ?metier { wd:Q177220 wd:Q2252262 wd:Q639669 wd:Q130857 } ?item wdt:P106 ?metier; wdt:P569 ?nais; wdt:P18 ?img; wdt:P21 ?genre. FILTER(YEAR(?nais) >= 1988)', { sl: 25, select: '?genre' }))
+    .then((l) => finaliser(l, (b) => ({ ...base(b), img: image(b), g: GENRES[b.genre.value.split('/').pop()] }))),
+  'artistes-fr': () => sparql(req('VALUES ?metier { wd:Q177220 wd:Q2252262 wd:Q639669 wd:Q130857 } ?item wdt:P106 ?metier; wdt:P27 wd:Q142; wdt:P569 ?nais; wdt:P18 ?img; wdt:P21 ?genre. FILTER(YEAR(?nais) >= 1975)', { sl: 8, select: '?genre' }))
+    .then((l) => finaliser(l, (b) => ({ ...base(b), img: image(b), g: GENRES[b.genre.value.split('/').pop()] }))),
   // Licences : films des grands studios (Pixar, Disney, Marvel, DreamWorks, Ghibli, Illumination, Lucasfilm)
   studios: () => sparql(req('VALUES ?x { wd:Q127552 wd:Q1047410 wd:Q367466 wd:Q238557 wd:Q182950 wd:Q1136155 wd:Q242446 } ?item wdt:P31/wdt:P279* wd:Q11424; wdt:P272 ?x. OPTIONAL { ?item wdt:P577 ?date }', { sl: 20, select: `?date ${libSelect('x')}`, extra: lib('x') }))
     .then((l) => finaliser(l, (b) => paire(b, 'x') && ({ ...base(b), r: paire(b, 'x'), x: { annee: annee(b) }, ...(annee(b) ? { f: [[{ fr: 'Sortie', en: 'Released' }, annee(b)]] } : {}) }))),

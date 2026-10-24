@@ -158,6 +158,8 @@ const CULTURE = {
   pokemon: { type: 'attribut', q: { fr: (n) => `De quel type est le Pokémon ${n} ?`, en: (n) => `What type is the Pokémon ${n}?` } },
   panneaux: { type: 'image', q: { fr: () => 'Que signifie ce panneau ?', en: () => 'What does this road sign mean?' } },
   'code-route': { type: 'attribut', q: { fr: (n) => `${n} ?`, en: (n) => `${n}?` } },
+  'artistes-recents': { type: 'image', q: { fr: (_, g) => (g === 'f' ? 'Qui est cette artiste ?' : 'Qui est cet artiste ?'), en: () => 'Who is this artist?' } },
+  'artistes-fr': { type: 'image', q: { fr: (_, g) => (g === 'f' ? 'Qui est cette artiste française ?' : 'Qui est cet artiste français ?'), en: () => 'Who is this French artist?' } },
   volcans: { type: 'image', q: { fr: () => 'Quel est ce volcan ?', en: () => 'Which volcano is this?' } },
   'volcans-pays': { type: 'attribut', pack: 'volcans', montrer: true, q: { fr: (n) => `Dans quel pays se trouve le volcan ${n} ?`, en: (n) => `Which country is ${n} in?` } },
   fleurs: { type: 'image', q: { fr: () => 'Quelle est cette fleur ?', en: () => 'Which flower is this?' } },

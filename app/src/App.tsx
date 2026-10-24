@@ -20,6 +20,7 @@ import Soiree from "./pages/Soiree"
 import Stats from "./pages/Stats"
 import Saison from "./pages/Saison"
 import Aventure from "./pages/Aventure"
+import Amis from "./pages/Amis"
 import Profil, { Joueur } from './pages/Profil'
 import Duels from './pages/Duels'
 import Duel from './pages/Duel'
@@ -89,6 +90,7 @@ function Routeur() {
           <Route path="/stats" element={<Stats />} />
           <Route path="/saison" element={<Saison />} />
           <Route path="/aventure" element={<Aventure />} />
+          <Route path="/amis" element={<Amis />} />
           <Route path="/profil" element={<Profil />} />
           <Route path="/joueur/:uid" element={<Joueur />} />
           <Route path="/duels" element={<Duels />} />

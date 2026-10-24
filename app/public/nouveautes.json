@@ -1,5 +1,51 @@
 [
  {
+  "id": "2026-10-24g",
+  "titre": "Grosse refonte : histoire, passe de combat, amis",
+  "points": [
+   [
+    "🗺️",
+    "Mode histoire",
+    "Un onglet dédié et une vraie carte : 5 mondes, un chemin à suivre, ton avatar sur l’étape en cours."
+   ],
+   [
+    "🎟️",
+    "Passe de combat",
+    "Le pass de saison fait peau neuve : niveaux, piste de récompenses, cadre exclusif."
+   ],
+   [
+    "👋",
+    "Amis et messages",
+    "Ajoute tes amis par pseudo, discute avec eux, défie-les en duel ou invite-les dans un salon."
+   ],
+   [
+    "🧠",
+    "Révision plus claire",
+    "Un gros bouton pour tout réviser, et la liste de tes quiz à revoir."
+   ],
+   [
+    "🃏",
+    "Albums en double page",
+    "Feuillette tes cartes comme dans un vrai classeur."
+   ],
+   [
+    "📊",
+    "Stats en couleurs",
+    "Anneau de précision, répartition par famille et activité."
+   ],
+   [
+    "🎨",
+    "Profil",
+    "Raccourcis en couleurs, boutique mise en avant, nouveaux fonds à motifs."
+   ],
+   [
+    "🎤",
+    "Artistes d’aujourd’hui",
+    "Plus de 1 600 artistes récents et 300 artistes français."
+   ]
+  ]
+ },
+ {
   "id": "2026-10-24f",
   "titre": "Code de la route et jeux de société",
   "points": [

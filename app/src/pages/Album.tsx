@@ -74,6 +74,8 @@ export default function Album() {
   const [page, setPage] = useState(0)
   const [sens, setSens] = useState<'g' | 'd'>('d')
   const toucher = useRef(0)
+  const [large, setLarge] = useState(() => window.matchMedia('(min-width: 900px)').matches)
+  useEffect(() => { const m = window.matchMedia('(min-width: 900px)'); const h = () => setLarge(m.matches); m.addEventListener('change', h); return () => m.removeEventListener('change', h) }, [])
 
   useEffect(() => { if (quiz) { setCartes(null); setPage(0); cartesDe(quiz, lang).then(setCartes).catch(() => setCartes([])) } }, [quiz, lang])
 
@@ -94,7 +96,9 @@ export default function Album() {
   const eues = new Set(album[quiz ?? ''] ?? [])
   const liste = cartes ?? []
   const pages = Math.max(1, Math.ceil(liste.length / PAR_PAGE))
-  const tourner = (d: number) => { const p = Math.min(pages - 1, Math.max(0, page + d)); if (p !== page) { setSens(d > 0 ? 'd' : 'g'); setPage(p) } }
+  const pas = large ? 2 : 1
+  const tourner = (d: number) => { const p = Math.min(pages - 1, Math.max(0, page + d * pas)); const q = large ? p - (p % 2) : p; if (q !== page) { setSens(d > 0 ? 'd' : 'g'); setPage(q) } }
+  const pageCartes = (p: number) => liste.slice(p * PAR_PAGE, p * PAR_PAGE + PAR_PAGE).map((c, j) => { const i = p * PAR_PAGE + j; return <CarteAlbum key={c.id} c={c} n={i + 1} rarete={rareteCarte(i, liste.length)} eue={eues.has(c.id)} /> })
 
   // ——— Un album ouvert : onglets des quiz, pages de 9 cartes qu'on feuillette ———
   return (
@@ -108,19 +112,17 @@ export default function Album() {
         {!cartes && <p style={{ color: 'var(--muted)', padding: 30 }}>…</p>}
         {cartes && liste.length === 0 && <p style={{ color: 'var(--muted)', padding: 30 }}>{fr ? 'Pas de cartes pour ce quiz.' : 'No cards for this quiz.'}</p>}
         {cartes && liste.length > 0 && (
-          <div key={`${quiz}-${page}`} className={`album-page tourne-${sens}`}>
-            {liste.slice(page * PAR_PAGE, page * PAR_PAGE + PAR_PAGE).map((c, j) => {
-              const i = page * PAR_PAGE + j
-              return <CarteAlbum key={c.id} c={c} n={i + 1} rarete={rareteCarte(i, liste.length)} eue={eues.has(c.id)} />
-            })}
+          <div key={`${quiz}-${page}`} className={`album-double tourne-${sens}`}>
+            <div className="album-page gauche">{pageCartes(page)}<span className="album-folio">{page + 1}</span></div>
+            {large && <div className="album-page droite">{page + 1 < pages ? pageCartes(page + 1) : null}<span className="album-folio">{page + 2 <= pages ? page + 2 : ''}</span></div>}
           </div>
         )}
       </div>
       {cartes && liste.length > 0 && (
         <div className="album-nav">
           <button className="btn btn-g" disabled={page === 0} onClick={() => tourner(-1)} aria-label={fr ? 'Page précédente' : 'Previous page'}><Icon d={ICONS.arrowL} /></button>
-          <span>{fr ? 'Page' : 'Page'} {page + 1} / {pages} · {[...eues].filter((id) => liste.some((c) => c.id === id)).length} / {liste.length}</span>
-          <button className="btn btn-g" disabled={page >= pages - 1} onClick={() => tourner(1)} aria-label={fr ? 'Page suivante' : 'Next page'}><Icon d={ICONS.arrowR} /></button>
+          <span>{fr ? 'Page' : 'Page'} {large && page + 1 < pages ? `${page + 1}-${page + 2}` : page + 1} / {pages} · {[...eues].filter((id) => liste.some((c) => c.id === id)).length} / {liste.length}</span>
+          <button className="btn btn-g" disabled={page + pas > pages - 1} onClick={() => tourner(1)} aria-label={fr ? 'Page suivante' : 'Next page'}><Icon d={ICONS.arrowR} /></button>
         </div>
       )}
     </div>

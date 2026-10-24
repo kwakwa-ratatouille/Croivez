@@ -33,6 +33,7 @@ const RARETE: Record<string, Rarete> = {
   // Nouveaux thèmes
   youtubeurs: 'legendaire', 'logos-vrai': 'legendaire', mechants: 'legendaire', 'rap-fr': 'legendaire', 'rap-us': 'epique', 'rap-titre': 'rare', openings: 'legendaire', generiques: 'epique', 'mechants-photo': 'epique', 'dessins-animes-photo': 'legendaire', 'lieux-animes': 'rare', 'emojis-films': 'legendaire', 'idees-recues': 'legendaire', repliques: 'epique', superheros: 'epique', 'dessins-animes': 'epique', desserts: 'epique', dinosaures: 'epique', expressions: 'epique',
   slogans: 'rare', fruits: 'rare', legumes: 'rare', 'jeux-societe': 'rare', gentiles: 'rare', phobies: 'rare', cris: 'rare', epices: 'commun', mineraux: 'commun', sigles: 'commun',
+  'artistes-recents': 'legendaire', 'artistes-fr': 'epique',
   chevaux: 'commun', constellations: 'commun', 'artistes-genre': 'commun', fleuves: 'commun', iles: 'commun', 'etats-us': 'commun', sagas: 'commun', stades: 'commun',
 }
 export const rareteDe = (id: string): Rarete => RARETE[id] ?? 'rare'
