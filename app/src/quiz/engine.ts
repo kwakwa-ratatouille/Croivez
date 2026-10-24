@@ -49,7 +49,7 @@ const CULTURE = {
   'noms-scientifiques': { type: 'attribut', pack: 'animaux', champ: 'latin', montrer: true, q: { fr: (n) => `Quel est le nom scientifique de : ${n} ?`, en: (n) => `What is the scientific name of ${n}?` } },
   insectes: { type: 'image', q: { fr: () => 'Quel est cet insecte ?', en: () => 'What is this insect?' } },
   plantes: { type: 'image', q: { fr: () => 'Quelle est cette plante ?', en: () => 'What is this plant?' } },
-  corps: { type: 'image', q: { fr: () => 'Quelle est cette partie du corps ?', en: () => 'What is this body part?' } },
+  corps: { type: 'attribut', q: { fr: (n) => `Quelle partie du corps : ${n.charAt(0).toLowerCase() + n.slice(1)} ?`, en: (n) => `Which body part ${n}?` } },
   elements: { type: 'attribut', q: { fr: (n) => `Quel est le symbole chimique de cet élément : ${n} ?`, en: (n) => `What is the chemical symbol of ${n}?` } },
   personnalites: { type: 'image', q: { fr: () => 'Qui est cette personnalité ?', en: () => 'Who is this famous person?' } },
   histoire: { type: 'annee', q: { fr: (n) => `En quelle année a commencé : ${n} ?`, en: (n) => `In what year did this begin: ${n}?` } },
