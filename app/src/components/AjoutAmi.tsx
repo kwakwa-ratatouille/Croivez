@@ -30,6 +30,10 @@ export default function AjoutAmi({ uid }: { uid: string }) {
   }
   return (
     <form className="ajout-ami" onSubmit={valider}>
+      <div className="ajout-ami-tete">
+        <span className="ajout-ami-icone" aria-hidden="true">🔍</span>
+        <div><strong>{fr ? 'Ajouter un ami' : 'Add a friend'}</strong><small>{fr ? 'Tape son pseudo, il ou elle reçoit une demande à accepter.' : 'Type their name, they get a request.'}</small></div>
+      </div>
       <div className="ajout-ami-champ">
         <input className="input" value={pseudo} onChange={(e) => { setPseudo(e.target.value); setMsg('') }} placeholder={fr ? 'Pseudo d’un ami…' : 'Friend’s name…'} autoComplete="off" />
         <button className="btn btn-p" disabled={!pseudo.trim()}>{fr ? 'Envoyer' : 'Send'}</button>

@@ -101,7 +101,11 @@ export default function Duels() {
                 <button className="btn btn-p multi-ami-defi" onClick={() => defier(a.uid)}>⚔️ {fr ? 'Défier' : 'Duel'}</button>
               </div>
             ))}</div>
-          : <p className="aide-mobile" style={{ color: 'var(--muted)', fontSize: 14 }}>{fr ? `Ajoute tes amis ci-dessous, ou partage ton pseudo « ${moi} ».` : `Add friends below, or share “${moi}”.`}</p>}
+          : <div className="multi-amis-vide">
+              <span className="multi-amis-vide-deco" aria-hidden="true">🧑‍🤝‍🧑</span>
+              <div><strong>{fr ? 'Pas encore d’amis ici' : 'No friends yet'}</strong><p>{fr ? 'Cherche un pseudo juste en dessous, ou donne le tien :' : 'Search below, or share yours:'}</p></div>
+              <button type="button" className="btn btn-g" onClick={() => { navigator.clipboard?.writeText(moi).catch(() => {}); setMessage(fr ? `Pseudo « ${moi} » copié !` : 'Copied!') }}>📋 {moi}</button>
+            </div>}
         <AjoutAmi uid={uid} />
         {message && <p role="status" style={{ fontSize: 14, color: 'var(--muted)' }}>{message}</p>}
       </section>
@@ -123,10 +127,11 @@ export default function Duels() {
           <span>{fr ? 'Type' : 'Type'}</span>
           <div className="multi-duel-choix">{MINI_JEUX.filter((x) => ['qcm', 'vf', 'duo', 'eclair', 'flash', 'zoom', 'flou'].includes(x.v)).map((x) => <button key={x.v} type="button" className="pill" aria-pressed={mjDuel === x.v} title={x.desc[lang]} onClick={() => { setMjDuel(x.v); if (x.chrono) setSecDuel(x.chrono) }}>{x.icone} {x.nom[lang]}</button>)}</div>
           <span>{fr ? 'Questions' : 'Questions'}</span>
-          <div className="multi-duel-choix">{[5, 10, 15, 20].map((n) => <button key={n} type="button" className="pill" aria-pressed={nbDuel === n} onClick={() => setNbDuel(n)}>{n}</button>)}</div>
+          <div className="multi-duel-choix court">{[5, 10, 15, 20].map((n) => <button key={n} type="button" className="pill" aria-pressed={nbDuel === n} onClick={() => setNbDuel(n)}>{n}</button>)}</div>
           <span>{fr ? 'Temps' : 'Time'}</span>
-          <div className="multi-duel-choix">{[8, 15, 20, 30].map((n) => <button key={n} type="button" className="pill" aria-pressed={secDuel === n} onClick={() => setSecDuel(n)}>{n} s</button>)}</div>
+          <div className="multi-duel-choix court">{[8, 15, 20, 30].map((n) => <button key={n} type="button" className="pill" aria-pressed={secDuel === n} onClick={() => setSecDuel(n)}>{n} s</button>)}</div>
         </div>
+        {amis.length > 0 && <h3 className="multi-duel-sous">{fr ? 'Qui veux-tu défier ?' : 'Who do you challenge?'}</h3>}
         <div className="multi-duel-amis">
           {amis.length === 0 && <p className="multi-astuce">{fr ? 'Ajoute d’abord des amis dans « Mes amis » juste au-dessus.' : 'Add friends above first.'}</p>}
           {amis.map((a) => <button key={a.uid} type="button" className="multi-duel-ami" onClick={() => defier(a.uid)}><Avatar pseudo={a.pseudo} avatar={a.avatar} cadre={a.cadre} taille={34} /><span>{a.pseudo}</span><em>⚔️</em></button>)}

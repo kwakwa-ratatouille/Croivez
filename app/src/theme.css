@@ -1597,3 +1597,41 @@ button.rang-palier[aria-pressed="true"] { background: color-mix(in srgb, var(--r
   .accueil-puces .puce { padding: 4px 9px; font-size: 13px; }
 }
 .evt-compact .bandeau-evt .evt-jouer { display: inline-flex !important; }
+
+/* Multi v3 : amis en grille, ajout d'ami en panneau, défi aligné */
+.multi-amis-liste { display: grid !important; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 10px; overflow: visible !important; }
+.multi-ami { width: auto !important; padding: 14px 8px 10px !important; background: linear-gradient(180deg, var(--surface2), var(--surface)) !important; transition: transform .15s; }
+.multi-ami:hover { transform: translateY(-2px); }
+.multi-amis-vide { display: flex; align-items: center; gap: 14px; padding: 14px 16px; border-radius: 18px; border: 2px dashed var(--line); }
+.multi-amis-vide-deco { font-size: 40px; flex: none; }
+.multi-amis-vide > div { flex: 1; min-width: 0; }
+.multi-amis-vide strong { font-size: 16px; }
+.multi-amis-vide p { margin: 2px 0 0; font-size: 13.5px; color: var(--muted); }
+.multi-amis-vide .btn { flex: none; max-width: 45%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ajout-ami { gap: 10px !important; padding: 16px; border-radius: 20px; background: radial-gradient(circle at 100% 0, rgba(124, 58, 237, .14), transparent 55%), radial-gradient(circle at 0 100%, rgba(14, 165, 233, .12), transparent 55%), var(--surface2); border: 1px solid var(--line); }
+.ajout-ami-tete { display: flex; align-items: center; gap: 12px; }
+.ajout-ami-icone { width: 44px; height: 44px; flex: none; display: grid; place-items: center; border-radius: 14px; background: linear-gradient(135deg, #7C3AED, #0EA5E9); font-size: 22px; box-shadow: 0 6px 14px rgba(124, 58, 237, .3); }
+.ajout-ami-tete div { display: flex; flex-direction: column; min-width: 0; }
+.ajout-ami-tete strong { font-size: 16px; }
+.ajout-ami-tete small { font-size: 13px; color: var(--muted); }
+.ajout-ami-champ .input { background: var(--surface); }
+.ajout-ami-champ .btn { min-width: 96px; }
+.multi-duel-grille { grid-template-columns: 96px 1fr !important; column-gap: 14px !important; row-gap: 12px !important; align-items: start !important; }
+.multi-duel-grille > span { padding-top: 9px; font-weight: 800; font-size: 14px; color: var(--muted); }
+.multi-duel-choix { display: grid !important; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 8px !important; }
+.multi-duel-choix .pill { width: 100%; justify-content: center; text-align: center; min-height: 38px; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.multi-duel-sous { margin: 6px 0 0; font-size: 15px; font-weight: 900; }
+.multi-duel-amis { display: grid !important; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px !important; }
+.multi-duel-amis .multi-astuce { grid-column: 1 / -1; }
+.multi-duel-ami { width: 100%; min-width: 0; }
+.multi-duel-ami span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left; }
+@media (max-width: 560px) {
+  .multi-duel-grille { grid-template-columns: 1fr !important; row-gap: 6px !important; }
+  .multi-duel-grille > span { padding-top: 6px; }
+  .multi-duel-choix { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .multi-amis-liste { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .multi-amis-vide { flex-wrap: wrap; }
+  .multi-amis-vide .btn { max-width: 100%; width: 100%; }
+}
+
+.multi-duel-choix.court { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; max-width: 420px; }
