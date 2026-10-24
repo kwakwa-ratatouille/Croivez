@@ -16,6 +16,7 @@ export default function Caster() {
   const nav = useNavigate()
   const [dispo, setDispo] = useState<boolean | null>(null)
   const [etat, setEtat] = useState<'' | 'connexion' | 'attente' | 'erreur'>('')
+  const [codeErreur, setCodeErreur] = useState('')
   const natif = Capacitor.isNativePlatform()
 
   useEffect(() => { if (!natif) chargerCast().then(setDispo) }, [natif])
@@ -25,7 +26,11 @@ export default function Caster() {
     try {
       await caster((code) => nav(`/rejoindre/${code}`))
       setEtat('attente')
-    } catch {
+    } catch (e) {
+      // Code renvoyé par Google Cast (cancel, receiver_unavailable, session_error, timeout…)
+      const code = typeof e === 'string' ? e : (e as { code?: string })?.code ?? String(e)
+      if (code === 'cancel') { setEtat(''); return }
+      setCodeErreur(code)
       setEtat('erreur')
     }
   }
@@ -63,7 +68,16 @@ export default function Caster() {
             <Icon d={ICONE_CAST} size={24} />
             {etat === 'connexion' ? (fr ? 'Connexion à la télé…' : 'Connecting…') : etat === 'attente' ? (fr ? 'La télé prépare la partie…' : 'The TV is getting ready…') : (fr ? 'Caster sur la télé' : 'Cast to TV')}
           </button>
-          {etat === 'erreur' && <p className="caster-note" style={{ color: 'var(--ko-i)' }}>{fr ? 'La diffusion n’a pas démarré. Réessaie.' : 'Casting did not start. Try again.'}</p>}
+          {etat === 'erreur' && (
+            <p className="caster-note" style={{ color: '#FDE68A' }}>
+              {codeErreur === 'receiver_unavailable' || codeErreur === 'session_error'
+                ? (fr ? 'La télé n’a pas pu ouvrir Croivez. Si l’appli vient d’être publiée chez Google, ça peut prendre quelques heures ; éteins et rallume la télé (ou le Chromecast), puis réessaie.' : 'The TV could not open Croivez. Restart the TV and retry.')
+                : codeErreur === 'timeout'
+                  ? (fr ? 'La télé a mis trop de temps à répondre. Vérifie que le téléphone et la télé sont sur le même Wi-Fi, puis réessaie.' : 'The TV took too long. Check the Wi-Fi and retry.')
+                  : (fr ? 'La diffusion n’a pas démarré. Réessaie.' : 'Casting did not start. Try again.')}
+              <br /><small style={{ opacity: .8 }}>{fr ? 'Code' : 'Code'} : {codeErreur}</small>
+            </p>
+          )}
         </>
       )}
       <Link to="/tv" className="caster-lien">{fr ? 'Pas de Chromecast ? Ouvrir le mode télé sur cet écran' : 'No Chromecast? Open TV mode here'}</Link>
