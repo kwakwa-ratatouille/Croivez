@@ -1,6 +1,6 @@
 import { ref as rref, set } from 'firebase/database'
 import { rtdb } from './firebase'
-import { arrayRemove, arrayUnion, collection, doc, getDoc, getDocs, increment, limit, orderBy, query, runTransaction, setDoc, where, documentId, startAt, endAt } from 'firebase/firestore'
+import { arrayRemove, arrayUnion, collection, deleteDoc, doc, getDoc, getDocs, increment, limit, orderBy, query, runTransaction, setDoc, where, documentId, startAt, endAt } from 'firebase/firestore'
 import { db } from './firebase'
 import { niveau, type Profile } from './auth'
 import { FAMILLES } from './themes'
@@ -52,6 +52,31 @@ export function semaine(d = new Date()) {
   const debut = new Date(Date.UTC(t.getUTCFullYear(), 0, 1))
   const n = Math.ceil(((t.getTime() - debut.getTime()) / 864e5 + 1) / 7)
   return `${t.getUTCFullYear()}-W${String(n).padStart(2, '0')}`
+}
+
+// Changement de pseudo payant : réservation du nouveau pseudo et paiement dans une seule transaction
+// (pas de paiement sans pseudo, pas de doublon). Amis, progression, classements sont liés à l'uid : rien n'est perdu.
+export const PRIX_PSEUDO = 1500
+export async function changerPseudo(uid: string, ancien: string, nouveau: string): Promise<'ok' | 'pris' | 'pieces' | 'invalide'> {
+  const cle = pseudoCle(nouveau)
+  if (cle.length < 3 || nouveau.length > 20) return 'invalide'
+  const r = await runTransaction(db, async (tx) => {
+    const refPseudo = doc(db, 'pseudos', cle)
+    const refUser = doc(db, 'users', uid)
+    const [p, u] = [await tx.get(refPseudo), await tx.get(refUser)]
+    if (p.exists() && p.data().uid !== uid) return 'pris' as const
+    if (((u.data()?.pieces as number | undefined) ?? 0) < PRIX_PSEUDO) return 'pieces' as const
+    if (!p.exists()) tx.set(refPseudo, { uid })
+    tx.update(refUser, { pseudo: nouveau, pieces: increment(-PRIX_PSEUDO) })
+    return 'ok' as const
+  })
+  if (r !== 'ok') return r
+  // Ancien pseudo libéré, profil public et classement de la semaine mis à jour
+  const ancienneCle = pseudoCle(ancien)
+  if (ancienneCle && ancienneCle !== cle) await deleteDoc(doc(db, 'pseudos', ancienneCle)).catch(() => {})
+  await setDoc(doc(db, 'profils', uid), { pseudo: nouveau }, { merge: true }).catch(() => {})
+  await setDoc(doc(db, 'semaines', semaine(), 'scores', uid), { pseudo: nouveau }, { merge: true }).catch(() => {})
+  return 'ok'
 }
 
 // Réserve le pseudo (unique) et crée/actualise le profil public. Si le pseudo est pris, on ajoute un numéro.

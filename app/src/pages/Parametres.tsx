@@ -1,3 +1,4 @@
+import ChangerPseudo from '../components/ChangerPseudo'
 import { planifierRappels, rappelsActifs, reglerRappels } from '../rappels'
 import { TAILLES, appliquerTaille, lireTaille } from '../taille'
 import { useEffect, useState } from 'react'
@@ -93,6 +94,7 @@ export default function Parametres() {
     <>
       <h1 className="t" style={{ fontSize: 36, fontWeight: 900 }}>{t('nav.settings')}</h1>
       <section className="card" style={{ padding: 28, display: 'flex', flexDirection: 'column', gap: 22, maxWidth: 760 }}>
+        <ChangerPseudo />
         <div style={ligne}>
           <span className="t" style={titre}>{t('set.lang')}</span>
           <div style={{ display: 'flex', gap: 10 }}>

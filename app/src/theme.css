@@ -1441,3 +1441,5 @@ button.rang-palier[aria-pressed="true"] { background: color-mix(in srgb, var(--r
 .image-zoom { animation: zoom-image 9s cubic-bezier(.3, 0, .5, 1) forwards; transform-origin: 50% 45%; }
 @keyframes zoom-image { from { transform: scale(4.5); clip-path: inset(38.9%); } to { transform: scale(1); clip-path: inset(0); } }
 
+
+.changer-pseudo { display: flex; flex-direction: column; gap: 8px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
