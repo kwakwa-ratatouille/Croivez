@@ -84,7 +84,7 @@ export default function Classements() {
             <div className="aide-rang rise" role="note">
               <strong className="t">{fr ? 'Comment marche le classé ?' : 'How ranked works'}</strong>
               <p>🎮 {fr ? 'Chaque XP gagnée en partie te rapporte 1 point de rang.' : 'Each XP earned is 1 rank point.'}</p>
-              <p>🪜 {fr ? '9 rangs (Bronze → Maître), chacun en 4 divisions : 1, 2, 3 puis 4, la meilleure. Au-dessus, un seul rang ultime : Légende de Croivez.' : '9 ranks with 4 divisions each, then the ultimate rank.'}</p>
+              <p>🪜 {fr ? '9 rangs (Bronze → Maître), chacun en 4 divisions : 1, 2, 3 puis 4, la meilleure. Au-dessus, un seul rang ultime : Légende.' : '9 ranks with 4 divisions each, then the ultimate rank.'}</p>
               <p>💤 {fr ? `Pas de remise à zéro : après ${GRACE} jours sans jouer, tu descends d’une division par jour d’absence.` : `No reset: after ${GRACE} idle days you drop one division per day.`}</p>
               <p>🎁 {fr ? 'Chaque lundi, le rang où tu as fini la semaine te donne son cadre et sa couleur de pseudo. Après 3 semaines finies dans un rang : son titre et sa vitrine animée.' : 'Each Monday your rank gives its frame and name colour; 3 weeks: its title and showcase.'}</p>
               <p>👥 {fr ? '« Mon rang » liste les joueurs du même rang que toi.' : 'This tab lists players of your rank.'}</p>
