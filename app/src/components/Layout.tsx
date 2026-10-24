@@ -60,10 +60,10 @@ export default function Layout() {
   useEffect(() => { if (uid) reclamerParrainages(uid).catch(() => {}) }, [uid])
   // Rappels du lendemain (série, quiz du jour, révisions), replanifiés à chaque ouverture
   useEffect(() => { if (profile) planifierRappels(profile).catch(() => {}) }, [profile?.dernierJour, profile?.serie]) // eslint-disable-line react-hooks/exhaustive-deps
-  // Blague demandée : le solde de « Victor la tortue » passe à -1000 pièces (une seule fois)
+  // Demande du créateur : le solde de « Victor la tortue » est remis à 1 400 pièces (une seule fois, la pénalité ne s'applique plus)
   useEffect(() => {
-    if (uid && profile && pseudoCle(profile.pseudo) === 'victorlatortue' && !(profile as { malusTortue?: boolean }).malusTortue)
-      setDoc(doc(db, 'users', uid), { pieces: -1000, malusTortue: true }, { merge: true }).catch(() => {})
+    if (uid && profile && pseudoCle(profile.pseudo) === 'victorlatortue' && !(profile as { rendusTortue?: boolean }).rendusTortue)
+      setDoc(doc(db, 'users', uid), { pieces: 1400, malusTortue: true, rendusTortue: true }, { merge: true }).catch(() => {})
   }, [uid, profile])
   const appuis = useRef<number[]>([])
   const appuiLogo = (e: React.MouseEvent) => {
