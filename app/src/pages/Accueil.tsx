@@ -5,7 +5,8 @@ import { FAMILLES, type Famille, type SousTheme } from '../themes'
 import { defiDuJour } from '../quiz/defi'
 import { aReviser } from '../quiz/revision'
 import { accesQuiz } from '../progression'
-import { Coche, ICONS, Icon } from '../components/ui'
+import { Coche, ICONS, Icon, Piece } from '../components/ui'
+import { etatDuJour, quetesDuJour, recupererQuete } from '../quetes'
 import Illustration from '../components/Illustration'
 import { ouvrirFiche } from '../components/FicheLancement'
 
@@ -50,7 +51,8 @@ function Rangee({ titre, lien, children }: { titre: string; lien?: { to: string;
 export default function Accueil() {
   const { t, lang } = usePrefs()
   const fr = lang === 'fr'
-  const { profile } = useAuth()
+  const { user, profile } = useAuth()
+  const etatQuetes = etatDuJour(profile?.quetes)
   const serie = profile?.serie ?? 0
   const today = new Date().toLocaleDateString('sv')
   const defi = defiDuJour(today)
@@ -91,8 +93,29 @@ export default function Accueil() {
         ))}
       </section>
 
-      {/* Défi du jour + révision */}
+      {/* Défi du jour, quêtes, révision */}
       <section className="carrousel">
+        <div className="card" style={{ width: 320, padding: 18, display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <span className="eyebrow">{fr ? 'Quêtes du jour' : 'Daily quests'}</span>
+          {quetesDuJour().map((qu) => {
+            const v = etatQuetes.prog[qu.id] ?? 0
+            const fini = v >= qu.objectif
+            const recue = etatQuetes.recues.includes(qu.id)
+            return (
+              <div key={qu.id} style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ flex: 1, fontWeight: 600, fontSize: 14, textDecoration: recue ? 'line-through' : 'none', color: recue ? 'var(--muted)' : 'var(--text)' }}>{qu.titre[lang]}</span>
+                  {recue
+                    ? <Coche size={18} anim={false} />
+                    : fini
+                      ? <button className="btn btn-p" style={{ minHeight: 34, padding: '0 10px', fontSize: 13, gap: 4 }} onClick={() => user && recupererQuete(user.uid, qu.id)}><Piece size={14} />+{qu.gain}</button>
+                      : <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 13, fontWeight: 700, color: 'var(--his-i)' }}><Piece size={14} />{qu.gain}</span>}
+                </div>
+                {!recue && <div className="bar" style={{ height: 6 }}><span style={{ width: `${(v / qu.objectif) * 100}%`, background: fini ? 'var(--ok)' : 'var(--his)' }} /></div>}
+              </div>
+            )
+          })}
+        </div>
         <div className="card" style={{ width: 300, padding: 20, display: 'flex', flexDirection: 'column', gap: 10, background: 'var(--his-t)', borderColor: 'transparent', color: 'var(--his-i)' }}>
           <span className="eyebrow" style={{ color: 'var(--his-i)' }}>{t('home.daily')} · XP ×2</span>
           <strong className="t" style={{ fontSize: 18 }}>{defi.titre[lang]}</strong>

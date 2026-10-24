@@ -5,6 +5,7 @@ import { auth, db } from './firebase'
 import { cleRevision, planifier, type CarteRevision } from './quiz/revision'
 import type { SousThemeId } from './quiz/engine'
 import { publierXp, synchroniserProfilPublic } from './social'
+import { avancerQuetes, type EtatQuetes, type StatsPartie } from './quetes'
 
 export type Profile = {
   pseudo: string
@@ -24,6 +25,7 @@ export type Profile = {
   familles?: string[] // familles choisies au départ (entièrement ouvertes) ; absent = ancien compte, tout ouvert
   quiz?: string[] // quiz gagnés dans les caisses
   records?: Record<string, number> // meilleurs scores Express / Survie
+  quetes?: EtatQuetes // quêtes du jour
   paliers?: Record<string, number[]> // difficultés réussies (≥ 70 %) par quiz : ouvre la Légende
 }
 
@@ -82,6 +84,7 @@ type Partie = {
   pieces?: number // pièces gagnées pendant la partie
   difficulte?: number // 1 à 4 : réussir à 70 % valide le palier (Légende)
   sansRevision?: boolean // Mix / Express / Survie : questions de plusieurs quiz
+  stats?: StatsPartie // pour les quêtes du jour
   record?: { jeu: string; score: number }
 }
 
@@ -118,6 +121,7 @@ export async function enregistrerPartie(uid: string, profile: Profile, p: Partie
     ...(p.revision ? {} : { maitrise: { [p.sousTheme]: maitrise } }),
     ...(defiReussi ? { defis: increment(1), defiJour: today } : {}),
     ...(Object.keys(revision).length ? { revision } : {}),
+    ...(p.stats ? { quetes: avancerQuetes(profile.quetes, p.stats) } : {}),
     ...(p.record && p.record.score > (profile.records?.[p.record.jeu] ?? 0) ? { records: { [p.record.jeu]: p.record.score } } : {}),
     ...(p.difficulte && p.difficulte <= 4 && taux >= 0.7 ? { paliers: { [p.sousTheme]: arrayUnion(p.difficulte) } } : {}),
   }, { merge: true })

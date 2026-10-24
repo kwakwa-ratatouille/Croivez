@@ -124,6 +124,7 @@ export type Question = {
   imagesOnly: boolean
   audio?: string // identifiant de titre Deezer (extrait à écouter)
   s?: SousThemeId // sous-thème d'origine (parties Mix, Express, Survie)
+  boss?: boolean // question finale très dure (+30 pièces)
   carte?: Carte
   fiche: Fiche
 }

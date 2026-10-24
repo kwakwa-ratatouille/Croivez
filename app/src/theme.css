@@ -147,3 +147,14 @@ button { font-family: inherit; }
 /* Choix Légende : doré, il doit donner envie */
 .choice.legende { background: linear-gradient(135deg, var(--his-t), var(--surface)); border-color: var(--his); color: var(--his-i); }
 .choice.legende[aria-pressed="true"] { background: var(--his-t); border: 2px solid var(--his); box-shadow: 0 0 0 4px var(--his-t); }
+
+/* Éléments de jeu : score, combo, question boss, bonus */
+.jauge-combo { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: center; min-height: 30px; }
+@keyframes pop { 0% { transform: scale(.7); } 60% { transform: scale(1.15); } 100% { transform: scale(1); } }
+.chip.combo { animation: pop .3s ease-out; background: var(--surface2); color: var(--text); }
+.chip.combo-1 { background: var(--ok-t); color: var(--ok-i); }
+.chip.combo-2 { background: var(--his-t); color: var(--his-i); }
+.chip.combo-3 { background: var(--ko-t); color: var(--ko-i); box-shadow: 0 0 0 3px var(--ko-t); }
+.chip.boss { background: linear-gradient(90deg, var(--his-t), var(--ko-t)); color: var(--ko-i); font-size: 14px; padding: 0 16px; min-height: 34px; }
+.bonus-barre { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.bonus-barre .btn { min-height: 40px; padding: 0 12px; font-size: 14px; gap: 5px; }

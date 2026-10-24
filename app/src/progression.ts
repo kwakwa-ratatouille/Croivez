@@ -74,3 +74,6 @@ export const testToutDebloquer = (uid: string) => setDoc(doc(db, 'users', uid), 
 // Repartir de zéro côté progression : choix des 3 familles, caisses, 50 pièces (XP et stats conservés)
 export const testReinitialiser = (uid: string) => setDoc(doc(db, 'users', uid), { familles: [], quiz: [], pieces: 50 }, { merge: true })
 export const testPieces = (uid: string, n: number) => setDoc(doc(db, 'users', uid), { pieces: increment(n) }, { merge: true })
+
+// Dépense de pièces pour un bonus en partie
+export const payerPieces = (uid: string, n: number) => depenser(uid, n)

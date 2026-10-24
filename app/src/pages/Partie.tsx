@@ -7,7 +7,7 @@ import { calculerXp, distanceKm, genererMix, genererPartie, type Difficulte, typ
 import { estCorrect } from '../quiz/match'
 import { memoriser } from '../quiz/memoire'
 import { retourFin, retourReponse } from '../retour'
-import { PRIX_INDICE, accesQuiz, payerIndice, piecesGagnees, plafonner } from '../progression'
+import { PRIX_INDICE, accesQuiz, payerIndice, payerPieces, piecesGagnees, plafonner } from '../progression'
 import { FAMILLES } from '../themes'
 import { Coche, Croix, ICONS, Icon, Logo, Piece } from '../components/ui'
 import Extrait from '../components/Extrait'
@@ -17,7 +17,11 @@ import Illustration from '../components/Illustration'
 import ImageWiki from '../components/ImageWiki'
 import type { Famille } from '../themes'
 
-type Reponse = { q: Question; donnee: string; juste: boolean; clic?: Clic; km?: number }
+type Reponse = { q: Question; donnee: string; juste: boolean; clic?: Clic; km?: number; points?: number }
+
+// Combo : bonnes réponses d'affilée → multiplicateur de points
+const multiplicateur = (combo: number) => (combo >= 8 ? 3 : combo >= 5 ? 2 : combo >= 3 ? 1.5 : 1)
+const PRIX_BONUS = 15
 
 export default function Partie() {
   const [params] = useSearchParams()
@@ -51,6 +55,12 @@ export default function Partie() {
   const [reponses, setReponses] = useState<Reponse[]>([])
   const [saisie, setSaisie] = useState('')
   const [restant, setRestant] = useState(chrono)
+  const [combo, setCombo] = useState(0)
+  const [comboMax, setComboMax] = useState(0)
+  const debutQuestion = useRef(Date.now())
+  const [double, setDouble] = useState(false) // bonus : prochaine bonne réponse ×2
+  const [secondeChance, setSecondeChance] = useState<number | null>(null) // bonus : une erreur pardonnée sur cette question
+  const [bonusMsg, setBonusMsg] = useState('')
   const [fini, setFini] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
   const debutTouche = useRef<{ x: number; y: number } | null>(null)
@@ -74,7 +84,18 @@ export default function Partie() {
       genererMix({ quiz, difficultes, lang, max }).then((qs) => { setQuestions(qs); if (jeu === 'express') setFinExpress(Date.now() + EXPRESS_MS) })
       return
     }
-    genererPartie({ sousTheme, difficulte, max, nombre, mode, lang, ids, seed: ids ? undefined : seed }).then(setQuestions)
+    setCombo(0); setComboMax(0); setDouble(false); setSecondeChance(null)
+    // Question boss : une dernière question très dure (difficulté max débloquée) en partie classique
+    const avecBoss = !ids && !defi && !revision && !legende
+    genererPartie({ sousTheme, difficulte, max, nombre, mode, lang, ids, seed: ids ? undefined : seed }).then(async (qs) => {
+      if (avecBoss) {
+        const candidats = await genererPartie({ sousTheme, difficulte: max, max, nombre: 3, mode, lang }).catch(() => [])
+        const boss = candidats.find((c) => !qs.some((x) => x.id === c.id))
+        if (boss) qs = [...qs, { ...boss, boss: true }]
+      }
+      setQuestions(qs)
+      debutQuestion.current = Date.now()
+    })
   }, [sousTheme, difficulte, max, nombre, mode, lang, chrono, seed, jeu, profile])
 
   // Une partie est générée une seule fois, à l'ouverture
@@ -86,11 +107,26 @@ export default function Partie() {
 
   const enregistrer = useCallback((r: Omit<Reponse, 'q'>) => {
     if (!q || reponses[i]) return
-    setReponses((prev) => [...prev, { q, ...r }])
+    // Seconde chance : la première erreur sur cette question est pardonnée (la mauvaise réponse est retirée)
+    if (!r.juste && secondeChance === i && q.options.length) {
+      setSecondeChance(null)
+      setIndice((x) => ({ i, masques: [...(x?.i === i ? x.masques ?? [] : []), r.donnee] }))
+      setBonusMsg(lang === 'fr' ? 'Seconde chance utilisée, réessayez !' : 'Second chance used, try again!')
+      return
+    }
+    // Points : 100 + rapidité (jusqu'à +50 en moins de 3 s), × combo, × bonus « points ×2 »
+    const nouveauCombo = r.juste ? combo + 1 : 0
+    const secondes = (Date.now() - debutQuestion.current) / 1000
+    const rapidite = Math.round(50 * Math.max(0, Math.min(1, (10 - secondes) / 7)))
+    const points = r.juste ? Math.round((100 + rapidite) * multiplicateur(nouveauCombo) * (double ? 2 : 1)) : 0
+    if (r.juste && double) setDouble(false)
+    setCombo(nouveauCombo)
+    setComboMax((m) => Math.max(m, nouveauCombo))
+    setReponses((prev) => [...prev, { q, ...r, points }])
     retourReponse(r.juste)
     memoriser(q.s ?? sousTheme, q.id, r.juste) // ratée : reviendra ; réussie plusieurs fois : mise de côté un temps
     if (jeu === 'survie' && !r.juste) setVies((v) => v - 1)
-  }, [q, i, reponses, sousTheme, jeu])
+  }, [q, i, reponses, sousTheme, jeu, combo, double, secondeChance, lang])
 
   const repondre = useCallback((donnee: string) => {
     if (!q) return
@@ -112,6 +148,8 @@ export default function Partie() {
     if (!questions) return
     if (i + 1 >= questions.length || (jeu === 'survie' && vies <= 0)) { setFini(true); retourFin(reponses.filter((x) => x.juste).length >= questions.length / 2); return }
     setI(i + 1)
+    debutQuestion.current = Date.now()
+    setBonusMsg('')
     setSaisie('')
     setRestant(chrono)
   }, [i, questions, chrono, reponses, jeu, vies])
@@ -155,21 +193,24 @@ export default function Partie() {
   }, [q, courante, fini, repondre, suivant])
 
   const bonnes = reponses.filter((r) => r.juste).length
+  const score = reponses.reduce((a, r) => a + (r.points ?? 0), 0)
+  const bossReussi = reponses.some((r) => r.q.boss && r.juste)
   // Les questions sur carte valent autant que la saisie libre
   // Défi du jour : XP doublés
-  const pieces = piecesGagnees(bonnes, questions?.length ?? 0, defi) * (legende ? 2 : 1)
-  const xp = calculerXp(bonnes, q?.carte && !q.options.length ? 'libre' : mode, difficulte || 2) * (defi || legende ? 2 : 1)
+  // Question boss réussie : +30 pièces ; gros score : un peu d'XP en plus
+  const pieces = piecesGagnees(bonnes, questions?.length ?? 0, defi) * (legende ? 2 : 1) + (bossReussi ? 30 : 0)
+  const xp = calculerXp(bonnes, q?.carte && !q.options.length ? 'libre' : mode, difficulte || 2) * (defi || legende ? 2 : 1) + Math.round(score / 250)
   const enregistre = useRef(false)
   useEffect(() => {
     if (!fini || enregistre.current || !user || !profile || !questions) return
     enregistre.current = true
-    enregistrerPartie(user.uid, profile, { sousTheme, xp, pieces, defi, revision: revision || !!jeu, sansRevision: !!jeu, record: jeu && jeu !== 'mix' ? { jeu, score: bonnes } : undefined, difficulte: jeu ? undefined : difficulte, resultats: reponses.map((r) => ({ id: r.q.id, juste: r.juste })) }).catch(console.error)
+    enregistrerPartie(user.uid, profile, { sousTheme, xp, pieces, stats: { bonnes, comboMax, jeu: jeu ?? undefined, famille: k, difficulte },  defi, revision: revision || !!jeu, sansRevision: !!jeu, record: jeu && jeu !== 'mix' ? { jeu, score: bonnes } : undefined, difficulte: jeu ? undefined : difficulte, resultats: reponses.map((r) => ({ id: r.q.id, juste: r.juste })) }).catch(console.error)
   }, [fini, user, profile, sousTheme, xp, pieces, defi, revision, reponses, questions])
 
   if (!questions) return <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center' }}><Logo width={72} /></div>
   if (!q) return <div style={{ padding: 48, textAlign: 'center' }}><p>{lang === 'fr' ? 'Aucune question disponible.' : 'No questions available.'}</p><Link className="btn btn-p" to="/">{t('res.home')}</Link></div>
 
-  if (fini) return <Resultat reponses={reponses} xp={xp} pieces={pieces} k={k} onReplay={(ids) => {
+  if (fini) return <Resultat reponses={reponses} xp={xp} pieces={pieces} score={score} comboMax={comboMax} k={k} onReplay={(ids) => {
     enregistre.current = false
     const p = new URLSearchParams(params)
     if (ids) p.set('ids', ids.join(',')); else p.delete('ids')
@@ -185,6 +226,13 @@ export default function Partie() {
     const dx = e.changedTouches[0].clientX - d.x
     const dy = e.changedTouches[0].clientY - d.y
     if (dx < -70 && Math.abs(dy) < 50) suivant()
+  }
+
+  async function acheterBonus(appliquer: () => void) {
+    if (!user) return
+    setBonusMsg('')
+    if (!(await payerPieces(user.uid, PRIX_BONUS).catch(() => false))) { setBonusMsg(lang === 'fr' ? 'Pas assez de pièces.' : 'Not enough coins.'); return }
+    appliquer()
   }
 
   // Indice : payé en pièces (transaction : refusé si le solde ne suffit pas)
@@ -226,7 +274,13 @@ export default function Partie() {
       )}
 
       <section key={i} className="rise" style={{ width: '100%', maxWidth: 1040, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 24 }}>
+        {q.boss && <span className="chip boss rise">{lang === 'fr' ? 'Question boss · +30 pièces' : 'Boss question · +30 coins'}</span>}
         <h1 className="t" style={{ fontSize: 30, fontWeight: 900, textAlign: 'center', maxWidth: 760 }}>{q.enonce}</h1>
+        <div className="jauge-combo" aria-label={`Score ${score}, combo ${combo}`}>
+          <span className="t" style={{ fontWeight: 900 }}>{score.toLocaleString(lang === 'fr' ? 'fr-FR' : 'en-GB')} pts</span>
+          {combo >= 2 && <span key={combo} className={`chip combo combo-${multiplicateur(combo) >= 3 ? 3 : multiplicateur(combo) >= 2 ? 2 : multiplicateur(combo) > 1 ? 1 : 0}`}>{combo} {lang === 'fr' ? 'd’affilée' : 'in a row'}{multiplicateur(combo) > 1 ? ` · ×${multiplicateur(combo)}` : ''}</span>}
+          {double && <span className="chip" style={{ background: 'var(--mus-t)', color: 'var(--mus-i)' }}>{lang === 'fr' ? '×2 actif' : '×2 on'}</span>}
+        </div>
         {q.image && (
           <Img src={q.image} alt="" style={{ height: 220, maxWidth: '100%', borderRadius: 18, boxShadow: 'var(--shadow)', border: '1px solid var(--line)', objectFit: 'contain', background: 'var(--surface)' }} />
         )}
@@ -271,6 +325,16 @@ export default function Partie() {
           </form>
         )}
 
+        {/* Bonus : 15 pièces chacun (pas en Légende) */}
+        {!courante && !legende && (
+          <div className="bonus-barre">
+            {chrono > 0 && <button type="button" className="btn btn-s" onClick={() => acheterBonus(() => setRestant((r) => r + 10))}>+10 s · <Piece size={15} />{PRIX_BONUS}</button>}
+            <button type="button" className="btn btn-s" onClick={() => acheterBonus(() => enregistrer({ donnee: lang === 'fr' ? '(passée)' : '(skipped)', juste: true }))}>{lang === 'fr' ? 'Passer' : 'Skip'} · <Piece size={15} />{PRIX_BONUS}</button>
+            {q.options.length > 0 && secondeChance !== i && <button type="button" className="btn btn-s" onClick={() => acheterBonus(() => setSecondeChance(i))}>{lang === 'fr' ? 'Seconde chance' : 'Second chance'} · <Piece size={15} />{PRIX_BONUS}</button>}
+            {!double && <button type="button" className="btn btn-s" onClick={() => acheterBonus(() => setDouble(true))}>Points ×2 · <Piece size={15} />{PRIX_BONUS}</button>}
+          </div>
+        )}
+        {bonusMsg && <p role="status" style={{ fontSize: 14, fontWeight: 600, color: 'var(--mus-i)' }}>{bonusMsg}</p>}
         {/* Indice payant : 50/50 en QCM, première lettre en saisie libre */}
         {!courante && !q.carte && !legende && (indice?.i === i ? (
           indice.lettre && <p className="rise" style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 700, color: 'var(--his-i)' }}><Icon d={ICONS.bulb} size={20} />{indice.lettre}</p>
@@ -327,7 +391,7 @@ function Fiche({ r, onNext, dernier, k }: { r: Reponse; onNext: () => void; dern
   )
 }
 
-function Resultat({ reponses, xp, pieces, k, onReplay }: { reponses: Reponse[]; xp: number; pieces: number; k: string; onReplay: (ids?: string[]) => void }) {
+function Resultat({ reponses, xp, pieces, score, comboMax, k, onReplay }: { reponses: Reponse[]; xp: number; pieces: number; score: number; comboMax: number; k: string; onReplay: (ids?: string[]) => void }) {
   const { t, lang } = usePrefs()
   const bonnes = reponses.filter((r) => r.juste).length
   const erreurs = reponses.filter((r) => !r.juste)
@@ -340,6 +404,10 @@ function Resultat({ reponses, xp, pieces, k, onReplay }: { reponses: Reponse[]; 
           <svg viewBox="0 0 400 300" width="420" aria-hidden="true" style={{ position: 'absolute', right: -120, top: -100, opacity: .5 }}><path d="M210 30c80-10 170 40 160 120s-90 130-180 120S20 200 40 120 130 40 210 30Z" style={{ fill: `var(--${k}-t)` }} /></svg>
           <div style={{ position: 'relative' }}><Illustration k={k as Famille} taille={190} /><span style={{ position: 'absolute', right: -6, bottom: -4 }}>{taux >= .5 ? <Coche size={52} /> : <Croix size={40} />}</span></div>
           <h1 className="t" style={{ fontSize: 34, fontWeight: 900, position: 'relative' }}>{t('res.title')}</h1>
+          <p className="t" style={{ fontSize: 22, fontWeight: 900, position: 'relative' }}>
+            {score.toLocaleString(lang === 'fr' ? 'fr-FR' : 'en-GB')} pts
+            {comboMax >= 3 && <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--muted)' }}> · {lang === 'fr' ? `meilleur combo ${comboMax}` : `best combo ${comboMax}`}</span>}
+          </p>
           <div style={{ display: 'flex', gap: 40, position: 'relative' }}>
             <div><div className="t" style={{ fontSize: 44, fontWeight: 900 }}>{bonnes}/{reponses.length}</div><div style={{ color: 'var(--muted)' }}>{t('res.score')}</div></div>
             <div><div className="t" style={{ fontSize: 44, fontWeight: 900, color: 'var(--ok-i)' }}>+{xp}</div><div style={{ color: 'var(--muted)' }}>{t('res.xp')}</div></div>

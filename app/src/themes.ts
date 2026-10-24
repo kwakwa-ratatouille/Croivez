@@ -25,7 +25,6 @@ export const FAMILLES: { k: Famille; nom: Record<Lang, string>; icon: string; mo
       { id: 'monuments', nom: { fr: 'Monuments', en: 'Landmarks' }, jouable: 'monuments' },
       { id: 'plats', nom: { fr: 'Plats du monde', en: 'World dishes' }, jouable: 'plats' },
       { id: 'monnaies', nom: { fr: 'Monnaies', en: 'Currencies' }, jouable: 'monnaies' },
-      { id: 'langues', nom: { fr: 'Langues officielles', en: 'Official languages' }, jouable: 'langues' },
       j('departements-numero', 'Numéros des départements', 'Department numbers'),
       j('departements-prefecture', 'Préfectures', 'Prefectures'),
       j('departements-region', 'Départements et régions', 'Departments & regions'),
