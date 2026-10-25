@@ -1,7 +1,7 @@
 import { ecouterNonLus } from '../chat'
 import { cartesARecuperer } from '../albumRecompenses'
 import { appliquerEffets } from '../effets'
-import { doc, setDoc } from 'firebase/firestore'
+import { deleteField, doc, setDoc } from 'firebase/firestore'
 import { db } from '../firebase'
 import { pseudoCle } from '../social'
 import { Capacitor } from '@capacitor/core'
@@ -24,7 +24,7 @@ import FicheLancement from './FicheLancement'
 import Achat from './Achat'
 import { telechargerEnFond, surveillerWifi } from '../telechargementFond'
 import { familleOuverte } from '../progression'
-import type { Famille } from '../themes'
+import { FAMILLES, type Famille } from '../themes'
 
 // Sur téléphone, la barre du bas garde 5 onglets (Histoire et Révision sont sur l'accueil, Amis dans Profil et Multi)
 const PC_SEULEMENT = ['/aventure', '/revision', '/amis', '/parametres']
@@ -71,6 +71,11 @@ export default function Layout() {
   useEffect(() => {
     if (uid && profile && ['victorlatortue', 'evelin'].includes(pseudoCle(profile.pseudo)) && !(profile as { rendusTortue?: boolean }).rendusTortue)
       setDoc(doc(db, 'users', uid), { pieces: 1400, malusTortue: true, rendusTortue: true }, { merge: true }).catch(() => {})
+  }, [uid, profile])
+  // Demande du créateur : difficultés de « Victor la tortue » remises à zéro (une seule fois), tous les quiz restent ouverts
+  useEffect(() => {
+    if (uid && profile && pseudoCle(profile.pseudo) === 'victorlatortue' && !(profile as { diffRemisesTortue?: boolean }).diffRemisesTortue)
+      setDoc(doc(db, 'users', uid), { paliers: deleteField(), sauts: deleteField(), toutDebloque: deleteField(), familles: FAMILLES.map((f) => f.k), choixFait: true, diffRemisesTortue: true }, { merge: true }).catch(() => {})
   }, [uid, profile])
   const appuis = useRef<number[]>([])
   const appuiLogo = (e: React.MouseEvent) => {
