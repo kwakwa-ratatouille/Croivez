@@ -65,12 +65,20 @@ const EXTRAITS = [
   'Julien Doré', 'Christine and the Queens', 'Matthieu Chedid', 'Bénabar', 'Grand Corps Malade', 'Jain', 'Eddy de Pretto', 'Hoshi', 'Vitaa', 'Tal', 'Black M', 'Nolwenn Leroy',
   'Patricia Kaas', 'Alain Souchon', 'Laurent Voulzy', 'Étienne Daho', 'Vanessa Paradis', 'Mika', 'Jenifer', 'Alizée', 'Gims', 'Soprano', 'Bigflo & Oli', 'Kyo', 'Superbus',
   'Les Rita Mitsouko', 'Noir Désir', 'Louise Attaque', 'Zazie', 'Jean-Louis Aubert', 'Carla Bruni', 'Benjamin Biolay', 'Ben Mazué', 'Gaëtan Roussel', 'Pierre Garnier', 'Santa',
+  // Ajouts : plus de variété
+  'Charles Aznavour', 'Édith Piaf', 'Jacques Brel', 'Georges Brassens', 'Johnny Hallyday', 'Sylvie Vartan', 'Françoise Hardy', 'Céline Dion', 'Kids United', 'Marwa Loud', 'Naza', 'Keblack', 'Ofenbach', 'Bob Sinclar', 'Martin Solveig', 'Kavinsky', 'Justice', 'Air', 'Phoenix', "L'Impératrice",
+  'Billie Eilish', 'Harry Styles', 'Post Malone', 'Doja Cat', 'Benson Boone', 'Tate McRae', 'Teddy Swims', 'Hozier', 'Tones and I', 'Glass Animals', 'The Chainsmokers', 'Alan Walker', 'Marshmello', 'Major Lazer', 'Pitbull', 'Enrique Iglesias', 'Ricky Martin', 'Karol G', 'Anitta', 'Elvis Presley',
+  'Whitney Houston', 'Stevie Wonder', 'Prince', 'David Bowie', 'Elton John', 'Tina Turner', 'Cyndi Lauper', 'Lenny Kravitz', 'Amy Winehouse', 'Alicia Keys', 'Usher', 'Pharrell Williams', 'Gnarls Barkley', 'Mark Ronson', 'Jason Derulo', 'Flo Rida', 'Black Eyed Peas', 'Gotye', 'Lykke Li', 'Vance Joy',
 ]
 // ——— Rap (listes d'origine + quelques ajouts) ———
 const RAP_FR = ['Jul', 'Ninho', 'PNL', 'Booba', 'SCH', 'Soprano', 'Nekfeu', 'Orelsan', 'Damso', 'Niska', 'Gazo', 'Tiakola', 'Werenoi', 'Hamza', 'Vald', 'Naps', 'Heuss l\'Enfoiré', 'Lacrim',
   'Kaaris', 'Lomepal', 'Maes', 'Alonzo', 'PLK', 'Koba LaD', 'Zola', 'Leto', 'Sexion d\'Assaut', 'La Fouine', 'Rohff', 'Diam\'s', 'MC Solaar', 'IAM', 'Suprême NTM', 'Oxmo Puccino', 'Kery James',
   'Sinik', 'Lunatic', '113', 'Fonky Family', 'Médine', 'Freeze Corleone', 'Laylow', 'Josman', 'Luv Resval', 'Gradur', 'MHD', 'Dinos', 'Kalash Criminel', 'Sofiane', 'Jok\'Air', 'Ziak',
-  'Doc Gynéco', 'Passi', 'Ärsenik', 'Stomy Bugsy', 'Lino', 'Youssoupha', 'Sniper', 'Gambi', 'SDM', 'Rim\'K', 'Sadek', 'Tayc', 'Dadju', 'Lartiste', 'Bouss', 'Zkr', 'Rsko', 'Favé', 'Theodora']
+  'Doc Gynéco', 'Passi', 'Ärsenik', 'Stomy Bugsy', 'Lino', 'Youssoupha', 'Sniper', 'Gambi', 'SDM', 'Rim\'K', 'Sadek', 'Tayc', 'Dadju', 'Lartiste', 'Bouss', 'Zkr', 'Rsko', 'Favé', 'Theodora',
+  // Ajouts : plus de variété (nouvelle école, rap de Marseille, de Belgique, anciens)
+  'Soolking', "L'Algérino", 'Nabil', 'Kofs', 'Moha La Squale', 'Djadja & Dinaz', 'Hornet La Frappe', 'Dosseh', 'Tsew The Kid', 'Ninho', 'Ninho', 'Kekra', 'Hatik', 'Nekfeu', 'Lefa', 'Georgio', 'Népal', 'Alpha Wann', 'Sneazzy', 'Nemir',
+  'Caballero & JeanJass', 'Hamza', 'Damso', 'Shay', 'Roméo Elvis', 'Green Montana', 'Krisy', 'Le Motel', 'Tiakola', 'Leto', 'Tif', 'Guy2Bezbar', 'Jolagreen23', 'Zamdane', 'Kerchak', 'La Mano 1.9', 'Ninho', 'Timal', 'Landy', 'Bramsito',
+  'Hugo TSR', 'Scylla', 'Disiz', 'Akhenaton', "Shurik'n", 'Psy 4 de la Rime', 'Keny Arkana', 'Casey', 'Booba', 'Nessbeal', 'Mac Tyer', 'Despo Rutti', 'Seth Gueko', 'Alkpote', 'Jazzy Bazz', 'Deen Burbigo', 'Lujipeka', 'Columbine', 'Lord Esperanza', 'Bekar']
 const RAP_US = ['Eminem', 'Drake', 'Kendrick Lamar', 'Travis Scott', 'Kanye West', 'JAY-Z', '50 Cent', 'Snoop Dogg', 'Dr. Dre', '2Pac', 'The Notorious B.I.G.', 'Nicki Minaj', 'Cardi B', 'Post Malone',
   'Lil Wayne', 'J. Cole', 'Future', 'Lil Uzi Vert', '21 Savage', 'A$AP Rocky', 'Tyler, The Creator', 'Kid Cudi', 'Juice WRLD', 'XXXTENTACION', 'Pop Smoke', 'Lil Nas X', 'Megan Thee Stallion',
   'Doja Cat', 'Playboi Carti', 'Wu-Tang Clan', 'Nas', 'Outkast', 'Missy Elliott', 'Run–D.M.C.', 'Public Enemy', 'N.W.A', 'Ice Cube', 'Busta Rhymes', 'DMX', 'Mac Miller', 'Childish Gambino',
@@ -244,10 +252,10 @@ const quoi = process.argv[2]
 if (!quoi || quoi === 'extraits') {
   const existants = JSON.parse(await readFile('public/packs/culture/extraits.json', 'utf8'))
   const ids = new Set(existants.map((x) => x.id))
-  const nouveaux = (await artistes(EXTRAITS)).filter((x) => !ids.has(x.id) && ids.add(x.id))
+  const nouveaux = (await artistes(EXTRAITS, 5)).filter((x) => !ids.has(x.id) && ids.add(x.id))
   await ecrire('extraits', [...existants, ...nouveaux])
 }
-if (!quoi || quoi === 'rap') { await ecrire('rap-fr', await artistes(RAP_FR)); await ecrire('rap-us', await artistes(RAP_US)) }
+if (!quoi || quoi === 'rap') { await ecrire('rap-fr', await artistes(RAP_FR, 5)); await ecrire('rap-us', await artistes(RAP_US)) }
 if (!quoi || quoi === 'jeux') await ecrire('musiques-jeux', await recherches(JEUX))
 if (!quoi || quoi === 'films') await ecrire('musiques-films', await recherches(FILMS))
 if (!quoi || quoi === 'disney') await ecrire('chansons-disney', await recherches(DISNEY))
