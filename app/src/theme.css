@@ -2224,3 +2224,12 @@ img, svg { -webkit-user-drag: none; }
 .confettis.leger .aurore { filter: hue-rotate(var(--teinte, 0deg)); opacity: .7; }
 .confettis.leger .licorne, .confettis.leger .vedette { filter: none; }
 .confettis.leger .paillette, .confettis.leger .trainee { text-shadow: none; }
+
+/* Thèmes : caisse surprise (toutes familles) */
+.caisse-surprise { display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px 14px; border: 0; border-radius: 20px; cursor: pointer; text-align: left; color: #3B0764; background: linear-gradient(110deg, #FBCFE8, #DDD6FE 45%, #BAE6FD); box-shadow: 0 6px 18px rgba(167, 139, 250, .3); transition: transform .15s; }
+.caisse-surprise:hover { transform: translateY(-2px); }
+.caisse-surprise-de { font-size: 30px; animation: pastille-saute 1.8s ease-in-out infinite; }
+.caisse-surprise-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.caisse-surprise-txt strong { font: 900 17px Nunito, sans-serif; }
+.caisse-surprise-txt small { font-size: 12.5px; opacity: .8; }
+.caisse-surprise-prix { display: inline-flex; align-items: center; gap: 5px; padding: 6px 12px; border-radius: 999px; background: rgba(255, 255, 255, .75); font-weight: 900; }

@@ -77,8 +77,8 @@ export function progresFamille(k: Famille, p?: Profile | null) {
   return { possedes: quiz.filter((s) => accesQuiz(s.id, p)).length, total: quiz.length }
 }
 export const familleOuverte = (k: Famille, p?: Profile | null) => progresFamille(k, p).possedes > 0
-export const quizVerrouilles = (k: Famille, p?: Profile | null) =>
-  (FAMILLES.find((f) => f.k === k)?.subs ?? []).filter((s) => s.jouable && !accesQuiz(s.id, p))
+export const quizVerrouilles = (k: Famille | 'tout', p?: Profile | null) =>
+  (k === 'tout' ? FAMILLES.flatMap((f) => f.subs) : FAMILLES.find((f) => f.k === k)?.subs ?? []).filter((s) => s.jouable && !accesQuiz(s.id, p))
 
 // ——— Difficultés : chaque niveau se débloque en réussissant le précédent sans faute (valider un niveau valide ceux du dessous) ou en payant ———
 export function difficulteOuverte(d: number, p?: Profile | null, id?: string) {
@@ -137,7 +137,7 @@ export async function acheterQuiz(uid: string, id: string) {
     return true
   })
 }
-export async function ouvrirCaisse(uid: string, k: Famille, p?: Profile | null) {
+export async function ouvrirCaisse(uid: string, k: Famille | 'tout', p?: Profile | null) {
   const possibles = quizVerrouilles(k, p)
   if (!possibles.length) return null
   const gain = tirerGain(possibles)

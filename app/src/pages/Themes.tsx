@@ -6,7 +6,7 @@ import { useAuth } from '../auth'
 import { usePrefs } from '../i18n'
 import { FAMILLES, type SousTheme } from '../themes'
 import { ICONS, Icon, Piece } from '../components/ui'
-import { prixCaisse, accesQuiz, legendeOuverte, progresFamille, progresLegende } from '../progression'
+import { prixCaisse, quizVerrouilles, accesQuiz, legendeOuverte, progresFamille, progresLegende } from '../progression'
 import { evenementDeLaSemaine } from '../meta'
 import CarteCouverture, { proposerCaisse, useCouverture } from '../components/CarteCouverture'
 import Img from '../components/Img'
@@ -145,6 +145,14 @@ export default function Themes() {
         </div>
         {!n && <div role="tablist" className="onglets">{FILTRES.map(([id, l]) => <button key={id} role="tab" aria-selected={filtre === id} className="onglet" onClick={() => setFiltre(id)}>{l}</button>)}</div>}
       </header>
+      {/* Caisse surprise : un quiz au hasard parmi toutes les familles, pour ceux qui ne veulent pas choisir */}
+      {!n && quizVerrouilles('tout', profile).length > 0 && (
+        <button type="button" className="caisse-surprise" onClick={() => proposerCaisse('tout')}>
+          <span className="caisse-surprise-de">🎲</span>
+          <span className="caisse-surprise-txt"><strong>{fr ? 'Caisse surprise' : 'Surprise crate'}</strong><small>{fr ? `Un quiz au hasard parmi toutes les familles · ${quizVerrouilles('tout', profile).length} à gagner` : 'A random quiz from any family'}</small></span>
+          <span className="caisse-surprise-prix"><Piece size={18} />{prixCaisse(profile)}</span>
+        </button>
+      )}
       {!n && <AFaire />}
       {/* Accès direct à une famille, sans tout faire défiler : la barre reste en haut de l'écran */}
       {!n && (

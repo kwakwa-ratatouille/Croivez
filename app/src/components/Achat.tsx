@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useAuth } from '../auth'
 import { usePrefs } from '../i18n'
-import { FAMILLES, type Famille, type SousTheme } from '../themes'
+import { FAMILLES, trouverSousTheme, type Famille, type SousTheme } from '../themes'
 import { PRIX_CHOIX, acheterQuiz, prixCaisse, POIDS, RARETES, ouvrirCaisse, quizVerrouilles, rareteDe, type Rarete } from '../progression'
 import Caisse from './Caisse'
 import { prefsRetour, reglerRetour } from '../retour'
@@ -9,7 +9,8 @@ import Illustration from './Illustration'
 import { ICONS, Icon, Piece, Toggle } from './ui'
 
 // Caisse d'une famille : prix fixe, chances par rareté, puis ouverture façon CS:GO et révélation
-export default function Achat({ k, onFermer }: { k: Famille; onFermer: () => void }) {
+export default function Achat({ k, onFermer }: { k: Famille | 'tout'; onFermer: () => void }) {
+  const tout = k === 'tout' // caisse surprise : toutes les familles
   const { lang } = usePrefs()
   const fr = lang === 'fr'
   const { user, profile } = useAuth()
@@ -20,9 +21,9 @@ export default function Achat({ k, onFermer }: { k: Famille; onFermer: () => voi
   const [achete, setAchete] = useState('')
   const [confirmer, setConfirmer] = useState(false) // 2ᵉ étape avant de payer la caisse
   const [anim, setAnim] = useState(prefsRetour.animCaisse) // animation d'ouverture (réglage de l'appareil)
-  const f = FAMILLES.find((x) => x.k === k)
+  const f = tout ? { nom: { fr: 'Caisse surprise : toutes les familles', en: 'Surprise crate: all families' } } : FAMILLES.find((x) => x.k === k)
   if (!f) return null
-  if (ouverte) return <Caisse k={k} possibles={ouverte.possibles} gain={ouverte.gain} onFermer={onFermer} />
+  if (ouverte) return <Caisse k={trouverSousTheme(ouverte.gain.id)?.famille.k ?? 'geo'} possibles={ouverte.possibles} gain={ouverte.gain} onFermer={onFermer} />
   const restants = quizVerrouilles(k, profile)
   const solde = profile?.pieces ?? 0
   const prix = prixCaisse(profile)
@@ -51,9 +52,9 @@ export default function Achat({ k, onFermer }: { k: Famille; onFermer: () => voi
       <div className="fiche" role="dialog" aria-modal="true" aria-label={f.nom[lang]} onClick={(e) => e.stopPropagation()}>
         <div className="fiche-poignee" />
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-          <span style={{ width: 72, height: 72, borderRadius: 18, background: `var(--${k}-t)`, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flex: 'none' }}><Illustration k={k} taille={80} fond={false} /></span>
+          <span style={{ width: 72, height: 72, borderRadius: 18, background: tout ? 'linear-gradient(135deg, #F9A8D4, #A5B4FC, #67E8F9)' : `var(--${k}-t)`, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flex: 'none', fontSize: 40 }}>{tout ? '🎲' : <Illustration k={k} taille={80} fond={false} />}</span>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <span className="eyebrow" style={{ color: `var(--${k}-i)` }}>{fr ? 'Caisse' : 'Crate'}</span>
+            <span className="eyebrow" style={{ color: tout ? 'var(--muted)' : `var(--${k}-i)` }}>{fr ? 'Caisse' : 'Crate'}</span>
             <h2 className="t" style={{ fontSize: 22, fontWeight: 900, lineHeight: 1.2 }}>{f.nom[lang]}</h2>
             <span style={{ fontSize: 13, color: 'var(--muted)', fontWeight: 600 }}>{restants.length} {fr ? 'quiz à gagner' : 'quizzes to win'}</span>
           </div>
@@ -80,7 +81,7 @@ export default function Achat({ k, onFermer }: { k: Famille; onFermer: () => voi
           <Toggle on={anim} label={fr ? 'Animation d’ouverture' : 'Opening animation'} onChange={(v) => { setAnim(v); reglerRetour('animCaisse', v) }} />
         </div>
         {/* Ou payer plus cher pour choisir exactement son quiz (prix selon la rareté) */}
-        {restants.length > 0 && (
+        {restants.length > 0 && !tout && (
           <div className="choix-quiz">
             <button type="button" className="btn btn-g" style={{ width: '100%' }} onClick={() => setChoix((c) => !c)}>🎯 {fr ? 'Choisir mon quiz (plus cher)' : 'Pick my quiz (pricier)'} {choix ? '▴' : '▾'}</button>
             {achete && <p className="confirmer-achat">{achete}</p>}

@@ -4,7 +4,7 @@ import { useCouverture } from './CarteCouverture'
 import Img from './Img'
 import Revelation from './Revelation'
 import { usePrefs } from '../i18n'
-import type { Famille, SousTheme } from '../themes'
+import { trouverSousTheme, type Famille, type SousTheme } from '../themes'
 import { prefsRetour, retourFin } from '../retour'
 import Illustration from './Illustration'
 
@@ -35,7 +35,7 @@ function Case({ s, k, gagnante }: { s: SousTheme; k: Famille; gagnante: boolean 
   const rr = RARETES[rareteDe(s.id)]
   return (
     <div className={`caisse-case${gagnante ? ' gagnante' : ''}`} style={{ width: CASE - 10, ['--r' as string]: rr.couleur }}>
-      <span className="caisse-photo">{src ? <Img src={src} alt="" /> : <Illustration k={k} taille={80} fond={false} />}</span>
+      <span className="caisse-photo">{src ? <Img src={src} alt="" /> : <Illustration k={trouverSousTheme(s.id)?.famille.k ?? k} taille={80} fond={false} />}</span>
       <span>{s.nom[lang]}</span>
     </div>
   )
