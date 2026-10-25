@@ -2009,3 +2009,18 @@ button.rang-palier[aria-pressed="true"] { background: color-mix(in srgb, var(--r
 @keyframes carnet-haut { from { transform: rotateX(-75deg); opacity: .3; } to { transform: none; opacity: 1; } }
 @keyframes carnet-bas { from { transform: translateY(-30%) rotateX(60deg); opacity: .3; } to { transform: none; opacity: 1; } }
 .carnet-astuce { margin: 0; text-align: center; font-size: 12.5px; font-weight: 700; color: var(--muted); }
+
+/* Stats enrichies */
+.stats-bloc { padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+.stats-bloc h2 { font-size: 17px; font-weight: 900; margin: 0; }
+.stats-semaine { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.stats-semaine > div { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 10px 6px; border-radius: 14px; background: var(--surface2); }
+.stats-semaine strong { font-size: 20px; }
+.stats-semaine small { color: var(--muted); font-size: 12px; font-weight: 700; }
+.stats-semaine .hausse strong { color: var(--ok-i); } .stats-semaine .baisse strong { color: var(--ko-i); }
+@media (max-width: 560px) { .stats-semaine { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.stats-top { display: grid; grid-template-columns: auto minmax(0, 1fr) 90px 54px; gap: 8px; align-items: center; color: inherit; text-decoration: none; }
+.stats-top:not(:has(.stats-top-rang)) { grid-template-columns: minmax(0, 1fr) 120px 64px; }
+.stats-top-rang { width: 26px; text-align: center; font-weight: 900; }
+.stats-top-nom { font-weight: 700; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.stats-top strong { text-align: right; font-size: 13px; }
