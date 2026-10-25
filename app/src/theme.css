@@ -1747,8 +1747,8 @@ button.rang-palier[aria-pressed="true"] { background: color-mix(in srgb, var(--r
 @keyframes fete-chute { to { transform: translateY(110vh) rotate(var(--rot, 180deg)); } }
 .confettis .eclat { position: absolute; width: 12px; height: 12px; margin: -6px; border-radius: 50%; background: radial-gradient(circle, #fff 0 22%, var(--c, #FDE047) 42%, transparent 70%); opacity: 0; animation: fete-eclat 1.3s cubic-bezier(.1,.7,.3,1) forwards; }
 @keyframes fete-eclat { 0% { opacity: 1; transform: translate(0, 0) scale(1.4); } 80% { opacity: 1; } 100% { opacity: 0; transform: translate(var(--dx), calc(var(--dy) + 40px)) scale(.4); } }
-.confettis .onde { position: absolute; left: 50%; top: 50%; width: 40px; height: 40px; margin: -20px; border-radius: 50%; border: 2px solid; opacity: 0; will-change: transform, opacity; animation: fete-onde 1.4s ease-out forwards; }
-@keyframes fete-onde { 0% { opacity: 1; transform: scale(.2); } 100% { opacity: 0; transform: scale(30); } }
+.confettis .onde { position: absolute; left: 50%; top: 50%; width: 70vmin; height: 70vmin; margin: -35vmin; border-radius: 50%; border: 3px solid; opacity: 0; will-change: transform, opacity; animation: fete-onde 1.4s ease-out forwards; }
+@keyframes fete-onde { 0% { opacity: 1; transform: scale(.03); } 100% { opacity: 0; transform: scale(1.6); } }
 .confettis .arc { position: absolute; left: -10%; right: -10%; top: 30%; height: 38vh; border-radius: 50% 50% 0 0 / 100% 100% 0 0; background: radial-gradient(ellipse at 50% 100%, transparent 52%, #A855F7 53% 56%, #3B82F6 56% 59%, #22C55E 59% 62%, #FACC15 62% 65%, #F97316 65% 68%, #EF4444 68% 71%, transparent 72%); clip-path: inset(0 100% 0 0); opacity: .85; animation: fete-arc 2.6s ease-out forwards; }
 @keyframes fete-arc { 0% { clip-path: inset(0 100% 0 0); } 45% { clip-path: inset(0 0 0 0); opacity: .85; } 100% { clip-path: inset(0 0 0 0); opacity: 0; } }
 .confettis .paillette { position: absolute; color: #fff; font-size: 18px; text-shadow: 0 0 8px #FDE047; opacity: 0; animation: fete-paillette 1.2s ease-in-out forwards; }
@@ -1876,10 +1876,10 @@ button.rang-palier[aria-pressed="true"] { background: color-mix(in srgb, var(--r
 @keyframes fete-flash { 0%, 30% { opacity: 0; } 35% { opacity: .85; } 45% { opacity: .1; } 55% { opacity: .6; } 100% { opacity: 0; } }
 .confettis .eclair { position: absolute; top: 0; width: 60px; height: 70vh; opacity: 0; background: linear-gradient(#fff, #FDE047); clip-path: polygon(40% 0, 60% 0, 48% 38%, 70% 38%, 30% 100%, 42% 52%, 22% 52%); filter: drop-shadow(0 0 14px #FDE047); animation: fete-eclair .7s ease-out forwards; }
 @keyframes fete-eclair { 0% { opacity: 0; transform: scaleY(.2); transform-origin: top; } 20% { opacity: 1; transform: scaleY(1); } 70% { opacity: 1; } 100% { opacity: 0; } }
-.confettis .galaxie { position: absolute; left: 50%; top: 45%; width: 140vmin; aspect-ratio: 1; transform: translate(-50%, -50%); border-radius: 50%; background: conic-gradient(from 0deg, transparent, rgba(167, 139, 250, .5), transparent 25%, rgba(244, 114, 182, .45), transparent 50%, rgba(34, 211, 238, .45), transparent 75%, rgba(253, 224, 71, .4), transparent); -webkit-mask: radial-gradient(circle, #000 5%, rgba(0,0,0,.6) 30%, transparent 65%); mask: radial-gradient(circle, #000 5%, rgba(0,0,0,.6) 30%, transparent 65%); animation: fete-galaxie 3.8s ease-out forwards; }
+.confettis .galaxie { position: absolute; left: 50%; top: 45%; width: 110vmin; aspect-ratio: 1; transform: translate(-50%, -50%); border-radius: 50%; background: conic-gradient(from 0deg, transparent, rgba(167, 139, 250, .5), transparent 25%, rgba(244, 114, 182, .45), transparent 50%, rgba(34, 211, 238, .45), transparent 75%, rgba(253, 224, 71, .4), transparent); -webkit-mask: radial-gradient(circle, #000 5%, rgba(0,0,0,.6) 30%, transparent 65%); mask: radial-gradient(circle, #000 5%, rgba(0,0,0,.6) 30%, transparent 65%); animation: fete-galaxie 3.8s ease-out forwards; }
 @keyframes fete-galaxie { 0% { opacity: 0; transform: translate(-50%, -50%) scale(.2) rotate(0); } 25% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -50%) scale(1.2) rotate(540deg); } }
-.confettis .nova { position: absolute; left: 50%; top: 50%; width: 30px; height: 30px; margin: -15px; border-radius: 50%; background: radial-gradient(circle, #fff, #FDE047 40%, rgba(249, 115, 22, 0) 70%); will-change: transform, opacity; animation: fete-nova 1.6s ease-out forwards; }
-@keyframes fete-nova { 0% { transform: scale(0); opacity: 1; } 30% { transform: scale(18); opacity: 1; } 100% { transform: scale(60); opacity: 0; } }
+.confettis .nova { position: absolute; left: 50%; top: 50%; width: 90vmin; height: 90vmin; margin: -45vmin; border-radius: 50%; background: radial-gradient(circle, #fff, #FDE047 40%, rgba(249, 115, 22, 0) 70%); will-change: transform, opacity; animation: fete-nova 1.6s ease-out forwards; }
+@keyframes fete-nova { 0% { transform: scale(0); opacity: 1; } 30% { transform: scale(.45); opacity: 1; } 100% { transform: scale(1.4); opacity: 0; } }
 
 /* Carnet PC : la double page reste en place, une seule feuille tourne autour de la reliure */
 .album-double.carnet-fixe { position: relative; animation: none !important; perspective: 2200px; }
@@ -2209,7 +2209,7 @@ img, svg { -webkit-user-drag: none; }
 .confettis .flash.doux { animation: fete-flash-doux .7s ease-out forwards; }
 @keyframes fete-flash-doux { 0% { opacity: .55; } 100% { opacity: 0; } }
 .confettis .flash.pastel { background: radial-gradient(circle at 50% 45%, rgba(249, 168, 212, .6), rgba(196, 181, 253, .35) 40%, transparent 70%); animation: fete-lueur 2.6s ease-out forwards; }
-.confettis .rayons-nova { left: 50%; top: 50%; width: 160vmax; height: 160vmax; margin: -80vmax; border-radius: 50%; background: repeating-conic-gradient(rgba(253, 224, 71, .38) 0 5deg, transparent 5deg 16deg); -webkit-mask: radial-gradient(circle, #000 4%, transparent 55%); mask: radial-gradient(circle, #000 4%, transparent 55%); opacity: 0; will-change: transform, opacity; animation: fete-rayons-nova 2.6s ease-out .15s forwards; }
+.confettis .rayons-nova { left: 50%; top: 50%; width: 110vmin; height: 110vmin; margin: -55vmin; border-radius: 50%; background: repeating-conic-gradient(rgba(253, 224, 71, .38) 0 5deg, transparent 5deg 16deg); -webkit-mask: radial-gradient(circle, #000 4%, transparent 55%); mask: radial-gradient(circle, #000 4%, transparent 55%); opacity: 0; will-change: transform, opacity; animation: fete-rayons-nova 2.6s ease-out .15s forwards; }
 @keyframes fete-rayons-nova { 0% { opacity: 0; transform: scale(.2) rotate(0); } 25% { opacity: 1; } 100% { opacity: 0; transform: scale(1) rotate(70deg); } }
 
 /* Caisse : réglage de l'animation et bouton Passer */
@@ -2218,3 +2218,9 @@ img, svg { -webkit-user-drag: none; }
 
 /* Fin de partie : passer à la Légende */
 .btn-legende { background: linear-gradient(135deg, #FDE047, #F59E0B 55%, #B45309); color: #422006; box-shadow: 0 6px 18px rgba(245, 158, 11, .4); }
+
+/* Fêtes en mode léger (Android, petits processeurs) : pas de flou ni de grands calques tournants */
+.confettis.leger .rayons-nova, .confettis.leger .galaxie { display: none; }
+.confettis.leger .aurore { filter: hue-rotate(var(--teinte, 0deg)); opacity: .7; }
+.confettis.leger .licorne, .confettis.leger .vedette { filter: none; }
+.confettis.leger .paillette, .confettis.leger .trainee { text-shadow: none; }

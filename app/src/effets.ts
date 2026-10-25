@@ -125,28 +125,32 @@ const ENVOLS: Record<string, string[]> = { 'victoire-coeurs': ['💖', '💕', '
 const SPECIAUX = ['victoire-artifice', 'victoire-onde', 'victoire-arc', 'victoire-tonnerre', 'victoire-galaxie', 'victoire-supernova', 'victoire-etoiles',
   'victoire-bulles', 'victoire-fleurs', 'victoire-papillons', 'victoire-licorne', 'victoire-aurore', 'victoire-kawaii']
 const hasard = (a: number, b: number) => a + Math.random() * (b - a)
+// Téléphones modestes (Android, peu de cœurs ou de mémoire) : moitié moins de particules, sans flou ni grands calques
+const LEGER = (() => { try { const n = navigator as Navigator & { deviceMemory?: number }; return /Android/i.test(n.userAgent) || (n.hardwareConcurrency ?? 8) <= 4 || (n.deviceMemory ?? 8) <= 4 } catch { return false } })()
+const nb = (n: number) => Math.max(1, Math.round(LEGER ? n * .5 : n))
 
 export function feter(id = portes.victoire, intensite: 1 | 2 = 1) {
   try {
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return
     if (!PLUIES[id] && !ENVOLS[id] && !SPECIAUX.includes(id)) { confettis(intensite); return }
     const zone = document.createElement('div')
-    zone.className = `confettis fete-${id.replace('victoire-', '')}`
+    zone.className = `confettis fete-${id.replace('victoire-', '')}${LEGER ? ' leger' : ''}`
     zone.setAttribute('aria-hidden', 'true')
     const ajoute = (css: string, txt = '', cls = '') => { const c = document.createElement('i'); c.style.cssText = css; if (txt) c.textContent = txt; if (cls) c.className = cls; zone.appendChild(c); return c }
     const fort = intensite === 2
     // Éclats qui partent d'un point (la lueur est dans le fond, pas d'ombre animée)
-    const gerbe = (x: string, y: string, n: number, r0: number, r1: number, delai: number, couleurs = COULEURS) => {
+    const gerbe = (x: string, y: string, n0: number, r0: number, r1: number, delai: number, couleurs = COULEURS) => {
+      const n = nb(n0)
       for (let i = 0; i < n; i++) {
         const a = (i / n) * Math.PI * 2 + hasard(-.15, .15), r = hasard(r0, r1)
         ajoute(`left:${x};top:${y};--c:${couleurs[i % couleurs.length]};--dx:${Math.cos(a) * r}px;--dy:${Math.sin(a) * r}px;animation-delay:${delai}s`, '', 'eclat')
       }
     }
     const envol = (emojis: string[], n: number, taille: [number, number]) => {
-      for (let i = 0; i < n; i++) ajoute(`left:${hasard(2, 94)}%;font-size:${hasard(...taille)}px;animation-delay:${hasard(0, 1)}s,${hasard(0, 1)}s;animation-duration:${hasard(2.4, 3.4)}s,${hasard(.9, 1.5)}s;${id === 'victoire-ballons' ? `filter:hue-rotate(${Math.floor(hasard(0, 360))}deg)` : ''}`, emojis[i % emojis.length], 'monte')
+      for (let i = 0; i < nb(n); i++) ajoute(`left:${hasard(2, 94)}%;font-size:${hasard(...taille)}px;animation-delay:${hasard(0, 1)}s,${hasard(0, 1)}s;animation-duration:${hasard(2.4, 3.4)}s,${hasard(.9, 1.5)}s;${id === 'victoire-ballons' ? `filter:hue-rotate(${Math.floor(hasard(0, 360))}deg)` : ''}`, emojis[i % emojis.length], 'monte')
     }
     const paillettes = (n: number, y0 = 10, y1 = 80, d0 = .2) => {
-      for (let i = 0; i < n; i++) ajoute(`left:${hasard(3, 95)}%;top:${hasard(y0, y1)}%;color:${PASTELS[i % PASTELS.length]};animation-delay:${d0 + hasard(0, 1.2)}s`, i % 3 ? '✦' : '✧', 'paillette')
+      for (let i = 0; i < nb(n); i++) ajoute(`left:${hasard(3, 95)}%;top:${hasard(y0, y1)}%;color:${PASTELS[i % PASTELS.length]};animation-delay:${d0 + hasard(0, 1.2)}s`, i % 3 ? '✦' : '✧', 'paillette')
     }
 
     if (id === 'victoire-artifice') {
@@ -163,9 +167,9 @@ export function feter(id = portes.victoire, intensite: 1 | 2 = 1) {
       for (let i = 0; i < (fort ? 14 : 9); i++) ajoute(`left:${hasard(30, 110)}%;top:${hasard(-10, 45)}%;animation-delay:${hasard(0, 1.6)}s`, '', 'filante')
       paillettes(18, 5, 70, 0)
     } else if (id === 'victoire-bulles') {
-      for (let i = 0; i < (fort ? 30 : 20); i++) { const t = hasard(24, 70); ajoute(`left:${hasard(2, 94)}%;width:${t}px;height:${t}px;animation-delay:${hasard(0, 1.2)}s,${hasard(0, 1)}s;animation-duration:${hasard(2.6, 3.6)}s,${hasard(1, 1.8)}s`, '', 'bulle') }
+      for (let i = 0; i < nb(fort ? 30 : 20); i++) { const t = hasard(24, 70); ajoute(`left:${hasard(2, 94)}%;width:${t}px;height:${t}px;animation-delay:${hasard(0, 1.2)}s,${hasard(0, 1)}s;animation-duration:${hasard(2.6, 3.6)}s,${hasard(1, 1.8)}s`, '', 'bulle') }
     } else if (id === 'victoire-fleurs') {
-      for (let i = 0; i < (fort ? 36 : 24); i++) ajoute(`left:${hasard(0, 100)}%;font-size:${hasard(16, 30)}px;animation-delay:${hasard(0, 1.4)}s,${hasard(0, 1)}s;animation-duration:${hasard(2.8, 3.8)}s,${hasard(1.2, 2)}s`, ['🌸', '🌸', '💮', '🌺', '🌷'][i % 5], 'petale')
+      for (let i = 0; i < nb(fort ? 36 : 24); i++) ajoute(`left:${hasard(0, 100)}%;font-size:${hasard(16, 30)}px;animation-delay:${hasard(0, 1.4)}s,${hasard(0, 1)}s;animation-duration:${hasard(2.8, 3.8)}s,${hasard(1.2, 2)}s`, ['🌸', '🌸', '💮', '🌺', '🌷'][i % 5], 'petale')
     } else if (id === 'victoire-papillons') {
       for (let i = 0; i < (fort ? 12 : 8); i++) ajoute(`left:${hasard(5, 90)}%;top:${hasard(55, 95)}%;font-size:${hasard(26, 40)}px;--x1:${hasard(-120, 120)}px;--y1:${hasard(-120, -60)}px;--x2:${hasard(-160, 160)}px;--y2:${hasard(-280, -180)}px;--x3:${hasard(-200, 200)}px;--y3:${hasard(-520, -400)}px;animation-delay:${hasard(0, .8)}s,0s;filter:hue-rotate(${Math.floor(hasard(0, 360))}deg)`, '🦋', 'papillon')
       paillettes(14, 20, 90, .3)
@@ -187,7 +191,7 @@ export function feter(id = portes.victoire, intensite: 1 | 2 = 1) {
 
     const pluie = PLUIES[id]
     if (pluie) {
-      for (let i = 0; i < (fort ? 36 : 22); i++) ajoute(`left:${hasard(0, 100)}%;font-size:${hasard(18, 34)}px;animation-delay:${hasard(0, .7)}s;animation-duration:${hasard(1.8, 3.2)}s;--rot:${hasard(-360, 360)}deg`, pluie[i % pluie.length], 'goutte')
+      for (let i = 0; i < nb(fort ? 36 : 22); i++) ajoute(`left:${hasard(0, 100)}%;font-size:${hasard(18, 34)}px;animation-delay:${hasard(0, .7)}s;animation-duration:${hasard(1.8, 3.2)}s;--rot:${hasard(-360, 360)}deg`, pluie[i % pluie.length], 'goutte')
     }
     const env = ENVOLS[id]
     if (env) {
@@ -200,7 +204,7 @@ export function feter(id = portes.victoire, intensite: 1 | 2 = 1) {
     if (id === 'victoire-supernova') {
       ajoute('', '', 'nova')
       ajoute('', '', 'rayons-nova')
-      for (let i = 0; i < 4; i++) ajoute(`animation-delay:${.15 + i * .2}s;border-color:${['#fff', '#FDE047', '#F472B6', '#22D3EE'][i]}`, '', 'onde')
+      for (let i = 0; i < (LEGER ? 2 : 4); i++) ajoute(`animation-delay:${.15 + i * .2}s;border-color:${['#fff', '#FDE047', '#F472B6', '#22D3EE'][i]}`, '', 'onde')
       gerbe('50%', '50%', fort ? 36 : 28, 140, 380, .2, ['#fff', '#FDE047', '#F472B6', '#22D3EE', '#A78BFA'])
       paillettes(16, 10, 85, .7)
     }
