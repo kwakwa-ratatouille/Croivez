@@ -3,7 +3,7 @@ import { HashRouter, Navigate, Route, Routes, useLocation, useParams } from 'rea
 import { AuthProvider, useAuth } from './auth'
 import { PrefsProvider, usePrefs } from './i18n'
 import Layout from './components/Layout'
-import { Logo } from './components/ui'
+import { Logo, LogoAnime, Wordmark } from './components/ui'
 import Accueil from './pages/Accueil'
 import Themes from './pages/Themes'
 import { ouvrirFiche } from './components/FicheLancement'
@@ -61,7 +61,7 @@ function PartieCle() { const l = useLocation(); return <Partie key={l.search} />
 
 function Routeur() {
   const { user, profile, loading } = useAuth()
-  if (loading) return <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center' }}><Logo width={72} /></div>
+  if (loading) return <div className="ecran-lancement"><LogoAnime width={110} /><Wordmark size={30} /></div>
   // Invités (QR code du mode télé) : rejoindre un salon ou lancer la télé sans compte
   const pageInvite = /^#\/(rejoindre|tv|salon)/.test(location.hash)
   if ((!user && pageInvite) || user?.isAnonymous) return (

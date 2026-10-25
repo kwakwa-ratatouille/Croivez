@@ -99,3 +99,23 @@ export function Toggle({ on, onChange, label }: { on: boolean; onChange: (v: boo
     </button>
   )
 }
+
+// Logo animé (lancement, chargements) : la barre rouge se dessine, la coche la traverse, rebond et onde, puis en boucle
+export function LogoAnime({ width = 96 }: { width?: number }) {
+  const id = 'cza' + useId().replace(/:/g, '')
+  return (
+    <svg viewBox="0 0 200 200" width={width} aria-label="Chargement" role="img" className="logo-anime">
+      <defs>
+        <mask id={id} maskUnits="userSpaceOnUse" x="0" y="0" width="200" height="200">
+          <rect width="200" height="200" fill="#fff" />
+          <path className="la-v" d="M44 106 L82 146 L158 50" fill="none" stroke="#000" strokeWidth="44" strokeLinecap="round" strokeLinejoin="round" />
+        </mask>
+      </defs>
+      <circle className="la-onde" cx="100" cy="100" r="70" fill="none" style={{ stroke: 'var(--lv)' }} strokeWidth="4" />
+      <g className="la-corps" transform="translate(-1 2)">
+        <path className="la-x" d="M84 60 L156 132" mask={`url(#${id})`} style={{ fill: 'none', stroke: 'var(--logo-x)', strokeWidth: 26, strokeLinecap: 'round' }} />
+        <path className="la-v" d="M44 106 L82 146 L158 50" style={{ fill: 'none', stroke: 'var(--lv)', strokeWidth: 26, strokeLinecap: 'round', strokeLinejoin: 'round' }} />
+      </g>
+    </svg>
+  )
+}

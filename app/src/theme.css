@@ -2024,3 +2024,28 @@ button.rang-palier[aria-pressed="true"] { background: color-mix(in srgb, var(--r
 .stats-top-rang { width: 26px; text-align: center; font-weight: 900; }
 .stats-top-nom { font-weight: 700; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .stats-top strong { text-align: right; font-size: 13px; }
+
+/* Défi entre amis : réglages compacts sur petits téléphones (Huawei, 360 px) */
+@media (max-width: 560px) {
+  .multi-duel { padding: 14px !important; }
+  .multi-duel-grille { row-gap: 4px !important; }
+  .multi-duel-grille > span { font-size: 12.5px; padding-top: 6px; }
+  .multi-duel-choix { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; gap: 6px !important; }
+  .multi-duel-choix.court { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
+  .multi-duel-choix .pill { min-height: 32px !important; padding: 0 6px !important; font-size: 12.5px !important; border-radius: 10px; }
+  .multi-aleatoire .btn { min-height: 40px !important; padding: 0 14px !important; font-size: 15px !important; }
+  .multi-aleatoire strong, .multi-aleatoire h2 { font-size: 17px !important; }
+}
+
+/* Logo animé : lancement et chargements (boucle de 2,6 s) */
+.logo-anime { overflow: visible; }
+.logo-anime .la-x { stroke-dasharray: 102; animation: la-x 2.6s cubic-bezier(.65, 0, .35, 1) infinite; }
+.logo-anime .la-v { stroke-dasharray: 178; animation: la-v 2.6s cubic-bezier(.65, 0, .35, 1) infinite; }
+.logo-anime .la-corps { transform-box: view-box; transform-origin: 100px 100px; animation: la-rebond 2.6s ease-out infinite; }
+.logo-anime .la-onde { transform-box: view-box; transform-origin: 100px 100px; opacity: 0; animation: la-onde 2.6s ease-out infinite; }
+@keyframes la-x { 0% { stroke-dashoffset: 102; opacity: 1; } 24% { stroke-dashoffset: 0; } 84% { stroke-dashoffset: 0; opacity: 1; } 96%, 100% { stroke-dashoffset: 0; opacity: 0; } }
+@keyframes la-v { 0%, 20% { stroke-dashoffset: 178; opacity: 1; } 50% { stroke-dashoffset: 0; } 84% { stroke-dashoffset: 0; opacity: 1; } 96%, 100% { stroke-dashoffset: 0; opacity: 0; } }
+@keyframes la-rebond { 0%, 48% { transform: scale(1); } 55% { transform: scale(1.14) rotate(-3deg); } 63% { transform: scale(.96); } 70%, 84% { transform: scale(1); } 96%, 100% { transform: scale(.9); } }
+@keyframes la-onde { 0%, 49% { opacity: 0; transform: scale(.7); } 52% { opacity: .55; } 75%, 100% { opacity: 0; transform: scale(1.45); } }
+@media (prefers-reduced-motion: reduce) { .logo-anime * { animation: none !important; stroke-dashoffset: 0 !important; opacity: 1 !important; } .logo-anime .la-onde { opacity: 0 !important; } }
+.ecran-lancement { display: flex; flex-direction: column; height: 100%; align-items: center; justify-content: center; gap: 18px; }

@@ -22,7 +22,7 @@ import { saviezFaible, useResume } from '../quiz/resume'
 import { BONUS_PREMIERE, PRIX_INDICE, accesQuiz, facteurXp, partiesDuJour, payerIndice, payerPieces, piecesGagnees, plafonner, reussie } from '../progression'
 import { FAMILLES } from '../themes'
 import { bonusEvenement } from '../meta'
-import { Coche, Croix, ICONS, Icon, Logo, Piece } from '../components/ui'
+import { Coche, Croix, ICONS, Icon, LogoAnime, Piece } from '../components/ui'
 import Extrait from '../components/Extrait'
 import Img, { chargerImages, prechargerImages } from '../components/Img'
 import CarteQuiz, { type Clic } from '../components/CarteQuiz'
@@ -283,7 +283,7 @@ export default function Partie() {
 
   if (!questions) return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14, height: '100%', alignItems: 'center', justifyContent: 'center' }}>
-      <Logo width={72} />
+      <LogoAnime width={84} />
       {prepa && prepa.total > 0 && (
         <div style={{ width: 'min(280px, 80%)', display: 'flex', flexDirection: 'column', gap: 8, textAlign: 'center' }}>
           <strong className="t">{lang === 'fr' ? 'Préparation du défi Légende…' : 'Preparing the Legend challenge…'}</strong>
