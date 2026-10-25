@@ -2301,3 +2301,34 @@ img, svg { -webkit-user-drag: none; }
 /* Texte « en grand » à l'écran télé (suites logiques, devinettes, répliques) : lisible, sans déborder ; seuls les émojis sont géants */
 .tv-jeu.avec-media .enonce-grand { font-size: clamp(24px, min(3vw, 5.2vh), 60px) !important; line-height: 1.25; padding: clamp(12px, 2vh, 28px) clamp(16px, 2vw, 36px); max-height: 100%; overflow: hidden; display: flex; align-items: center; justify-content: center; text-align: center; white-space: normal; word-break: normal; overflow-wrap: anywhere; }
 .tv-jeu.avec-media .enonce-grand.emojis { font-size: clamp(56px, min(7vw, 14vh), 130px) !important; }
+
+/* ——— Nouveau podium ——— */
+.podium2 { position: relative; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: end; gap: clamp(8px, 1.4vw, 20px); width: 100%; max-width: 620px; padding-top: 30px; }
+.podium2.grand { max-width: min(1000px, 80vw); }
+.podium2-projecteur { position: absolute; left: 50%; top: -40px; width: 46%; height: 120%; transform: translateX(-50%); background: radial-gradient(ellipse at 50% 0, rgba(255, 236, 160, .55), transparent 65%); clip-path: polygon(38% 0, 62% 0, 100% 100%, 0 100%); opacity: 0; animation: projecteur 1s ease-out 1.8s forwards, projecteur-vibre 3s ease-in-out 2.8s infinite; pointer-events: none; }
+@keyframes projecteur { to { opacity: 1; } }
+@keyframes projecteur-vibre { 50% { opacity: .7; } }
+.podium2-place { display: flex; flex-direction: column; align-items: center; min-width: 0; }
+.podium2-joueur { position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center; min-width: 0; max-width: 100%; opacity: 0; animation: podium-tombe .6s cubic-bezier(.2, 1.5, .4, 1) forwards; }
+.podium2-joueur strong { font-size: clamp(14px, 1.4vw, 24px); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.podium2-score { font-size: clamp(13px, 1.2vw, 20px); opacity: .85; font-weight: 900; }
+.podium2-marche { position: relative; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 2px; padding-top: 10px; margin-top: 8px; border-radius: 18px 18px 6px 6px; color: #fff; font: 900 clamp(26px, 3vw, 54px) Nunito, sans-serif; transform-origin: bottom; transform: scaleY(0); animation: podium-monte .7s cubic-bezier(.3, 1.4, .5, 1) forwards; box-shadow: inset 0 3px 0 rgba(255,255,255,.4), 0 10px 24px rgba(0,0,0,.25); overflow: hidden; }
+.podium2-marche::after { content: ''; position: absolute; top: 0; bottom: 0; left: -40%; width: 30%; background: linear-gradient(90deg, transparent, rgba(255,255,255,.55), transparent); transform: skewX(-20deg); animation: titre-reflet 3s ease-in-out 2.4s infinite; }
+.podium2-medaille { font-size: .6em; }
+.p1 .podium2-marche { height: clamp(120px, 26vh, 260px); background: linear-gradient(180deg, #FDE68A, #F59E0B 55%, #B45309); }
+.p2 .podium2-marche { height: clamp(90px, 19vh, 190px); background: linear-gradient(180deg, #F1F5F9, #94A3B8 55%, #475569); }
+.p3 .podium2-marche { height: clamp(70px, 14vh, 140px); background: linear-gradient(180deg, #FED7AA, #EA580C 55%, #9A3412); }
+.p3 .podium2-marche, .p3 .podium2-joueur { animation-delay: .3s; }
+.p2 .podium2-marche, .p2 .podium2-joueur { animation-delay: .9s; }
+.p1 .podium2-marche { animation-delay: 1.5s; }
+.p1 .podium2-joueur { animation-delay: 1.9s; }
+.podium2-couronne { position: absolute; top: -0.9em; font-size: clamp(30px, 3vw, 56px); z-index: 2; animation: couronne-tombe .8s cubic-bezier(.3, 1.6, .5, 1) 2.2s both, couronne-flotte 2s ease-in-out 3s infinite; filter: drop-shadow(0 0 12px rgba(253, 224, 71, .8)); }
+.p1 .avatar { filter: drop-shadow(0 0 18px rgba(253, 224, 71, .7)); }
+@keyframes podium-monte { to { transform: scaleY(1); } }
+@keyframes podium-tombe { from { opacity: 0; transform: translateY(-40px) scale(.6); } to { opacity: 1; transform: none; } }
+@keyframes couronne-tombe { from { opacity: 0; transform: translateY(-80px) rotate(-30deg) scale(1.6); } to { opacity: 1; transform: none; } }
+@keyframes couronne-flotte { 50% { transform: translateY(-6px) rotate(6deg); } }
+.tv-fin { justify-content: center; align-items: center; gap: 2.4vh !important; height: 100vh; height: 100dvh; overflow: hidden; }
+.tv-fin h1 { animation: titre-vainqueur 1s cubic-bezier(.3, 1.5, .5, 1) 2s both; text-shadow: 0 0 30px rgba(253, 224, 71, .6); font-size: clamp(32px, min(4vw, 7vh), 64px) !important; }
+@keyframes titre-vainqueur { from { opacity: 0; transform: scale(.4); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .podium2 *, .tv-fin h1 { animation: none !important; opacity: 1 !important; transform: none !important; } }

@@ -20,7 +20,7 @@ function Vignette({ id, nom, k, choisi, onClick }: { id: string; nom: string; k:
 
 // Choix du thème d'une partie (duel, salon) : un bouton, puis un sélecteur visuel
 // avec recherche, familles en pastilles et quiz en vignettes (au lieu d'un long menu déroulant).
-export default function ChoixTheme({ valeur, onChange, quiz }: { valeur: string; onChange: (id: string) => void; quiz?: string[] }) {
+export default function ChoixTheme({ valeur, onChange, quiz , hasardFamille }: { valeur: string; onChange: (id: string) => void; quiz?: string[] ; hasardFamille?: boolean }) {
   const { lang } = usePrefs()
   const fr = lang === 'fr'
   const [ouvert, setOuvert] = useState(false)
@@ -30,13 +30,14 @@ export default function ChoixTheme({ valeur, onChange, quiz }: { valeur: string;
   const familles = FAMILLES.map((f) => ({ f, subs: f.subs.filter((s) => s.jouable && autorise(s.id)) })).filter((x) => x.subs.length)
   const n = normaliser(q)
   const visibles = familles.filter((x) => !fam || x.f.k === fam).flatMap((x) => x.subs.filter((s) => !n || normaliser(s.nom[lang]).includes(n)).map((s) => ({ s, k: x.f.k })))
-  const actuel = valeur === 'mix' ? null : trouverSousTheme(valeur)
+  const familleHasard = valeur.startsWith('mix-') ? FAMILLES.find((f) => f.k === valeur.slice(4)) : undefined
+  const actuel = valeur.startsWith('mix') ? null : trouverSousTheme(valeur)
   const choisir = (id: string) => { onChange(id); setOuvert(false); setQ('') }
   return (
     <>
       <button type="button" className="choix-theme-bouton" onClick={() => setOuvert(true)}>
-        <span>{actuel ? actuel.sous.nom[lang] : (fr ? '🎲 Au hasard, tous thèmes' : '🎲 Random')}</span>
-        <small>{actuel ? actuel.famille.nom[lang] : (fr ? 'Touche pour choisir un thème' : 'Tap to pick')}</small>
+        <span>{actuel ? actuel.sous.nom[lang] : familleHasard ? `🎲 ${familleHasard.nom[lang]}` : (fr ? '🎲 Au hasard, tous thèmes' : '🎲 Random')}</span>
+        <small>{actuel ? actuel.famille.nom[lang] : familleHasard ? (fr ? 'Au hasard dans cette famille' : 'Random in this family') : (fr ? 'Touche pour choisir un thème' : 'Tap to pick')}</small>
         <Icon d={ICONS.arrowR} size={16} />
       </button>
       {ouvert && createPortal(
@@ -52,7 +53,8 @@ export default function ChoixTheme({ valeur, onChange, quiz }: { valeur: string;
               {familles.map(({ f }) => <button key={f.k} type="button" className="pill" aria-pressed={fam === f.k} onClick={() => setFam(f.k)}>{f.nom[lang].split(/ [&,]/)[0]}</button>)}
             </div>
             <div className="choix-theme-grille">
-              <button type="button" className={`choix-vignette hasard${valeur === 'mix' ? ' choisi' : ''}`} onClick={() => choisir('mix')}><span className="choix-vignette-img">🎲</span><span>{fr ? 'Au hasard' : 'Random'}</span></button>
+              <button type="button" className={`choix-vignette hasard${valeur === 'mix' ? ' choisi' : ''}`} onClick={() => choisir('mix')}><span className="choix-vignette-img">🎲</span><span>{fr ? 'Au hasard, tout' : 'Random, all'}</span></button>
+              {hasardFamille && fam && <button type="button" className={`choix-vignette hasard${valeur === `mix-${fam}` ? ' choisi' : ''}`} onClick={() => choisir(`mix-${fam}`)}><span className="choix-vignette-img">🎲</span><span>{fr ? `Au hasard : ${FAMILLES.find((f) => f.k === fam)?.nom[lang].split(/ [&,]/)[0]}` : 'Random in family'}</span></button>}
               {visibles.map(({ s, k }) => <Vignette key={s.id} id={s.id} nom={s.nom[lang]} k={k} choisi={valeur === s.id} onClick={() => choisir(s.id)} />)}
             </div>
           </div>

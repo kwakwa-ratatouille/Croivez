@@ -13,7 +13,7 @@ import {
   arreterSalon, noterVuesSalon, pauserSalon, reprendreSalon, pointsSalon, questionsSalon, quitterSalon, rejoindreSalon, rejouerSalon, repondreSalon, type JoueurSalon, type ReglesSalon, type Salon as SalonT,
 } from '../salon'
 import { retourReponse, retourTic } from '../retour'
-import { feter } from '../effets'
+import { feter, sonsSoiree } from '../effets'
 import { Coche, Croix, ICONS, Icon, Logo, Wordmark } from '../components/ui'
 import Avatar from '../components/Avatar'
 import Img from '../components/Img'
@@ -104,7 +104,7 @@ function Regles({ code, salon, modifiable }: { code: string; salon: SalonT; modi
   const r = salon.regles
   const maj = (x: Partial<ReglesSalon>) => majRegles(code, { ...r, ...x })
   const quizPossibles = FAMILLES.map((f) => ({ f, subs: f.subs.filter((s) => s.jouable && natureQuiz(s.id) !== 'carte') }))
-  const nomQuiz = r.s === 'mix' ? (fr ? 'Aléatoire, tous thèmes' : 'Random, all topics') : trouverSousTheme(r.s)?.sous.nom[lang] ?? r.s
+  const nomQuiz = r.s === 'mix' ? (fr ? 'Aléatoire, tous thèmes' : 'Random, all topics') : r.s.startsWith('mix-') ? `🎲 ${FAMILLES.find((f) => f.k === r.s.slice(4))?.nom[lang] ?? ''}` : trouverSousTheme(r.s)?.sous.nom[lang] ?? r.s
   const diffs = [fr ? 'Facile' : 'Easy', fr ? 'Moyen' : 'Medium', fr ? 'Difficile' : 'Hard', 'Expert']
   if (!modifiable) return (
     <div className="salon-recap">
@@ -117,7 +117,7 @@ function Regles({ code, salon, modifiable }: { code: string; salon: SalonT; modi
   return (
     <>
       <div className="salon-champ"><span>{fr ? 'Thème' : 'Topic'}</span>
-        <ChoixTheme valeur={r.s} onChange={(s) => maj({ s })} quiz={quizPossibles.flatMap(({ subs }) => subs.map((s) => s.id))} />
+        <ChoixTheme hasardFamille valeur={r.s} onChange={(s) => maj({ s })} quiz={quizPossibles.flatMap(({ subs }) => subs.map((s) => s.id))} />
       </div>
       <div className="salon-champ"><span>{fr ? 'Mini-jeu' : 'Mini-game'}</span>
         <div className="salon-choix">{MINI_JEUX_SALON.map((v) => { const m = infoMiniJeu(v)!; return <button key={v} type="button" className="pill" aria-pressed={r.mj === v} onClick={() => maj({ mj: v, secondes: m.chrono ?? (r.secondes < 10 ? 15 : r.secondes) })}>{m.icone} {m.nom[lang]}</button> })}</div>
@@ -311,16 +311,22 @@ function useDeroulement(code: string, salon: SalonT, maintenant: number, suisHot
 }
 type Classe = (JoueurSalon & { id: string })[]
 
-function Podium({ classement }: { classement: Classe }) {
+// Podium : les marches montent une à une (3ᵉ, 2ᵉ, puis 1ᵉʳ sous les projecteurs, couronne qui tombe)
+function Podium({ classement, grand = false }: { classement: Classe; grand?: boolean }) {
   const podium = classement.slice(0, 3)
+  const MEDAILLE = ['🥇', '🥈', '🥉']
   return (
-    <div className="podium">
+    <div className={`podium2${grand ? ' grand' : ''}`}>
+      <div className="podium2-projecteur" aria-hidden="true" />
       {[1, 0, 2].map((p) => podium[p] && (
-        <div key={podium[p].id} className={`podium-place place-${p + 1}`}>
-          <Avatar pseudo={podium[p].pseudo} avatar={podium[p].avatar} cadre={podium[p].cadre} taille={p === 0 ? 72 : 56} />
-          <strong>{podium[p].pseudo}</strong>
-          <span className="t">{podium[p].score} pts</span>
-          <div className="podium-marche" style={{ background: MEDAILLES[p] }}>{p + 1}</div>
+        <div key={podium[p].id} className={`podium2-place p${p + 1}`}>
+          <div className="podium2-joueur">
+            {p === 0 && <span className="podium2-couronne">👑</span>}
+            <Avatar pseudo={podium[p].pseudo} avatar={podium[p].avatar} cadre={podium[p].cadre} taille={grand ? (p === 0 ? 120 : 92) : (p === 0 ? 80 : 62)} anime />
+            <strong>{podium[p].pseudo}</strong>
+            <span className="podium2-score t">{podium[p].score} pts</span>
+          </div>
+          <div className="podium2-marche"><span className="podium2-medaille">{MEDAILLE[p]}</span><span className="t">{p + 1}</span></div>
         </div>
       ))}
     </div>
@@ -364,6 +370,14 @@ function Jeu({ code, salon, suisHote, pilote, ecranTv, maintenant, onQuitter }: 
   }
   // Temps écoulé sans réponse : 0 point
   useEffect(() => { if (q && !maRep && moiJ && restant <= 0 && salon.etat === 'jeu' && !pause) repondreSalon(code, uid, i, false, r.secondes * 1000, 0, moiJ.score ?? 0) }, [q, maRep, moiJ, restant, salon.etat, code, uid, i, r.secondes])
+  const sonore = ecranTv || (!salon.tv && suisHote)
+  const nbRep = actifs.filter(([, j]) => j.r?.[i]).length
+  useEffect(() => { if (sonore && q && salon.etat === 'jeu') sonsSoiree.question() }, [i, !!q]) // eslint-disable-line react-hooks/exhaustive-deps
+  const avantRep = useRef(0)
+  useEffect(() => { if (sonore && nbRep > avantRep.current && !revele) sonsSoiree.repondu(); avantRep.current = nbRep }, [nbRep]) // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { if (sonore && revele && salon.etat === 'jeu') sonsSoiree.revele() }, [revele]) // eslint-disable-line react-hooks/exhaustive-deps
+  const ticTv = useRef(0)
+  useEffect(() => { const t = Math.ceil(restant); if (sonore && !revele && !pause && t <= 5 && t > 0 && t !== ticTv.current) { ticTv.current = t; sonsSoiree.tic(t) } }, [restant]) // eslint-disable-line react-hooks/exhaustive-deps
   const tic = useRef(0)
   useEffect(() => { const s = Math.ceil(restant); if ((ecranTv || !maRep) && !revele && s <= 5 && s > 0 && s !== tic.current) { tic.current = s; retourTic(s) } }, [restant, maRep, ecranTv, revele])
 
@@ -374,12 +388,17 @@ function Jeu({ code, salon, suisHote, pilote, ecranTv, maintenant, onQuitter }: 
     const rang = classement.findIndex((c) => c.id === uid)
     void rang
     if (suisHote) noterVuesSalon(code, salon, questions.map((x) => x.id)).catch(() => {})
-    feter(classement[0]?.victoire, 2) // la fête équipée par le gagnant, pour tout le monde
+    const v = classement[0]?.victoire
+    sonsSoiree.roulement()
+    setTimeout(() => sonsSoiree.place(2), 400)
+    setTimeout(() => sonsSoiree.place(1), 1000)
+    setTimeout(() => { sonsSoiree.fanfare(); feter(v, 2) }, 1900) // la fête équipée par le gagnant, pour tout le monde
+    setTimeout(() => feter(v === 'victoire-confettis' || !v ? 'victoire-artifice' : v, 2), 3600)
     if (ecranTv && profile) noterExploit(uid, 'tvHote').catch(console.error) // soirée télé animée
     if (!profile || !moiJ) return // invité ou écran télé : rien à enregistrer
     const resultats = questions.slice(0, n).map((qq, k) => ({ id: qq.id, juste: !!moiJ.r?.[k]?.j, s: qq.s ?? r.s }))
     const bonnes = resultats.filter((x) => x.juste).length
-    enregistrerPartie(uid, profile, { sousTheme: (r.s === 'mix' ? 'mix' : r.s) as SousThemeId, xp: Math.round(xpSalon(rang, classement.length, bonnes) * facteurXp(profile, salon.tv ? 'tv' : 'salon', false)), cleFarm: salon.tv ? 'tv' : 'salon', pieces: piecesSalon(rang, classement.length), resultats, revision: true, sansRevision: true, multi: { mode: salon.tv ? 'tv' : 'salon', gagne: classement.length > 1 && rang === 0 }, miniJeu: r.mj }).catch(console.error)
+    enregistrerPartie(uid, profile, { sousTheme: (r.s.startsWith('mix') ? 'mix' : r.s) as SousThemeId, xp: Math.round(xpSalon(rang, classement.length, bonnes) * facteurXp(profile, salon.tv ? 'tv' : 'salon', false)), cleFarm: salon.tv ? 'tv' : 'salon', pieces: piecesSalon(rang, classement.length), resultats, revision: true, sansRevision: true, multi: { mode: salon.tv ? 'tv' : 'salon', gagne: classement.length > 1 && rang === 0 }, miniJeu: r.mj }).catch(console.error)
   }, [salon.etat, profile, questions, moiJ, classement, uid, n, r.s, r.mj, ecranTv, salon.tv])
 
   // ——— Fin de partie ———
@@ -404,7 +423,7 @@ function Jeu({ code, salon, suisHote, pilote, ecranTv, maintenant, onQuitter }: 
             </section>
           )
         })()}
-        <Podium classement={classement} />
+        <Podium classement={classement} grand={ecranTv} />
         {classement.length > 3 && (
           <section className="card" style={{ width: '100%', maxWidth: 560, padding: 8 }}>
             {classement.slice(3).map((c, k) => <div key={c.id} className="ligne-classement"><span className="t rang" style={{ background: 'var(--surface2)', color: 'var(--muted)' }}>{k + 4}</span><Avatar pseudo={c.pseudo} avatar={c.avatar} cadre={c.cadre} taille={34} /><span style={{ flex: 1, fontWeight: 700 }}>{c.pseudo}</span><span className="t" style={{ fontWeight: 900 }}>{c.score} pts</span></div>)}

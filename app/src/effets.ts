@@ -212,3 +212,16 @@ export function feter(id = portes.victoire, intensite: 1 | 2 = 1) {
     setTimeout(() => zone.remove(), 4600)
   } catch { /* pas de DOM */ }
 }
+
+// ——— Sons de la soirée quiz (écran télé) : nouvelle question, réponse reçue, révélation, chrono, roulement, fanfare ———
+const sonActif = () => { try { return localStorage.getItem('son') !== '0' } catch { return true } }
+const joue = (n: Note[]) => { if (sonActif()) jouerNotes(n) }
+export const sonsSoiree = {
+  question: () => joue([N(260, .28, 0, 'sine', .05, 880), N(1047, .18, .24, 'triangle', .05), N(1319, .26, .32, 'triangle', .04)]),
+  repondu: () => joue([N(988, .05, 0, 'sine', .035), N(1319, .07, .05, 'sine', .03)]),
+  revele: () => joue([N(392, .1, 0, 'triangle', .06), N(523, .1, .09, 'triangle', .06), N(784, .3, .18, 'triangle', .06)]),
+  tic: (s: number) => joue([N(s <= 3 ? 1320 : 990, .05, 0, 'square', .025)]),
+  roulement: () => joue(Array.from({ length: 30 }, (_, i) => N(110 + (i % 2) * 18, .05, i * .055, 'triangle', .02 + i * .0015))),
+  fanfare: () => joue([N(523, .14, 0, 'square', .04), N(659, .14, .14, 'square', .04), N(784, .14, .28, 'square', .04), N(1047, .5, .42, 'square', .045), N(784, .5, .42, 'triangle', .04), N(523, .5, .42, 'sawtooth', .02), N(1319, .7, .62, 'triangle', .04), N(1568, .9, .82, 'sine', .035)]),
+  place: (p: number) => joue([N([523, 659, 784][p] ?? 523, .2, 0, 'triangle', .05), N(([523, 659, 784][p] ?? 523) * 2, .3, .1, 'sine', .03)]),
+}

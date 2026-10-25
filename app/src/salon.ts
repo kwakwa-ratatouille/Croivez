@@ -1,3 +1,5 @@
+import { natureQuiz } from './quiz/engine'
+import { FAMILLES } from './themes'
 import { get, onDisconnect, onValue, ref, runTransaction, serverTimestamp, set, update } from 'firebase/database'
 import { rtdb } from './firebase'
 import { genererPartie, type Difficulte, type Question, type SousThemeId } from './quiz/engine'
@@ -149,14 +151,15 @@ export async function questionsSalon(r: ReglesSalon, seed: number, lang: Lang, e
   let a = seed
   const alea = () => { a = (a * 1103515245 + 12345) & 0x7fffffff; return a / 0x7fffffff }
   const appliquer = (q: Question) => appliquerMiniJeu(q, r.mj, lang)
-  if (r.s !== 'mix') {
+  if (!r.s.startsWith('mix')) {
     const qs = await genererPartie({ sousTheme: r.s as SousThemeId, difficulte: r.d as Difficulte, nombre: r.n, mode: 'qcm', lang, seed, exclus })
     return qs.map(appliquer)
   }
   const out: Question[] = []
   let precedent = ''
   for (let i = 0; i < r.n; i++) {
-    const choix = MIX_SALON.filter((s) => s !== precedent)
+    const base = r.s === 'mix' ? MIX_SALON : (FAMILLES.find((f) => f.k === r.s.slice(4))?.subs.filter((x) => x.jouable && natureQuiz(x.jouable) !== 'carte').map((x) => x.jouable as SousThemeId) ?? MIX_SALON)
+    const choix = base.length > 1 ? base.filter((s) => s !== precedent) : base
     const s = choix[Math.floor(alea() * choix.length)]
     precedent = s
     const [q] = await genererPartie({ sousTheme: s, difficulte: r.d as Difficulte, nombre: 1, mode: 'qcm', lang, seed: seed + i * 7919, exclus }).catch(() => [])
