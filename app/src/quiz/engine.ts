@@ -340,6 +340,23 @@ async function pack<T>(nom: string): Promise<T> {
 export const chargerPays = async () => (await pack<{ pays: Pays[] }>('pays.json')).pays
 
 
+// Énoncés en émojis : plus c'est dur, plus leur ordre est mélangé (on ne reconnaît plus la suite par cœur).
+// Facile : ordre d'origine · Moyen : deux émojis échangés · Difficile et au-delà : ordre entièrement mélangé.
+type Segmenteur = { segment: (s: string) => Iterable<{ segment: string }> }
+const Seg = (Intl as unknown as { Segmenter?: new (l: string, o: { granularity: 'grapheme' }) => Segmenteur }).Segmenter
+const segmenteur = Seg ? new Seg('fr', { granularity: 'grapheme' }) : null
+export function melangerEmojis(s: string, niveau: number) {
+  if (niveau <= 1 || !segmenteur || !/^[^p{L}d]+$/u.test(s)) return s
+  const g = [...segmenteur.segment(s)].map((x) => x.segment).filter((x) => x.trim())
+  if (g.length < 2) return s
+  const avant = g.join('')
+  for (let essai = 0; essai < 6 && g.join('') === avant; essai++) {
+    if (niveau === 2) { const i = Math.floor(Math.random() * (g.length - 1)); [g[i], g[i + 1]] = [g[i + 1], g[i]] }
+    else for (let i = g.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [g[i], g[j]] = [g[j], g[i]] }
+  }
+  return g.join('')
+}
+
 const melanger = <T,>(arr: T[]) => {
   const a = [...arr]
   for (let i = a.length - 1; i > 0; i--) {
@@ -704,7 +721,7 @@ function culture(o: Opts, tousItems: ItemCulture[]): Question[] {
     return {
       id: it.id,
       enonce: cfg.q[lang](nomQ, it.g),
-      ...(cfg.grand ? { grand: nomQ } : {}),
+      ...(cfg.grand ? { grand: melangerEmojis(nomQ, o.difficulte === LEGENDE ? 4 : o.difficulte === 0 ? 2 : difficulte) } : {}),
       ...(cfg.fixe ? { fixe: true } : {}),
       ...(sousTheme === 'logos' ? { fondGris: true } : {}),
       // Photo du sujet dès qu'elle existe, sauf si elle trahit la réponse (pochette, couverture, extrait audio)
