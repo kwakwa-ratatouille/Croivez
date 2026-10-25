@@ -56,6 +56,12 @@ export function retourTic(secondes: number) {
 }
 
 // Fin réussie : son, vibration et confettis (grosse fête si « fete » vaut 2)
+// Message, invitation, demande d'ami : un petit « ding » et une vibration, sans l'animation de victoire
+export function retourNotif() {
+  notes([880, 1175], 0.08)
+  vibrer(true)
+}
+
 export function retourFin(bon: boolean, fete: 1 | 2 = 1) {
   notes(bon ? [523, 659, 784, 1047] : [392, 330], 0.11)
   if (bon) feter(undefined, fete)

@@ -8,7 +8,7 @@ import { usePrefs } from '../i18n'
 import { refuser, rejoindre } from '../duel'
 import { accepterAmi, ajouterAmi } from '../social'
 import { rejoindreClan } from '../clans'
-import { retourFin } from '../retour'
+import { retourNotif } from '../retour'
 
 // Invitations reçues, visibles partout dans l'appli : duel, salon, demande d'ami.
 // Rangées sous « invitations/<moi> » (chemin déjà ouvert par les règles de la base temps réel).
@@ -30,7 +30,7 @@ export default function Invitations() {
       for (const x of l) if (x.type === 'ami-ok' && x.uid) ajouterAmi(uid, x.uid).catch(() => {})
       setListe((avant) => {
         if (!premiere && l.length > avant.length) {
-          retourFin(true)
+          retourNotif()
           // Appli en arrière-plan : notification sur le téléphone
           const n = l.find((x) => !avant.some((y) => y.id === x.id))
           if (n) notifierInvitation(n.type === 'msg' ? `💬 ${n.de}` : n.type === 'clan' ? '🛡️ Clan' : n.type === 'ami-ok' ? '🎉 Nouvel ami' : n.type === 'ami' ? '👋 Demande d’ami' : n.salon ? '👥 Invitation' : '⚔️ Duel !', n.type === 'msg' ? (n.txt ?? '') : `${n.de} ${n.type === 'clan' ? `t’invite dans son clan « ${n.nom} »` : n.type === 'ami-ok' ? 'a accepté ta demande' : n.type === 'ami' ? 'veut être ton ami·e' : n.salon ? 't’invite dans son salon' : 'te défie en duel !'}`).catch(() => {})
