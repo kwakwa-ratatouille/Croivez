@@ -1,3 +1,4 @@
+import { ecouterNonLus } from '../chat'
 import { appliquerEffets } from '../effets'
 import { doc, setDoc } from 'firebase/firestore'
 import { db } from '../firebase'
@@ -44,6 +45,7 @@ export default function Layout() {
   const online = useOnline()
   const pseudo = profile?.pseudo ?? '…'
   const dues = aReviser(profile?.revision).length
+  const [nonLus, setNonLus] = useState(0) // messages non lus (bulle sur Multi et Amis)
 
   // 3 appuis rapides sur le logo : menu de test
   const [test, setTest] = useState(false)
@@ -58,6 +60,7 @@ export default function Layout() {
   }, [])
   // Bonus des filleuls inscrits avec mon lien
   const uid = profile ? auth.currentUser?.uid : undefined
+  useEffect(() => (uid ? ecouterNonLus(uid, (l) => setNonLus(l.length)) : undefined), [uid])
   useEffect(() => { if (uid) reclamerParrainages(uid).catch(() => {}) }, [uid])
   // Rappels du lendemain (série, quiz du jour, révisions), replanifiés à chaque ouverture
   useEffect(() => { appliquerEffets(profile) }, [profile?.couleurApp, profile?.victoire, profile?.sonReponse]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -100,6 +103,7 @@ export default function Layout() {
         {LIENS.map((l) => (
           <NavLink key={l.to} to={l.to} end={l.to === '/'} className={({ isActive }) => `nav${isActive ? ' active' : ''}${PC_SEULEMENT.includes(l.to) ? ' nav-pc' : ''}`}>
             <Icon d={l.icon} />{t(l.k)}
+            {(l.to === '/duels' || l.to === '/amis') && nonLus > 0 && <span className="chip bulle-msg" aria-label={`${nonLus} messages non lus`}>💬 {nonLus}</span>}
             {l.to === '/revision' && dues > 0 && <span className="chip" style={{ marginLeft: 'auto', minHeight: 22, padding: '0 8px', background: 'var(--his-t)', color: 'var(--his-i)' }}>{dues}</span>}
           </NavLink>
         ))}

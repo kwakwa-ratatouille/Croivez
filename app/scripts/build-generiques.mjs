@@ -6,7 +6,7 @@ import { readFile, writeFile } from 'node:fs/promises'
 
 const SERIES = [
   // Années 70-80
-  'Les Bisounours', 'Casimir', 'Jayce et les conquérants de la lumière', 'Les Maîtres de l\'univers', 'Rémi sans famille', 'Tom Sawyer', 'Princesse Sarah',
+  'Les Bisounours', 'Jayce et les conquérants de la lumière', 'Les Maîtres de l\'univers', 'Rémi sans famille', 'Tom Sawyer', 'Princesse Sarah',
   'Jeanne et Serge', 'Dragon Ball', 'Bioman', 'X-Or', 'San Ku Kaï', 'Cobra', 'Les Snorky', 'Fraggle Rock', 'Bouba', 'Clémentine',
   'Lady Oscar', 'Embrasse-moi Lucile', 'Cat\'s Eyes', 'Juliette je t\'aime', 'Sailor Moon', 'Denver le dernier dinosaure', 'Les Gummi', 'La Bande à Picsou',
   'Tic et Tac les rangers du risque', 'Super Mario Bros', 'Babar', 'Les Aventures de Tintin', 'Les Mondes engloutis', 'Il était une fois l\'homme',
@@ -24,6 +24,17 @@ const SERIES = [
   'Les Lapins Crétins Invasion', 'Le Monde incroyable de Gumball', 'Souvenirs de Gravity Falls', 'Steven Universe', 'Bienvenue chez les Loud',
   'Teen Titans Go', 'Oggy et les Cafards la nouvelle génération', 'Pyjamasques', 'Ladybug et Chat Noir', 'Trotro', 'T\'choupi',
   'Ernest et Célestine', 'Robin des Bois Malice à Sherwood', 'Dino Ranch', 'Gigantosaurus', 'Robocar Poli', 'Blaze et les Monster Machines',
+
+  // Deuxième vague
+  'Capitaine Flam', 'Goldorak', 'Albator 84', 'Ulysse 31', 'Les Chevaliers du Zodiaque', 'Dragon Ball Kai', 'Naruto Shippuden',
+  'Demon Slayer', 'Pokémon Soleil et Lune', 'Pokémon Horizons', 'Yu-Gi-Oh GX',
+  'Bakugan Battle Brawlers', 'Hamtaro', 'Doraemon', 'Les Simpsons', 'Futurama',
+  'South Park', 'Daria', 'Les Razmoket à Paris', 'Clifford', 'Babar et les aventures de Badou', 'Les Bisounours la série',
+  'Monster High', 'Winx', 'Les Mystérieuses Cités d\'or', 'Il était une fois la vie', 'Il était une fois l\'espace', 'Il était une fois les découvreurs',
+  'Les Tortues Ninja 2012', 'G.I. Joe', 'Power Rangers', 'Batman Beyond', 'Superman la série animée', 'Les Gardiens de la galaxie série',
+  'Les Aventures de Jackie Chan', 'Kim Possible saison 2', 'Lilo et Stitch la série', 'Aladdin la série',
+  'La Bande à Picsou 2017', 'La Maison de Mickey', 'Le Roi Lion La Garde du Roi Lion', 'Raiponce la série', 'Elena d\'Avalor', 'Princesse Sofia', 'Vic le Viking',
+  'Lucky Luke la série', 'Les Dalton', 'Spirou et Fantasio', 'Gaston Lagaffe', 'Les Schtroumpfs 1981', 'Marsupilami Houba Houba Hop', 'Iznogoud',
   'Dora l\'exploratrice', 'Les Mystérieuses Cités d\'or saison 2', 'Yakari', 'Sam le pompier', 'Les Schtroumpfs 2021',
 ]
 const norm = (s) => (s ?? '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, ' ').trim()

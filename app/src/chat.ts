@@ -1,4 +1,4 @@
-import { limitToLast, onValue, push, query, ref } from 'firebase/database'
+import { limitToLast, onValue, push, query, ref, remove, set } from 'firebase/database'
 import { rtdb } from './firebase'
 
 // Messagerie entre amis : une conversation par paire de joueurs, dans la base temps réel.
@@ -6,8 +6,17 @@ import { rtdb } from './firebase'
 export type Message = { de: string; txt: string; t: number }
 const chemin = (a: string, b: string) => `duels/chat-${[a, b].sort().join('_')}/m`
 
-export const envoyerMessage = (moi: string, ami: string, txt: string) =>
-  push(ref(rtdb, chemin(moi, ami)), { de: moi, txt: txt.trim().slice(0, 500), t: Date.now() })
+// Chaque message laisse aussi un « non lu » chez l'ami (un par expéditeur) : bulle sur Multi tant qu'il n'a pas ouvert la conversation
+export const envoyerMessage = async (moi: string, ami: string, txt: string, pseudo = '') => {
+  const propre = txt.trim().slice(0, 500)
+  await push(ref(rtdb, chemin(moi, ami)), { de: moi, txt: propre, t: Date.now() })
+  await set(ref(rtdb, `invitations/${ami}/msg-${moi}`), { type: 'msg', de: pseudo || '?', uid: moi, txt: propre.slice(0, 80), t: Date.now() }).catch(() => {})
+}
+// Conversation ouverte : les messages de cet ami sont lus
+export const marquerLu = (moi: string, ami: string) => remove(ref(rtdb, `invitations/${moi}/msg-${ami}`)).catch(() => {})
+// Expéditeurs des messages non lus
+export const ecouterNonLus = (moi: string, cb: (uids: string[]) => void) =>
+  onValue(ref(rtdb, `invitations/${moi}`), (s) => cb(Object.entries((s.val() ?? {}) as Record<string, { type?: string; uid?: string }>).filter(([, v]) => v?.type === 'msg' && v.uid).map(([, v]) => v.uid!)))
 
 export const ecouterMessages = (moi: string, ami: string, cb: (l: Message[]) => void) =>
   onValue(query(ref(rtdb, chemin(moi, ami)), limitToLast(60)), (s) => cb(Object.values((s.val() ?? {}) as Record<string, Message>).sort((x, y) => x.t - y.t)))

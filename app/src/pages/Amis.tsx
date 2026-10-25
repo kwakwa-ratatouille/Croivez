@@ -7,7 +7,7 @@ import { usePrefs } from '../i18n'
 import { profilsDe, retirerAmi, type ProfilPublic } from '../social'
 import { inviter } from '../duel'
 import { creerSalon, inviterAuSalon } from '../salon'
-import { ecouterMessages, envoyerMessage, type Message } from '../chat'
+import { ecouterMessages, ecouterNonLus, envoyerMessage, marquerLu, type Message } from '../chat'
 import Avatar from '../components/Avatar'
 import { ICONS, Icon } from '../components/ui'
 
@@ -23,6 +23,11 @@ export default function Amis() {
   const [copie, setCopie] = useState(false)
   const [aRetirer, setARetirer] = useState<ProfilPublic | null>(null)
   useEffect(() => { profilsDe(profile?.amis ?? []).then(setAmis).catch(() => setAmis([])) }, [profile?.amis])
+  // Messages non lus (pastille sur l'ami) et ouverture directe d'une conversation depuis une notification (#/amis?chat=UID)
+  const [nonLus, setNonLus] = useState<string[]>([])
+  useEffect(() => (uid ? ecouterNonLus(uid, setNonLus) : undefined), [uid])
+  const chatDemande = new URLSearchParams(location.hash.split('?')[1] ?? '').get('chat')
+  useEffect(() => { if (chatDemande && !ouvert) { const a = amis.find((x) => x.uid === chatDemande); if (a) setOuvert(a) } }, [chatDemande, amis]) // eslint-disable-line react-hooks/exhaustive-deps
 
 
   const partagerPseudo = async () => {
@@ -62,7 +67,7 @@ export default function Amis() {
         {amis.length === 0 && <p style={{ color: 'var(--muted)', fontSize: 14 }}>{fr ? 'Pas encore d’amis : ajoute-les avec leur pseudo, ou partage le tien.' : 'No friends yet.'}</p>}
         {amis.map((a) => (
           <div key={a.uid} className="ami-ligne">
-            <Link to={`/joueur/${a.uid}`} className="ami-identite"><Avatar pseudo={a.pseudo} avatar={a.avatar} cadre={a.cadre} taille={46} /><span><strong>{a.pseudo}</strong><small>{fr ? 'Niveau' : 'Level'} {a.niveau}</small></span></Link>
+            <Link to={`/joueur/${a.uid}`} className="ami-identite"><Avatar pseudo={a.pseudo} avatar={a.avatar} cadre={a.cadre} taille={46} /><span><strong>{a.pseudo}{nonLus.includes(a.uid) && <i className="ami-non-lu" aria-label="message non lu" style={{ display: 'inline-block', marginLeft: 6 }} />}</strong><small>{fr ? 'Niveau' : 'Level'} {a.niveau}</small></span></Link>
             <div className="ami-actions">
               <button className="btn btn-s" title={fr ? 'Message' : 'Message'} onClick={() => setOuvert(a)}>💬<span className="ami-txt">{fr ? 'Message' : 'Chat'}</span></button>
               <button className="btn btn-s" title={fr ? 'Défier en duel' : 'Duel'} onClick={async () => { const id = await inviter(uid, profile?.pseudo ?? '', a.uid); nav(`/duels?attente=${id}`) }}>⚔️<span className="ami-txt">{fr ? 'Duel' : 'Duel'}</span></button>
@@ -82,9 +87,10 @@ function Conversation({ ami, uid, onRetour }: { ami: ProfilPublic; uid: string; 
   const [messages, setMessages] = useState<Message[]>([])
   const [txt, setTxt] = useState('')
   const bas = useRef<HTMLDivElement>(null)
-  useEffect(() => ecouterMessages(uid, ami.uid, setMessages), [uid, ami.uid])
+  const { profile } = useAuth()
+  useEffect(() => ecouterMessages(uid, ami.uid, (l) => { setMessages(l); marquerLu(uid, ami.uid) }), [uid, ami.uid])
   useEffect(() => { bas.current?.scrollIntoView({ block: 'end' }) }, [messages.length])
-  const envoyer = (e: FormEvent) => { e.preventDefault(); if (txt.trim()) { envoyerMessage(uid, ami.uid, txt).catch(console.error); setTxt('') } }
+  const envoyer = (e: FormEvent) => { e.preventDefault(); if (txt.trim()) { envoyerMessage(uid, ami.uid, txt, profile?.pseudo).catch(console.error); setTxt('') } }
   const rapides = fr ? ['On fait un duel ? ⚔️', 'Bats mon score ! 🏆', 'GG 👏', 'Revanche ? 😤'] : ['Duel? ⚔️', 'Beat my score! 🏆', 'GG 👏', 'Rematch? 😤']
   return (
     <div className="chat">
@@ -98,7 +104,7 @@ function Conversation({ ami, uid, onRetour }: { ami: ProfilPublic; uid: string; 
         {messages.map((m, i) => <div key={i} className={`chat-bulle${m.de === uid ? ' moi' : ''}`}>{m.txt}<small>{new Date(m.t).toLocaleTimeString(fr ? 'fr-FR' : 'en-GB', { hour: '2-digit', minute: '2-digit' })}</small></div>)}
         <div ref={bas} />
       </div>
-      <div className="chat-rapides">{rapides.map((r) => <button key={r} type="button" className="pill" onClick={() => envoyerMessage(uid, ami.uid, r).catch(console.error)}>{r}</button>)}</div>
+      <div className="chat-rapides">{rapides.map((r) => <button key={r} type="button" className="pill" onClick={() => envoyerMessage(uid, ami.uid, r, profile?.pseudo).catch(console.error)}>{r}</button>)}</div>
       <form className="chat-saisie" onSubmit={envoyer}>
         <input className="input" value={txt} onChange={(e) => setTxt(e.target.value)} placeholder={fr ? 'Écris un message…' : 'Type a message…'} maxLength={500} style={{ flex: 1, minHeight: 48 }} />
         <button className="btn btn-p" disabled={!txt.trim()}>{fr ? 'Envoyer' : 'Send'}</button>

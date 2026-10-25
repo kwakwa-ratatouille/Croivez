@@ -2142,3 +2142,8 @@ img, svg { -webkit-user-drag: none; }
 :root[data-calme="1"] .couche-motif { animation: none !important; }
 
 .pastille-fond.anime { position: relative; overflow: hidden; }
+
+/* Bulle des messages non lus (Multi, Amis) */
+.chip.bulle-msg { margin-left: auto; min-height: 22px; padding: 0 8px; background: #EF4444 !important; color: #fff !important; font-weight: 900; animation: bulle-msg 1.6s ease-in-out infinite; }
+@keyframes bulle-msg { 0%, 100% { transform: scale(1) } 50% { transform: scale(1.12) } }
+.ami-non-lu { width: 10px; height: 10px; border-radius: 50%; background: #EF4444; box-shadow: 0 0 0 2px var(--surface); }
