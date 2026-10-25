@@ -8,7 +8,7 @@ import { FAMILLES, type Famille } from './themes'
 // Au premier lancement, on choisit 6 sous-thèmes (dans n'importe quelles familles).
 // Les autres s'achètent un par un, au prix de leur rareté, avec une animation de révélation.
 export const QUIZ_DEPART = 6
-export const PRIX_INDICE = 15
+export const PRIX_INDICE = 20
 export const PRIX_SAUT = 100 // sauter une difficulté sans l'avoir réussie (jamais pour la Légende)
 
 export type Rarete = 'commun' | 'rare' | 'epique' | 'legendaire'
