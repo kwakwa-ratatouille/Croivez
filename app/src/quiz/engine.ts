@@ -205,6 +205,10 @@ const CULTURE = {
   mineraux: { type: 'image', q: { fr: () => 'Quelle est cette pierre ?', en: () => 'What is this stone?' } },
   'jeux-societe': { type: 'image', q: { fr: () => 'Quel est ce jeu ?', en: () => 'What is this game?' } },
   // Énoncé « en grand » : les émojis, la réplique, le slogan… s'affichent en gros sous la question
+  'emojis-series': { type: 'attribut', grand: true, q: { fr: () => 'Quelle série se cache derrière ces émojis ?', en: () => 'Which TV show is this?' } },
+  'emojis-jeux': { type: 'attribut', grand: true, q: { fr: () => 'Quel jeu vidéo se cache derrière ces émojis ?', en: () => 'Which video game is this?' } },
+  'emojis-expressions': { type: 'attribut', grand: true, q: { fr: () => 'Quelle expression se cache derrière ces émojis ?', en: () => 'Which saying is this?' } },
+  'emojis-pays': { type: 'attribut', grand: true, q: { fr: () => 'Quel pays se cache derrière ces émojis ?', en: () => 'Which country is this?' } },
   'emojis-films': { type: 'attribut', grand: true, q: { fr: () => 'Quel film se cache derrière ces émojis ?', en: () => 'Which film do these emojis describe?' } },
   repliques: { type: 'attribut', grand: true, q: { fr: () => 'De quel film ou série vient cette réplique ?', en: () => 'Which film or show is this line from?' } },
   superheros: { type: 'attribut', q: { fr: (n) => `Quelle est l’identité secrète de ${n} ?`, en: (n) => `What is ${n}’s secret identity?` } },
