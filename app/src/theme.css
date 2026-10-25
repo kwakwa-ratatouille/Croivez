@@ -2169,3 +2169,7 @@ img, svg { -webkit-user-drag: none; }
 .envoi-jour { padding: 14px; display: flex; flex-direction: column; gap: 8px; }
 .envoi-jour-ami { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 14px; background: var(--surface2); }
 .envoi-jour-ami span { flex: 1; min-width: 0; font-weight: 700; }
+
+/* Album ouvert : bouton retour bien visible */
+.album-retour { padding: 0 16px 0 10px; border-radius: 999px; background: var(--surface2); color: var(--text); box-shadow: 0 1px 0 rgba(0,0,0,.06); }
+.album-retour:hover { background: var(--surface3, var(--surface2)); }

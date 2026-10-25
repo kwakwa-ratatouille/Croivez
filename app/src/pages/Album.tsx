@@ -2,7 +2,7 @@ import { GAIN_ALBUM, GAIN_CARTE, GAIN_PAGE, lireCarte, lireCartes, reclamerAlbum
 import { feter } from '../effets'
 import { retourReponse } from '../retour'
 import { useEffect, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../auth'
 import { usePrefs } from '../i18n'
 import { FAMILLES, type Famille } from '../themes'
@@ -108,8 +108,14 @@ export default function Album() {
   const { user, profile } = useAuth()
   const album = profile?.album ?? {}
   const lus = new Set(profile?.albumLu ?? [])
-  const [famille, setFamille] = useState<Famille | null>(null)
+  // L'album ouvert est dans l'adresse (?album=…) : le retour du téléphone ramène aux albums, une seule fois
+  const [params, setParams] = useSearchParams()
+  const nav = useNavigate()
+  const famille = (FAMILLES.find((f) => f.k === params.get('album'))?.k ?? null) as Famille | null
+  const ouvrirAlbum = (k: Famille) => setParams({ album: k })
+  const fermerAlbum = () => { if ((window.history.state?.idx ?? 0) > 0) nav(-1); else setParams({}, { replace: true }) }
   const [quiz, setQuiz] = useState<string | null>(null)
+  useEffect(() => { setQuiz(famille ? FAMILLES.find((f) => f.k === famille)?.subs.find((s) => s.jouable && !s.id.startsWith('villes'))?.id ?? null : null) }, [famille])
   const [cartes, setCartes] = useState<Carte[] | null>(null)
   const [page, setPage] = useState(0)
   const [sens, setSens] = useState<'g' | 'd'>('d')
@@ -129,7 +135,7 @@ export default function Album() {
         <h1 className="t" style={{ fontSize: 30, fontWeight: 900 }}>{fr ? 'Mes albums' : 'My albums'}</h1>
         <p style={{ color: 'var(--muted)', fontSize: 14 }}>{fr ? 'Chaque bonne réponse colle sa carte. Les plus célèbres sont les plus rares !' : 'Every correct answer adds its card.'}</p>
       </header>
-      <section className="album-etagere">{FAMILLES.map((f) => <CouvertureAlbum key={f.k} k={f.k} onOuvrir={() => { setFamille(f.k); setQuiz(f.subs.find((s) => s.jouable && !s.id.startsWith('villes'))?.id ?? null) }} />)}</section>
+      <section className="album-etagere">{FAMILLES.map((f) => <CouvertureAlbum key={f.k} k={f.k} onOuvrir={() => ouvrirAlbum(f.k)} />)}</section>
     </>
   )
 
@@ -157,7 +163,7 @@ export default function Album() {
     <>
     {ouverte && <FicheCarte c={ouverte.c} rarete={ouverte.r} onFermer={() => setOuverte(null)} aLire={eues.has(ouverte.c.id) && !lus.has(`${quiz}:${ouverte.c.id}`)} onLu={() => { if (user && quiz) { lireCarte(user.uid, quiz, ouverte.c.id, GAIN_CARTE[ouverte.r]).catch(() => {}); retourReponse(true) } setOuverte(null) }} />}
     <div className="album" style={{ ['--k' as string]: `var(--${famille})`, ['--ki' as string]: `var(--${famille}-i)`, ['--kt' as string]: `var(--${famille}-t)` }}>
-      <button type="button" onClick={() => setFamille(null)} className="mag-retour"><Icon d={ICONS.arrowL} />{fr ? 'Mes albums' : 'My albums'}</button>
+      <button type="button" onClick={fermerAlbum} className="mag-retour album-retour"><Icon d={ICONS.arrowL} />{fr ? 'Mes albums' : 'My albums'}</button>
       <h1 className="t" style={{ fontSize: 26, fontWeight: 900, color: 'var(--ki)' }}>{f.nom[lang]}</h1>
       <div className="album-onglets">
         {subs.map((s) => <button key={s.id} type="button" className="pill" aria-pressed={quiz === s.id} onClick={() => setQuiz(s.id)}>{s.nom[lang]} <small>{album[s.id]?.length ?? 0}</small></button>)}
