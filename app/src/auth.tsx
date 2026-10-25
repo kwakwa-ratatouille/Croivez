@@ -49,7 +49,8 @@ export type Profile = {
   paliers?: Record<string, number[]> // difficultés réussies (sans-faute, cumulatif) par quiz : ouvre la Légende
   toutDebloque?: boolean // menu de test : tous les quiz, toutes les difficultés et la Légende ouverts
   titre?: string // titre équipé (affiché sous le pseudo)
-  bio?: string // phrase de la vitrine
+  bio?: string // bio de la vitrine
+  liens?: Record<string, string> // réseaux : pseudo Instagram, TikTok, YouTube, X, Snapchat, Twitch
   vitrineFond?: string // fond de la vitrine (dégradé ou fond animé « fond-… »)
   pseudoStyle?: string // style du pseudo acheté en boutique
   clan?: string // code du clan

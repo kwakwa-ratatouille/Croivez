@@ -26,7 +26,7 @@ export default function Extrait({ id, stop }: { id: string; stop?: boolean }) {
 
   useEffect(() => {
     setSrc(''); setErreur(''); setLecture(false); setProgres(0)
-    lienExtrait(id).then(setSrc).catch(() => setErreur(fr ? 'Extrait indisponible (connexion ?)' : 'Clip unavailable'))
+    ;(id.startsWith('http') ? Promise.resolve(id) : lienExtrait(id)).then(setSrc).catch(() => setErreur(fr ? 'Extrait indisponible (connexion ?)' : 'Clip unavailable'))
   }, [id, fr])
 
   // Lecture automatique quand c'est permis (sur iPhone, il faut d'abord un appui sur le bouton)

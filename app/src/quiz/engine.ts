@@ -246,6 +246,7 @@ const CULTURE = {
   'eco-energies': { type: 'attribut', q: { fr: (n) => n, en: (n) => n } },
   'eco-dates': { type: 'attribut', q: { fr: (n) => n, en: (n) => n } },
   'eco-vf': { type: 'attribut', grand: true, fixe: true, q: { fr: () => 'Écologie : vrai ou faux ?', en: () => 'Ecology: true or false?' } },
+  'cris-animaux': { type: 'audio', q: { fr: () => 'Quel animal fait ce cri ?', en: () => 'Which animal makes this sound?' } },
   'idees-recues': { type: 'attribut', grand: true, fixe: true, q: { fr: () => 'Vrai ou faux ?', en: () => 'True or false?' } },
   'persos-univers': { type: 'attribut', pack: 'persos-jeu', montrer: true, groupe: 'genre', q: { fr: (n) => `De quel jeu vient ce personnage : ${n} ?`, en: (n) => `Which game is ${n} from?` } },
 } satisfies Record<string, { type: TypeCulture; silhouette?: boolean; montrer?: boolean; pack?: string; champ?: string; grand?: boolean; fixe?: boolean; groupe?: string; q: Record<Lang, (nom: string, genre?: string) => string> }>
@@ -707,7 +708,10 @@ function culture(o: Opts, tousItems: ItemCulture[]): Question[] {
             .map((x) => ({ x, s: ressemblance(valeur(x), reponse) })).sort((a, b) => b.s - a.s).slice(0, 10)
           cand = [...melanger(proches.map((p) => p.x)), ...cand]
         }
+        const pieges = typeof it.x?.pieges === 'string' && (o.difficulte === LEGENDE || difficulte >= 3) ? melanger(it.x.pieges.split('|')) : []
+        for (const p of pieges.slice(0, o.difficulte === LEGENDE ? nb : Math.ceil(nb / 2))) if (!vus.has(p)) { vus.add(p); autres.push(p) }
         for (const x of cand) {
+          if (autres.length >= nb) break
           const v = cfg.type === 'image' ? x.n[lang] : texte(val(x), lang)
           if (v && !vus.has(v)) { vus.add(v); autres.push(v) }
           if (autres.length === nb) break
@@ -738,7 +742,7 @@ function culture(o: Opts, tousItems: ItemCulture[]): Question[] {
       ...(sousTheme === 'logos' ? { fondGris: true } : {}),
       // Photo du sujet dès qu'elle existe, sauf si elle trahit la réponse (pochette, couverture, extrait audio)
       image: cfg.type === 'image' || cfg.montrer || (cfg.type !== 'audio' && !TRAHIT.has(sousTheme)) ? it.img : undefined,
-      audio: cfg.type === 'audio' ? it.id : undefined,
+      audio: cfg.type === 'audio' ? (typeof it.x?.son === 'string' ? it.x.son : it.id) : undefined,
       reponse,
       acceptees,
       options,

@@ -2332,3 +2332,18 @@ img, svg { -webkit-user-drag: none; }
 .tv-fin h1 { animation: titre-vainqueur 1s cubic-bezier(.3, 1.5, .5, 1) 2s both; text-shadow: 0 0 30px rgba(253, 224, 71, .6); font-size: clamp(32px, min(4vw, 7vh), 64px) !important; }
 @keyframes titre-vainqueur { from { opacity: 0; transform: scale(.4); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .podium2 *, .tv-fin h1 { animation: none !important; opacity: 1 !important; transform: none !important; } }
+
+/* Profil : réseaux et éditeur de vitrine en fenêtre à onglets */
+.vitrine-liens { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.vitrine-lien { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 999px; background: rgba(255,255,255,.92); color: var(--r); font: 800 13px Nunito, sans-serif; text-decoration: none; box-shadow: 0 2px 8px rgba(0,0,0,.15); }
+.edition-vitrine { width: min(640px, 94vw); max-height: 86vh; padding: 0; display: flex; flex-direction: column; overflow: hidden; }
+.edition-tete { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid var(--line); }
+.edition-tete strong { font-size: 18px; }
+.edition-onglets { display: flex; gap: 6px; padding: 10px 16px; overflow-x: auto; border-bottom: 1px solid var(--line); flex: none; }
+.edition-onglets .pill { white-space: nowrap; }
+.edition-contenu { padding: 16px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; }
+.edition-liens { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.edition-lien { display: flex; align-items: center; gap: 8px; padding: 4px 4px 4px 10px; border-radius: 14px; border: 2px solid color-mix(in srgb, var(--r) 40%, var(--line)); }
+.edition-lien span { font-size: 18px; }
+.edition-lien .input { flex: 1; min-width: 0; min-height: 38px; border: 0; background: transparent; }
+@media (max-width: 560px) { .edition-liens { grid-template-columns: 1fr; } }

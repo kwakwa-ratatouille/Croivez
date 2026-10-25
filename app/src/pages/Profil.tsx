@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom'
 import { BadgeClan } from '../components/BlasonClan'
 import { cartesARecuperer } from '../albumRecompenses'
 import Img from '../components/Img'
@@ -42,7 +43,7 @@ export function CarteJoueur({ p, moi = false }: { p: ProfilPublic; moi?: boolean
   const debut = xpPourNiveau(nv), fin = xpPourNiveau(nv + 1)
   const pct = Math.round((((p.xp ?? 0) - debut) / (fin - debut)) * 100)
   const stats: [string | number, string][] = [
-    [fmt.format(p.parties ?? 0), fr ? 'parties' : 'games'], [fmt.format(p.bonnes ?? 0), fr ? 'bonnes' : 'correct'],
+    [fmt.format(p.parties ?? 0), fr ? 'parties' : 'games'], [fmt.format(p.bonnes ?? 0), fr ? 'bonnes réponses' : 'correct answers'],
     [p.meilleureSerie ?? p.serie ?? 0, fr ? 'série max' : 'best streak'], [fmt.format(p.xp ?? 0), 'XP'],
   ]
   // Familles triées par maîtrise : les points forts d'abord
@@ -95,6 +96,38 @@ export const FONDS_VITRINE: Record<string, string> = {
   coucher: 'radial-gradient(circle at 70% 75%, #FFE08A 0 12%, transparent 13%), linear-gradient(180deg, #F97316, #DB2777 55%, #4C1D95)',
 }
 
+// Réseaux sociaux affichables : on ne garde que le pseudo (lettres, chiffres, point, tiret, souligné), le lien est construit ici
+const RESEAUX: { k: string; nom: string; icone: string; couleur: string; url: (p: string) => string }[] = [
+  { k: 'instagram', nom: 'Instagram', icone: '📸', couleur: '#E1306C', url: (p) => `https://instagram.com/${p}` },
+  { k: 'tiktok', nom: 'TikTok', icone: '🎵', couleur: '#111111', url: (p) => `https://tiktok.com/@${p}` },
+  { k: 'youtube', nom: 'YouTube', icone: '▶️', couleur: '#FF0000', url: (p) => `https://youtube.com/@${p}` },
+  { k: 'x', nom: 'X', icone: '𝕏', couleur: '#1D1D1F', url: (p) => `https://x.com/${p}` },
+  { k: 'snapchat', nom: 'Snapchat', icone: '👻', couleur: '#E8C400', url: (p) => `https://snapchat.com/add/${p}` },
+  { k: 'twitch', nom: 'Twitch', icone: '🎮', couleur: '#9146FF', url: (p) => `https://twitch.tv/${p}` },
+]
+const nettoyerPseudo = (v: string) => v.trim().replace(/^@/, '').replace(/^https?:\/\/[^/]+\/(@|add\/)?/i, '').replace(/[^A-Za-z0-9._-]/g, '').slice(0, 30)
+
+function EditionLiens() {
+  const { lang } = usePrefs()
+  const fr = lang === 'fr'
+  const { user, profile } = useAuth()
+  if (!user || !profile) return null
+  const liens = profile.liens ?? {}
+  return (
+    <>
+      <strong>{fr ? 'Mes réseaux (pseudo seulement)' : 'My socials (username only)'}</strong>
+      <div className="edition-liens">
+        {RESEAUX.map((x) => (
+          <label key={x.k} className="edition-lien" style={{ ['--r' as string]: x.couleur }}>
+            <span>{x.icone}</span>
+            <input className="input" defaultValue={liens[x.k] ?? ''} placeholder={x.nom} onBlur={(e) => { const v = nettoyerPseudo(e.target.value); e.target.value = v; if (v !== (liens[x.k] ?? '')) publierVitrine(user.uid, profile, { liens: { ...liens, [x.k]: v } }) }} />
+          </label>
+        ))}
+      </div>
+    </>
+  )
+}
+
 // Vitrine : une bannière personnalisable (fond, phrase, 3 badges, thème favori, chiffres forts)
 function Vitrine({ p, moi, onModifier }: { p: ProfilPublic; moi: boolean; onModifier?: () => void }) {
   const { lang } = usePrefs()
@@ -109,7 +142,8 @@ function Vitrine({ p, moi, onModifier }: { p: ProfilPublic; moi: boolean; onModi
       <div className="vitrine-haut">
         <div style={{ flex: 1, minWidth: 0 }}>
           <span className="eyebrow" style={{ color: 'rgba(255,255,255,.8)' }}>{fr ? 'Vitrine' : 'Showcase'}</span>
-          <p className="t vitrine-bio">{p.bio || (moi ? (fr ? 'Ajoute une phrase qui te ressemble…' : 'Add a line about you…') : '')}</p>
+          <p className="t vitrine-bio">{p.bio || (moi ? (fr ? 'Ajoute une bio qui te ressemble…' : 'Add a bio…') : '')}</p>
+          {p.liens && Object.entries(p.liens).some(([, v]) => v) && <div className="vitrine-liens">{RESEAUX.filter((x) => p.liens?.[x.k]).map((x) => <a key={x.k} href={x.url(p.liens![x.k])} target="_blank" rel="noreferrer noopener" className="vitrine-lien" style={{ ['--r' as string]: x.couleur }}><span>{x.icone}</span>{p.liens![x.k]}</a>)}</div>}
         </div>
         {moi && <button className="btn vitrine-modifier" onClick={onModifier}><Icon d={ICONS.settings} size={16} />{fr ? 'Personnaliser' : 'Customize'}</button>}
       </div>
@@ -176,6 +210,7 @@ export default function Profil() {
   const fr = lang === 'fr'
   const { user, profile } = useAuth()
   const [edition, setEdition] = useState(false)
+  const [ongletEd, setOngletEd] = useState<'moi' | 'fond' | 'badges' | 'favoris' | 'cartes'>('moi')
   if (!profile || !user) return null
   const pub: ProfilPublic = { uid: user.uid, pseudo: profile.pseudo, xp: profile.xp, niveau: niveau(profile.xp), serie: profile.serie, avatar: profile.avatar, cadre: profile.cadre, ...resumePublic(profile), titre: profile.titre }
   const obtenus = BADGES.map((b) => ({ b, n: palierAtteint(b, profile) })).filter((x) => x.n > 0)
@@ -197,22 +232,33 @@ export default function Profil() {
       </nav>
       <CarteJoueur p={pub} moi />
       <Vitrine p={pub} moi onModifier={() => setEdition((e) => !e)} />
-      {edition && (
-        <section className="card rise" style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+      {edition && createPortal(<div className="fiche-voile" onClick={() => setEdition(false)}>
+        <section className="card rise edition-vitrine" onClick={(e) => e.stopPropagation()} role="dialog" aria-label={fr ? 'Personnaliser la vitrine' : 'Customize showcase'}>
+          <div className="edition-tete"><strong className="t">✨ {fr ? 'Personnaliser ma vitrine' : 'Customize my showcase'}</strong><button type="button" className="btn btn-g" aria-label={fr ? 'Fermer' : 'Close'} onClick={() => setEdition(false)}><Icon d={ICONS.close} size={18} /></button></div>
+          <div className="edition-onglets" role="tablist">{([['moi', fr ? '✍️ Bio et liens' : '✍️ Bio & links'], ['fond', fr ? '🎨 Fond' : '🎨 Background'], ['badges', '🏅 Badges'], ['favoris', fr ? '⭐ Favoris' : '⭐ Favourites'], ['cartes', fr ? '🃏 Cartes' : '🃏 Cards']] as const).map(([k, l]) => <button key={k} type="button" role="tab" className="pill" aria-pressed={ongletEd === k} onClick={() => setOngletEd(k)}>{l}</button>)}</div>
+          <div className="edition-contenu">
+          {ongletEd === 'badges' && <>
           <strong>{fr ? 'Badges à exposer (3 max)' : 'Badges to show (max 3)'}</strong>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             {obtenus.length === 0 && <span style={{ color: 'var(--muted)' }}>{fr ? 'Aucun badge pour l’instant.' : 'No badge yet.'}</span>}
             {obtenus.map(({ b, n }) => <button key={b.id} type="button" className="pill" aria-pressed={vitrine.some((v) => v.startsWith(b.id + ':'))} onClick={() => basculer(`${b.id}:${n}`)}>{b.nom[lang]} · {PALIERS[n - 1].nom[lang]}</button>)}
           </div>
+          </>}
+          {ongletEd === 'fond' && <>
           <strong>{fr ? 'Fond de la vitrine' : 'Showcase background'}</strong>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             {Object.entries(FONDS_VITRINE).map(([id, g]) => <button key={id} type="button" aria-label={id} aria-pressed={(profile.vitrineFond ?? 'aurore') === id} className="pastille-fond" style={{ background: g }} onClick={() => publierVitrine(user.uid, profile, { vitrineFond: id })} />)}
             {FONDS_ANIMES.filter((f) => BOUTIQUE.some((o) => o.id === f.id && possede(profile, o))).map((f) => <button key={f.id} type="button" aria-label={f.nom[lang]} title={f.nom[lang]} aria-pressed={profile.vitrineFond === f.id} className="pastille-fond anime" style={{ background: f.fond }} onClick={() => publierVitrine(user.uid, profile, { vitrineFond: f.id })}><Particules f={f} /></button>)}
             <Link to="/boutique?o=fond" className="pastille-fond plus" aria-label={fr ? 'Plus de fonds animés en boutique' : 'More animated backgrounds'}>🛍️</Link>
           </div>
-          <label style={{ display: 'flex', flexDirection: 'column', gap: 6, fontWeight: 600 }}>{fr ? 'Ta phrase (60 caractères)' : 'Your line (60 chars)'}
-            <input className="input" maxLength={60} defaultValue={profile.bio ?? ''} placeholder={fr ? 'Ex. : Imbattable sur les drapeaux 🌍' : 'e.g. Unbeatable on flags'} onBlur={(e) => publierVitrine(user.uid, profile, { bio: e.target.value.trim().slice(0, 60) })} />
+          </>}
+          {ongletEd === 'moi' && <>
+          <label style={{ display: 'flex', flexDirection: 'column', gap: 6, fontWeight: 600 }}>{fr ? 'Ta bio (160 caractères)' : 'Your bio (160 chars)'}
+            <input className="input" maxLength={160} defaultValue={profile.bio ?? ''} placeholder={fr ? 'Ex. : Imbattable sur les drapeaux 🌍' : 'e.g. Unbeatable on flags'} onBlur={(e) => publierVitrine(user.uid, profile, { bio: e.target.value.trim().slice(0, 160) })} />
           </label>
+          <EditionLiens />
+          </>}
+          {ongletEd === 'favoris' && <>
           <strong>{fr ? 'Familles préférées (3 max)' : 'Favourite families (max 3)'}</strong>
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
             {FAMILLES.map((f) => { const l = profile.famillesFav ?? []; const on = l.includes(f.k); return <button key={f.k} type="button" className="pill" aria-pressed={on} onClick={() => publierVitrine(user.uid, profile, { famillesFav: on ? l.filter((x) => x !== f.k) : [...l, f.k].slice(-3) })}>{f.nom[lang].split(/ [&,]/)[0]}</button> })}
@@ -222,10 +268,14 @@ export default function Profil() {
             {(profile.quizFav ?? (profile.favori ? [profile.favori] : [])).map((id) => <button key={id} type="button" className="pill" aria-pressed onClick={() => publierVitrine(user.uid, profile, { quizFav: (profile.quizFav ?? [profile.favori ?? '']).filter((x) => x && x !== id) })}>{possedes.find((s) => s.id === id)?.nom[lang] ?? id} ✕</button>)}
             {(profile.quizFav?.length ?? (profile.favori ? 1 : 0)) < 3 && <div style={{ flex: '1 1 220px' }}><ChoixTheme valeur="mix" quiz={possedes.map((s) => s.id)} onChange={(id) => { if (id !== 'mix') publierVitrine(user.uid, profile, { quizFav: [...new Set([...(profile.quizFav ?? (profile.favori ? [profile.favori] : [])), id])].slice(-3) }) }} /></div>}
           </div>
+          </>}
+          {ongletEd === 'cartes' && <>
           <strong>{fr ? 'Cartes d’album à exposer (3 max)' : 'Album cards to show (max 3)'}</strong>
           <ChoixCartes />
+          </>}
+          </div>
         </section>
-      )}
+      </div>, document.body)}
 
       <details className="card repli">
         <summary className="t">{fr ? 'Badges' : 'Badges'} <span>{BADGES.reduce((a, b) => a + palierAtteint(b, profile), 0)} / {BADGES.length * 3}</span></summary>

@@ -398,7 +398,7 @@ function Jeu({ code, salon, suisHote, pilote, ecranTv, maintenant, onQuitter }: 
     if (!profile || !moiJ) return // invité ou écran télé : rien à enregistrer
     const resultats = questions.slice(0, n).map((qq, k) => ({ id: qq.id, juste: !!moiJ.r?.[k]?.j, s: qq.s ?? r.s }))
     const bonnes = resultats.filter((x) => x.juste).length
-    enregistrerPartie(uid, profile, { sousTheme: (r.s.startsWith('mix') ? 'mix' : r.s) as SousThemeId, xp: Math.round(xpSalon(rang, classement.length, bonnes) * facteurXp(profile, salon.tv ? 'tv' : 'salon', false)), cleFarm: salon.tv ? 'tv' : 'salon', pieces: piecesSalon(rang, classement.length), resultats, revision: true, sansRevision: true, multi: { mode: salon.tv ? 'tv' : 'salon', gagne: classement.length > 1 && rang === 0 }, miniJeu: r.mj }).catch(console.error)
+    enregistrerPartie(uid, profile, { sousTheme: (r.s.startsWith('mix') ? 'mix' : r.s) as SousThemeId, xp: Math.round(xpSalon(rang, classement.length, bonnes) * facteurXp(profile, salon.tv ? 'tv' : 'salon', false)), cleFarm: salon.tv ? 'tv' : 'salon', pieces: piecesSalon(rang, classement.length), resultats, stats: { bonnes, comboMax: 0, famille: r.s.startsWith('mix-') ? r.s.slice(4) : r.s === 'mix' ? undefined : trouverSousTheme(r.s)?.famille.k, difficulte: r.d || undefined }, revision: true, sansRevision: true, multi: { mode: salon.tv ? 'tv' : 'salon', gagne: classement.length > 1 && rang === 0 }, miniJeu: r.mj }).catch(console.error)
   }, [salon.etat, profile, questions, moiJ, classement, uid, n, r.s, r.mj, ecranTv, salon.tv])
 
   // ——— Fin de partie ———
