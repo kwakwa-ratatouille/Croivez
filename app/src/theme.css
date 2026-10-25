@@ -2053,3 +2053,21 @@ button.rang-palier[aria-pressed="true"] { background: color-mix(in srgb, var(--r
 /* Intro du lancement : par-dessus l'appli qui se charge, puis fondu */
 .intro-lancement { position: fixed; inset: 0; z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; background: var(--bg); transition: opacity .35s ease, transform .35s ease; }
 .intro-lancement.part { opacity: 0; transform: scale(1.04); pointer-events: none; }
+
+/* Duel : le tableau de scores ne déborde jamais (colonnes compressibles, sous l'encoche) */
+.duel-page { width: 100%; max-width: 100vw; overflow-x: hidden; box-sizing: border-box; }
+.duel-tableau { grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); box-sizing: border-box; }
+.duel-joueur .duel-pts { max-width: 100%; overflow: hidden; }
+@media (max-width: 560px) {
+  .duel-page { padding: calc(12px + env(safe-area-inset-top)) 12px calc(100px + env(safe-area-inset-bottom)) !important; }
+  .duel-joueur { padding: 10px 6px 8px; }
+  .duel-joueur.moi { padding-left: 30px; }
+  .duel-vs { padding: 0 6px; }
+}
+
+/* Multi : « Défier un ami » se déroule au toucher */
+details.multi-duel > summary { list-style: none; cursor: pointer; }
+details.multi-duel > summary::-webkit-details-marker { display: none; }
+.multi-duel-ouvrir { margin-left: auto; font-size: 22px; transition: transform .2s; align-self: center; }
+details.multi-duel[open] .multi-duel-ouvrir { transform: rotate(180deg); }
+details.multi-duel:not([open]) { gap: 0 !important; }

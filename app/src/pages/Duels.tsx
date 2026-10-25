@@ -89,6 +89,13 @@ export default function Duels() {
         </section>
       )}
 
+      {/* Duel aléatoire : tout en haut, le plus simple pour jouer tout de suite */}
+      <section className="card multi-aleatoire">
+        <span className="multi-duel-icone">🎲</span>
+        <div style={{ flex: 1, minWidth: 0 }}><h2 className="t">{fr ? 'Duel aléatoire' : 'Random duel'}</h2><p>{fr ? 'Un adversaire au hasard, un thème au hasard, règles classiques (10 questions, 15 s).' : 'Random opponent and topic, classic rules.'}</p></div>
+        <button className="btn btn-lg multi-hasard" onClick={async () => setRecherche(await chercherAdversaire(uid, moi))}>{fr ? 'Jouer' : 'Play'}<Icon d={ICONS.arrowR} /></button>
+      </section>
+
       {/* Bandeau amis : bien visible, en haut ; un appui sur ⚔️ lance l'invitation au duel */}
       <section className="card multi-amis">
         <div className="multi-amis-tete">
@@ -115,8 +122,8 @@ export default function Duels() {
       <BandeauClan code={profile?.clan} />
 
       {/* Défier un ami : tous les réglages, puis le choix de l'ami */}
-      <section className="card multi-duel">
-        <div className="multi-duel-tete"><span className="multi-duel-icone">🤝</span><div><h2 className="t">{fr ? 'Défier un ami' : 'Challenge a friend'}</h2><p>{fr ? 'Tu choisis tout : thème, difficulté, nombre de questions et temps. Ton ami confirme « Prêt » et c’est parti.' : 'You pick the rules, your friend confirms.'}</p></div></div>
+      <details className="card multi-duel">
+        <summary className="multi-duel-tete"><span className="multi-duel-icone">🤝</span><div><h2 className="t">{fr ? 'Défier un ami' : 'Challenge a friend'}</h2><p>{fr ? 'Duel personnalisé : tu choisis le thème, la difficulté, le type, le nombre de questions et le temps.' : 'Custom duel: you pick every rule.'}</p></div><span className="multi-duel-ouvrir" aria-hidden="true">▾</span></summary>
         <div className="multi-duel-reglages">
           <label><span>{fr ? 'Thème' : 'Topic'}</span>
             <ChoixTheme valeur={themeDuel} onChange={setThemeDuel} quiz={FAMILLES.flatMap((f) => f.subs.filter((s) => s.jouable && natureQuiz(s.id) !== 'carte').map((s) => s.id))} />
@@ -141,14 +148,7 @@ export default function Duels() {
           {amis.map((a) => <button key={a.uid} type="button" className="multi-duel-ami" onClick={() => defier(a.uid)}><Avatar pseudo={a.pseudo} avatar={a.avatar} cadre={a.cadre} taille={34} /><span>{a.pseudo}</span><em>⚔️</em></button>)}
         </div>
 
-      </section>
-
-      {/* Duel aléatoire : règles de base, thèmes au hasard, aucun réglage */}
-      <section className="card multi-aleatoire">
-        <span className="multi-duel-icone">🎲</span>
-        <div style={{ flex: 1, minWidth: 0 }}><h2 className="t">{fr ? 'Duel aléatoire' : 'Random duel'}</h2><p>{fr ? 'Un adversaire au hasard, un thème au hasard, règles classiques (10 questions, 15 s).' : 'Random opponent and topic, classic rules.'}</p></div>
-        <button className="btn btn-lg multi-hasard" onClick={async () => setRecherche(await chercherAdversaire(uid, moi))}>{fr ? 'Jouer' : 'Play'}<Icon d={ICONS.arrowR} /></button>
-      </section>
+      </details>
 
       {/* Salon : la grande nouveauté, mise en avant */}
       <section className="card salon-accueil rise">
