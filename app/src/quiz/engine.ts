@@ -220,6 +220,8 @@ const CULTURE = {
   superheros: { type: 'attribut', q: { fr: (n) => `Quelle est l’identité secrète de ${n} ?`, en: (n) => `What is ${n}’s secret identity?` } },
   slogans: { type: 'attribut', grand: true, q: { fr: () => 'À quelle marque appartient ce slogan ?', en: () => 'Which brand uses this slogan?' } },
   'dessins-animes': { type: 'attribut', montrer: true, groupe: 'genre', q: { fr: (n) => `De quel dessin animé vient ce personnage : ${n} ?`, en: (n) => `Which cartoon is ${n} from?` } },
+  'persos-animation': { type: 'attribut', montrer: true, groupe: 'genre', q: { fr: (n) => `De quel film d’animation vient ce personnage : ${n} ?`, en: (n) => `Which animated film is ${n} from?` } },
+  'persos-animation-photo': { type: 'image', pack: 'persos-animation', q: { fr: () => 'Qui est ce personnage de Disney, Pixar ou DreamWorks ?', en: () => 'Which animated character is this?' } },
   'dessins-animes-photo': { type: 'image', pack: 'dessins-animes', q: { fr: () => 'Qui est ce personnage de dessin animé ?', en: () => 'Which cartoon character is this?' } },
   expressions: { type: 'attribut', grand: true, q: { fr: () => 'Que signifie cette expression ?', en: () => 'What does this French expression mean?' } },
   gentiles: { type: 'attribut', q: { fr: (n) => `Comment appelle-t-on les habitants ${deVille(n)} ?`, en: (n) => `What are the people of ${n} called?` } },
