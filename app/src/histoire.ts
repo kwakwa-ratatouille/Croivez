@@ -1,3 +1,4 @@
+import { gagnerXpClan } from './clans'
 import { doc, increment, setDoc } from 'firebase/firestore'
 import { db } from './firebase'
 import { jour, type Profile } from './auth'
@@ -45,6 +46,7 @@ export async function recompenser(uid: string, p: Profile, mode: 'ceJour' | 'fri
   const pieces = Math.round(10 + (bonnes / total) * 40)
   const xp = Math.round(20 + (bonnes / total) * 60)
   await setDoc(doc(db, 'users', uid), { pieces: increment(pieces), xp: increment(xp), [cle]: jour() }, { merge: true })
+  if (p.clan) gagnerXpClan(p.clan, xp).catch(() => {})
   await publierXp(uid, p.pseudo, xp, (p.xp ?? 0) + xp, p.serie ?? 0).catch(() => {})
   return { pieces, xp }
 }

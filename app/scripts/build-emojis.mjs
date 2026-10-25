@@ -27,9 +27,9 @@ await ecrire('emojis-jeux', paquet('emjv', [
 
 await ecrire('emojis-expressions', paquet('emexp', [
   ['🐱🌳', 'Avoir un chat dans la gorge'], ['🌧️🐱🐶', 'Il pleut des cordes'], ['🐟🪣🫧', 'Être comme un poisson dans l’eau'], ['🍰🫠', 'C’est du gâteau'], ['🐔🦷', 'Quand les poules auront des dents'],
-  ['🥕🥕🍳', 'Les carottes sont cuites'], ['🦵👯', 'Casser les pieds'], ['🐮🇪🇸🗣️', 'Parler français comme une vache espagnole'], ['🥖⏰', 'Long comme un jour sans pain'], ['🍯🐻👅', 'Avoir un cœur d’artichaut'],
+  ['🥕🥕🍳', 'Les carottes sont cuites'], ['🦵👯', 'Casser les pieds'], ['🐮🇪🇸🗣️', 'Parler français comme une vache espagnole'], ['🥖⏰', 'Long comme un jour sans pain'], ['❤️🥬💔', 'Avoir un cœur d’artichaut'],
   ['🐑🔟', 'Compter les moutons'], ['🧀🍷🍐', 'Entre la poire et le fromage'], ['🌙👀', 'Être dans la lune'], ['🐌💨🚫', 'Avancer comme un escargot'], ['🧈🧈💰', 'Vouloir le beurre et l’argent du beurre'],
-  ['🐘🏪🍽️', 'Comme un éléphant dans un magasin de porcelaine'], ['🫒🧠', 'Se creuser la tête'], ['👁️🐟', 'Avoir l’œil'], ['🔥🛢️🛢️', 'Mettre de l’huile sur le feu'], ['🥚🧺', 'Mettre tous ses œufs dans le même panier'],
+  ['🐘🏪🍽️', 'Comme un éléphant dans un magasin de porcelaine'], ['⛏️🧠', 'Se creuser la tête'], ['👁️🐟', 'Avoir l’œil'], ['🔥🛢️🛢️', 'Mettre de l’huile sur le feu'], ['🥚🧺', 'Mettre tous ses œufs dans le même panier'],
   ['🐺🐺', 'Être connu comme le loup blanc'], ['🍅😳', 'Rougir comme une tomate'], ['🐦🐦🗿', 'Faire d’une pierre deux coups'], ['💤🛌🌹', 'La nuit porte conseil'], ['🐴👄🎁', 'À cheval donné, on ne regarde pas les dents'],
 ]))
 

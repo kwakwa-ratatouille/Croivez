@@ -1,3 +1,4 @@
+import { BadgeClan } from '../components/BlasonClan'
 import Img from '../components/Img'
 import { cartesDe } from './Album'
 import ChoixTheme from '../components/ChoixTheme'
@@ -53,6 +54,7 @@ export function CarteJoueur({ p, moi = false }: { p: ProfilPublic; moi?: boolean
           <h1 className="t" style={{ fontSize: 26, fontWeight: 900, overflow: 'hidden', textOverflow: 'ellipsis' }}><Pseudo nom={p.pseudo} style={p.pseudoStyle} /></h1>
           {/* Titre équipé (gagné par un exploit) */}
           {(() => { const o = BOUTIQUE.find((x) => x.id === p.titre); return o && <span className={`titre-affiche${o.anim ? ' ' + o.anim.split(' ').map((x) => 'titre-fx-' + x).join(' ') : ''}`}>{o.luxe ? '✦' : '🏅'} {o.nom[lang]}</span> })()}
+          <BadgeClan code={(p as { clan?: string }).clan} />
           {moi && !p.titre && <Link to="/boutique" className="titre-affiche vide">+ {fr ? 'Choisir un titre' : 'Pick a title'}</Link>}
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <span className="chip" style={{ background: 'var(--mus-t)', color: 'var(--mus-i)' }}>{fr ? 'Niv.' : 'Lv.'} {nv}</span>

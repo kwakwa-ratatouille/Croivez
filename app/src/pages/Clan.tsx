@@ -1,14 +1,46 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../auth'
 import { usePrefs } from '../i18n'
-import { COULEURS_CLAN, EMBLEMES, MAX_MEMBRES, OBJECTIF_CLAN, creerClan, lireClan, noterActivite, quitterClan, rejoindreClan, scoresClan, type Clan as TClan } from '../activite'
+import { noterActivite } from '../activite'
+import { AVANTAGES, BLASON_DEFAUT, FORMES, MOTIFS, NIVEAU_FORME, NIVEAU_MOTIF, PALETTE, SYMBOLES, chercherClans, cleNom, creerClan, lireClan, maxMembres, modifierClan, niveauClan, nomPris, objectifSemaine, quitterClan, rejoindreClan, scoresClan, xpNiveau, type Blason, type Clan as TClan, type EntreeIndex } from '../clans'
+import BlasonClan from '../components/BlasonClan'
 import Avatar from '../components/Avatar'
 import { ICONS, Icon } from '../components/ui'
 
 type Score = Awaited<ReturnType<typeof scoresClan>>[number]
+const nf = (n: number) => n.toLocaleString('fr-FR')
 
-// Clan : jusqu'à 20 joueurs qui cumulent leur XP de la semaine vers un objectif commun
+// Atelier du blason : formes et motifs débloqués selon le niveau du clan
+function Atelier({ b, setB, niveau }: { b: Blason; setB: (b: Blason) => void; niveau: number }) {
+  return (
+    <div className="atelier">
+      <div className="atelier-apercu"><BlasonClan b={b} niveau={niveau} taille={110} /></div>
+      <div className="atelier-reglages">
+        <span className="atelier-titre">Forme</span>
+        <div className="atelier-choix">{FORMES.map((f) => { const ok = niveau >= NIVEAU_FORME[f]; return <button key={f} type="button" disabled={!ok} aria-pressed={b.forme === f} onClick={() => setB({ ...b, forme: f })} title={ok ? f : `Niveau ${NIVEAU_FORME[f]}`}><BlasonClan b={{ ...b, forme: f, motif: 'uni', symbole: b.symbole }} taille={34} />{!ok && <em>🔒{NIVEAU_FORME[f]}</em>}</button> })}</div>
+        <span className="atelier-titre">Motif</span>
+        <div className="atelier-choix">{MOTIFS.map((m) => { const ok = niveau >= NIVEAU_MOTIF[m]; return <button key={m} type="button" disabled={!ok} aria-pressed={b.motif === m} onClick={() => setB({ ...b, motif: m })}><BlasonClan b={{ ...b, motif: m }} taille={34} />{!ok && <em>🔒{NIVEAU_MOTIF[m]}</em>}</button> })}</div>
+        <span className="atelier-titre">Symbole</span>
+        <div className="atelier-choix">{SYMBOLES.map((s) => <button key={s} type="button" aria-pressed={b.symbole === s} onClick={() => setB({ ...b, symbole: s })}><BlasonClan b={{ ...b, symbole: s }} taille={34} /></button>)}</div>
+        <span className="atelier-titre">Couleurs</span>
+        <div className="atelier-couleurs">{PALETTE.map((c) => <button key={c} type="button" aria-pressed={b.c1 === c} style={{ background: c }} aria-label={c} onClick={() => setB({ ...b, c1: c })} />)}</div>
+        <div className="atelier-couleurs">{PALETTE.map((c) => <button key={c} type="button" aria-pressed={b.c2 === c} style={{ background: c }} aria-label={c} onClick={() => setB({ ...b, c2: c })} />)}</div>
+      </div>
+    </div>
+  )
+}
+
+export function CarteClanIndex({ c, onRejoindre }: { c: EntreeIndex & { code: string }; onRejoindre?: () => void }) {
+  return (
+    <div className="clan-suggestion">
+      <BlasonClan b={c.blason} niveau={niveauClan(c.xp)} taille={44} />
+      <div><strong>{c.nom}</strong><small>Niv. {niveauClan(c.xp)} · {c.n} / {maxMembres(niveauClan(c.xp))} membres</small></div>
+      {onRejoindre && <button type="button" className="btn btn-p" disabled={c.n >= maxMembres(niveauClan(c.xp))} onClick={onRejoindre}>Rejoindre</button>}
+    </div>
+  )
+}
+
 export default function Clan() {
   const { lang } = usePrefs()
   const fr = lang === 'fr'
@@ -16,89 +48,131 @@ export default function Clan() {
   const code = profile?.clan || ''
   const [clan, setClan] = useState<TClan | null | undefined>(undefined)
   const [scores, setScores] = useState<Score[]>([])
+  const [index, setIndex] = useState<(EntreeIndex & { code: string })[]>([])
+  const [cherche, setCherche] = useState('')
+  const [creation, setCreation] = useState(false)
+  const [edition, setEdition] = useState(false)
   const [nom, setNom] = useState('')
-  const [embleme, setEmbleme] = useState(EMBLEMES[0])
-  const [couleur, setCouleur] = useState(COULEURS_CLAN[0])
-  const [saisie, setSaisie] = useState('')
+  const [devise, setDevise] = useState('')
+  const [blason, setBlason] = useState<Blason>(BLASON_DEFAUT)
   const [msg, setMsg] = useState('')
   const [quitter, setQuitter] = useState(false)
   const moi = { pseudo: profile?.pseudo ?? '?', depuis: Date.now(), ...(profile?.avatar ? { avatar: profile.avatar } : {}), ...(profile?.cadre ? { cadre: profile.cadre } : {}) }
 
-  useEffect(() => {
-    if (!code) { setClan(null); return }
-    lireClan(code).then(async (c) => { setClan(c); if (c) setScores(await scoresClan(c)) }).catch(() => setClan(null))
-  }, [code])
+  const charger = () => {
+    if (!code) { setClan(null); chercherClans().then(setIndex).catch(() => setIndex([])); return }
+    lireClan(code).then(async (c) => { setClan(c); if (c) { setScores(await scoresClan(c)); setNom(c.nom); setDevise(c.devise ?? ''); setBlason(c.blason) } }).catch(() => setClan(null))
+  }
+  useEffect(charger, [code]) // eslint-disable-line react-hooks/exhaustive-deps
+  const resultats = useMemo(() => { const q = cleNom(cherche); return (q ? index.filter((c) => c.cle.includes(q)) : index).slice(0, 12) }, [index, cherche])
 
   const creer = async () => {
-    if (!user || nom.trim().length < 3) { setMsg(fr ? 'Il faut un nom d’au moins 3 lettres.' : 'Name needs 3+ letters.'); return }
-    const c = await creerClan(user.uid, moi, nom, embleme, couleur)
-    noterActivite(user.uid, embleme, fr ? `a fondé le clan ${nom.trim()}` : `founded ${nom.trim()}`).catch(() => {})
-    setMsg(fr ? `Clan créé ! Code : ${c}` : `Clan created! Code: ${c}`)
+    if (!user) return
+    if (nom.trim().length < 3) { setMsg(fr ? 'Il faut un nom d’au moins 3 lettres.' : 'Name needs 3+ letters.'); return }
+    if (await nomPris(nom)) { setMsg(fr ? 'Ce nom de clan existe déjà.' : 'Name taken.'); return }
+    await creerClan(user.uid, moi, nom, devise, blason)
+    noterActivite(user.uid, '🛡️', `a fondé le clan ${nom.trim()}`).catch(() => {})
   }
-  const rejoindre = async () => {
-    if (!user || saisie.trim().length < 5) return
-    const r = await rejoindreClan(user.uid, moi, saisie.trim())
-    if (r === 'introuvable') setMsg(fr ? 'Aucun clan avec ce code.' : 'No clan with this code.')
-    else if (r === 'plein') setMsg(fr ? `Ce clan est complet (${MAX_MEMBRES} membres).` : 'This clan is full.')
-    else { const c = await lireClan(saisie.trim()); if (c) noterActivite(user.uid, c.embleme, fr ? `a rejoint le clan ${c.nom}` : `joined ${c.nom}`).catch(() => {}) }
+  const rejoindre = async (c: string, n: string) => {
+    if (!user) return
+    const r = await rejoindreClan(user.uid, moi, c)
+    if (r === 'introuvable') setMsg(fr ? 'Ce clan n’existe plus.' : 'Clan not found.')
+    else if (r === 'plein') setMsg(fr ? 'Ce clan est complet.' : 'Clan is full.')
+    else noterActivite(user.uid, '🛡️', `a rejoint le clan ${n}`).catch(() => {})
   }
-  const copier = () => { navigator.clipboard?.writeText(code).catch(() => {}); setMsg(fr ? `Code ${code} copié : envoie-le à tes amis !` : 'Code copied!') }
+  const enregistrer = async () => {
+    if (!clan) return
+    if (nom.trim().length < 3) { setMsg(fr ? 'Il faut un nom d’au moins 3 lettres.' : 'Name needs 3+ letters.'); return }
+    if (cleNom(nom) !== cleNom(clan.nom) && await nomPris(nom)) { setMsg(fr ? 'Ce nom de clan existe déjà.' : 'Name taken.'); return }
+    await modifierClan(clan, { nom: nom.trim().slice(0, 24), devise: devise.trim().slice(0, 60), blason })
+    setEdition(false); setMsg(fr ? 'Clan mis à jour ✨' : 'Saved'); charger()
+  }
 
   if (clan === undefined) return <p style={{ color: 'var(--muted)', padding: 24 }}>{fr ? 'Chargement…' : 'Loading…'}</p>
 
+  // ——— Pas encore de clan : chercher, rejoindre, fonder ———
   if (!clan) return (
     <>
       <Link to="/duels" className="lien-retour"><Icon d={ICONS.arrowL} />Multi</Link>
-      <h1 className="t" style={{ fontSize: 30, fontWeight: 900 }}>🛡️ {fr ? 'Clans' : 'Clans'}</h1>
-      <p style={{ color: 'var(--muted)', marginTop: -6 }}>{fr ? `Jusqu’à ${MAX_MEMBRES} joueurs : chaque partie fait grimper l’XP du clan vers l’objectif de la semaine.` : 'Up to 20 players pooling weekly XP.'}</p>
-      <section className="card clan-bloc">
-        <h2 className="t">{fr ? 'Rejoindre avec un code' : 'Join with a code'}</h2>
-        <div className="clan-ligne">
-          <input className="input clan-code" value={saisie} maxLength={5} onChange={(e) => setSaisie(e.target.value.toUpperCase())} placeholder="ABCDE" />
-          <button className="btn btn-p" disabled={saisie.trim().length < 5} onClick={rejoindre}>{fr ? 'Rejoindre' : 'Join'}</button>
-        </div>
-      </section>
-      <section className="card clan-bloc">
-        <h2 className="t">{fr ? 'Fonder mon clan' : 'Found my clan'}</h2>
-        <input className="input" value={nom} maxLength={24} onChange={(e) => setNom(e.target.value)} placeholder={fr ? 'Nom du clan' : 'Clan name'} />
-        <div className="clan-emblemes">{EMBLEMES.map((e) => <button key={e} type="button" aria-pressed={embleme === e} onClick={() => setEmbleme(e)}>{e}</button>)}</div>
-        <div className="clan-couleurs">{COULEURS_CLAN.map((c) => <button key={c} type="button" aria-pressed={couleur === c} aria-label={c} style={{ background: c }} onClick={() => setCouleur(c)} />)}</div>
-        <div className="clan-apercu" style={{ background: couleur }}><span>{embleme}</span><strong>{nom.trim() || (fr ? 'Mon clan' : 'My clan')}</strong></div>
-        <button className="btn btn-p btn-lg" onClick={creer}>{fr ? 'Créer le clan' : 'Create clan'}</button>
-      </section>
+      <header className="clan-hero vide">
+        <BlasonClan b={BLASON_DEFAUT} niveau={5} taille={84} />
+        <div><h1 className="t">{fr ? 'Les clans' : 'Clans'}</h1><p>{fr ? 'Faites monter votre clan de niveau ensemble : chaque partie de chaque membre compte. Plus le clan grandit, plus son blason devient beau.' : 'Level up your clan together.'}</p></div>
+      </header>
+      {!creation && (
+        <section className="card clan-bloc">
+          <h2 className="t">{fr ? 'Trouver un clan' : 'Find a clan'}</h2>
+          <input className="input" value={cherche} onChange={(e) => setCherche(e.target.value)} placeholder={fr ? 'Nom du clan…' : 'Clan name…'} />
+          <div className="clan-suggestions">
+            {resultats.length === 0 && <p style={{ color: 'var(--muted)', margin: 0 }}>{index.length ? (fr ? 'Aucun clan avec ce nom.' : 'No match.') : (fr ? 'Aucun clan pour l’instant : fonde le premier !' : 'No clans yet.')}</p>}
+            {resultats.map((c) => <CarteClanIndex key={c.code} c={c} onRejoindre={() => rejoindre(c.code, c.nom)} />)}
+          </div>
+          <button className="btn btn-s btn-lg" onClick={() => setCreation(true)}>🛡️ {fr ? 'Fonder mon propre clan' : 'Found my clan'}</button>
+        </section>
+      )}
+      {creation && (
+        <section className="card clan-bloc">
+          <h2 className="t">{fr ? 'Fonder mon clan' : 'Found my clan'}</h2>
+          <input className="input" value={nom} maxLength={24} onChange={(e) => setNom(e.target.value)} placeholder={fr ? 'Nom du clan (unique)' : 'Clan name'} />
+          <input className="input" value={devise} maxLength={60} onChange={(e) => setDevise(e.target.value)} placeholder={fr ? 'Devise (facultatif)' : 'Motto (optional)'} />
+          <Atelier b={blason} setB={setBlason} niveau={1} />
+          <div className="clan-ligne"><button className="btn btn-g" onClick={() => setCreation(false)}>{fr ? 'Annuler' : 'Cancel'}</button><button className="btn btn-p btn-lg" onClick={creer}>{fr ? 'Créer le clan' : 'Create'}</button></div>
+        </section>
+      )}
       {msg && <p role="status" style={{ fontWeight: 700 }}>{msg}</p>}
     </>
   )
 
-  const total = scores.reduce((s, m) => s + m.xp, 0)
+  // ——— Mon clan ———
+  const niv = niveauClan(clan.xp)
+  const debut = xpNiveau(niv), fin = xpNiveau(niv + 1)
+  const semaineXp = scores.reduce((s, m) => s + m.xp, 0)
+  const objectif = objectifSemaine(niv)
+  const chef = clan.chef === user?.uid
   return (
     <>
       <Link to="/duels" className="lien-retour"><Icon d={ICONS.arrowL} />Multi</Link>
-      <header className="clan-tete" style={{ ['--clan' as string]: clan.couleur }}>
-        <span className="clan-embleme">{clan.embleme}</span>
-        <div>
+      <header className="clan-hero" style={{ ['--c1' as string]: clan.blason.c1, ['--c2' as string]: clan.blason.c2 }}>
+        <BlasonClan b={clan.blason} niveau={niv} taille={96} />
+        <div className="clan-hero-texte">
+          <span className="clan-niveau">{fr ? 'Niveau' : 'Level'} {niv}</span>
           <h1 className="t">{clan.nom}</h1>
-          <small>{Object.keys(clan.membres ?? {}).length} / {MAX_MEMBRES} {fr ? 'membres' : 'members'}</small>
+          {clan.devise && <p>« {clan.devise} »</p>}
+          <div className="clan-xp"><span style={{ width: `${((clan.xp ?? 0) - debut) / (fin - debut) * 100}%` }} /></div>
+          <small>{nf((clan.xp ?? 0) - debut)} / {nf(fin - debut)} XP {fr ? `vers le niveau ${niv + 1}` : `to level ${niv + 1}`}</small>
         </div>
-        <button type="button" className="clan-code-btn" onClick={copier}>📋 {code}</button>
       </header>
       <section className="card clan-bloc">
-        <div className="clan-objectif-tete"><strong>{fr ? 'Objectif de la semaine' : 'Weekly goal'}</strong><span>{total.toLocaleString(fr ? 'fr-FR' : 'en-GB')} / {OBJECTIF_CLAN.toLocaleString(fr ? 'fr-FR' : 'en-GB')} XP</span></div>
-        <div className="bar clan-barre"><span style={{ width: `${Math.min(100, (total / OBJECTIF_CLAN) * 100)}%`, background: clan.couleur }} /></div>
-        <small style={{ color: 'var(--muted)' }}>{total >= OBJECTIF_CLAN ? (fr ? '🎉 Objectif atteint, bravo à tout le clan !' : '🎉 Goal reached!') : (fr ? 'Chaque partie de chaque membre compte. Remise à zéro le lundi.' : 'Every game counts. Resets Monday.')}</small>
+        <div className="clan-objectif-tete"><strong>{fr ? 'Objectif de la semaine' : 'Weekly goal'}</strong><span>{nf(semaineXp)} / {nf(objectif)} XP</span></div>
+        <div className="bar clan-barre"><span style={{ width: `${Math.min(100, (semaineXp / objectif) * 100)}%`, background: clan.blason.c1 }} /></div>
+        <small style={{ color: 'var(--muted)' }}>{semaineXp >= objectif ? (fr ? '🎉 Objectif atteint, bravo à tout le clan !' : '🎉 Goal reached!') : (fr ? 'Remise à zéro chaque lundi.' : 'Resets Monday.')}</small>
       </section>
       <section className="card clan-bloc">
-        <h2 className="t">{fr ? 'Classement du clan' : 'Clan ranking'}</h2>
+        <div className="clan-objectif-tete"><h2 className="t">{fr ? 'Membres' : 'Members'}</h2><span>{Object.keys(clan.membres ?? {}).length} / {maxMembres(niv)}</span></div>
         <ol className="clan-membres">
           {scores.map((m, i) => (
             <li key={m.uid}>
               <span className="clan-rang">{['🥇', '🥈', '🥉'][i] ?? i + 1}</span>
               <Link to={`/joueur/${m.uid}`} className="clan-membre"><Avatar pseudo={m.pseudo} avatar={m.avatar} cadre={m.cadre} taille={36} /><span>{m.pseudo}{clan.chef === m.uid && ' 👑'}</span></Link>
-              <strong>{m.xp.toLocaleString(fr ? 'fr-FR' : 'en-GB')} XP</strong>
+              <strong>{nf(m.xp)} XP</strong>
             </li>
           ))}
         </ol>
+        <button type="button" className="btn btn-g" onClick={() => { navigator.clipboard?.writeText(clan.nom).catch(() => {}); setMsg(fr ? `Dis à tes amis de chercher « ${clan.nom} » dans les clans !` : 'Copied') }}>📣 {fr ? 'Inviter : partager le nom' : 'Invite'}</button>
       </section>
+      <section className="card clan-bloc">
+        <h2 className="t">{fr ? 'Récompenses de niveau' : 'Level rewards'}</h2>
+        <ul className="clan-avantages">{AVANTAGES.map(([n, t]) => <li key={n} className={niv >= n ? 'ok' : ''}><span>{niv >= n ? '✓' : `🔒`}</span><strong>{fr ? 'Niv.' : 'Lv.'} {n}</strong> {t}</li>)}</ul>
+      </section>
+      {chef && !edition && <button className="btn btn-s" style={{ alignSelf: 'flex-start' }} onClick={() => setEdition(true)}>🎨 {fr ? 'Personnaliser le clan' : 'Customize clan'}</button>}
+      {chef && edition && (
+        <section className="card clan-bloc">
+          <h2 className="t">{fr ? 'Personnaliser' : 'Customize'}</h2>
+          <input className="input" value={nom} maxLength={24} onChange={(e) => setNom(e.target.value)} />
+          <input className="input" value={devise} maxLength={60} onChange={(e) => setDevise(e.target.value)} placeholder={fr ? 'Devise' : 'Motto'} />
+          <Atelier b={blason} setB={setBlason} niveau={niv} />
+          <div className="clan-ligne"><button className="btn btn-g" onClick={() => setEdition(false)}>{fr ? 'Annuler' : 'Cancel'}</button><button className="btn btn-p" onClick={enregistrer}>{fr ? 'Enregistrer' : 'Save'}</button></div>
+        </section>
+      )}
       {msg && <p role="status" style={{ fontWeight: 700 }}>{msg}</p>}
       {quitter
         ? <div className="clan-ligne"><span>{fr ? 'Quitter le clan ?' : 'Leave clan?'}</span><button className="btn btn-g" onClick={() => setQuitter(false)}>{fr ? 'Non' : 'No'}</button><button className="btn btn-p" style={{ background: 'var(--ko)' }} onClick={() => user && quitterClan(user.uid, code)}>{fr ? 'Oui, quitter' : 'Leave'}</button></div>

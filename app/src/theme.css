@@ -1934,3 +1934,53 @@ button.rang-palier[aria-pressed="true"] { background: color-mix(in srgb, var(--r
 .frise-ev.ko .frise-rang { background: var(--ko); color: #fff; font-size: 12px; }
 .accueil-modes.compact { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
 @media (max-width: 560px) { .cejour-image { max-height: 150px; } .cejour-texte { font-size: 17px; } }
+
+/* Clans v2 : blasons, niveaux, bandeau */
+.blason { display: block; flex: none; overflow: visible; }
+.blason-halo { filter: drop-shadow(0 0 6px rgba(250, 204, 21, .55)); }
+.blason-anime .blason-symbole { transform-box: fill-box; transform-origin: center; animation: blason-pulse 2.6s ease-in-out infinite; }
+@keyframes blason-pulse { 50% { transform: scale(1.08); } }
+.blason-legende { animation: blason-legende 3s ease-in-out infinite; }
+@keyframes blason-legende { 0%, 100% { filter: drop-shadow(0 0 6px #FACC15); } 50% { filter: drop-shadow(0 0 14px #F472B6) drop-shadow(0 0 4px #fff); } }
+.bandeau-clan { position: relative; overflow: hidden; display: flex; align-items: center; gap: 16px; padding: 20px; border-radius: 26px; text-decoration: none; color: #fff; background: radial-gradient(circle at 100% 0, color-mix(in srgb, var(--c2, #FACC15) 45%, transparent), transparent 55%), linear-gradient(135deg, color-mix(in srgb, var(--c1, #7C3AED) 85%, #000), var(--c1, #7C3AED)); box-shadow: 0 14px 30px color-mix(in srgb, var(--c1, #7C3AED) 35%, transparent); }
+.bandeau-clan.vide { --c1: #4C1D95; --c2: #FACC15; }
+.bandeau-clan::after { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(135deg, rgba(255,255,255,.05) 0 2px, transparent 2px 18px); pointer-events: none; }
+.bandeau-clan-texte { position: relative; z-index: 1; flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.bandeau-clan-texte strong { font-size: 24px; line-height: 1.1; }
+.bandeau-clan-texte small { opacity: .9; font-size: 13px; }
+.clan-niveau { align-self: flex-start; padding: 2px 10px; border-radius: 999px; background: rgba(255,255,255,.2); font: 800 12px Nunito, sans-serif; letter-spacing: .5px; text-transform: uppercase; }
+.clan-xp { height: 8px; border-radius: 4px; background: rgba(255,255,255,.25); overflow: hidden; margin-top: 4px; }
+.clan-xp span { display: block; height: 100%; border-radius: 4px; background: linear-gradient(90deg, #FDE68A, #fff); }
+.bandeau-clan-membres { display: flex; align-items: center; margin-top: 4px; }
+.bandeau-clan-membres .avatar { margin-right: -6px; box-shadow: 0 0 0 2px rgba(255,255,255,.7); border-radius: 50%; }
+.bandeau-clan-membres small { margin-left: 14px; }
+.bandeau-clan-top { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
+.bandeau-clan-top span { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px 2px 4px; border-radius: 999px; background: rgba(255,255,255,.18); font-size: 12.5px; font-weight: 700; }
+.bandeau-clan-cta { position: relative; z-index: 1; flex: none; padding: 10px 16px; border-radius: 999px; background: #fff; color: #4C1D95; font: 900 14px Nunito, sans-serif; }
+@media (max-width: 560px) { .bandeau-clan { flex-wrap: wrap; padding: 16px; } .bandeau-clan-cta { width: 100%; text-align: center; } }
+.clan-hero { display: flex; align-items: center; gap: 18px; padding: 22px; border-radius: 28px; color: #fff; background: radial-gradient(circle at 100% 0, color-mix(in srgb, var(--c2, #FACC15) 45%, transparent), transparent 55%), linear-gradient(135deg, color-mix(in srgb, var(--c1, #7C3AED) 80%, #000), var(--c1, #7C3AED)); }
+.clan-hero.vide { --c1: #4C1D95; }
+.clan-hero h1 { margin: 2px 0; font-size: 28px; }
+.clan-hero p { margin: 0; opacity: .92; }
+.clan-hero-texte { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.clan-suggestions { display: flex; flex-direction: column; gap: 8px; }
+.clan-suggestion { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 16px; background: var(--surface2); }
+.clan-suggestion > div { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.clan-suggestion small { color: var(--muted); }
+.clan-avantages { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.clan-avantages li { display: flex; gap: 8px; align-items: center; padding: 6px 10px; border-radius: 10px; background: var(--surface2); opacity: .6; font-size: 14px; }
+.clan-avantages li.ok { opacity: 1; background: var(--ok-t); }
+.atelier { display: flex; gap: 18px; flex-wrap: wrap; }
+.atelier-apercu { flex: none; display: grid; place-items: center; width: 140px; height: 140px; border-radius: 24px; background: var(--surface2); }
+.atelier-reglages { flex: 1; min-width: 240px; display: flex; flex-direction: column; gap: 6px; }
+.atelier-titre { font-weight: 800; font-size: 13px; color: var(--muted); margin-top: 4px; }
+.atelier-choix { display: flex; flex-wrap: wrap; gap: 6px; }
+.atelier-choix button { position: relative; width: 48px; height: 48px; display: grid; place-items: center; border-radius: 12px; border: 2px solid var(--line); background: var(--surface); cursor: pointer; }
+.atelier-choix button[aria-pressed="true"] { border-color: var(--primary); background: var(--surface2); }
+.atelier-choix button:disabled { opacity: .45; cursor: not-allowed; }
+.atelier-choix em { position: absolute; bottom: -4px; right: -4px; font-style: normal; font-size: 10px; font-weight: 900; background: var(--surface); border-radius: 6px; padding: 0 3px; }
+.atelier-couleurs { display: flex; flex-wrap: wrap; gap: 5px; }
+.atelier-couleurs button { width: 26px; height: 26px; border-radius: 50%; border: 2px solid var(--line); cursor: pointer; }
+.atelier-couleurs button[aria-pressed="true"] { outline: 3px solid var(--text); outline-offset: 1px; }
+.badge-clan { align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px 3px 4px; border-radius: 999px; background: var(--surface2); border: 1px solid var(--line); text-decoration: none; color: var(--text); font: 800 13px Nunito, sans-serif; }
+.badge-clan small { color: var(--muted); font-weight: 700; }

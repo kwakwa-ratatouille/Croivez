@@ -1,3 +1,4 @@
+import BandeauClan from '../components/BandeauClan'
 import { MINI_JEUX } from '../quiz/formats'
 import ChoixTheme from '../components/ChoixTheme'
 import { legendeOuverte } from '../progression'
@@ -110,12 +111,8 @@ export default function Duels() {
         {message && <p role="status" style={{ fontSize: 14, color: 'var(--muted)' }}>{message}</p>}
       </section>
 
-      {/* Clan : XP cumulée de la semaine */}
-      <Link to="/clan" className="card multi-clan">
-        <span className="multi-clan-icone">🛡️</span>
-        <span className="multi-clan-texte"><strong className="t">{profile?.clan ? (fr ? 'Mon clan' : 'My clan') : (fr ? 'Rejoindre ou fonder un clan' : 'Join or found a clan')}</strong><small>{fr ? 'Jusqu’à 20 joueurs, un objectif d’XP commun chaque semaine' : 'Up to 20 players, a shared weekly XP goal'}</small></span>
-        <Icon d={ICONS.arrowR} />
-      </Link>
+      {/* Clan : grand bandeau (niveau, progression, membres) */}
+      <BandeauClan code={profile?.clan} />
 
       {/* Défier un ami : tous les réglages, puis le choix de l'ami */}
       <section className="card multi-duel">

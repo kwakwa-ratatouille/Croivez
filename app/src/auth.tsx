@@ -1,3 +1,4 @@
+import { gagnerXpClan } from './clans'
 import { BONUS_PARRAIN, declarerFilleul, parrainRetenu } from './parrainage'
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
 import { onAuthStateChanged, type User } from 'firebase/auth'
@@ -246,5 +247,6 @@ export async function enregistrerPartie(uid: string, profile: Profile, p: Partie
     ...(valide ? { paliers: { [p.sousTheme]: arrayUnion(...[1, 2, 3, 4].filter((d) => d <= p.difficulte!)) } } : {}),
   }, { merge: true })
   if (p.record && (p.record.jeu === 'express' || p.record.jeu === 'survie')) publierRecord(uid, profile.pseudo, { avatar: profile.avatar, cadre: profile.cadre }, p.record.jeu, p.record.score).catch(console.error)
+  if (profile.clan) gagnerXpClan(profile.clan, p.xp).catch(() => {})
   await publierXp(uid, profile.pseudo, p.xp, (profile.xp ?? 0) + p.xp, serie, { avatar: profile.avatar, cadre: profile.cadre }, resumePublic({ ...profile, parties: (profile.parties ?? 0) + 1, maitrise: p.revision ? profile.maitrise : { ...profile.maitrise, [p.sousTheme]: maitrise }, paliers: nouveauxPaliers, ligue: ligue.etat })).catch(console.error)
 }
