@@ -139,6 +139,12 @@ export default function Accueil() {
         <Link to="/partie?jeu=survie&d=0&m=qcm" className="mode-tuile" style={{ ['--k' as string]: 'var(--nat)', ['--kt' as string]: 'var(--nat-t)', ['--ki' as string]: 'var(--nat-i)' }}>
           <span className="mode-emoji">❤️</span><strong className="t">{fr ? 'Survie' : 'Survival'}</strong><span>{fr ? '3 vies, de plus en plus dur' : '3 lives, ever harder'}{profile?.records?.survie ? ` · ${fr ? 'record' : 'best'} ${profile.records.survie}` : ''}</span>
         </Link>
+        <Link to="/cejour" className="mode-tuile" style={{ ['--k' as string]: 'var(--his)', ['--kt' as string]: 'var(--his-t)', ['--ki' as string]: 'var(--his-i)' }}>
+          <span className="mode-emoji">📅</span><strong className="t">{fr ? 'Ce jour-là' : 'On this day'}</strong><span>{fr ? `L’histoire du ${new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}` : 'Today in history'}</span>
+        </Link>
+        <Link to="/frise" className="mode-tuile" style={{ ['--k' as string]: 'var(--brd)', ['--kt' as string]: 'var(--brd-t)', ['--ki' as string]: 'var(--brd-i)' }}>
+          <span className="mode-emoji">🧭</span><strong className="t">{fr ? 'Frise' : 'Timeline'}</strong><span>{fr ? 'Remets l’histoire dans l’ordre' : 'Put history in order'}</span>
+        </Link>
       </section>
 
       {/* Ma semaine : ligue, quêtes, révision, événement */}

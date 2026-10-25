@@ -34,6 +34,8 @@ import Album from './pages/Album'
 import Boutique from './pages/Boutique'
 import Activite from './pages/Activite'
 import Clan from './pages/Clan'
+import CeJour from './pages/CeJour'
+import Frise from './pages/Frise'
 
 function BientotDisponible() {
   const { t } = usePrefs()
@@ -110,6 +112,8 @@ function Routeur() {
           <Route path="/boutique" element={<Boutique />} />
           <Route path="/activite" element={<Activite />} />
           <Route path="/clan" element={<Clan />} />
+          <Route path="/cejour" element={<CeJour />} />
+          <Route path="/frise" element={<Frise />} />
           <Route path="*" element={<BientotDisponible />} />
         </Route>
       </Routes>

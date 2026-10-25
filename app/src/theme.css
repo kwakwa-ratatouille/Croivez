@@ -1901,3 +1901,36 @@ button.rang-palier[aria-pressed="true"] { background: color-mix(in srgb, var(--r
 .carnet-defile { display: flex; flex-direction: column; gap: 26px; }
 .carnet-defile .carnet-page-tel { animation: none !important; }
 .album-double.carnet-defile { display: flex !important; flex-direction: column !important; gap: 30px; animation: none !important; }
+
+/* Ce jour-là et Frise chronologique */
+.cejour-tete { display: flex; align-items: center; gap: 14px; }
+.cejour-tete h1 { margin: 0; font-size: 30px; font-weight: 900; }
+.cejour-tete p { margin: 2px 0 0; color: var(--muted); }
+.cejour-calendrier { width: 62px; height: 66px; flex: none; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 14px; background: var(--surface); border: 1px solid var(--line); box-shadow: var(--shadow); overflow: hidden; }
+.cejour-calendrier small { width: 100%; text-align: center; background: #E3574B; color: #fff; font: 800 11px Nunito, sans-serif; text-transform: uppercase; padding: 3px 0; }
+.cejour-calendrier strong { font: 900 28px Nunito, sans-serif; line-height: 1.2; }
+.frise-icone { font-size: 34px; }
+.cejour-carte { padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+.cejour-progres { display: flex; justify-content: space-between; font-weight: 800; color: var(--muted); }
+.cejour-image { width: 100%; max-height: 220px; object-fit: cover; border-radius: 16px; }
+.cejour-texte { margin: 0; font-size: 19px; font-weight: 700; line-height: 1.4; }
+.cejour-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.cejour-option { min-height: 56px; border-radius: 16px; border: 2px solid var(--line); background: var(--surface); font: 900 22px Nunito, sans-serif; color: var(--text); cursor: pointer; transition: transform .12s; }
+.cejour-option:not(:disabled):hover { transform: translateY(-2px); border-color: var(--primary); }
+.cejour-option.ok { background: var(--ok-t); border-color: var(--ok); color: var(--ok-i); }
+.cejour-option.ko { background: var(--ko-t); border-color: var(--ko); color: var(--ko-i); }
+.cejour-gain { display: inline-flex; align-items: center; gap: 6px; font-weight: 900; font-size: 18px; color: var(--his-i); }
+.frise { display: flex; flex-direction: column; gap: 10px; }
+.frise-ev { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 18px; border: 2px solid var(--line); background: var(--surface); text-align: left; font: inherit; color: inherit; cursor: pointer; transition: transform .15s, border-color .15s; }
+.frise-ev:hover { transform: translateX(3px); }
+.frise-ev img { width: 52px; height: 52px; object-fit: cover; border-radius: 12px; flex: none; }
+.frise-texte { flex: 1; font-size: 14.5px; font-weight: 600; line-height: 1.35; }
+.frise-rang { width: 44px; height: 44px; flex: none; display: grid; place-items: center; border-radius: 50%; background: var(--surface2); font: 900 15px Nunito, sans-serif; }
+.frise-ev.choisi { border-color: var(--brd); background: var(--brd-t); }
+.frise-ev.choisi .frise-rang { background: var(--brd); color: #fff; font-size: 20px; }
+.frise-ev.ok { border-color: var(--ok); background: var(--ok-t); }
+.frise-ev.ok .frise-rang { background: var(--ok); color: #fff; font-size: 12px; }
+.frise-ev.ko { border-color: var(--ko); background: var(--ko-t); }
+.frise-ev.ko .frise-rang { background: var(--ko); color: #fff; font-size: 12px; }
+.accueil-modes.compact { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+@media (max-width: 560px) { .cejour-image { max-height: 150px; } .cejour-texte { font-size: 17px; } }
