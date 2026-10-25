@@ -1761,3 +1761,64 @@ button.rang-palier[aria-pressed="true"] { background: color-mix(in srgb, var(--r
 /* Famille Écologie & planète */
 :root { --eco:#6CC08B; --eco-t:#E3F4E8; --eco-i:#1E5E36; }
 :root[data-theme="dark"] { --eco:#86D6A3; --eco-t:#1B3A28; --eco-i:#B2E8C4; }
+
+/* Social : fil d'activité, défis de score, clans */
+.multi-amis-actions { display: flex; gap: 6px; }
+.multi-mini { min-height: 32px; padding: 0 12px; font-size: 13px; text-decoration: none; }
+.fil { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.fil-ev { display: flex; align-items: center; gap: 12px; padding: 12px 14px; }
+.fil-texte { flex: 1; min-width: 0; }
+.fil-texte p { margin: 0; font-size: 14.5px; }
+.fil-texte small { color: var(--muted); font-size: 12px; }
+.fil-reactions { display: flex; gap: 2px; flex: none; }
+.fil-reactions button { width: 32px; height: 32px; border: 0; border-radius: 50%; background: var(--surface2); font-size: 16px; cursor: pointer; transition: transform .15s; }
+.fil-reactions button:hover { transform: scale(1.2); }
+.fil-reagi { font-size: 22px; animation: pop .3s; }
+.fil-vide { display: flex; align-items: center; gap: 14px; padding: 18px; }
+.fil-vide span { font-size: 34px; }
+@media (max-width: 560px) { .fil-ev { flex-wrap: wrap; } .fil-reactions { width: 100%; justify-content: flex-end; } }
+.defi-verdict { margin: 0; padding: 10px 16px; border-radius: 14px; font-weight: 800; width: 100%; }
+.defi-verdict.gagne { background: var(--ok-t); color: var(--ok-i); }
+.defi-verdict.perdu { background: var(--ko-t); color: var(--ko-i); }
+.defi-verdict.egal { background: var(--surface2); }
+.defi-feuille { width: min(420px, 92vw); padding: 20px; display: flex; flex-direction: column; gap: 10px; text-align: left; }
+.defi-feuille small { color: var(--muted); }
+.defi-amis { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; max-height: 50vh; overflow: auto; }
+.defi-amis button { display: flex; align-items: center; gap: 8px; padding: 8px; border-radius: 14px; border: 1px solid var(--line); background: var(--surface); font: 700 14px Nunito, sans-serif; color: var(--text); cursor: pointer; }
+.defi-amis button span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left; }
+.defi-amis button em { font-style: normal; }
+.defi-amis button:disabled { opacity: .6; }
+.multi-clan { display: flex; align-items: center; gap: 14px; padding: 14px 18px; text-decoration: none; color: inherit; background: linear-gradient(120deg, color-mix(in srgb, #7C3AED 12%, var(--surface)), var(--surface)); }
+.multi-clan-icone { font-size: 30px; }
+.multi-clan-texte { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.multi-clan-texte strong { font-size: 17px; }
+.multi-clan-texte small { color: var(--muted); font-size: 13px; }
+.clan-bloc { padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+.clan-bloc h2 { font-size: 18px; margin: 0; }
+.clan-ligne { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.clan-code { flex: 1; min-width: 120px; text-transform: uppercase; letter-spacing: 6px; font-weight: 900; text-align: center; }
+.clan-emblemes { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 6px; }
+.clan-emblemes button { aspect-ratio: 1; border-radius: 12px; border: 2px solid var(--line); background: var(--surface); font-size: 22px; cursor: pointer; }
+.clan-emblemes button[aria-pressed="true"] { border-color: var(--primary); background: var(--surface2); }
+.clan-couleurs { display: flex; gap: 8px; flex-wrap: wrap; }
+.clan-couleurs button { width: 32px; height: 32px; border-radius: 50%; border: 3px solid transparent; cursor: pointer; }
+.clan-couleurs button[aria-pressed="true"] { border-color: var(--text); }
+.clan-apercu { display: flex; align-items: center; gap: 12px; padding: 14px 18px; border-radius: 18px; color: #fff; }
+.clan-apercu span { font-size: 32px; }
+.clan-apercu strong { font: 900 20px Nunito, sans-serif; }
+.clan-tete { display: flex; align-items: center; gap: 14px; padding: 20px; border-radius: 24px; color: #fff; background: radial-gradient(circle at 90% 0, rgba(255,255,255,.25), transparent 50%), var(--clan); box-shadow: 0 12px 28px color-mix(in srgb, var(--clan) 40%, transparent); }
+.clan-embleme { width: 64px; height: 64px; flex: none; display: grid; place-items: center; font-size: 38px; border-radius: 20px; background: rgba(255,255,255,.2); }
+.clan-tete > div { flex: 1; min-width: 0; }
+.clan-tete h1 { margin: 0; font-size: 26px; }
+.clan-tete small { opacity: .9; }
+.clan-code-btn { border: 0; border-radius: 999px; padding: 8px 14px; background: rgba(255,255,255,.95); color: #111; font: 900 14px Nunito, sans-serif; letter-spacing: 2px; cursor: pointer; }
+.clan-objectif-tete { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.clan-barre { height: 12px; }
+.clan-membres { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.clan-membres li { display: flex; align-items: center; gap: 10px; padding: 6px 8px; border-radius: 12px; background: var(--surface2); }
+.clan-rang { width: 28px; text-align: center; font-weight: 900; }
+.clan-membre { flex: 1; min-width: 0; display: flex; align-items: center; gap: 8px; text-decoration: none; color: inherit; font-weight: 700; }
+.clan-membre span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.multi-mini { display: inline-flex !important; flex-direction: row !important; align-items: center; gap: 4px; white-space: nowrap; }
+@media (max-width: 400px) { .multi-amis-tete h2 { font-size: 20px; } }

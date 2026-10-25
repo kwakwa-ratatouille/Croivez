@@ -11,7 +11,7 @@ import { retourFin } from '../retour'
 
 // Invitations reçues, visibles partout dans l'appli : duel, salon, demande d'ami.
 // Rangées sous « invitations/<moi> » (chemin déjà ouvert par les règles de la base temps réel).
-type Invit = { id: string; de: string; uid?: string; salon?: string; type?: 'ami' | 'ami-ok' }
+type Invit = { id: string; de: string; uid?: string; salon?: string; type?: 'ami' | 'ami-ok' | 'defi' | 'defi-res' | 'reaction'; url?: string; quiz?: string; bonnes?: number; total?: number; gagne?: boolean | null; emoji?: string; txt?: string }
 
 export default function Invitations() {
   const { lang } = usePrefs()
@@ -43,26 +43,27 @@ export default function Invitations() {
   const fermer = (i: Invit) => remove(ref(rtdb, `invitations/${uid}/${i.id}`))
   const accepter = async (i: Invit) => {
     if (i.type === 'ami') { if (i.uid) await accepterAmi(uid, profile?.pseudo ?? '?', i.uid); await fermer(i); return }
-    if (i.type === 'ami-ok') { await fermer(i); return }
+    if (i.type === 'ami-ok' || i.type === 'defi-res' || i.type === 'reaction') { await fermer(i); return }
+    if (i.type === 'defi') { await fermer(i); if (i.url) nav(i.url); return }
     if (i.salon) { await fermer(i); nav(`/salon/${i.salon}`); return }
     const ok = await rejoindre(i.id, uid, profile?.pseudo ?? '?')
     if (ok) nav(`/duel/${i.id}`)
   }
-  const decliner = async (i: Invit) => { if (i.type === 'ami' || i.type === 'ami-ok' || i.salon) await fermer(i); else await refuser(i.id, uid) }
-  const deja = (i: Invit) => i.type === 'ami-ok' || (i.type === 'ami' && !!i.uid && !!profile?.amis?.includes(i.uid))
+  const decliner = async (i: Invit) => { if (i.type || i.salon) await fermer(i); else await refuser(i.id, uid) }
+  const deja = (i: Invit) => i.type === 'ami-ok' || i.type === 'defi-res' || i.type === 'reaction' || (i.type === 'ami' && !!i.uid && !!profile?.amis?.includes(i.uid))
   return (
     <div className="invitations" role="status" aria-live="polite">
       {liste.slice(0, 3).map((i) => (
         <div key={i.id} className="invitation rise">
-          <span className="invitation-emoji">{i.type === 'ami-ok' ? '🎉' : i.type === 'ami' ? '👋' : i.salon ? '👥' : '⚔️'}</span>
+          <span className="invitation-emoji">{i.type === 'reaction' ? i.emoji : i.type === 'defi' ? '🎯' : i.type === 'defi-res' ? (i.gagne ? '😤' : i.gagne === false ? '🏆' : '🤝') : i.type === 'ami-ok' ? '🎉' : i.type === 'ami' ? '👋' : i.salon ? '👥' : '⚔️'}</span>
           <span className="invitation-texte">
             <strong>{i.de}</strong>
-            <small>{i.type === 'ami-ok' ? (fr ? 'a accepté ta demande : vous êtes amis ! 🎉' : 'accepted: you are friends! 🎉') : i.type === 'ami' ? (deja(i) ? (fr ? 'est aussi ton ami·e maintenant' : 'is now your friend too') : (fr ? 'veut être ton ami·e' : 'wants to be your friend')) : i.salon ? (fr ? 't’invite dans son salon' : 'invites you to a room') : (fr ? 'te défie en duel !' : 'challenges you to a duel!')}</small>
+            <small>{i.type === 'reaction' ? (fr ? `a réagi ${i.emoji} : « ${i.txt} »` : `reacted ${i.emoji}`) : i.type === 'defi' ? (fr ? `te défie : bats son ${i.bonnes}/${i.total} en ${i.quiz} !` : `challenges you: beat ${i.bonnes}/${i.total}!`) : i.type === 'defi-res' ? (fr ? (i.gagne ? `a battu ton score (${i.bonnes}/${i.total})` : i.gagne === false ? `n’a pas battu ton score (${i.bonnes}/${i.total}) 🏆` : `fait jeu égal avec toi (${i.bonnes}/${i.total})`) : `${i.bonnes}/${i.total}`) : i.type === 'ami-ok' ? (fr ? 'a accepté ta demande : vous êtes amis ! 🎉' : 'accepted: you are friends! 🎉') : i.type === 'ami' ? (deja(i) ? (fr ? 'est aussi ton ami·e maintenant' : 'is now your friend too') : (fr ? 'veut être ton ami·e' : 'wants to be your friend')) : i.salon ? (fr ? 't’invite dans son salon' : 'invites you to a room') : (fr ? 'te défie en duel !' : 'challenges you to a duel!')}</small>
           </span>
           {deja(i)
             ? <button className="btn btn-g" onClick={() => fermer(i)}>OK</button>
             : <>
-              <button className="btn btn-p" onClick={() => accepter(i)}>{i.type === 'ami' ? (fr ? 'Accepter' : 'Accept') : (fr ? 'Jouer' : 'Play')}</button>
+              <button className="btn btn-p" onClick={() => accepter(i)}>{i.type === 'ami' ? (fr ? 'Accepter' : 'Accept') : i.type === 'defi' ? (fr ? 'Relever' : 'Accept') : (fr ? 'Jouer' : 'Play')}</button>
               <button className="btn btn-g" aria-label={fr ? 'Refuser' : 'Decline'} onClick={() => decliner(i)}>✕</button>
             </>}
         </div>

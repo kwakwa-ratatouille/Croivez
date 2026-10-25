@@ -32,6 +32,8 @@ import LiensAppli from './components/LiensAppli'
 import Classements from './pages/Classements'
 import Album from './pages/Album'
 import Boutique from './pages/Boutique'
+import Activite from './pages/Activite'
+import Clan from './pages/Clan'
 
 function BientotDisponible() {
   const { t } = usePrefs()
@@ -106,6 +108,8 @@ function Routeur() {
           <Route path="/classements" element={<Classements />} />
           <Route path="/album" element={<Album />} />
           <Route path="/boutique" element={<Boutique />} />
+          <Route path="/activite" element={<Activite />} />
+          <Route path="/clan" element={<Clan />} />
           <Route path="*" element={<BientotDisponible />} />
         </Route>
       </Routes>

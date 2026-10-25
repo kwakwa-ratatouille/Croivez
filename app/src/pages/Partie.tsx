@@ -1,3 +1,5 @@
+import DefiScore from '../components/DefiScore'
+import { noterActivite } from '../activite'
 import Signaler from '../components/Signaler'
 import { createPortal } from 'react-dom'
 import { ETAPES, seuilEtape, urlEtape, validerEtape } from '../aventure'
@@ -274,6 +276,8 @@ export default function Partie() {
     const etapeAventure = params.get('aventure')
     if (etapeAventure !== null && ETAPES[Number(etapeAventure)] && bonnes >= seuilEtape(ETAPES[Number(etapeAventure)])) validerEtape(user.uid, Number(etapeAventure), profile.aventure ?? 0).catch(console.error)
     if (defi) publierScoreJour(jour(), { uid: user.uid, pseudo: profile.pseudo, score, bonnes, total: reponses.length, grille: reponses.map((r) => (r.juste ? '🟩' : '🟥')).join(''), ...(profile.avatar ? { avatar: profile.avatar } : {}), ...(profile.cadre ? { cadre: profile.cadre } : {}) }).catch(console.error)
+    // Fil d'activité : seulement les belles parties (8/10 ou plus), pour ne pas inonder les amis
+    if (!revision && reponses.length >= 5 && bonnes / reponses.length >= 0.8) noterActivite(user.uid, bonnes === reponses.length ? '💯' : '⭐', `${bonnes === reponses.length ? 'a fait un sans-faute' : `a fait ${bonnes}/${reponses.length}`} en ${trouverSousTheme(sousTheme)?.sous.nom.fr ?? 'quiz'}`).catch(() => {})
     enregistrerPartie(user.uid, profile, { sousTheme, xp, pieces, stats: { bonnes, comboMax, jeu: jeu ?? undefined, famille: k, difficulte },  defi, revision: revision || !!jeu, sansRevision: !!jeu, record: jeu && jeu !== 'mix' ? { jeu, score: bonnes } : undefined, difficulte: jeu ? undefined : difficulte, resultats: reponses.map((r) => ({ id: r.q.id, juste: r.juste, s: r.q.s ?? sousTheme })), bossReussi, difficulteJouee: difficulte, miniJeu: mj ?? undefined, cleFarm: revision ? undefined : cleFarm }).catch(console.error)
   }, [fini, user, profile, sousTheme, xp, pieces, defi, revision, reponses, questions])
 
@@ -554,6 +558,7 @@ function Resultat({ reponses, xp, pieces, score, comboMax, k, reduit, onReplay }
             })()}
             <button className="btn btn-p btn-lg" onClick={() => onReplay()} autoFocus>{t('res.replay')}<Icon d={ICONS.review} /></button>
             <button className="btn btn-s btn-lg" onClick={async () => { const r = await partagerDefi({ quiz: trouverSousTheme(reponses[0]?.q.s ?? new URLSearchParams(location.hash.split('?')[1]).get('s') ?? '')?.sous.id, nom: trouverSousTheme(reponses[0]?.q.s ?? new URLSearchParams(location.hash.split('?')[1]).get('s') ?? '')?.sous.nom[lang] ?? 'Mix', resultats: reponses.map((x) => x.juste), score, parrain: user?.uid }); setPartage(r) }}>{partage === 'copie' ? (lang === 'fr' ? 'Copié !' : 'Copied!') : (lang === 'fr' ? 'Défier un ami' : 'Challenge a friend')}</button>
+            <DefiScore ids={reponses.map((r) => r.q.id)} bonnes={bonnes} score={score} quiz={trouverSousTheme(new URLSearchParams(location.hash.split('?')[1] ?? '').get('s') ?? '')?.sous.nom[lang] ?? 'Quiz'} />
             <Link className="btn btn-g" to={retourVers(new URLSearchParams(location.hash.split('?')[1] ?? ''))}>{lang === 'fr' ? 'Retour' : 'Back'}</Link>
           </div>
         </section>

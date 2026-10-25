@@ -92,7 +92,7 @@ export default function Duels() {
       <section className="card multi-amis">
         <div className="multi-amis-tete">
           <h2 className="t">👋 {fr ? 'Mes amis' : 'My friends'} <span>{amis.length}</span></h2>
-          <Link to="/amis" className="btn btn-g">{fr ? 'Messages' : 'Chat'}<Icon d={ICONS.arrowR} size={16} /></Link>
+          <div className="multi-amis-actions"><Link to="/activite" className="pill multi-mini" title={fr ? 'Activité des amis' : 'Friends activity'}>📰 {fr ? 'Activité' : 'Feed'}</Link><Link to="/amis" className="pill multi-mini">💬 {fr ? 'Messages' : 'Chat'}</Link></div>
         </div>
         {amis.length > 0
           ? <div className="multi-amis-liste">{amis.map((a) => (
@@ -109,6 +109,13 @@ export default function Duels() {
         <AjoutAmi uid={uid} />
         {message && <p role="status" style={{ fontSize: 14, color: 'var(--muted)' }}>{message}</p>}
       </section>
+
+      {/* Clan : XP cumulée de la semaine */}
+      <Link to="/clan" className="card multi-clan">
+        <span className="multi-clan-icone">🛡️</span>
+        <span className="multi-clan-texte"><strong className="t">{profile?.clan ? (fr ? 'Mon clan' : 'My clan') : (fr ? 'Rejoindre ou fonder un clan' : 'Join or found a clan')}</strong><small>{fr ? 'Jusqu’à 20 joueurs, un objectif d’XP commun chaque semaine' : 'Up to 20 players, a shared weekly XP goal'}</small></span>
+        <Icon d={ICONS.arrowR} />
+      </Link>
 
       {/* Défier un ami : tous les réglages, puis le choix de l'ami */}
       <section className="card multi-duel">

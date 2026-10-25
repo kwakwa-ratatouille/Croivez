@@ -1,3 +1,4 @@
+import { noterActivite } from '../activite'
 import { feter, sonReponse } from '../effets'
 import { useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
@@ -78,6 +79,7 @@ export default function Boutique() {
     if (!user) return
     if (!(await acheterObjet(user.uid, o).catch(() => false))) { setMsg(o.jetons ? (fr ? 'Pas assez de jetons de rang.' : 'Not enough rank tokens.') : (fr ? 'Pas assez de pièces.' : 'Not enough coins.')); return }
     await equiper(user.uid, o)
+    if (o.luxe || o.prix >= 1000) noterActivite(user.uid, o.luxe === 2 ? '👑' : '🛍️', `s’est offert « ${o.nom.fr} »`).catch(() => {})
     setMsg(fr ? `🎉 ${o.nom.fr} acheté et équipé !` : `🎉 ${o.nom.en} bought and equipped!`)
     setChoisi(null)
   }
