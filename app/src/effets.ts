@@ -26,6 +26,10 @@ export const EFFETS: Effet[] = [
   { id: 'victoire-artifice', sorte: 'victoire', nom: { fr: 'Feu d’artifice', en: 'Fireworks' }, prix: 1200, emoji: '🎆' },
   { id: 'victoire-onde', sorte: 'victoire', nom: { fr: 'Onde de choc', en: 'Shockwave' }, prix: 1500, emoji: '💥' },
   { id: 'victoire-arc', sorte: 'victoire', nom: { fr: 'Arc-en-ciel', en: 'Rainbow' }, prix: 1800, emoji: '🌈' },
+  { id: 'victoire-tonnerre', sorte: 'victoire', nom: { fr: 'Coup de tonnerre', en: 'Thunderstrike' }, prix: 8000, emoji: '⚡', luxe: 1 },
+  { id: 'victoire-galaxie', sorte: 'victoire', nom: { fr: 'Galaxie', en: 'Galaxy' }, prix: 12000, emoji: '🌌', luxe: 1 },
+  { id: 'victoire-diamants', sorte: 'victoire', nom: { fr: 'Pluie de diamants', en: 'Diamond rain' }, prix: 15000, emoji: '💎', luxe: 1 },
+  { id: 'victoire-supernova', sorte: 'victoire', nom: { fr: 'Supernova', en: 'Supernova' }, prix: 30000, emoji: '☀️', luxe: 2 },
   { id: 'victoire-royale', sorte: 'victoire', nom: { fr: 'Sacre royal', en: 'Royal crowning' }, prix: 6000, emoji: '👑', luxe: 1 },
   // Sons des bonnes et mauvaises réponses
   { id: 'son-classique', sorte: 'son', nom: { fr: 'Classique', en: 'Classic' }, prix: 0, emoji: '🔔' },
@@ -37,6 +41,10 @@ export const EFFETS: Effet[] = [
   { id: 'son-laser', sorte: 'son', nom: { fr: 'Laser', en: 'Laser' }, prix: 600, emoji: '🔫' },
   { id: 'son-caisse', sorte: 'son', nom: { fr: 'Tiroir-caisse', en: 'Cash register' }, prix: 700, emoji: '💰' },
   { id: 'son-piano', sorte: 'son', nom: { fr: 'Piano', en: 'Piano' }, prix: 700, emoji: '🎹' },
+  { id: 'son-harpe', sorte: 'son', nom: { fr: 'Harpe céleste', en: 'Celestial harp' }, prix: 5000, emoji: '🪕', luxe: 1 },
+  { id: 'son-cristal', sorte: 'son', nom: { fr: 'Cristal', en: 'Crystal' }, prix: 7000, emoji: '💠', luxe: 1 },
+  { id: 'son-jackpot', sorte: 'son', nom: { fr: 'Jackpot', en: 'Jackpot' }, prix: 9000, emoji: '🎰', luxe: 1 },
+  { id: 'son-orchestre', sorte: 'son', nom: { fr: 'Orchestre royal', en: 'Royal orchestra' }, prix: 20000, emoji: '🎻', luxe: 2 },
   { id: 'son-fanfare', sorte: 'son', nom: { fr: 'Fanfare', en: 'Fanfare' }, prix: 3000, emoji: '🎺', luxe: 1 },
 ]
 export const CHAMP_EFFET: Record<Sorte, 'couleurApp' | 'victoire' | 'sonReponse'> = { couleur: 'couleurApp', victoire: 'victoire', son: 'sonReponse' }
@@ -64,6 +72,10 @@ const SONS: Record<string, { ok: Note[]; ko: Note[] }> = {
   'son-laser': { ok: [N(1800, .18, 0, 'sawtooth', .04, 300), N(2400, .14, .16, 'square', .03, 600)], ko: [N(300, .35, 0, 'sawtooth', .05, 60)] },
   'son-caisse': { ok: [N(2637, .06, 0, 'triangle', .07), N(3136, .3, .07, 'triangle', .07), N(4186, .4, .14, 'sine', .04)], ko: [N(160, .12, 0, 'square', .05), N(160, .2, .16, 'square', .05)] },
   'son-piano': { ok: [N(523, .5, 0, 'triangle', .06), N(659, .5, 0, 'triangle', .05), N(784, .6, 0, 'triangle', .05)], ko: [N(311, .5, 0, 'triangle', .06), N(370, .5, 0, 'triangle', .05)] },
+  'son-harpe': { ok: [523, 659, 784, 1047, 1319, 1568].map((f, i) => N(f, .35, i * .045, 'triangle', .045)), ko: [N(392, .4, 0, 'triangle', .05), N(349, .5, .12, 'triangle', .05)] },
+  'son-cristal': { ok: [N(2093, .8, 0, 'sine', .05), N(2637, .9, .06, 'sine', .045), N(3136, 1, .12, 'sine', .04), N(4186, 1.1, .18, 'sine', .03)], ko: [N(1046, .5, 0, 'sine', .05, 700)] },
+  'son-jackpot': { ok: [...[1047, 1319, 1568, 2093].map((f, i) => N(f, .06, i * .06, 'square', .035)), ...[2093, 2637, 2093, 2637].map((f, i) => N(f, .05, .26 + i * .05, 'triangle', .05))], ko: [N(300, .3, 0, 'square', .04, 150)] },
+  'son-orchestre': { ok: [N(262, .9, 0, 'sawtooth', .025), N(330, .9, 0, 'sawtooth', .022), N(392, .9, 0, 'sawtooth', .022), N(523, .9, .25, 'triangle', .05), N(659, .9, .25, 'triangle', .04), N(784, 1.2, .5, 'triangle', .05), N(1047, 1.2, .5, 'sine', .04)], ko: [N(220, .7, 0, 'sawtooth', .03), N(207, .8, .25, 'sawtooth', .03)] },
   'son-fanfare': { ok: [N(523, .1, 0, 'square', .04), N(659, .1, .1, 'square', .04), N(784, .1, .2, 'square', .04), N(1047, .4, .3, 'square', .045), N(784, .4, .3, 'triangle', .04)], ko: [N(392, .2, 0, 'square', .04), N(370, .2, .2, 'square', .04), N(349, .5, .4, 'square', .04)] },
 }
 let ctx: AudioContext | null = null
@@ -93,12 +105,13 @@ export const sonReponse = (juste: boolean, id = portes.son) => jouerNotes((SONS[
 const COULEURS = ['#FF4FD8', '#5B8DEF', '#4FAE6A', '#FFE08A', '#E3574B', '#A35BE0', '#2FB5B0']
 const PLUIES: Record<string, string[]> = {
   'victoire-pieces': ['🪙', '💰', '🪙'], 'victoire-etoiles': ['⭐', '🌟', '✨'], 'victoire-coeurs': ['💖', '💕', '💗', '💘'],
+  'victoire-diamants': ['💎', '💠', '✨', '💎'], 'victoire-galaxie': ['✦', '✧', '⭐'],
   'victoire-emojis': ['🤩', '🔥', '👏', '🎉', '💯', '🥳'], 'victoire-royale': ['👑', '💎', '✨'],
 }
 export function feter(id = portes.victoire, intensite: 1 | 2 = 1) {
   try {
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return
-    if (!PLUIES[id] && !['victoire-artifice', 'victoire-onde', 'victoire-arc'].includes(id)) { confettis(intensite); return }
+    if (!PLUIES[id] && !['victoire-artifice', 'victoire-onde', 'victoire-arc', 'victoire-tonnerre', 'victoire-galaxie', 'victoire-supernova'].includes(id)) { confettis(intensite); return }
     const zone = document.createElement('div')
     zone.className = `confettis fete-${id.replace('victoire-', '')}`
     zone.setAttribute('aria-hidden', 'true')
@@ -126,6 +139,9 @@ export function feter(id = portes.victoire, intensite: 1 | 2 = 1) {
       }
     }
     if (id === 'victoire-royale') ajoute('', '👑', 'couronne')
+    if (id === 'victoire-tonnerre') { ajoute('', '', 'flash'); for (let i = 0; i < 3; i++) ajoute(`left:${15 + i * 32 + Math.random() * 10}%;animation-delay:${i * .28}s`, '', 'eclair') }
+    if (id === 'victoire-galaxie') ajoute('', '', 'galaxie')
+    if (id === 'victoire-supernova') { ajoute('', '', 'nova'); for (let i = 0; i < 5; i++) ajoute(`animation-delay:${.15 + i * .18}s;border-color:${['#fff', '#FDE047', '#F472B6', '#22D3EE', '#A78BFA'][i]}`, '', 'onde'); for (let i = 0; i < 40; i++) { const a = Math.random() * Math.PI * 2, r = 120 + Math.random() * 260; ajoute(`left:50%;top:50%;background:${COULEURS[i % COULEURS.length]};box-shadow:0 0 8px #fff;--dx:${Math.cos(a) * r}px;--dy:${Math.sin(a) * r}px;animation-delay:.2s`, '', 'eclat') } }
     document.body.appendChild(zone)
     setTimeout(() => zone.remove(), 4200)
   } catch { /* pas de DOM */ }

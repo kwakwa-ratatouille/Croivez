@@ -256,9 +256,9 @@ export const BOUTIQUE: Objet[] = [
     ['geek', 'Roi·Reine de la pop culture', 'Pop culture royalty', EXPLOITS.pop],
     ['centurion', 'Centurion', 'Centurion', EXPLOITS.parties100],
     ['riche', 'Picsou', 'Moneybags', EXPLOITS.riche],
-  ] as [string, string, string, Objet['condition']][]).map(([id, fr, en, condition]): Objet => ({ id: `titre-${id}`, type: 'titre', nom: { fr, en }, prix: 0, condition })),
+  ] as [string, string, string, Objet['condition']][]).map(([id, fr, en, condition], i): Objet => ({ id: `titre-${id}`, type: 'titre', nom: { fr, en }, prix: 0, condition, anim: ['givre', 'braise', 'neon', 'obsidienne', 'aurore', 'lave', 'plasma', 'matrice', 'sakura', 'ocean'][i % 10] })),
   // Pass de saison : palier 10 (titre) et palier 20 (cadre animé)
-  { id: 'titre-saison', type: 'titre', nom: { fr: 'De la saison', en: 'Of the season' }, prix: 0, condition: { desc: { fr: 'Pass de saison : palier 10', en: 'Season pass tier 10' }, test: (p) => !!p.possede?.includes('titre-saison') } },
+  { id: 'titre-saison', type: 'titre', nom: { fr: 'De la saison', en: 'Of the season' }, prix: 0, anim: 'plasma', condition: { desc: { fr: 'Pass de saison : palier 10', en: 'Season pass tier 10' }, test: (p) => !!p.possede?.includes('titre-saison') } },
   { id: 'cadre-saison', type: 'cadre', nom: { fr: 'Saison', en: 'Season' }, prix: 0, couleur: 'conic-gradient(#8E8CD8, #6BB8C4, #F29BB0, #8E8CD8)', anim: 'tourne brille', condition: { desc: { fr: 'Pass de saison : palier 20', en: 'Season pass tier 20' }, test: (p) => !!p.possede?.includes('cadre-saison') } },
   // ——— Récompenses de sections : chaque famille dont on ouvre la Légende donne un cadre animé et un titre ———
   ...FAMILLES.flatMap((f): Objet[] => {
@@ -267,15 +267,15 @@ export const BOUTIQUE: Objet[] = [
     const cond = { desc: { fr: `Ouvrir la Légende : ${f.nom.fr}`, en: `Unlock the Legend: ${f.nom.en}` }, test: (p: Profile) => legendeOuverte(f.k, p) }
     return [
       { id: `cadre-maitre-${f.k}`, type: 'cadre', nom: { fr: `Maître · ${f.nom.fr}`, en: `Master · ${f.nom.en}` }, prix: 0, couleur: `conic-gradient(var(--${f.k}), #FFE08A, var(--${f.k}-i), var(--${f.k}))`, anim: 'tourne brille', orbite: orb, condition: cond },
-      { id: `titre-maitre-${f.k}`, type: 'titre', nom: { fr: titre, en: titre }, prix: 0, condition: cond },
+      { id: `titre-maitre-${f.k}`, type: 'titre', nom: { fr: titre, en: titre }, prix: 0, condition: cond, anim: 'diamant' },
     ]
   }),
   // ——— Mode histoire terminé ———
   { id: 'cadre-tour-du-monde', type: 'cadre', nom: { fr: 'Tour du monde', en: 'World tour' }, prix: 0, couleur: 'conic-gradient(#4FAE6A, #3A86C8, #E3A72F, #8E4FC4, #4FAE6A)', anim: 'tourne holo', orbite: ['🌍', '✈️', '🗺️'], condition: { desc: { fr: 'Finir les 8 premiers mondes du mode histoire', en: 'Finish the first 8 story worlds' }, test: (p: Profile) => (p.aventure ?? 0) >= 64 } },
   { id: 'cadre-mi-parcours', type: 'cadre', nom: { fr: 'Voyageur', en: 'Traveller' }, prix: 0, couleur: 'conic-gradient(#3A86C8, #8ED3F0, #3A86C8)', anim: 'vague', orbite: ['🧭', '🎒'], condition: { desc: { fr: 'Atteindre le 4ᵉ monde du mode histoire', en: 'Reach story world 4' }, test: (p: Profile) => (p.aventure ?? 0) >= 24 } },
-  { id: 'titre-tour-du-monde', type: 'titre', nom: { fr: 'Aventurier·ère du monde', en: 'World adventurer' }, prix: 0, condition: { desc: { fr: 'Finir les 8 premiers mondes du mode histoire', en: 'Finish the first 8 story worlds' }, test: (p: Profile) => (p.aventure ?? 0) >= 64 } },
+  { id: 'titre-tour-du-monde', type: 'titre', nom: { fr: 'Aventurier·ère du monde', en: 'World adventurer' }, prix: 0, anim: 'aurore', condition: { desc: { fr: 'Finir les 8 premiers mondes du mode histoire', en: 'Finish the first 8 story worlds' }, test: (p: Profile) => (p.aventure ?? 0) >= 64 } },
   { id: 'cadre-legendes-histoire', type: 'cadre', nom: { fr: 'Dragon légendaire', en: 'Legendary dragon' }, prix: 0, couleur: 'conic-gradient(#7F1D1D, #F59E0B, #FDE047, #F59E0B, #7F1D1D)', anim: 'tourne holo', orbite: ['🐉', '🔥', '👑'], condition: { desc: { fr: 'Vaincre le boss ultime du mode histoire (104 étapes)', en: 'Beat the ultimate story boss' }, test: (p: Profile) => (p.aventure ?? 0) >= 104 } },
-  { id: 'titre-legende-histoire', type: 'titre', nom: { fr: 'Légende vivante', en: 'Living legend' }, prix: 0, condition: { desc: { fr: 'Vaincre le boss ultime du mode histoire', en: 'Beat the ultimate story boss' }, test: (p: Profile) => (p.aventure ?? 0) >= 104 } },
+  { id: 'titre-legende-histoire', type: 'titre', nom: { fr: 'Légende vivante', en: 'Living legend' }, prix: 0, anim: 'royal', condition: { desc: { fr: 'Vaincre le boss ultime du mode histoire', en: 'Beat the ultimate story boss' }, test: (p: Profile) => (p.aventure ?? 0) >= 104 } },
   { id: 'cadre-arcade', type: 'cadre', nom: { fr: 'Pixel', en: 'Pixel' }, prix: 0, couleur: 'conic-gradient(#22C55E, #3B82F6, #EF4444, #22C55E)', anim: 'tourne', orbite: ['🕹️', '👾', '🎮'], condition: { desc: { fr: 'Finir l’arcade infinie (monde 9 du mode histoire)', en: 'Finish story world 9' }, test: (p: Profile) => (p.aventure ?? 0) >= 72 } },
   { id: 'titre-premier-boss', type: 'titre', nom: { fr: 'Tueur de boss', en: 'Boss slayer' }, prix: 0, condition: { desc: { fr: 'Battre le premier boss du mode histoire', en: 'Beat the first story boss' }, test: (p: Profile) => (p.aventure ?? 0) >= 8 } },
   { id: 'perso-astronaute-or', type: 'avatar', nom: { fr: 'Explorateur·rice doré·e', en: 'Golden explorer' }, prix: 0, perso: 'astronaute', categorie: 'metier', condition: { desc: { fr: 'Finir le mode histoire', en: 'Finish story mode' }, test: (p: Profile) => (p.aventure ?? 0) >= 64 } },
@@ -311,7 +311,7 @@ export const BOUTIQUE: Objet[] = [
   // ——— Rangs : un cadre par rang (finir une semaine dedans), un titre (finir 3 semaines) ———
   ...TOUS_RANGS.flatMap((r, i): Objet[] => [
     { id: `cadre-rang-${r.id}`, type: 'cadre', nom: { fr: `Cadre ${r.nom.fr}`, en: `${r.nom.en} frame` }, prix: 0, couleur: r.id === 'legende' ? 'conic-gradient(#F4C430, #F472B6, #A78BFA, #22D3EE, #F4C430)' : `conic-gradient(${r.couleur}, ${r.fonce}, ${r.couleur}, #fff, ${r.couleur})`, anim: i >= 6 ? 'tourne brille' : i >= 3 ? 'tourne' : 'brille', orbite: i >= 2 ? [r.emoji, '✨', r.emoji] : undefined, luxe: r.id === 'legende' ? 2 : undefined, condition: { desc: { fr: `Finir une semaine au rang ${r.nom.fr} (ou plus haut)`, en: `Finish a week at ${r.nom.en}` }, test: (p: Profile) => !!p.possede?.includes(`cadre-rang-${r.id}`) } },
-    { id: `titre-rang-${r.id}`, type: 'titre', nom: { fr: `${r.emoji} ${r.id === 'legende' ? 'Légende éternelle' : `Habitué·e ${r.nom.fr}`}`, en: `${r.emoji} ${r.nom.en} regular` }, prix: 0, condition: { desc: { fr: `Finir 3 semaines au rang ${r.nom.fr} (ou plus haut)`, en: `Finish 3 weeks at ${r.nom.en}` }, test: (p: Profile) => !!p.possede?.includes(`titre-rang-${r.id}`) } },
+    { id: `titre-rang-${r.id}`, type: 'titre', nom: { fr: `${r.emoji} ${r.id === 'legende' ? 'Légende éternelle' : `Habitué·e ${r.nom.fr}`}`, en: `${r.emoji} ${r.nom.en} regular` }, prix: 0, anim: r.id === 'legende' ? 'royal holo' : i >= 6 ? 'royal' : i >= 4 ? 'diamant' : i >= 2 ? 'or' : 'givre', condition: { desc: { fr: `Finir 3 semaines au rang ${r.nom.fr} (ou plus haut)`, en: `Finish 3 weeks at ${r.nom.en}` }, test: (p: Profile) => !!p.possede?.includes(`titre-rang-${r.id}`) } },
   ]),
   // ——— Boutique des rangs : cosmétiques exclusifs, payés en jetons de rang ———
   { id: 'cadre-j-laurier', type: 'cadre', nom: { fr: 'Lauriers d’or', en: 'Golden laurels' }, prix: 0, jetons: 20, couleur: 'conic-gradient(#B8862E, #FDE68A, #4D7C0F, #FDE68A, #B8862E)' },
@@ -335,6 +335,15 @@ export const BOUTIQUE: Objet[] = [
   { id: 'titre-mecene', type: 'titre', nom: { fr: 'Mécène', en: 'Patron' }, prix: 3000, luxe: 1, anim: 'or' },
   { id: 'titre-milliardaire', type: 'titre', nom: { fr: 'Milliardaire du savoir', en: 'Knowledge billionaire' }, prix: 10000, luxe: 1, anim: 'or' },
   { id: 'titre-empereur', type: 'titre', nom: { fr: '👑 Empereur·rice de Croivez', en: '👑 Emperor of Croivez' }, prix: 30000, luxe: 2, anim: 'holo' },
+  { id: 'titre-lx-aurore', type: 'titre', nom: { fr: 'Enfant des étoiles', en: 'Star child' }, prix: 2000, luxe: 1, anim: 'aurore' },
+  { id: 'titre-lx-lave', type: 'titre', nom: { fr: 'Cœur de volcan', en: 'Volcano heart' }, prix: 2500, luxe: 1, anim: 'lave' },
+  { id: 'titre-lx-sakura', type: 'titre', nom: { fr: 'Fleur de cerisier', en: 'Cherry blossom' }, prix: 2000, luxe: 1, anim: 'sakura' },
+  { id: 'titre-lx-ocean', type: 'titre', nom: { fr: 'Esprit des abysses', en: 'Spirit of the deep' }, prix: 2500, luxe: 1, anim: 'ocean' },
+  { id: 'titre-lx-matrice', type: 'titre', nom: { fr: 'Hackeur·se de génie', en: 'Genius hacker' }, prix: 4000, luxe: 1, anim: 'matrice' },
+  { id: 'titre-lx-plasma', type: 'titre', nom: { fr: 'Cerveau en fusion', en: 'Molten brain' }, prix: 6000, luxe: 1, anim: 'plasma' },
+  { id: 'titre-lx-diamant', type: 'titre', nom: { fr: 'Esprit de diamant', en: 'Diamond mind' }, prix: 12000, luxe: 2, anim: 'diamant' },
+  { id: 'titre-lx-royal', type: 'titre', nom: { fr: 'Majesté du quiz', en: 'Quiz majesty' }, prix: 25000, luxe: 2, anim: 'royal' },
+  { id: 'titre-lx-cosmique', type: 'titre', nom: { fr: 'Conscience cosmique', en: 'Cosmic mind' }, prix: 75000, luxe: 2, anim: 'cosmos aurore' },
   { id: 'titre-lx-neon', type: 'titre', nom: { fr: 'Icône de la nuit', en: 'Night icon' }, prix: 2500, luxe: 1, anim: 'neon' },
   { id: 'titre-lx-braise', type: 'titre', nom: { fr: 'Esprit de feu', en: 'Fire spirit' }, prix: 3000, luxe: 1, anim: 'braise' },
   { id: 'titre-lx-glitch', type: 'titre', nom: { fr: 'Bug dans la matrice', en: 'Glitch in the matrix' }, prix: 3500, luxe: 1, anim: 'glitch' },

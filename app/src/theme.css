@@ -1822,3 +1822,61 @@ button.rang-palier[aria-pressed="true"] { background: color-mix(in srgb, var(--r
 
 .multi-mini { display: inline-flex !important; flex-direction: row !important; align-items: center; gap: 4px; white-space: nowrap; }
 @media (max-width: 400px) { .multi-amis-tete h2 { font-size: 20px; } }
+
+/* ——— Titres animés, série 2 ——— */
+.titre-fx-aurore { background: linear-gradient(120deg, #052E16, #10B981, #22D3EE, #A78BFA, #052E16) 0 0 / 300% 100% !important; color: #ECFEFF !important; text-shadow: 0 0 8px rgba(110, 231, 183, .9); box-shadow: 0 0 14px rgba(34, 211, 238, .5); animation: titre-glisse 6s ease-in-out infinite alternate; }
+.titre-fx-lave { background: radial-gradient(circle at 20% 80%, #FDE047, transparent 30%), radial-gradient(circle at 80% 30%, #F97316, transparent 35%), linear-gradient(90deg, #450A0A, #B91C1C, #450A0A) !important; background-size: 200% 200%, 200% 200%, 100% 100% !important; color: #FFF7ED !important; text-shadow: 0 0 6px #F97316; animation: titre-lave 4s ease-in-out infinite alternate; }
+@keyframes titre-lave { to { background-position: 100% 0, 0 100%, 0 0; } }
+.titre-fx-diamant { background: linear-gradient(135deg, #E0F2FE, #FFFFFF 30%, #BAE6FD 50%, #FFFFFF 70%, #C4B5FD) 0 0 / 250% 250% !important; color: #1E3A8A !important; box-shadow: 0 0 0 1.5px #fff, 0 0 18px rgba(186, 230, 253, .9); animation: titre-glisse 3.5s linear infinite; }
+.titre-fx-diamant::after { content: '✦'; position: absolute; right: 6px; top: -2px; font-size: 11px; color: #fff; text-shadow: 0 0 6px #38BDF8; animation: fete-paillette 2s ease-in-out infinite; }
+.titre-fx-plasma { background: linear-gradient(90deg, #DB2777, #7C3AED, #2563EB, #7C3AED, #DB2777) 0 0 / 300% 100% !important; color: #fff !important; box-shadow: 0 0 10px #A855F7, 0 0 22px rgba(219, 39, 119, .5); animation: titre-glisse 2.5s linear infinite, titre-pulse 1.6s ease-in-out infinite alternate; }
+@keyframes titre-pulse { to { box-shadow: 0 0 16px #A855F7, 0 0 34px rgba(219, 39, 119, .8); } }
+.titre-fx-matrice { background: repeating-linear-gradient(90deg, transparent 0 6px, rgba(34, 197, 94, .25) 6px 7px) 0 0 / 100% 200%, #031B0B !important; color: #4ADE80 !important; font-family: ui-monospace, monospace !important; text-shadow: 0 0 6px #22C55E; border: 1px solid #16A34A; animation: titre-defile 1.2s linear infinite; }
+@keyframes titre-defile { to { background-position: 0 100%, 0 0; } }
+.titre-fx-royal { background: linear-gradient(90deg, #3B0764, #6D28D9, #3B0764) !important; color: #FDE68A !important; border: 1.5px solid #FACC15; text-shadow: 0 0 6px rgba(250, 204, 21, .8); box-shadow: 0 0 0 3px rgba(250, 204, 21, .25), 0 0 20px rgba(167, 139, 250, .7); }
+.titre-fx-royal::before { content: '👑'; margin-right: 2px; display: inline-block; animation: titre-couronne 2.4s ease-in-out infinite; }
+.titre-fx-royal::after { content: ''; position: absolute; top: -20%; bottom: -20%; left: -40%; width: 30%; background: linear-gradient(90deg, transparent, rgba(253, 230, 138, .8), transparent); transform: skewX(-20deg); animation: titre-reflet 3s ease-in-out infinite; z-index: -1; }
+@keyframes titre-couronne { 0%, 100% { transform: translateY(0) rotate(-8deg); } 50% { transform: translateY(-2px) rotate(8deg); } }
+.titre-fx-royal.titre-fx-holo { background: linear-gradient(90deg, #F472B6, #FACC15, #4ADE80, #22D3EE, #A78BFA, #F472B6) 0 0 / 300% 100% !important; color: #fff !important; }
+.titre-fx-sakura { background: radial-gradient(circle, #fff 0 1.2px, transparent 1.6px) 0 0 / 12px 12px, linear-gradient(90deg, #FBCFE8, #F472B6, #FBCFE8) !important; color: #831843 !important; animation: titre-petales 5s linear infinite; }
+@keyframes titre-petales { to { background-position: 60px 60px, 0 0; } }
+.titre-fx-ocean { background: linear-gradient(180deg, #0EA5E9, #1E3A8A) 0 0 / 100% 200% !important; color: #E0F2FE !important; box-shadow: inset 0 -6px 10px rgba(14, 165, 233, .5), 0 0 12px rgba(14, 165, 233, .5); animation: titre-houle 3s ease-in-out infinite alternate; }
+@keyframes titre-houle { to { background-position: 0 100%; } }
+.titre-fx-cosmos.titre-fx-aurore { background: radial-gradient(circle, #fff 0 1px, transparent 1.5px) 0 0 / 14px 14px, linear-gradient(120deg, #0F0C29, #10B981, #7C3AED, #DB2777, #0F0C29) !important; background-size: 14px 14px, 300% 100% !important; animation: titre-etoiles 8s linear infinite, titre-glisse 6s ease-in-out infinite alternate; }
+
+/* ——— Vitrines basiques : motifs animés ——— */
+.effet-damier::before { inset: -40px; background: repeating-conic-gradient(rgba(255,255,255,.18) 0 25%, transparent 0 50%) 0 0 / 40px 40px; animation: motif-diag 3s linear infinite; }
+@keyframes motif-diag { to { transform: translate(40px, 40px); } }
+.effet-pois::before { inset: -30px; background: radial-gradient(circle, rgba(255,255,255,.35) 0 5px, transparent 6px) 0 0 / 30px 30px, radial-gradient(circle, rgba(255,255,255,.2) 0 3px, transparent 4px) 15px 15px / 30px 30px; animation: motif-diag-30 4s linear infinite; }
+@keyframes motif-diag-30 { to { transform: translate(30px, -30px); } }
+.effet-rayures::before { inset: -60px; background: repeating-linear-gradient(45deg, rgba(255,255,255,.3) 0 14px, transparent 14px 28px); animation: motif-rayure 1.6s linear infinite; }
+@keyframes motif-rayure { to { transform: translateX(39.6px); } }
+.effet-ondes::before, .effet-ondes::after { left: 50%; top: 50%; width: 40px; height: 40px; margin: -20px; border-radius: 50%; border: 3px solid rgba(255,255,255,.5); animation: motif-onde 3s ease-out infinite; }
+.effet-ondes::after { animation-delay: 1.5s; }
+@keyframes motif-onde { from { transform: scale(.5); opacity: 1; } to { transform: scale(9); opacity: 0; } }
+.effet-losanges::before { inset: -40px; background: linear-gradient(45deg, rgba(255,255,255,.18) 25%, transparent 25% 75%, rgba(255,255,255,.18) 75%) 0 0 / 40px 40px, linear-gradient(45deg, rgba(255,255,255,.18) 25%, transparent 25% 75%, rgba(255,255,255,.18) 75%) 20px 20px / 40px 40px; animation: motif-diag 5s linear infinite reverse; }
+.effet-zebre::before { inset: -50%; background: repeating-linear-gradient(110deg, #fff 0 14px, transparent 14px 34px, #fff 34px 40px, transparent 40px 70px); opacity: .9; animation: motif-zebre 8s ease-in-out infinite alternate; }
+@keyframes motif-zebre { to { transform: translateX(-10%) skewX(8deg); } }
+.effet-cahier::before { inset: -30px 0 0; background: linear-gradient(90deg, transparent 22px, #F87171 22px 24px, transparent 24px), repeating-linear-gradient(180deg, transparent 0 22px, #93C5FD 22px 23px); animation: motif-cahier 6s linear infinite; }
+@keyframes motif-cahier { to { transform: translateY(23px); } }
+.effet-hexa::before { inset: -50px; background: radial-gradient(circle farthest-side at 0 50%, transparent 94%, rgba(255,255,255,.3) 96%, transparent) 0 0 / 30px 52px, radial-gradient(circle farthest-side at 100% 50%, transparent 94%, rgba(255,255,255,.3) 96%, transparent) 0 0 / 30px 52px, radial-gradient(circle farthest-side at 50% 0, transparent 94%, rgba(255,255,255,.25) 96%, transparent) 15px 26px / 30px 52px; animation: motif-hexa 6s linear infinite; }
+@keyframes motif-hexa { to { transform: translateY(52px); } }
+.effet-degrade::before { inset: 0; background: inherit; background: linear-gradient(120deg, #22D3EE, #A855F7, #F472B6, #FACC15, #22D3EE) 0 0 / 400% 400%; animation: titre-glisse 8s ease-in-out infinite alternate; }
+.effet-vichy::before { inset: -24px; background: repeating-linear-gradient(0deg, rgba(239, 68, 68, .35) 0 12px, transparent 12px 24px), repeating-linear-gradient(90deg, rgba(239, 68, 68, .35) 0 12px, transparent 12px 24px); animation: motif-vichy 4s linear infinite; }
+@keyframes motif-vichy { to { transform: translate(24px, 24px); } }
+.effet-tourbillon::before { left: 50%; top: 50%; width: 220%; aspect-ratio: 1; transform: translate(-50%, -50%); background: repeating-conic-gradient(from 0deg, #6366F1 0 10deg, #EC4899 10deg 20deg, #1E1B4B 20deg 30deg); -webkit-mask: radial-gradient(circle, transparent 0 4%, #000 30%); mask: radial-gradient(circle, transparent 0 4%, #000 30%); opacity: .55; animation: motif-tourne 9s linear infinite; }
+@keyframes motif-tourne { to { transform: translate(-50%, -50%) rotate(360deg); } }
+.effet-lava::before, .effet-lava::after { width: 46%; aspect-ratio: 1; border-radius: 48% 52% 60% 40%; background: radial-gradient(circle at 35% 35%, #FDBA74, #F97316 60%, #C2410C); filter: blur(2px); }
+.effet-lava::before { left: 12%; bottom: -20%; animation: lava-monte 9s ease-in-out infinite; }
+.effet-lava::after { right: 10%; bottom: -30%; width: 34%; animation: lava-monte 12s ease-in-out 2s infinite; }
+@keyframes lava-monte { 0%, 100% { transform: translateY(0) scale(1, 1); } 50% { transform: translateY(-150%) scale(.85, 1.15); border-radius: 60% 40% 45% 55%; } }
+
+/* ——— Fêtes de victoire de luxe ——— */
+.confettis .flash { position: absolute; inset: 0; background: #fff; opacity: 0; animation: fete-flash .9s ease-out; }
+@keyframes fete-flash { 0%, 30% { opacity: 0; } 35% { opacity: .85; } 45% { opacity: .1; } 55% { opacity: .6; } 100% { opacity: 0; } }
+.confettis .eclair { position: absolute; top: 0; width: 60px; height: 70vh; opacity: 0; background: linear-gradient(#fff, #FDE047); clip-path: polygon(40% 0, 60% 0, 48% 38%, 70% 38%, 30% 100%, 42% 52%, 22% 52%); filter: drop-shadow(0 0 14px #FDE047); animation: fete-eclair .7s ease-out forwards; }
+@keyframes fete-eclair { 0% { opacity: 0; transform: scaleY(.2); transform-origin: top; } 20% { opacity: 1; transform: scaleY(1); } 70% { opacity: 1; } 100% { opacity: 0; } }
+.confettis .galaxie { position: absolute; left: 50%; top: 45%; width: 140vmin; aspect-ratio: 1; transform: translate(-50%, -50%); border-radius: 50%; background: conic-gradient(from 0deg, transparent, rgba(167, 139, 250, .5), transparent 25%, rgba(244, 114, 182, .45), transparent 50%, rgba(34, 211, 238, .45), transparent 75%, rgba(253, 224, 71, .4), transparent); -webkit-mask: radial-gradient(circle, #000 5%, rgba(0,0,0,.6) 30%, transparent 65%); mask: radial-gradient(circle, #000 5%, rgba(0,0,0,.6) 30%, transparent 65%); animation: fete-galaxie 3.8s ease-out forwards; }
+@keyframes fete-galaxie { 0% { opacity: 0; transform: translate(-50%, -50%) scale(.2) rotate(0); } 25% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -50%) scale(1.2) rotate(540deg); } }
+.confettis .nova { position: absolute; left: 50%; top: 50%; width: 30px; height: 30px; margin: -15px; border-radius: 50%; background: radial-gradient(circle, #fff, #FDE047 40%, rgba(249, 115, 22, 0) 70%); animation: fete-nova 1.6s ease-out forwards; }
+@keyframes fete-nova { 0% { transform: scale(0); opacity: 1; } 30% { transform: scale(18); opacity: 1; } 100% { transform: scale(60); opacity: 0; } }
