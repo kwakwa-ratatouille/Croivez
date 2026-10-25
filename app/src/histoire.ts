@@ -14,7 +14,7 @@ export async function evenementsDu(mois: number, jourMois: number): Promise<Even
   const j = await r.json() as { events?: { year: number; text: string; pages?: { thumbnail?: { source: string } }[] }[] }
   const l = (j.events ?? [])
     .filter((e) => e.year > 0 && e.text && e.text.length > 25 && e.text.length < 260)
-    .map((e) => ({ annee: e.year, texte: e.text.replace(/s((?:en|es|de|it|pt|nl|ru|ja|zh|ar|pl|sv))/g, '').replace(/^\s*[a-zà-ÿ]/, (c) => c.toUpperCase()).replace(/\s*\.?$/, '.'), image: e.pages?.find((p) => p.thumbnail)?.thumbnail?.source }))
+    .map((e) => ({ annee: e.year, texte: e.text.replace(/\s\((?:en|es|de|it|pt|nl|ru|ja|zh|ar|pl|sv)\)/g, '').replace(/^\s*[a-zà-ÿ]/, (c) => c.toUpperCase()).replace(/\s*\.?$/, '.'), image: e.pages?.find((p) => p.thumbnail)?.thumbnail?.source }))
   cache.set(cle, l)
   return l
 }
