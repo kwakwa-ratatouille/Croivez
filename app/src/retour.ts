@@ -4,8 +4,8 @@ import { natif } from './firebase'
 
 // Préférences sons et vibrations (par appareil)
 const lire = (k: string) => { try { return localStorage.getItem(k) !== '0' } catch { return true } }
-export const prefsRetour = { son: lire('son'), vibration: lire('vibration') }
-export function reglerRetour(k: 'son' | 'vibration', v: boolean) {
+export const prefsRetour = { son: lire('son'), vibration: lire('vibration'), animCaisse: lire('animCaisse') }
+export function reglerRetour(k: 'son' | 'vibration' | 'animCaisse', v: boolean) {
   prefsRetour[k] = v
   try { localStorage.setItem(k, v ? '1' : '0') } catch { /* stockage indisponible */ }
 }

@@ -25,6 +25,7 @@ export default function Parametres() {
   const [son, setSon] = useState(prefsRetour.son)
   const [rappels, setRappels] = useState(rappelsActifs)
   const [vibration, setVibration] = useState(prefsRetour.vibration)
+  const [animCaisse, setAnimCaisse] = useState(prefsRetour.animCaisse)
   const [taille, setTaille] = useState<number | null>(null)
   const [enCours, setEnCours] = useState<{ k: string; fait: number; total: number } | null>(null)
   const [faits, setFaits] = useState<Set<string>>(() => { try { return new Set(JSON.parse(localStorage.getItem('hors-ligne') ?? '[]')) } catch { return new Set() } })
@@ -127,6 +128,10 @@ export default function Parametres() {
         <div style={ligne}>
           <span className="t" style={titre}>{fr ? 'Vibrations' : 'Haptics'}</span>
           <Toggle on={vibration} label={fr ? 'Vibrations' : 'Haptics'} onChange={(v) => { setVibration(v); reglerRetour('vibration', v); if (v) retourReponse(false) }} />
+        </div>
+        <div style={ligne}>
+          <span className="t" style={titre}>{fr ? 'Animation des caisses' : 'Crate animation'}</span>
+          <Toggle on={animCaisse} label={fr ? 'Animation des caisses' : 'Crate animation'} onChange={(v) => { setAnimCaisse(v); reglerRetour('animCaisse', v) }} />
         </div>
         <div style={{ height: 1, background: 'var(--line)' }} />
         <div style={ligne}>

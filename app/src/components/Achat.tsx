@@ -4,8 +4,9 @@ import { usePrefs } from '../i18n'
 import { FAMILLES, type Famille, type SousTheme } from '../themes'
 import { PRIX_CHOIX, acheterQuiz, prixCaisse, POIDS, RARETES, ouvrirCaisse, quizVerrouilles, rareteDe, type Rarete } from '../progression'
 import Caisse from './Caisse'
+import { prefsRetour, reglerRetour } from '../retour'
 import Illustration from './Illustration'
-import { ICONS, Icon, Piece } from './ui'
+import { ICONS, Icon, Piece, Toggle } from './ui'
 
 // Caisse d'une famille : prix fixe, chances par rareté, puis ouverture façon CS:GO et révélation
 export default function Achat({ k, onFermer }: { k: Famille; onFermer: () => void }) {
@@ -18,6 +19,7 @@ export default function Achat({ k, onFermer }: { k: Famille; onFermer: () => voi
   const [vise, setVise] = useState<SousTheme | null>(null) // quiz choisi, en attente de confirmation
   const [achete, setAchete] = useState('')
   const [confirmer, setConfirmer] = useState(false) // 2ᵉ étape avant de payer la caisse
+  const [anim, setAnim] = useState(prefsRetour.animCaisse) // animation d'ouverture (réglage de l'appareil)
   const f = FAMILLES.find((x) => x.k === k)
   if (!f) return null
   if (ouverte) return <Caisse k={k} possibles={ouverte.possibles} gain={ouverte.gain} onFermer={onFermer} />
@@ -72,6 +74,10 @@ export default function Achat({ k, onFermer }: { k: Famille; onFermer: () => voi
           <button className="btn btn-p btn-lg" disabled={!assez || envoi || !restants.length} style={{ flex: 1 }} onClick={() => (confirmer ? ouvrir() : setConfirmer(true))}>
             {!restants.length ? (fr ? 'Tout est débloqué !' : 'All unlocked!') : confirmer ? (fr ? '✓ Oui, ouvrir' : '✓ Yes, open') : assez ? (fr ? 'Ouvrir la caisse' : 'Open crate') : (fr ? `Encore ${prix - solde} pièces` : `${prix - solde} more coins`)} · <Piece size={18} />{prix}
           </button>
+        </div>
+        <div className="caisse-reglage">
+          <span>{fr ? 'Animation d’ouverture' : 'Opening animation'}</span>
+          <Toggle on={anim} label={fr ? 'Animation d’ouverture' : 'Opening animation'} onChange={(v) => { setAnim(v); reglerRetour('animCaisse', v) }} />
         </div>
         {/* Ou payer plus cher pour choisir exactement son quiz (prix selon la rareté) */}
         {restants.length > 0 && (

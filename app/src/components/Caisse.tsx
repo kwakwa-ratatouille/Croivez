@@ -47,7 +47,7 @@ export default function Caisse({ k, possibles, gain, onFermer }: { k: Famille; p
   const fenetre = useRef<HTMLDivElement>(null)
   const bande = useRef<HTMLDivElement>(null)
   const [fini, setFini] = useState(false)
-  const [revele, setRevele] = useState(false)
+  const [revele, setRevele] = useState(!prefsRetour.animCaisse)
 
   // Bande : cases au hasard parmi les quiz possibles, le gain placé à la position prévue
   // Les cases suivent les mêmes chances que le tirage : beaucoup de communs, quelques légendaires qui frôlent le repère
@@ -57,7 +57,7 @@ export default function Caisse({ k, possibles, gain, onFermer }: { k: Famille; p
 
   useEffect(() => {
     const b = bande.current, f = fenetre.current
-    if (!b || !f) return
+    if (!b || !f || revele) return
     const cible = GAGNANTE * CASE + CASE / 2 - f.clientWidth / 2 + decalage
     b.style.transition = 'none'
     b.style.transform = 'translateX(0)'
@@ -76,7 +76,7 @@ export default function Caisse({ k, possibles, gain, onFermer }: { k: Famille; p
     raf = requestAnimationFrame(suivre)
     const t = setTimeout(() => { cancelAnimationFrame(raf); setFini(true); retourFin(true); setTimeout(() => setRevele(true), 900) }, DUREE + 150)
     return () => { clearTimeout(t); cancelAnimationFrame(raf) }
-  }, [decalage])
+  }, [decalage, revele])
 
   if (revele) return <Revelation id={gain.id} onFermer={onFermer} />
   return (
@@ -93,6 +93,7 @@ export default function Caisse({ k, possibles, gain, onFermer }: { k: Famille; p
           </div>
         </div>
 
+        {!fini && <button type="button" className="btn btn-g caisse-passer" onClick={() => setRevele(true)}>{fr ? 'Passer ⏭' : 'Skip ⏭'}</button>}
         <div className="caisse-chances">{(Object.keys(RARETES) as (keyof typeof RARETES)[]).map((x) => <span key={x} style={{ color: RARETES[x].couleur }}>{RARETES[x].nom[lang]} {POIDS[x]} %</span>)}</div>
       </div>
     </div>

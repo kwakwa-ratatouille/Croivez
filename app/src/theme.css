@@ -2211,3 +2211,7 @@ img, svg { -webkit-user-drag: none; }
 .confettis .flash.pastel { background: radial-gradient(circle at 50% 45%, rgba(249, 168, 212, .6), rgba(196, 181, 253, .35) 40%, transparent 70%); animation: fete-lueur 2.6s ease-out forwards; }
 .confettis .rayons-nova { left: 50%; top: 50%; width: 160vmax; height: 160vmax; margin: -80vmax; border-radius: 50%; background: repeating-conic-gradient(rgba(253, 224, 71, .38) 0 5deg, transparent 5deg 16deg); -webkit-mask: radial-gradient(circle, #000 4%, transparent 55%); mask: radial-gradient(circle, #000 4%, transparent 55%); opacity: 0; will-change: transform, opacity; animation: fete-rayons-nova 2.6s ease-out .15s forwards; }
 @keyframes fete-rayons-nova { 0% { opacity: 0; transform: scale(.2) rotate(0); } 25% { opacity: 1; } 100% { opacity: 0; transform: scale(1) rotate(70deg); } }
+
+/* Caisse : réglage de l'animation et bouton Passer */
+.caisse-reglage { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 12px; border-radius: 14px; background: var(--surface2); font-weight: 700; font-size: 14px; }
+.caisse-passer { align-self: center; min-height: 40px; }
