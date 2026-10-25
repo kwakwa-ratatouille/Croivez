@@ -118,13 +118,13 @@ export const FAMILLES: { k: Famille; nom: Record<Lang, string>; icon: string; mo
     k: 'jv', nom: { fr: 'Jeux vidéo & jeux', en: 'Games' },
     icon: 'M8 7h8a6 6 0 0 1 5.8 7.5l-.6 2.3a2.6 2.6 0 0 1-4.5 1l-1.9-2.3H9.2l-1.9 2.3a2.6 2.6 0 0 1-4.5-1l-.6-2.3A6 6 0 0 1 8 7ZM8 10v4M6 12h4M15.5 11h.01M17.5 13h.01',
     motif: 'M30 24h60a20 20 0 0 1 20 20v10a14 14 0 0 1-25 8l-6-6H41l-6 6a14 14 0 0 1-25-8V44a20 20 0 0 1 20-20Z',
-    subs: [j('musiques-jeux', 'Musiques de jeux vidéo', 'Video game music'), j('emojis-jeux', 'Jeux vidéo en émojis', 'Games in emojis'), j('jeux', 'Jeux et studios', 'Games & studios'), j('jeux-annee', 'Jeux : année de sortie', 'Games: release year'), j('persos-jeux', 'Personnages', 'Characters'), j('persos-univers', 'Personnages : de quel jeu ?', 'Characters: which game?'), j('lieux-jeux', 'Lieux et cartes : de quel jeu ?', 'Places & maps: which game?'), j('sagas', 'Sagas et éditeurs', 'Series & publishers'), j('regles-jeux', 'Jeux de société, cartes et échecs', 'Board & card games'), j('pokemon', 'Pokémon : le type', 'Pokémon: type')],
+    subs: [j('musiques-jeux', 'Musiques de jeux vidéo', 'Video game music'), j('emojis-jeux', 'Jeux vidéo en émojis', 'Games in emojis'), j('jeux', 'Jeux et studios', 'Games & studios'), j('jeux-annee', 'Jeux : année de sortie', 'Games: release year'), j('persos-jeux', 'Personnages', 'Characters'), j('persos-univers', 'Personnages : de quel jeu ?', 'Characters: which game?'), j('lieux-jeux', 'Lieux et cartes : de quel jeu ?', 'Places & maps: which game?'), j('sagas', 'Sagas et éditeurs', 'Series & publishers'), j('regles-jeux', 'Jeux de société, cartes et échecs', 'Board & card games'), j('pokemon-photo', 'Quel est ce Pokémon ?', 'Who’s that Pokémon?'), j('pokemon-silhouette', 'Pokémon en silhouette', 'Pokémon silhouettes'), j('pokemon', 'Pokémon : le type', 'Pokémon: type')],
   },
   {
     k: 'ani', nom: { fr: 'Animés & doublage', en: 'Anime & dubbing' },
     icon: 'M12 3.5l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 15.9l-4.8 2.5.9-5.4-3.9-3.8 5.4-.8Z',
     motif: 'M60 10l10 20 22 3-16 15 4 22-20-10-20 10 4-22-16-15 22-3Z',
-    subs: [j('animes', 'Animés : l’année', 'Anime: year'), j('animes-studio', 'Animés : le studio', 'Anime: studio'), j('persos-animes', 'Personnages : de quel animé ?', 'Anime characters'), j('lieux-animes', 'Villes et lieux d’animés', 'Anime places'), j('openings', 'Openings d’animés', 'Anime openings'), j('doubleurs', 'Voix françaises', 'French voice actors')],
+    subs: [j('animes', 'Animés : l’année', 'Anime: year'), j('animes-studio', 'Animés : le studio', 'Anime: studio'), j('persos-animes', 'Personnages : de quel animé ?', 'Anime characters'), j('lieux-animes', 'Villes et lieux d’animés', 'Anime places'), j('openings', 'Openings d’animés', 'Anime openings'), j('voix-vf', 'Voix françaises : qui chante ?', 'French voices: who sings?'), j('doubleurs', 'Voix françaises', 'French voice actors')],
   },
   {
     k: 'vie', nom: { fr: 'Vie quotidienne & mythes', en: 'Everyday life & myths' },

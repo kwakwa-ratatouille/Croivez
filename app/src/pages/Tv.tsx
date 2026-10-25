@@ -6,6 +6,7 @@ import { useAuth } from '../auth'
 import { usePrefs } from '../i18n'
 import { creerSalon } from '../salon'
 import { ICONS, Icon, Logo, Wordmark } from '../components/ui'
+import AideTele from '../components/AideTele'
 
 // Mode télé : à ouvrir sur la télé ou l'ordinateur branché dessus. Crée un salon dont l'écran est l'hôte ;
 // les joueurs scannent le QR code et répondent sur leur téléphone. Pas besoin de compte.
@@ -46,6 +47,7 @@ export default function Tv() {
         <li><span>3</span>{fr ? 'Les questions s’affichent en grand, on répond sur son téléphone' : 'Questions on the TV, answers on phones'}</li>
       </ol>
       <button className="btn btn-lg tv-lancer" onClick={creer} disabled={enCours}>{enCours ? '…' : (fr ? 'Créer la partie' : 'Create the game')}<Icon d={ICONS.arrowR} /></button>
+      <AideTele />
       {msg && <p style={{ color: '#FFB4A8', fontWeight: 700 }}>{msg}</p>}
     </div>
   )

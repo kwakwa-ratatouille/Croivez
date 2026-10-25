@@ -1,5 +1,46 @@
 [
  {
+  "id": "2026-10-25b",
+  "titre": "Musique, Pokémon et télé",
+  "points": [
+   [
+    "🎵",
+    "Bien plus de musique",
+    "794 extraits (Taylor Swift, Stromae, Angèle, Daft Punk, Queen…), rap refait, 142 génériques de dessins animés."
+   ],
+   [
+    "🎮",
+    "Musiques de jeux vidéo",
+    "Plus de 100 musiques, de Tetris et Zelda à Elden Ring et Clair Obscur."
+   ],
+   [
+    "🎬",
+    "Musiques de films et chansons Disney",
+    "Deux nouveaux quiz audio, plus « Voix françaises : qui chante ? »."
+   ],
+   [
+    "⚡",
+    "Pokémon",
+    "143 Pokémon en image, le quiz « Quel est ce Pokémon ? », la version silhouette, et les types en couleur."
+   ],
+   [
+    "😀",
+    "Plus d’émojis",
+    "Jeux, séries, pays et expressions en émojis : deux fois plus de questions, de plus en plus subtiles."
+   ],
+   [
+    "📺",
+    "Télé sans Chromecast",
+    "Explications pour iPhone (AirPlay ou câble), Android (Smart View) et PC (HDMI, Windows + K)."
+   ],
+   [
+    "💬",
+    "Messages",
+    "Une bulle rouge sur Multi quand tu as un message non lu."
+   ]
+  ]
+ },
+ {
   "id": "2026-10-25a",
   "titre": "Gros nettoyage",
   "points": [

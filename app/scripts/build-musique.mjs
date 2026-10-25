@@ -165,6 +165,32 @@ const DISNEY = [
   ['Scales and Arpeggios Aristocats', 'Les Aristochats', 'Scales Arpeggios Aristocats'], ['Trust in Me Jungle Book', 'Le Livre de la jungle', 'Trust in Me Jungle'], ['Show Yourself Frozen 2', 'La Reine des neiges 2', 'Show Yourself Frozen'],
 ]
 
+// ——— Voix françaises : qui chante en VF ? [recherche, voix (personnage), nom de la voix crédité comme artiste] ———
+const VOIX = [
+  ['Libérée délivrée Anaïs Delva', 'Anaïs Delva (Elsa, La Reine des neiges)', 'Anaïs Delva'], ['Sous l’océan Henri Salvador', 'Henri Salvador (Sébastien, La Petite Sirène)', 'Henri Salvador'],
+  ['Partir là-bas Claire Guyot', 'Claire Guyot (Ariel, La Petite Sirène)', 'Claire Guyot'], ['Je suis ton ami Charlélie Couture', 'Charlélie Couture (Toy Story)', 'Charlélie Couture'],
+  ['Prince Ali Richard Darbois', 'Richard Darbois (le Génie, Aladdin)', 'Richard Darbois'], ['Le bleu lumière Cerise Calixte', 'Cerise Calixte (Vaiana)', 'Cerise Calixte'],
+  ['Pour les hommes Anthony Kavanagh', 'Anthony Kavanagh (Maui, Vaiana)', 'Anthony Kavanagh'], ['L’air du vent Laura Mayne', 'Laura Mayne (Pocahontas)', 'Laura Mayne'],
+  ['Comme un homme Patrick Fiori', 'Patrick Fiori (Shang, Mulan)', 'Patrick Fiori'], ['Ce rêve bleu Karine Costa', 'Karine Costa (Jasmine, Aladdin)', 'Karine Costa'],
+  ['Ce rêve bleu Paolo Domingo', 'Paolo Domingo (Aladdin)', 'Paolo Domingo'], ['Où est la vraie vie Maeva Méline', 'Maeva Méline (Raiponce)', 'Maeva Méline'],
+  ['Le Festin Camille Ratatouille', 'Camille (Le Festin, Ratatouille)', 'Camille'], ['Un jour mon prince viendra Lucie Dolène', 'Lucie Dolène (Blanche-Neige)', 'Lucie Dolène'],
+  ['Je voudrais un bonhomme de neige Emmylou Homs', 'Emmylou Homs (Anna, La Reine des neiges)', 'Emmylou Homs'], ['La Garde du Roi Lion Corneille', 'Corneille (La Garde du Roi lion)', 'Corneille'],
+]
+async function voix(liste) {
+  const out = []
+  const rates = []
+  for (const [q, reponse, nom] of liste) {
+    const l = (await dz(`/search?q=${encodeURIComponent(q)}&limit=10`))?.data ?? []
+    // La voix doit être créditée comme artiste du morceau (pas une reprise)
+    const t = l.find((x) => x.preview && norm(x.artist?.name).includes(norm(nom)))
+    if (t) out.push({ ...item(t, reponse), f: [[{ fr: 'Chanson', en: 'Song' }, t.title_short ?? t.title], [{ fr: 'Voix', en: 'Voice' }, reponse], [{ fr: 'Album', en: 'Album' }, t.album?.title]] })
+    else rates.push(nom)
+    await pause(120)
+  }
+  if (rates.length) console.log(`  voix introuvables : ${rates.join(', ')}`)
+  return out
+}
+
 const quoi = process.argv[2]
 if (!quoi || quoi === 'extraits') {
   const existants = JSON.parse(await readFile('public/packs/culture/extraits.json', 'utf8'))
@@ -176,3 +202,4 @@ if (!quoi || quoi === 'rap') { await ecrire('rap-fr', await artistes(RAP_FR)); a
 if (!quoi || quoi === 'jeux') await ecrire('musiques-jeux', await recherches(JEUX))
 if (!quoi || quoi === 'films') await ecrire('musiques-films', await recherches(FILMS))
 if (!quoi || quoi === 'disney') await ecrire('chansons-disney', await recherches(DISNEY))
+if (!quoi || quoi === 'voix') await ecrire('voix-vf', await voix(VOIX))

@@ -48,6 +48,9 @@ function retourVers(p: URLSearchParams) {
   return t ? `/themes/${t.famille.k}` : '/'
 }
 
+// Couleurs officielles des types (pastilles sur les réponses du quiz « Pokémon : le type »)
+const TYPES_POKEMON: Record<string, string> = { Normal: '#A8A77A', Feu: '#EE8130', Eau: '#6390F0', Électrik: '#F7D02C', Plante: '#7AC74C', Glace: '#96D9D6', Combat: '#C22E28', Poison: '#A33EA1', Sol: '#E2BF65', Vol: '#A98FF3', Psy: '#F95587', Insecte: '#A6B91A', Roche: '#B6A136', Spectre: '#735797', Dragon: '#6F35FC', Ténèbres: '#705746', Acier: '#B7B7CE', Fée: '#D685AD' }
+
 export default function Partie() {
   const [params] = useSearchParams()
   const nav = useNavigate()
@@ -366,7 +369,7 @@ export default function Partie() {
           {double && <span className="chip" style={{ background: 'var(--mus-t)', color: 'var(--mus-i)' }}>{lang === 'fr' ? '×2 actif' : '×2 on'}</span>}
         </div>
         {q.image && (
-          <Img src={q.image} alt="" className={`question-image${q.flou && !courante ? ' image-floue' : ''}${q.effet && !courante ? ` image-${q.effet}` : ''}`} style={{ height: 220, maxWidth: '100%', borderRadius: 18, boxShadow: 'var(--shadow)', border: '1px solid var(--line)', objectFit: 'contain', background: q.fondGris ? 'var(--fond-logo)' : 'var(--surface)', padding: q.fondGris ? 14 : 0 }} />
+          <Img src={q.image} alt="" className={`question-image${q.flou && !courante ? ' image-floue' : ''}${q.silhouette && !courante ? ' image-silhouette' : ''}${q.silhouette && courante ? ' image-revelee' : ''}${q.effet && !courante ? ` image-${q.effet}` : ''}`} style={{ height: 220, maxWidth: '100%', borderRadius: 18, boxShadow: 'var(--shadow)', border: '1px solid var(--line)', objectFit: 'contain', background: q.fondGris ? 'var(--fond-logo)' : 'var(--surface)', padding: q.fondGris ? 14 : 0 }} />
         )}
         {q.image && q.flou && !courante && <p className="legende-flou">{lang === 'fr' ? '🔍 L’image se précise peu à peu : réponds tôt pour marquer plus' : '🔍 The picture sharpens: answer early to score more'}</p>}
         {q.carte && <CarteQuiz carte={q.carte} clic={courante?.clic} repondu={!!courante} onClic={repondreCarte} />}
@@ -396,7 +399,7 @@ export default function Partie() {
                   {o.image && (o.effet?.truc
                     ? <LogoTruque src={o.image} effet={o.effet as EffetLogo} style={{ width: '100%', aspectRatio: '3 / 2', borderRadius: 10, padding: 10, background: 'var(--fond-logo)' }} />
                     : <Img src={o.image} alt="" style={{ width: '100%', aspectRatio: '3 / 2', objectFit: 'contain', borderRadius: 10, padding: q.fondGris ? 10 : 0, background: q.fondGris ? 'var(--fond-logo)' : undefined }} />)}
-                  {(!q.imagesOnly || courante) && <span style={{ flex: 1 }}>{o.label}</span>}
+                  {(!q.imagesOnly || courante) && <span style={{ flex: 1 }}>{sousTheme === 'pokemon' && TYPES_POKEMON[o.label] ? <span className="type-pokemon" style={{ ['--tp' as string]: TYPES_POKEMON[o.label] }}>{o.label}</span> : o.label}</span>}
                   {etat === 'ok' && <Coche />}
                   {etat === 'ko' && <Croix />}
                 </button>

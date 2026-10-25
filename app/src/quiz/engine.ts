@@ -111,6 +111,9 @@ const CULTURE = {
   'rap-us': { type: 'audio', q: { fr: () => 'Qui rappe sur ce morceau ?', en: () => 'Who is rapping on this track?' } },
   'rap-titre': { type: 'audio', pack: 'rap-fr', champ: 'nom', q: { fr: () => 'Quel est le titre de ce son ?', en: () => 'What is this track called?' } },
   openings: { type: 'audio', q: { fr: () => 'De quel animé vient cet opening ?', en: () => 'Which anime is this opening from?' } },
+  'pokemon-photo': { type: 'image', q: { fr: () => 'Quel est ce Pokémon ?', en: () => 'Who’s that Pokémon?' } },
+  'pokemon-silhouette': { type: 'image', pack: 'pokemon-photo', silhouette: true, q: { fr: () => 'Quel est ce Pokémon ? (silhouette)', en: () => 'Who’s that Pokémon? (silhouette)' } },
+  'voix-vf': { type: 'audio', q: { fr: () => 'Qui chante cette chanson en version française ?', en: () => 'Who sings this in the French version?' } },
   'musiques-jeux': { type: 'audio', q: { fr: () => 'De quel jeu vidéo vient cette musique ?', en: () => 'Which video game is this music from?' } },
   'musiques-films': { type: 'audio', q: { fr: () => 'De quel film vient cette musique ?', en: () => 'Which film is this music from?' } },
   'chansons-disney': { type: 'audio', q: { fr: () => 'De quel film Disney vient cette chanson ?', en: () => 'Which Disney film is this song from?' } },
@@ -159,7 +162,7 @@ const CULTURE = {
   missions: { type: 'annee', champ: 'annee', montrer: true, q: { fr: (n) => `En quelle année a été lancée la mission : ${n} ?`, en: (n) => `In what year was ${n} launched?` } },
   astronautes: { type: 'image', q: { fr: (_, g) => (g === 'f' ? 'Qui est cette astronaute ?' : 'Qui est cet astronaute ?'), en: () => 'Who is this astronaut?' } },
   'regles-jeux': { type: 'attribut', q: { fr: (n) => `${n} ?`, en: (n) => `${n}?` } },
-  pokemon: { type: 'attribut', q: { fr: (n) => `De quel type est le Pokémon ${n} ?`, en: (n) => `What type is the Pokémon ${n}?` } },
+  pokemon: { type: 'attribut', montrer: true, q: { fr: (n) => `De quel type est le Pokémon ${n} ?`, en: (n) => `What type is the Pokémon ${n}?` } },
   panneaux: { type: 'image', q: { fr: () => 'Que signifie ce panneau ?', en: () => 'What does this road sign mean?' } },
   'code-route': { type: 'attribut', q: { fr: (n) => `${n} ?`, en: (n) => `${n}?` } },
   'artistes-recents': { type: 'image', q: { fr: (_, g) => (g === 'f' ? 'Qui est cette artiste ?' : 'Qui est cet artiste ?'), en: () => 'Who is this artist?' } },
@@ -243,7 +246,7 @@ const CULTURE = {
   'eco-vf': { type: 'attribut', grand: true, fixe: true, q: { fr: () => 'Écologie : vrai ou faux ?', en: () => 'Ecology: true or false?' } },
   'idees-recues': { type: 'attribut', grand: true, fixe: true, q: { fr: () => 'Vrai ou faux ?', en: () => 'True or false?' } },
   'persos-univers': { type: 'attribut', pack: 'persos-jeu', montrer: true, groupe: 'genre', q: { fr: (n) => `De quel jeu vient ce personnage : ${n} ?`, en: (n) => `Which game is ${n} from?` } },
-} satisfies Record<string, { type: TypeCulture; montrer?: boolean; pack?: string; champ?: string; grand?: boolean; fixe?: boolean; groupe?: string; q: Record<Lang, (nom: string, genre?: string) => string> }>
+} satisfies Record<string, { type: TypeCulture; silhouette?: boolean; montrer?: boolean; pack?: string; champ?: string; grand?: boolean; fixe?: boolean; groupe?: string; q: Record<Lang, (nom: string, genre?: string) => string> }>
 // (les quiz de dates gardent l'image : le titre est déjà dans la question)
 const TRAHIT = new Set(['albums', 'livres', 'jeux', 'studios', 'logos', 'bd'])
 export type CultureId = keyof typeof CULTURE
@@ -327,6 +330,7 @@ export type Question = {
   grand?: string // texte à afficher en gros (émojis, réplique, slogan…)
   fixe?: boolean // format imposé (vrai / faux) : pas de transformation
   flou?: boolean // mini-jeu Photo floue : l'image se dévoile peu à peu
+  silhouette?: boolean // image en ombre noire jusqu'à la réponse (« Quel est ce Pokémon ? »)
   effet?: 'flash' | 'zoom' // mini-jeux Flash (image furtive) et Zoom (gros plan qui se dézoome)
   jeu?: string // format tiré en mode Auto (pastille affichée sur la question)
   fondGris?: boolean // logos : fond gris pour voir aussi les logos blancs
@@ -726,6 +730,7 @@ function culture(o: Opts, tousItems: ItemCulture[]): Question[] {
       enonce: cfg.q[lang](nomQ, it.g),
       ...(cfg.grand ? { grand: melangerEmojis(nomQ, o.difficulte === LEGENDE ? 4 : o.difficulte === 0 ? 2 : difficulte) } : {}),
       ...(cfg.fixe ? { fixe: true } : {}),
+      ...((cfg as { silhouette?: boolean }).silhouette ? { silhouette: true } : {}),
       ...(sousTheme === 'logos' ? { fondGris: true } : {}),
       // Photo du sujet dès qu'elle existe, sauf si elle trahit la réponse (pochette, couverture, extrait audio)
       image: cfg.type === 'image' || cfg.montrer || (cfg.type !== 'audio' && !TRAHIT.has(sousTheme)) ? it.img : undefined,

@@ -5,6 +5,7 @@ import { usePrefs } from '../i18n'
 import { CAST_APP_ID, caster, chargerCast, chromeCompatible, estAndroid, estIos } from '../cast'
 import { URL_WEB } from '../salon'
 import { ICONS, Icon, Logo, Wordmark } from '../components/ui'
+import AideTele from '../components/AideTele'
 
 const ICONE_CAST = 'M3 18.5a2.5 2.5 0 0 1 2.5 2.5M3 14.5A6.5 6.5 0 0 1 9.5 21M3 10.5A10.5 10.5 0 0 1 13.5 21M3 7V5.5A1.5 1.5 0 0 1 4.5 4h15A1.5 1.5 0 0 1 21 5.5v13a1.5 1.5 0 0 1-1.5 1.5H17'
 
@@ -80,6 +81,7 @@ export default function Caster() {
           )}
         </>
       )}
+      <AideTele />
       <Link to="/tv" className="caster-lien">{fr ? 'Pas de Chromecast ? Ouvrir le mode télé sur cet écran' : 'No Chromecast? Open TV mode here'}</Link>
     </div>
   )
