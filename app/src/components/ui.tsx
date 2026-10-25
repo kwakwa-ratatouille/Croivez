@@ -1,27 +1,29 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useId, useState } from 'react'
 
 export function Logo({ width = 42 }: { width?: number }) {
-  // Deux cartes-réponses : le ✗ derrière, le ✓ devant (voir logo/croivez-planche-logo.png)
-  const petit = width < 60
+  // La Croisée : la coche menthe passe devant une barre rouge corail, séparées par une coupure transparente
+  const id = 'cz' + useId().replace(/:/g, '')
   return (
-    <svg viewBox="22 42 368 250" width={width} aria-hidden="true" style={{ overflow: 'visible' }}>
-      <g transform="rotate(-9 130 170)">
-        <rect x="35" y="75" width="190" height="190" rx="52" style={{ fill: 'var(--ko-t)', stroke: 'var(--lx)', strokeWidth: petit ? 14 : 6 }} />
-        <path className="lx" d="M92 132 L168 208 M168 132 L92 208" style={{ strokeWidth: petit ? 40 : 30 }} />
-      </g>
-      <g transform="rotate(7 265 160)">
-        <rect x="170" y="60" width="200" height="200" rx="56" style={{ fill: 'var(--ok-t)', stroke: 'var(--lv)', strokeWidth: petit ? 14 : 6 }} />
-        <path className="lv" d="M222 166 L256 202 L320 116" style={{ strokeWidth: petit ? 42 : 32 }} />
+    <svg viewBox="0 0 200 200" width={width} aria-hidden="true">
+      <defs>
+        <mask id={id} maskUnits="userSpaceOnUse" x="0" y="0" width="200" height="200">
+          <rect width="200" height="200" fill="#fff" />
+          <path d="M44 106 L82 146 L158 50" fill="none" stroke="#000" strokeWidth="44" strokeLinecap="round" strokeLinejoin="round" />
+        </mask>
+      </defs>
+      <g transform="translate(-1 2)">
+        <path d="M84 60 L156 132" mask={`url(#${id})`} style={{ fill: 'none', stroke: 'var(--logo-x)', strokeWidth: 26, strokeLinecap: 'round' }} />
+        <path d="M44 106 L82 146 L158 50" style={{ fill: 'none', stroke: 'var(--lv)', strokeWidth: 26, strokeLinecap: 'round', strokeLinejoin: 'round' }} />
       </g>
     </svg>
   )
 }
 
-// « Croivez » : le point du i est un petit ✗, le v est vert comme le ✓
+// « Croivez » : le point du i est une petite croix rouge, le v est une coche
 export function Wordmark({ size = 24 }: { size?: number }) {
   return (
-    <span className="t" style={{ fontSize: size, fontWeight: 900, letterSpacing: '-0.015em', lineHeight: 1 }}>
-      Cro<span style={{ position: 'relative', display: 'inline-block' }}>ı<svg viewBox="0 0 24 24" aria-hidden="true" style={{ position: 'absolute', left: '50%', top: '0.075em', width: '0.22em', height: '0.22em', transform: 'translateX(-50%) rotate(-6deg)', overflow: 'visible' }}><path d="M5 5 L19 19 M19 5 L5 19" style={{ fill: 'none', stroke: 'var(--lx)', strokeWidth: 6.2, strokeLinecap: 'round' }} /></svg></span><span style={{ color: 'var(--lv)' }}>v</span>ez
+    <span className="t" style={{ fontSize: size, fontWeight: 900, letterSpacing: '-0.015em', lineHeight: 1, whiteSpace: 'nowrap' }}>
+      Cro<span style={{ position: 'relative', display: 'inline-block' }}>ı<svg viewBox="0 0 24 24" aria-hidden="true" style={{ position: 'absolute', left: '50%', top: '0.075em', width: '0.22em', height: '0.22em', transform: 'translateX(-50%) rotate(-6deg)', overflow: 'visible' }}><path d="M5 5 L19 19 M19 5 L5 19" style={{ fill: 'none', stroke: 'var(--logo-x)', strokeWidth: 6.2, strokeLinecap: 'round' }} /></svg></span><svg viewBox="0 0 48 46" aria-hidden="true" style={{ width: '0.56em', height: '0.54em', verticalAlign: 'baseline', margin: '0 0.01em 0 0.02em', overflow: 'visible' }}><path d="M7 25 L19 39 L42 7" style={{ fill: 'none', stroke: 'var(--lv)', strokeWidth: 12, strokeLinecap: 'round', strokeLinejoin: 'round' }} /></svg>ez
     </span>
   )
 }

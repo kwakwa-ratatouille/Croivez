@@ -1,7 +1,7 @@
 /* Tokens et composants repris de la DA Claude Design (design/project/*.dc.html) */
 :root {
   --bg:#FBF8F3;--surface:#FFFFFF;--surface2:#F4EFE6;--line:#E9E2D6;--text:#2F3437;--muted:#5D646A;
-  --primary:#2F3437;--on-primary:#FBF8F3;--shadow:0 8px 28px rgba(80,62,35,.07);--lx:#DE8B6A;--lv:#6FC59F;
+  --primary:#2F3437;--on-primary:#FBF8F3;--shadow:0 8px 28px rgba(80,62,35,.07);--lx:#DE8B6A;--lv:#6FC59F;--logo-x:#E3574B;
   --geo:#6BB8C4;--geo-t:#E3F3F4;--geo-i:#1F6670;--cine:#F2A68A;--cine-t:#FCEAE2;--cine-i:#8E4128;
   --mus:#B3A3DB;--mus-t:#EEEAF8;--mus-i:#5A4A8C;--nat:#9DBB97;--nat-t:#E8F0E5;--nat-i:#3F6339;
   --sci:#E8AFC0;--sci-t:#FAE8EE;--sci-i:#8A3E56;--his:#DDB65E;--his-t:#F8EFD8;--his-i:#765610;
@@ -16,7 +16,7 @@
 }
 :root[data-theme="dark"] {
   --bg:#131B2E;--surface:#1A2440;--surface2:#24304F;--line:#2F3B5E;--text:#EEE9E0;--muted:#AEB6C8;
-  --primary:#EEE9E0;--on-primary:#131B2E;--shadow:0 10px 30px rgba(0,0,0,.3);--lx:#EDA98A;--lv:#93D9BB;
+  --primary:#EEE9E0;--on-primary:#131B2E;--shadow:0 10px 30px rgba(0,0,0,.3);--lx:#EDA98A;--lv:#93D9BB;--logo-x:#F07A6E;
   --geo:#7CCFDA;--geo-t:#1B3946;--geo-i:#A6E3EA;--cine:#F4B097;--cine-t:#3D2A2C;--cine-i:#F8C4B0;
   --mus:#BDAEE6;--mus-t:#2C2A4C;--mus-i:#D3C8F4;--nat:#A9C8A2;--nat-t:#223A30;--nat-i:#C1DDBA;
   --sci:#EDB9C9;--sci-t:#3C2839;--sci-i:#F5CAD8;--his:#E5C26E;--his-t:#38321F;--his-i:#EED493;
