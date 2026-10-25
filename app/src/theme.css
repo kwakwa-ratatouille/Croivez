@@ -2173,3 +2173,10 @@ img, svg { -webkit-user-drag: none; }
 /* Album ouvert : bouton retour bien visible */
 .album-retour { padding: 0 16px 0 10px; border-radius: 999px; background: var(--surface2); color: var(--text); box-shadow: 0 1px 0 rgba(0,0,0,.06); }
 .album-retour:hover { background: var(--surface3, var(--surface2)); }
+
+/* Album : pastille quand il y a des pièces à récupérer */
+.chip.bulle-album { background: #F59E0B !important; }
+.raccourci-album, .album-livre { position: relative; }
+.album-notif { position: absolute; top: -6px; right: -6px; z-index: 3; min-width: 24px; height: 24px; padding: 0 7px; border-radius: 999px; display: inline-flex; align-items: center; justify-content: center; background: #EF4444; color: #fff; font: 900 13px 'DM Sans', sans-serif; box-shadow: 0 0 0 2px var(--surface); animation: bulle-msg 1.6s ease-in-out infinite; }
+.album-notif-point { display: inline-block; width: 9px; height: 9px; margin-left: 6px; border-radius: 50%; background: #EF4444; vertical-align: middle; }
+.album-livre .album-notif { top: 8px; right: 8px; }

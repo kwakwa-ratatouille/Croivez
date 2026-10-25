@@ -1,4 +1,5 @@
 import { ecouterNonLus } from '../chat'
+import { cartesARecuperer } from '../albumRecompenses'
 import { appliquerEffets } from '../effets'
 import { doc, setDoc } from 'firebase/firestore'
 import { db } from '../firebase'
@@ -46,6 +47,7 @@ export default function Layout() {
   const pseudo = profile?.pseudo ?? '…'
   const dues = aReviser(profile?.revision).length
   const [nonLus, setNonLus] = useState(0) // messages non lus (bulle sur Multi et Amis)
+  const aRecuperer = cartesARecuperer(profile) // pièces de l'album à récupérer (bulle sur Profil)
 
   // 3 appuis rapides sur le logo : menu de test
   const [test, setTest] = useState(false)
@@ -104,6 +106,7 @@ export default function Layout() {
           <NavLink key={l.to} to={l.to} end={l.to === '/'} className={({ isActive }) => `nav${isActive ? ' active' : ''}${PC_SEULEMENT.includes(l.to) ? ' nav-pc' : ''}`}>
             <Icon d={l.icon} />{t(l.k)}
             {(l.to === '/duels' || l.to === '/amis') && nonLus > 0 && <span className="chip bulle-msg" aria-label={`${nonLus} messages non lus`}>💬 {nonLus}</span>}
+            {l.to === '/profil' && aRecuperer > 0 && <span className="chip bulle-msg bulle-album" aria-label={`${aRecuperer} cartes d’album à récupérer`}>🃏 {aRecuperer}</span>}
             {l.to === '/revision' && dues > 0 && <span className="chip" style={{ marginLeft: 'auto', minHeight: 22, padding: '0 8px', background: 'var(--his-t)', color: 'var(--his-i)' }}>{dues}</span>}
           </NavLink>
         ))}

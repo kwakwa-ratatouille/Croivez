@@ -9,6 +9,12 @@ export const GAIN_PAGE = 75
 export const GAIN_ALBUM = 500
 
 export const nbCartes = (p: Profile) => Object.values(p.album ?? {}).reduce((a, l) => a + l.length, 0)
+// Cartes obtenues dont on n'a pas encore récupéré les pièces (pastille « à récupérer »), d'un quiz ou de tous
+export const cartesARecuperer = (p: Profile | null | undefined, quiz?: string) => {
+  if (!p) return 0
+  const lus = new Set(p.albumLu ?? [])
+  return Object.entries(p.album ?? {}).filter(([q]) => !quiz || q === quiz).reduce((n, [q, ids]) => n + ids.filter((id) => !lus.has(`${q}:${id}`)).length, 0)
+}
 const nbPages = (p: Profile) => p.albumPages?.length ?? 0
 const nbAlbums = (p: Profile) => p.albumsFinis?.length ?? 0
 

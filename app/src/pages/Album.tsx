@@ -1,4 +1,4 @@
-import { GAIN_ALBUM, GAIN_CARTE, GAIN_PAGE, lireCarte, lireCartes, reclamerAlbum, reclamerPage } from '../albumRecompenses'
+import { cartesARecuperer, GAIN_ALBUM, GAIN_CARTE, GAIN_PAGE, lireCarte, lireCartes, reclamerAlbum, reclamerPage } from '../albumRecompenses'
 import { feter } from '../effets'
 import { retourReponse } from '../retour'
 import { useEffect, useRef, useState } from 'react'
@@ -46,10 +46,12 @@ function CouvertureAlbum({ k, onOuvrir }: { k: Famille; onOuvrir: () => void }) 
   const album = profile?.album ?? {}
   const src = useCouverture(subs[0]?.id ?? '')
   const total = subs.reduce((a, s) => a + (album[s.id]?.length ?? 0), 0)
+  const aRecuperer = subs.reduce((a, s) => a + cartesARecuperer(profile, s.id), 0)
   return (
     <button type="button" className="album-livre" onClick={onOuvrir} style={{ ['--k' as string]: `var(--${k})`, ['--ki' as string]: `var(--${k}-i)`, ['--kt' as string]: `var(--${k}-t)` }}>
       {src ? <Img src={src} alt="" loading="lazy" className="album-livre-photo" /> : <span className="album-livre-photo"><Illustration k={k} taille={120} fond={false} /></span>}
       <span className="album-livre-dos" />
+      {aRecuperer > 0 && <span className="album-notif" aria-label={lang === 'fr' ? 'Pièces à récupérer' : 'Coins to collect'}>{aRecuperer}</span>}
       <span className="album-livre-titre"><Icon d={f.icon} size={16} />{f.nom[lang]}</span>
       <span className="album-livre-compte">{total} {lang === 'fr' ? 'cartes' : 'cards'}</span>
     </button>
@@ -166,7 +168,7 @@ export default function Album() {
       <button type="button" onClick={fermerAlbum} className="mag-retour album-retour"><Icon d={ICONS.arrowL} />{fr ? 'Mes albums' : 'My albums'}</button>
       <h1 className="t" style={{ fontSize: 26, fontWeight: 900, color: 'var(--ki)' }}>{f.nom[lang]}</h1>
       <div className="album-onglets">
-        {subs.map((s) => <button key={s.id} type="button" className="pill" aria-pressed={quiz === s.id} onClick={() => setQuiz(s.id)}>{s.nom[lang]} <small>{album[s.id]?.length ?? 0}</small></button>)}
+        {subs.map((s) => <button key={s.id} type="button" className="pill" aria-pressed={quiz === s.id} onClick={() => setQuiz(s.id)}>{s.nom[lang]} <small>{album[s.id]?.length ?? 0}</small>{cartesARecuperer(profile, s.id) > 0 && <span className="album-notif-point" aria-label={fr ? 'Pièces à récupérer' : 'Coins to collect'} />}</button>)}
       </div>
       <div className="album-recompenses">
         {albumComplet && !(profile?.albumsFinis ?? []).includes(quiz ?? '') && <button type="button" className="album-bonus grand" onClick={() => { if (user && quiz) { reclamerAlbum(user.uid, quiz).catch(() => {}); feter(undefined, 2) } }}>🏆 {fr ? `Album complet ! Récupérer ${GAIN_ALBUM} pièces` : `Album complete! +${GAIN_ALBUM}`}</button>}

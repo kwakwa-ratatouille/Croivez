@@ -1,4 +1,5 @@
 import { BadgeClan } from '../components/BlasonClan'
+import { cartesARecuperer } from '../albumRecompenses'
 import Img from '../components/Img'
 import { cartesDe } from './Album'
 import ChoixTheme from '../components/ChoixTheme'
@@ -190,7 +191,7 @@ export default function Profil() {
       {/* Raccourcis du profil : la boutique en grand, puis amis, album, stats, saison, réglages */}
       <nav className="profil-raccourcis" aria-label={fr ? 'Raccourcis du profil' : 'Profile shortcuts'}>
         <Link to="/boutique" className="raccourci grand" style={{ ['--c' as string]: '#E3A72F' }}><span>🛍️</span><strong>{fr ? 'Boutique' : 'Shop'}</strong><small>{fr ? 'Avatars, cadres et titres · plein d’objets gratuits à débloquer' : 'Avatars, frames, titles · lots of free items'}</small><em className="raccourci-badge">{fr ? 'Nouveautés' : 'New'}</em></Link>
-        <Link to="/album" className="raccourci" style={{ ['--c' as string]: '#A35BE0' }}><span>🃏</span><strong>Album</strong><small>{Object.values(profile.album ?? {}).reduce((n, l) => n + l.length, 0)} {fr ? 'cartes' : 'cards'}</small></Link>
+        <Link to="/album" className="raccourci raccourci-album" style={{ ['--c' as string]: '#A35BE0' }}>{cartesARecuperer(profile) > 0 && <span className="album-notif" aria-label={fr ? 'Pièces à récupérer' : 'Coins to collect'}>{cartesARecuperer(profile)}</span>}<span>🃏</span><strong>Album</strong><small>{Object.values(profile.album ?? {}).reduce((n, l) => n + l.length, 0)} {fr ? 'cartes' : 'cards'}</small></Link>
         <Link to="/stats" className="raccourci" style={{ ['--c' as string]: '#4FAE6A' }}><span>📊</span><strong>Stats</strong><small>{profile.parties ?? 0} {fr ? 'parties' : 'games'}</small></Link>
         <Link to="/parametres" className="raccourci" style={{ ['--c' as string]: '#64748B' }}><span>⚙️</span><strong>{fr ? 'Réglages' : 'Settings'}</strong><small>{fr ? 'Taille, sons…' : 'Size, sounds…'}</small></Link>
       </nav>
