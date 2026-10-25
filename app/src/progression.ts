@@ -124,6 +124,19 @@ export function tirerGain<T extends { id: string }>(possibles: T[]): T {
   for (const q of possibles) { x -= POIDS[rareteDe(q.id)]; if (x <= 0) return q }
   return possibles[possibles.length - 1]
 }
+// Acheter LE quiz qu'on veut : bien plus cher qu'une caisse (qui reste le pari aléatoire), selon sa rareté
+export const PRIX_CHOIX: Record<Rarete, number> = { commun: 300, rare: 550, epique: 900, legendaire: 1500 }
+export async function acheterQuiz(uid: string, id: string) {
+  const prix = PRIX_CHOIX[rareteDe(id)]
+  return runTransaction(db, async (tx) => {
+    const ref = doc(db, 'users', uid)
+    const d = (await tx.get(ref)).data() ?? {}
+    if ((((d.quiz as string[] | undefined) ?? []).includes(id))) return true
+    if (((d.pieces as number | undefined) ?? 0) < prix) return false
+    tx.update(ref, { pieces: increment(-prix), quiz: arrayUnion(id) })
+    return true
+  })
+}
 export async function ouvrirCaisse(uid: string, k: Famille, p?: Profile | null) {
   const possibles = quizVerrouilles(k, p)
   if (!possibles.length) return null

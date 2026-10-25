@@ -3,9 +3,11 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '../auth'
 import { usePrefs } from '../i18n'
 import { noterActivite } from '../activite'
-import { AVANTAGES, BLASON_DEFAUT, FORMES, MOTIFS, NIVEAU_FORME, NIVEAU_MOTIF, PALETTE, SYMBOLES, chercherClans, cleNom, creerClan, lireClan, maxMembres, modifierClan, niveauClan, nomPris, objectifSemaine, quitterClan, rejoindreClan, scoresClan, xpNiveau, type Blason, type Clan as TClan, type EntreeIndex } from '../clans'
+import type { Clan as ClanT } from '../clans'
+import { AVANTAGES, inviterClan, BLASON_DEFAUT, FORMES, MOTIFS, NIVEAU_FORME, NIVEAU_MOTIF, PALETTE, SYMBOLES, chercherClans, cleNom, creerClan, lireClan, maxMembres, modifierClan, niveauClan, nomPris, objectifSemaine, quitterClan, rejoindreClan, scoresClan, xpNiveau, type Blason, type Clan as TClan, type EntreeIndex } from '../clans'
 import BlasonClan from '../components/BlasonClan'
 import Avatar from '../components/Avatar'
+import { profilsDe, type ProfilPublic } from '../social'
 import { ICONS, Icon } from '../components/ui'
 
 type Score = Awaited<ReturnType<typeof scoresClan>>[number]
@@ -157,7 +159,7 @@ export default function Clan() {
             </li>
           ))}
         </ol>
-        <button type="button" className="btn btn-g" onClick={() => { navigator.clipboard?.writeText(clan.nom).catch(() => {}); setMsg(fr ? `Dis à tes amis de chercher « ${clan.nom} » dans les clans !` : 'Copied') }}>📣 {fr ? 'Inviter : partager le nom' : 'Invite'}</button>
+        <InviterAmis clan={clan} />
       </section>
       <section className="card clan-bloc">
         <h2 className="t">{fr ? 'Récompenses de niveau' : 'Level rewards'}</h2>
@@ -178,5 +180,36 @@ export default function Clan() {
         ? <div className="clan-ligne"><span>{fr ? 'Quitter le clan ?' : 'Leave clan?'}</span><button className="btn btn-g" onClick={() => setQuitter(false)}>{fr ? 'Non' : 'No'}</button><button className="btn btn-p" style={{ background: 'var(--ko)' }} onClick={() => user && quitterClan(user.uid, code)}>{fr ? 'Oui, quitter' : 'Leave'}</button></div>
         : <button className="btn btn-g" style={{ alignSelf: 'flex-start' }} onClick={() => setQuitter(true)}>{fr ? 'Quitter le clan' : 'Leave clan'}</button>}
     </>
+  )
+}
+
+// Inviter ses amis dans le clan : chacun reçoit une invitation à accepter en un appui
+function InviterAmis({ clan }: { clan: ClanT }) {
+  const { lang } = usePrefs()
+  const fr = lang === 'fr'
+  const { user, profile } = useAuth()
+  const [amis, setAmis] = useState<ProfilPublic[]>([])
+  const [envoyes, setEnvoyes] = useState<string[]>([])
+  const [ouvert, setOuvert] = useState(false)
+  useEffect(() => { if (ouvert) profilsDe(profile?.amis ?? []).then(setAmis).catch(() => {}) }, [ouvert, profile?.amis])
+  const libres = amis.filter((a) => !clan.membres?.[a.uid])
+  const inviter = async (a: ProfilPublic) => {
+    if (!user) return
+    await inviterClan(clan, { uid: user.uid, pseudo: profile?.pseudo ?? '?' }, a.uid)
+    setEnvoyes((e) => [...e, a.uid])
+  }
+  return (
+    <div className="clan-inviter">
+      <button type="button" className="btn btn-p" onClick={() => setOuvert((o) => !o)}>📣 {fr ? 'Inviter des amis' : 'Invite friends'} {ouvert ? '▴' : '▾'}</button>
+      {ouvert && (libres.length === 0
+        ? <p style={{ color: 'var(--muted)', fontSize: 14 }}>{(profile?.amis?.length ?? 0) === 0 ? (fr ? 'Ajoute d’abord des amis (Multi → Mes amis).' : 'Add friends first.') : (fr ? 'Tous tes amis sont déjà dans le clan !' : 'All your friends are in.')}</p>
+        : <div className="clan-inviter-liste">{libres.map((a) => (
+            <div key={a.uid} className="clan-inviter-ami">
+              <Avatar pseudo={a.pseudo} avatar={a.avatar} cadre={a.cadre} taille={34} />
+              <span>{a.pseudo}</span>
+              <button type="button" className={`btn ${envoyes.includes(a.uid) ? 'btn-g' : 'btn-p'}`} disabled={envoyes.includes(a.uid)} onClick={() => inviter(a)}>{envoyes.includes(a.uid) ? (fr ? '✓ Invité' : '✓ Invited') : (fr ? 'Inviter' : 'Invite')}</button>
+            </div>
+          ))}</div>)}
+    </div>
   )
 }

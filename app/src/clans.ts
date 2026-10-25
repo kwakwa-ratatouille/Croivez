@@ -77,6 +77,10 @@ export async function modifierClan(c: Clan, maj: { nom?: string; devise?: string
   await indexer({ ...c, ...maj })
 }
 
+// Inviter un ami : il reçoit l'invitation (comme pour un duel) et rejoint en un appui
+export const inviterClan = (c: Clan, moi: { uid: string; pseudo: string }, ami: string) =>
+  set(rref(rtdb, `invitations/${ami}/clan-${c.code}`), { type: 'clan', de: moi.pseudo, uid: moi.uid, code: c.code, nom: c.nom, t: Date.now() })
+
 export async function rejoindreClan(uid: string, moi: Membre, code: string): Promise<'ok' | 'introuvable' | 'plein'> {
   const c = await lireClan(code)
   if (!c) return 'introuvable'
