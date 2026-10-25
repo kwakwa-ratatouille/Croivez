@@ -17,6 +17,7 @@ const CHOIX = {
   'artistes-fr': 'fr:Stromae', 'artistes-recents': 'en:Billie Eilish', emissions: 'en:Television studio', series: 'en:Binge-watching', films: 'en:Movie theater',
   'films-annee': 'en:Clapperboard', 'rap-us': 'en:Tupac Shakur', 'rap-fr': 'fr:MC Solaar', 'rap-titre': 'en:Hip-hop dance', generiques: 'en:Saturday-morning cartoon',
   openings: 'en:Anime convention', fondateurs: 'en:Steve Jobs', 'logos-vrai': 'en:Counterfeit consumer good', 'sports-photo': 'en:Usain Bolt', unites: 'en:Tape measure',
+  'musiques-jeux': 'en:Nintendo Entertainment System', 'musiques-films': 'en:Film score', 'chansons-disney': 'en:Sleeping Beauty Castle',
   formules: 'en:Erlenmeyer flask', constellations: 'en:Milky Way', pourcentages: 'en:Pie chart',
 }
 // Quiz illustrés par un élément de leur propre pack (photo la plus parlante)

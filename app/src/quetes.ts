@@ -15,7 +15,7 @@ const QUETES: Quete[] = [
   { id: 'difficile', titre: { fr: 'Finir une partie en Difficile ou plus', en: 'Finish a game on Hard or above' }, objectif: 1, gain: 35, avance: (s, e) => (e.prog.difficile ?? 0) + (s.difficulte && s.difficulte >= 3 ? 1 : 0) },
   { id: 'express', titre: { fr: 'Jouer une partie Express', en: 'Play an Express game' }, objectif: 1, gain: 25, avance: (s, e) => (e.prog.express ?? 0) + (s.jeu === 'express' ? 1 : 0) },
   { id: 'survie', titre: { fr: '10 bonnes réponses en Survie', en: '10 correct in Survival' }, objectif: 10, gain: 40, avance: (s, e) => Math.max(e.prog.survie ?? 0, s.jeu === 'survie' ? s.bonnes : 0) },
-  { id: 'mix', titre: { fr: 'Jouer une partie Mix', en: 'Play a Mix game' }, objectif: 1, gain: 20, avance: (s, e) => (e.prog.mix ?? 0) + (s.jeu === 'mix' ? 1 : 0) },
+  { id: 'mix', titre: { fr: 'Faire une partie « Jouer au hasard » (le gros bouton 🎲 de l’accueil)', en: 'Play a « Random game » (the big 🎲 button on Home)' }, objectif: 1, gain: 20, avance: (s, e) => (e.prog.mix ?? 0) + (s.jeu === 'mix' ? 1 : 0) },
   { id: 'familles', titre: { fr: 'Jouer dans 2 familles différentes', en: 'Play in 2 different families' }, objectif: 2, gain: 30, avance: (s, e) => new Set([...e.familles, ...(s.famille && !s.jeu ? [s.famille] : [])]).size },
 ]
 
