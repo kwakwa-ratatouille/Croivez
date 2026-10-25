@@ -22,6 +22,8 @@ const ecrire = (uid: string, d: Record<string, unknown>) => setDoc(doc(db, 'user
 export const lireCarte = (uid: string, quiz: string, id: string, gain: number) => ecrire(uid, { pieces: increment(gain), albumLu: arrayUnion(`${quiz}:${id}`) })
 // Toutes les cartes non lues d'une page d'un coup (bouton « Récupérer les pièces de la page »)
 export const lireCartes = (uid: string, quiz: string, ids: string[], gain: number) => ecrire(uid, { pieces: increment(gain), albumLu: arrayUnion(...ids.map((id) => `${quiz}:${id}`)) })
+// Toutes les cartes non lues de tous les albums d'un coup (« quiz:carte »)
+export const lireToutes = (uid: string, cles: string[], gain: number) => ecrire(uid, { pieces: increment(gain), albumLu: arrayUnion(...cles) })
 export const reclamerPage = (uid: string, quiz: string, page: number) => ecrire(uid, { pieces: increment(GAIN_PAGE), albumPages: arrayUnion(`${quiz}:${page}`) })
 export const reclamerAlbum = (uid: string, quiz: string) => ecrire(uid, { pieces: increment(GAIN_ALBUM), albumsFinis: arrayUnion(quiz) })
 

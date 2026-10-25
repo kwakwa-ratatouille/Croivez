@@ -2175,8 +2175,9 @@ img, svg { -webkit-user-drag: none; }
 .album-retour:hover { background: var(--surface3, var(--surface2)); }
 
 /* Album : pastille quand il y a des pièces à récupérer */
-.chip.bulle-album { background: #F59E0B !important; }
+.chip.bulle-album { margin-left: auto; min-width: 22px; min-height: 22px; padding: 0 6px; justify-content: center; border-radius: 999px; white-space: nowrap; background: linear-gradient(180deg, #FDE047, #F59E0B) !important; color: #422006 !important; font: 900 12px 'DM Sans', sans-serif; box-shadow: 0 0 0 2px var(--surface), 0 2px 6px rgba(245, 158, 11, .45); }
+@media (max-width: 760px) { .nav .chip.bulle-album { left: auto; right: calc(50% - 22px); min-width: 18px; min-height: 18px !important; padding: 0 5px !important; font-size: 10.5px; } }
 .raccourci-album, .album-livre { position: relative; }
-.album-notif { position: absolute; top: -6px; right: -6px; z-index: 3; min-width: 24px; height: 24px; padding: 0 7px; border-radius: 999px; display: inline-flex; align-items: center; justify-content: center; background: #EF4444; color: #fff; font: 900 13px 'DM Sans', sans-serif; box-shadow: 0 0 0 2px var(--surface); animation: bulle-msg 1.6s ease-in-out infinite; }
-.album-notif-point { display: inline-block; width: 9px; height: 9px; margin-left: 6px; border-radius: 50%; background: #EF4444; vertical-align: middle; }
+.album-notif { position: absolute; top: -6px; right: -6px; z-index: 3; min-width: 24px; height: 24px; padding: 0 7px; border-radius: 999px; display: inline-flex; align-items: center; justify-content: center; background: linear-gradient(180deg, #FDE047, #F59E0B); color: #422006; font: 900 13px 'DM Sans', sans-serif; box-shadow: 0 0 0 2px var(--surface), 0 2px 6px rgba(245, 158, 11, .45); animation: bulle-msg 1.6s ease-in-out infinite; }
+.album-notif-point { display: inline-block; width: 9px; height: 9px; margin-left: 6px; border-radius: 50%; background: #F59E0B; vertical-align: middle; }
 .album-livre .album-notif { top: 8px; right: 8px; }

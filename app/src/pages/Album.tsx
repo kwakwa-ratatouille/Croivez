@@ -1,4 +1,4 @@
-import { cartesARecuperer, GAIN_ALBUM, GAIN_CARTE, GAIN_PAGE, lireCarte, lireCartes, reclamerAlbum, reclamerPage } from '../albumRecompenses'
+import { cartesARecuperer, GAIN_ALBUM, GAIN_CARTE, GAIN_PAGE, lireCarte, lireToutes, reclamerAlbum, reclamerPage } from '../albumRecompenses'
 import { feter } from '../effets'
 import { retourReponse } from '../retour'
 import { useEffect, useRef, useState } from 'react'
@@ -127,6 +127,21 @@ export default function Album() {
   const [large, setLarge] = useState(() => window.matchMedia('(min-width: 900px)').matches)
   useEffect(() => { const m = window.matchMedia('(min-width: 900px)'); const h = () => setLarge(m.matches); m.addEventListener('change', h); return () => m.removeEventListener('change', h) }, [])
 
+  const [recolte, setRecolte] = useState<{ cles: string[]; gain: number }>({ cles: [], gain: 0 })
+  useEffect(() => {
+    const aLire = Object.entries(album).map(([q, ids]) => [q, ids.filter((id) => !lus.has(`${q}:${id}`))] as const).filter(([, ids]) => ids.length)
+    if (!aLire.length) { setRecolte({ cles: [], gain: 0 }); return }
+    let annule = false
+    Promise.all(aLire.map(async ([q, ids]) => {
+      const liste = await cartesDe(q, lang).catch(() => [] as Carte[])
+      const rang = new Map(liste.map((c, i) => [c.id, i]))
+      return ids.filter((id) => rang.has(id)).map((id) => ({ cle: `${q}:${id}`, gain: GAIN_CARTE[rareteCarte(rang.get(id)!, liste.length)] }))
+    })).then((r) => { if (!annule) { const t = r.flat(); setRecolte({ cles: t.map((x) => x.cle), gain: t.reduce((n, x) => n + x.gain, 0) }) } })
+    return () => { annule = true }
+  }, [profile?.album, profile?.albumLu, lang]) // eslint-disable-line react-hooks/exhaustive-deps
+  const recolter = () => { if (!user || !recolte.cles.length) return; lireToutes(user.uid, recolte.cles, recolte.gain).catch(() => {}); setRecolte({ cles: [], gain: 0 }); retourReponse(true); feter(undefined, 1) }
+  const BoutonRecolte = () => recolte.gain > 0 ? <button type="button" className="album-bonus grand" onClick={recolter}><Piece size={16} /> {fr ? `Tout récupérer : +${recolte.gain}` : `Collect all album coins: +${recolte.gain}`}</button> : null
+
   useEffect(() => { if (quiz) { setCartes(null); setPage(0); cartesDe(quiz, lang).then(setCartes).catch(() => setCartes([])) } }, [quiz, lang])
 
   // ——— Étagère : un album par famille ———
@@ -137,6 +152,7 @@ export default function Album() {
         <h1 className="t" style={{ fontSize: 30, fontWeight: 900 }}>{fr ? 'Mes albums' : 'My albums'}</h1>
         <p style={{ color: 'var(--muted)', fontSize: 14 }}>{fr ? 'Chaque bonne réponse colle sa carte. Les plus célèbres sont les plus rares !' : 'Every correct answer adds its card.'}</p>
       </header>
+      <BoutonRecolte />
       <section className="album-etagere">{FAMILLES.map((f) => <CouvertureAlbum key={f.k} k={f.k} onOuvrir={() => ouvrirAlbum(f.k)} />)}</section>
     </>
   )
@@ -154,10 +170,6 @@ export default function Album() {
     ? (pagesFaites.has(`${quiz}:${p}`) ? <span className="album-bonus fait">✓ {fr ? 'Page complète' : 'Page done'}</span> : <button type="button" className="album-bonus" onClick={() => { if (user && quiz) { reclamerPage(user.uid, quiz, p).catch(() => {}); feter(undefined, 1) } }}>🎁 {fr ? `Page complète : +${GAIN_PAGE}` : `Page done: +${GAIN_PAGE}`}</button>)
     : null
   const albumComplet = liste.length > 0 && liste.every((c) => eues.has(c.id))
-  // Pièces des cartes obtenues mais pas encore lues, sur la (ou les deux) page(s) visible(s) : récupérables d'un coup
-  const aRecolter = [page, ...(large ? [page + 1] : [])].filter((p) => p < pages).flatMap((p) => liste.slice(p * PAR_PAGE, p * PAR_PAGE + PAR_PAGE).map((c, j) => ({ c, r: rareteCarte(p * PAR_PAGE + j, liste.length) }))).filter(({ c }) => eues.has(c.id) && !lus.has(`${quiz}:${c.id}`))
-  const gainRecolte = aRecolter.reduce((n, { r }) => n + GAIN_CARTE[r], 0)
-  const recolter = () => { if (!user || !quiz || !aRecolter.length) return; lireCartes(user.uid, quiz, aRecolter.map(({ c }) => c.id), gainRecolte).catch(() => {}); retourReponse(true); feter(undefined, 1) }
   const pageCartes = (p: number) => liste.slice(p * PAR_PAGE, p * PAR_PAGE + PAR_PAGE).map((c, j) => { const i = p * PAR_PAGE + j; const rr = rareteCarte(i, liste.length); return <CarteAlbum key={c.id} c={c} n={i + 1} rarete={rr} aLire={!lus.has(`${quiz}:${c.id}`)} eue={eues.has(c.id)} onOuvrir={() => setOuverte({ c, r: rr })} /> })
 
   // ——— Un album ouvert : onglets des quiz, pages de 9 cartes qu'on feuillette ———
@@ -172,7 +184,7 @@ export default function Album() {
       </div>
       <div className="album-recompenses">
         {albumComplet && !(profile?.albumsFinis ?? []).includes(quiz ?? '') && <button type="button" className="album-bonus grand" onClick={() => { if (user && quiz) { reclamerAlbum(user.uid, quiz).catch(() => {}); feter(undefined, 2) } }}>🏆 {fr ? `Album complet ! Récupérer ${GAIN_ALBUM} pièces` : `Album complete! +${GAIN_ALBUM}`}</button>}
-        {gainRecolte > 0 && <button type="button" className="album-bonus" onClick={recolter}><Piece size={16} /> {fr ? `Récupérer les pièces de la page : +${gainRecolte}` : `Collect page coins: +${gainRecolte}`}</button>}
+        <BoutonRecolte />
         <Link to="/boutique?album=1" className="pill">📖 {fr ? 'Récompenses exclusives de l’album' : 'Album rewards'}</Link>
       </div>
       <div className="album-classeur" onPointerDown={(e) => { toucher.current = large ? e.clientX : e.clientY }} onPointerUp={(e) => { const d = (large ? e.clientX : e.clientY) - toucher.current; if (Math.abs(d) > 50) { tourner(d < 0 ? 1 : -1); toucher.current = -1e9 } }} onClickCapture={(e) => { if (toucher.current === -1e9) { e.stopPropagation(); toucher.current = 0 } }}>
