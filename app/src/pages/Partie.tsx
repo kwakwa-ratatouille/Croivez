@@ -72,7 +72,7 @@ export default function Partie() {
   const legende = Number(params.get('d') ?? 0) === 5
   // Légende : chrono de 12 s imposé
   // Éclair et Pile ou face imposent leur propre chrono
-  const chrono = legende ? 12 : infoMj?.chrono ?? Number(params.get('t') ?? 0)
+  const chrono = legende ? 10 : infoMj?.chrono ?? Number(params.get('t') ?? 0)
   const defi = params.get('defi') === '1'
   const revision = params.get('rev') === '1'
   // Mode rapide : pas de fiche, question suivante automatique (toujours en Express et Survie)

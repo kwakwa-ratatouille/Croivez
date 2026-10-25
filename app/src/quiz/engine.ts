@@ -20,8 +20,8 @@ export type Mode = 'qcm' | 'libre'
 export type Difficulte = 0 | 1 | 2 | 3 | 4 | 5 // 0 = tout (toutes débloquées mélangées) ; 5 = Légende
 export const LEGENDE = 5
 // Légende : 6 propositions au lieu de 4, toutes piégeuses
-// Nombre de mauvaises réponses : 2 choix en Facile, 3 en Moyen, 4 en Difficile, 5 en Expert, 6 en Légende (4 en « tout »)
-const nbLeurres = (d: Difficulte) => (d === LEGENDE ? 5 : d >= 1 && d <= 4 ? d : 3)
+// Nombre de mauvaises réponses : 1 en Facile, 2 en Moyen, 3 en Difficile, 5 en Expert, 6 en Légende (3 en « tout »)
+const nbLeurres = (d: Difficulte) => (d === LEGENDE ? 6 : d === 4 ? 5 : d >= 1 && d <= 3 ? d : 3)
 export type Palier = 1 | 2 | 3 | 4
 
 export type SousThemeId = 'drapeaux' | 'drapeaux-europe' | 'drapeaux-afrique' | 'drapeaux-asie' | 'drapeaux-ameriques' | 'drapeaux-oceanie' | 'drapeaux-inverse' | 'capitales' | 'capitales-inverse' | 'villes-fr' | 'villes-monde' | 'pays-carte' | 'logos-vrai' | CultureId
@@ -457,7 +457,7 @@ function tirer<T>(liste: T[], fin: (d: Palier) => number, o: Opts, idDe: (x: T) 
   // Défi du jour et duels (graine) : même tirage pour tout le monde, sans la mémoire personnelle
   const trier = (l: T[]) => (o.seed ? melanger(l) : prioriser(o.sousTheme, l, idDe, rand))
   // 70 % des questions viennent des nouveautés du niveau (ce qu'on n'avait pas au niveau d'en dessous)
-  const nPalier = dessous.length && d !== LEGENDE ? Math.ceil(o.nombre * 0.7) : o.nombre
+  const nPalier = dessous.length && d !== LEGENDE ? Math.ceil(o.nombre * (d === 4 ? 0.9 : 0.7)) : o.nombre
   // « Tout » : toutes les difficultés vraiment mélangées, dans tout le quiz débloqué
   if (d === 0) return { cibles: melanger(trier(melanger(pool)).slice(0, o.nombre)), pool }
   let cibles = [...trier(palier).slice(0, nPalier), ...trier(dessous).slice(0, o.nombre - Math.min(nPalier, palier.length))]
@@ -702,7 +702,7 @@ function culture(o: Opts, tousItems: ItemCulture[]): Question[] {
         const autresMarques = (l: ItemCulture[]) => (memeMarque === 'autre' ? l.filter((x) => marque(x) !== marque(it)) : l)
         let cand = [...memes, ...melanger(autresMarques(pool.length >= 4 ? pool : items))]
         // Légende : les noms les plus ressemblants de tout le quiz (même début, mêmes syllabes), plus un « faux jumeau »
-        if (o.difficulte === LEGENDE) {
+        if (o.difficulte === LEGENDE || difficulte === 4) {
           const valeur = (x: ItemCulture) => (cfg.type === 'image' ? x.n[lang] : texte(val(x), lang))
           const proches = items.filter((x) => x.id !== it.id && valeur(x) && valeur(x) !== reponse)
             .map((x) => ({ x, s: ressemblance(valeur(x), reponse) })).sort((a, b) => b.s - a.s).slice(0, 10)
@@ -719,7 +719,7 @@ function culture(o: Opts, tousItems: ItemCulture[]): Question[] {
         if (o.difficulte === LEGENDE && autres.length >= 3) {
           // 0 : aucun jumeau ; 1 : jumeau de la bonne réponse + jumeau d'un leurre ; 2 : jumeau d'un leurre seulement ;
           // 3 : deux leurres avec leur jumeau. Une paire ne dit donc jamais laquelle est la bonne.
-          const schema = Math.floor(rand() * 4)
+          const schema = 1 + Math.floor(rand() * 3)
           const valeurs = new Set(items.map((x) => (cfg.type === 'image' ? x.n[lang] : texte(val(x), lang))))
           const jumeau = (v: string) => { const j = fauxJumeau(v); return j && !vus.has(j) && !valeurs.has(j) ? j : null }
           const remplacer = (j: string | null) => { if (!j) return; vus.add(j); autres[autres.length - 1] = j; autres.unshift(autres.pop()!) }
