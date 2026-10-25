@@ -79,7 +79,7 @@ export default function Partie() {
   const rapide = params.get('r') === '1' || jeu === 'express' || jeu === 'survie' || !prefs.fiches
   const seed = defi ? Number(jour().replace(/-/g, '')) : undefined
   const difficulte = diffChoisie // 0 = tout mélangé
-  const max = plafonner(4, profile, sousTheme) // difficulté la plus haute débloquée
+  const max = diffChoisie === 0 ? 4 : plafonner(4, profile, sousTheme) // « Tout » : toutes les difficultés ; sinon la plus haute débloquée
   const k = trouverSousTheme(sousTheme)?.famille.k ?? (params.get('f') as Famille | null) ?? (jeu ? 'jv' : 'geo')
   const EXPRESS_MS = 60_000
   const [finExpress, setFinExpress] = useState(0)

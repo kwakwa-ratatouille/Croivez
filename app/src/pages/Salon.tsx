@@ -110,7 +110,7 @@ function Regles({ code, salon, modifiable }: { code: string; salon: SalonT; modi
     <div className="salon-recap">
       <div><span>{fr ? 'Thème' : 'Topic'}</span><strong>{nomQuiz}</strong></div>
       <div><span>{fr ? 'Mini-jeu' : 'Mini-game'}</span><strong>{infoMiniJeu(r.mj)?.icone} {infoMiniJeu(r.mj)?.nom[lang]}</strong></div>
-      <div><span>{fr ? 'Difficulté' : 'Difficulty'}</span><strong>{diffs[r.d - 1]}</strong></div>
+      <div><span>{fr ? 'Difficulté' : 'Difficulty'}</span><strong>{r.d === 0 ? (fr ? 'Tout mélangé' : 'All mixed') : diffs[r.d - 1]}</strong></div>
       <div><span>{fr ? 'Questions' : 'Questions'}</span><strong>{r.n} · {r.secondes} s</strong></div>
     </div>
   )
@@ -123,7 +123,7 @@ function Regles({ code, salon, modifiable }: { code: string; salon: SalonT; modi
         <div className="salon-choix">{MINI_JEUX_SALON.map((v) => { const m = infoMiniJeu(v)!; return <button key={v} type="button" className="pill" aria-pressed={r.mj === v} onClick={() => maj({ mj: v, secondes: m.chrono ?? (r.secondes < 10 ? 15 : r.secondes) })}>{m.icone} {m.nom[lang]}</button> })}</div>
       </div>
       <div className="salon-champ"><span>{fr ? 'Difficulté' : 'Difficulty'}</span>
-        <div className="salon-choix">{diffs.map((d, i) => <button key={d} type="button" className="pill" aria-pressed={r.d === i + 1} onClick={() => maj({ d: (i + 1) as 1 | 2 | 3 | 4 })}>{d}</button>)}</div>
+        <div className="salon-choix"><button type="button" className="pill" aria-pressed={r.d === 0} onClick={() => maj({ d: 0 })}>🎲 {fr ? 'Tout' : 'All'}</button>{diffs.map((d, i) => <button key={d} type="button" className="pill" aria-pressed={r.d === i + 1} onClick={() => maj({ d: (i + 1) as 1 | 2 | 3 | 4 })}>{d}</button>)}</div>
       </div>
       <div className="salon-champ"><span>{fr ? 'Questions' : 'Questions'}</span>
         <div className="salon-choix">{[5, 10, 15, 20].map((n) => <button key={n} type="button" className="pill" aria-pressed={r.n === n} onClick={() => maj({ n })}>{n}</button>)}</div>
@@ -239,7 +239,7 @@ function LobbyTv({ code, salon, onQuitter, telecommande }: { code: string; salon
   useEffect(() => { QRCode.toDataURL(lienRejoindre(code), { width: 640, margin: 1, color: { dark: '#1d1b33', light: '#ffffff' } }).then(setQr).catch(console.error) }, [code])
   const joueurs = Object.entries(salon.joueurs ?? {}).filter(([, j]) => !j.parti).sort((a, b) => a[1].rejoint - b[1].rejoint)
   return (
-    <div className="tv">
+    <div className="tv tv-lobby-page">
       <button className="btn tv-quitter" onClick={onQuitter} aria-label={fr ? 'Fermer' : 'Close'}><Icon d={ICONS.close} /></button>
       <div className="tv-lobby">
         <section className="tv-qr rise">

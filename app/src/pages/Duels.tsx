@@ -135,7 +135,7 @@ export default function Duels() {
         <div className="multi-duel-grille">
           <span>{fr ? 'Difficulté' : 'Difficulty'}</span>
           <div className="multi-duel-choix">
-            {[[1, fr ? 'Facile' : 'Easy'], [2, fr ? 'Moyen' : 'Medium'], [3, fr ? 'Difficile' : 'Hard'], [4, 'Expert']].map(([v, l]) => <button key={v} type="button" className="pill" aria-pressed={!legendeDuel && diffDuel === v} onClick={() => { setLegendeDuel(false); setDiffDuel(v as number) }}>{l}</button>)}
+            {[[0, fr ? '🎲 Tout' : '🎲 All'], [1, fr ? 'Facile' : 'Easy'], [2, fr ? 'Moyen' : 'Medium'], [3, fr ? 'Difficile' : 'Hard'], [4, 'Expert']].map(([v, l]) => <button key={v} type="button" className="pill" aria-pressed={!legendeDuel && diffDuel === v} onClick={() => { setLegendeDuel(false); setDiffDuel(v as number) }}>{l}</button>)}
             <button type="button" className="pill pill-legende" aria-pressed={legendeDuel} disabled={!aLegende} title={aLegende ? '' : (fr ? 'Débloque une Légende pour l’utiliser' : 'Unlock a Legend first')} onClick={() => setLegendeDuel(true)}>{aLegende ? '👑' : '🔒'} Légende</button>
           </div>
           <span>{fr ? 'Type' : 'Type'}</span>

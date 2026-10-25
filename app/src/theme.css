@@ -2269,3 +2269,35 @@ img, svg { -webkit-user-drag: none; }
 .reprendre-partie { display: flex; align-items: center; gap: 12px; padding: 14px 18px; border-radius: 20px; text-decoration: none; color: #fff; background: linear-gradient(120deg, #4F46E5, #DB2777); box-shadow: 0 10px 24px rgba(79, 70, 229, .3); font-weight: 800; }
 .reprendre-partie span:first-child { font-size: 26px; }
 .reprendre-partie strong { flex: 1; }
+
+/* Écran télé : tout tient dans l'écran (PC ou télé), sans défilement ni texte qui dépasse */
+.tv-jeu, .tv-lobby-page { height: 100vh; height: 100dvh; min-height: 0 !important; overflow: hidden; box-sizing: border-box; padding: clamp(12px, 2.2vh, 32px) clamp(16px, 2.6vw, 48px) !important; }
+.tv-jeu { grid-template-rows: auto auto auto minmax(0, 1fr) auto; gap: clamp(6px, 1.4vh, 18px) 2vw !important; }
+.tv-jeu:not(.avec-media) { grid-template-rows: auto auto auto auto minmax(0, 1fr) auto; }
+.tv-jeu .tv-entete { gap: 14px; font-size: clamp(15px, min(1.5vw, 2.6vh), 28px); flex-wrap: nowrap; }
+.tv-jeu .tv-entete .chrono { width: clamp(56px, 9vh, 100px); height: clamp(56px, 9vh, 100px); }
+.tv-jeu .tv-entete .chrono-chiffre { font-size: clamp(22px, 4vh, 40px) !important; }
+.tv-jeu .tv-repondu, .tv-jeu .tv-code-jeu { white-space: nowrap; padding: 4px 12px; }
+.tv-enonce { font-size: clamp(20px, min(2.8vw, 4.6vh), 54px) !important; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.tv-jeu > .tv-question { min-height: 0; overflow: hidden; gap: 1vh; }
+.tv-jeu .tv-image { max-height: 100% !important; height: 100%; min-height: 0; width: 100%; max-width: 100% !important; }
+.tv-jeu:not(.avec-media) .tv-question { display: none; }
+.tv-jeu:not(.avec-media) > .tv-question:has(p) { display: flex; }
+.tv-jeu .enonce-grand { max-width: 100%; overflow-wrap: anywhere; }
+.tv-jeu .tv-options { min-height: 0; overflow: hidden; gap: clamp(6px, 1.2vh, 16px) clamp(8px, 1vw, 18px) !important; }
+.tv-jeu .tv-option { min-height: 0 !important; height: auto; padding: clamp(6px, 1.2vh, 16px) clamp(10px, 1.4vw, 24px); gap: 12px; font-size: clamp(15px, min(1.8vw, 3.2vh), 34px); border-radius: 18px; overflow: hidden; }
+.tv-jeu .tv-option > span:not(.tv-lettre) { min-width: 0; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.15; }
+.tv-jeu .tv-option img { max-height: 12vh !important; height: auto !important; }
+.tv-jeu > .tv-avatars { max-height: 18vh; overflow: hidden; gap: 10px !important; padding-top: 0; }
+.tv-jeu .tv-avatar .avatar { width: clamp(36px, 6vh, 60px) !important; height: clamp(36px, 6vh, 60px) !important; }
+.tv-jeu .tv-avatar small { font-size: clamp(11px, 1.6vh, 18px); }
+.tv-jeu .tv-classement { max-height: 60vh; overflow: hidden; }
+/* Salle d'attente télé */
+.tv-lobby { min-height: 0; gap: 2.4vw !important; }
+.tv-qr-image { width: min(30vw, 46vh) !important; }
+.tv-qr h1 { font-size: clamp(28px, min(3.6vw, 6vh), 64px) !important; }
+.tv-cote { min-height: 0; max-height: 100%; overflow-y: auto; }
+.tv-joueur { width: 92px; font-size: 15px; overflow-wrap: anywhere; }
+/* Texte « en grand » à l'écran télé (suites logiques, devinettes, répliques) : lisible, sans déborder ; seuls les émojis sont géants */
+.tv-jeu.avec-media .enonce-grand { font-size: clamp(24px, min(3vw, 5.2vh), 60px) !important; line-height: 1.25; padding: clamp(12px, 2vh, 28px) clamp(16px, 2vw, 36px); max-height: 100%; overflow: hidden; display: flex; align-items: center; justify-content: center; text-align: center; white-space: normal; word-break: normal; overflow-wrap: anywhere; }
+.tv-jeu.avec-media .enonce-grand.emojis { font-size: clamp(56px, min(7vw, 14vh), 130px) !important; }

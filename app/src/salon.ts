@@ -14,7 +14,7 @@ const chemin = (code: string) => `duels/salon-${code}`
 
 export type Equipe = 'a' | 'b' | 'c' | 'd' | 'e' | 'f' | 'g' | 'h'
 export type JoueurSalon = { victoire?: string; equipe?: Equipe; pseudo: string; avatar?: string; cadre?: string; score: number; parti?: boolean; rejoint: number; r?: Record<string, { j: boolean; ms: number; pts: number }> }
-export type ReglesSalon = { s: string; n: number; d: 1 | 2 | 3 | 4; mj: MiniJeu; secondes: number; equipes?: boolean; nbEquipes?: number }
+export type ReglesSalon = { s: string; n: number; d: 0 | 1 | 2 | 3 | 4; mj: MiniJeu; secondes: number; equipes?: boolean; nbEquipes?: number }
 export type Salon = {
   hote: string
   etat: 'attente' | 'jeu' | 'fini'

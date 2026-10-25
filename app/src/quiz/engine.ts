@@ -457,6 +457,8 @@ function tirer<T>(liste: T[], fin: (d: Palier) => number, o: Opts, idDe: (x: T) 
   const trier = (l: T[]) => (o.seed ? melanger(l) : prioriser(o.sousTheme, l, idDe, rand))
   // 70 % des questions viennent des nouveautés du niveau (ce qu'on n'avait pas au niveau d'en dessous)
   const nPalier = dessous.length && d !== LEGENDE ? Math.ceil(o.nombre * 0.7) : o.nombre
+  // « Tout » : toutes les difficultés vraiment mélangées, dans tout le quiz débloqué
+  if (d === 0) return { cibles: melanger(trier(melanger(pool)).slice(0, o.nombre)), pool }
   let cibles = [...trier(palier).slice(0, nPalier), ...trier(dessous).slice(0, o.nombre - Math.min(nPalier, palier.length))]
   if (cibles.length < o.nombre) cibles = [...cibles, ...trier(pool.filter((x) => !cibles.includes(x)))].slice(0, o.nombre)
   return { cibles: melanger(cibles), pool }

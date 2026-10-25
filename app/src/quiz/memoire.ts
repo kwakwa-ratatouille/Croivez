@@ -42,7 +42,7 @@ export function prioriser<T>(s: string, liste: T[], idDe: (x: T) => string, hasa
   const m = lire(s)
   const maintenant = Date.now()
   return liste
-    .map((x) => ({ x, p: priorite(m[idDe(x)], maintenant) + hasard() * 0.9 }))
+    .map((x) => ({ x, p: priorite(m[idDe(x)], maintenant) + hasard() * 1.8 }))
     .sort((a, b) => b.p - a.p)
     .map((e) => e.x)
 }
