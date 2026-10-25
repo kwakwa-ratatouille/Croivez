@@ -257,6 +257,32 @@ const MECHANTS = [
     ['Giovanni', 'Pokémon', 'jeu', 3], ['Mewtwo', 'Pokémon', 'jeu', 2], ['Hades', 'God of War', 'jeu', 4, 'Hades (God of War)'], ['Zeus', 'God of War', 'jeu', 3, 'Zeus (God of War)'], ['Seth', 'Assassin’s Creed Origins', 'jeu', 4],
     ['Cesare Borgia', 'Assassin’s Creed Brotherhood', 'jeu', 4], ['Rodrigo Borgia', 'Assassin’s Creed II', 'jeu', 4], ['Mr. X', 'Resident Evil 2', 'jeu', 4, 'Tyrant'], ['Ganon', 'Zelda: A Link to the Past', 'jeu', 4],
   ] },
+  // Séries, films, animés et dessins animés en plus (wiki des méchants)
+  { wiki: 'villains', liste: [
+    ['Gus Fring', 'Breaking Bad', 'serie', 3, 'Gustavo Fring'], ['Tuco Salamanca', 'Breaking Bad', 'serie', 4], ['Negan', 'The Walking Dead', 'serie', 2, 'Negan (The Walking Dead TV Series)'], ['Le Gouverneur', 'The Walking Dead', 'serie', 3, 'Governor (TV Series)'],
+    ['Joffrey Baratheon', 'Game of Thrones', 'serie', 2, 'Joffrey Baratheon'], ['Cersei Lannister', 'Game of Thrones', 'serie', 3], ['Ramsay Bolton', 'Game of Thrones', 'serie', 3], ['Le Roi de la Nuit', 'Game of Thrones', 'serie', 3, 'Night King'],
+    ['Vecna', 'Stranger Things', 'serie', 2], ['Le Démogorgon', 'Stranger Things', 'serie', 3, 'Demogorgon'], ['Homelander', 'The Boys', 'serie', 3, 'Homelander (The Boys TV series)'], ['Moriarty', 'Sherlock', 'serie', 3, 'Jim Moriarty (Sherlock)'],
+    ['Le Front Man', 'Squid Game', 'serie', 4, 'Front Man'], ['Tyler Galpin', 'Mercredi', 'serie', 4], ['Arthur Shelby', 'Peaky Blinders', 'serie', 4], ['Alpha', 'The Walking Dead', 'serie', 4, 'Alpha (TV Series)'],
+    ['Hans Landa', 'Inglourious Basterds', 'film', 3], ['Anton Chigurh', 'No Country for Old Men', 'film', 4], ['Jack Torrance', 'Shining', 'film', 3], ['Pinhead', 'Hellraiser', 'film', 4],
+    ['Esther', 'Esther', 'film', 3, 'Esther Coleman'], ['Damien Thorn', 'La Malédiction', 'film', 4], ['Le Docteur Octopus', 'Spider-Man 2', 'film', 3, 'Doctor Octopus (Spider-Man film series)'], ['Killmonger', 'Black Panther', 'film', 3, 'Erik Killmonger (Marvel Cinematic Universe)'],
+    ['Hela', 'Thor : Ragnarok', 'film', 3, 'Hela (Marvel Cinematic Universe)'], ['Crâne rouge', 'Captain America', 'film', 3, 'Red Skull (Marvel Cinematic Universe)'], ['Le Caïd', 'Daredevil', 'serie', 4, 'Kingpin (Marvel Cinematic Universe)'], ['Le Sphinx', 'The Batman', 'film', 4, 'Riddler (The Batman)'],
+    ['Lord Shen', 'Kung Fu Panda 2', 'disney', 4], ['Kaï', 'Kung Fu Panda 3', 'disney', 4, 'Kai (Kung Fu Panda)'], ['Le Prince Jean', 'Robin des Bois', 'disney', 3, 'Prince John'], ['Médusa', 'Les Aventures de Bernard et Bianca', 'disney', 4, 'Madame Medusa'],
+    ['Docteur Facilier', 'La Princesse et la Grenouille', 'disney', 3, 'Dr. Facilier'], ['Te Kā', 'Vaiana', 'disney', 4], ['Clayton', 'Tarzan', 'disney', 4, 'Clayton (Disney)'], ['Sid', 'Toy Story', 'disney', 4, 'Sid Phillips'],
+    ['Le Roi Candy', 'Les Mondes de Ralph', 'disney', 4, 'Turbo'], ['Charles Muntz', 'Là-haut', 'disney', 4], ['Chef Hopper', 'Fourmiz / 1001 Pattes', 'disney', 4, 'Hopper (A Bug\'s Life)'], ['Waternoose', 'Monstres & Cie', 'disney', 4, 'Henry J. Waternoose III'],
+    ['Lord Business', 'La Grande Aventure Lego', 'film', 4], ['Majin Buu', 'Dragon Ball', 'anime', 2], ['Broly', 'Dragon Ball', 'anime', 3, 'Broly (Dragon Ball Super)'],
+    ['Itachi Uchiha', 'Naruto', 'anime', 3], ['Johan Liebert', 'Monster', 'anime', 4], ['Akaza', 'Demon Slayer', 'anime', 4], ['Douma', 'Demon Slayer', 'anime', 4],
+    ['All For One', 'My Hero Academia', 'anime', 4], ['Chrollo Lucilfer', 'Hunter × Hunter', 'anime', 4], ['Gin', 'Détective Conan', 'anime', 4], ['Père', 'Fullmetal Alchemist', 'anime', 4, 'Father (Fullmetal Alchemist)'],
+    ['Vilgax', 'Ben 10', 'dessin', 3], ['Le Docteur Doofenshmirtz', 'Phinéas et Ferb', 'dessin', 2, 'Heinz Doofenshmirtz'], ['Shego', 'Kim Possible', 'dessin', 3], ['Slade', 'Teen Titans', 'dessin', 4],
+    ['Mumm-Ra', 'Cosmocats', 'dessin', 4], ['Le Lich', 'Adventure Time', 'dessin', 4, 'The Lich'], ['Hordak', 'She-Ra', 'dessin', 4], ['Plankton', 'Bob l’éponge', 'dessin', 2, 'Sheldon J. Plankton'],
+  ] },
+  // One Piece et Wakfu : depuis leurs propres wikis
+  { wiki: 'onepiece', liste: [
+    ['Crocodile', 'One Piece', 'anime', 3], ['Ener', 'One Piece', 'anime', 4, 'Enel'], ['Rob Lucci', 'One Piece', 'anime', 4], ['Big Mom', 'One Piece', 'anime', 3, 'Charlotte Linlin'],
+    ['Akainu', 'One Piece', 'anime', 4, 'Sakazuki'], ['Kaido', 'One Piece', 'anime', 3], ['Arlong', 'One Piece', 'anime', 4], ['Charlotte Katakuri', 'One Piece', 'anime', 4],
+  ] },
+  { wiki: 'wakfu', liste: [
+    ['Nox', 'Wakfu', 'dessin', 3], ['Qilby', 'Wakfu', 'dessin', 4], ['Rubilax', 'Wakfu', 'dessin', 4], ['Ogrest', 'Wakfu', 'dessin', 4],
+  ] },
 ]
 
 // ——— Héros : même principe que les méchants (wiki des héros), g : support
@@ -291,6 +317,32 @@ const HEROS = [
     ['Inspecteur Gadget', 'Inspecteur Gadget', 'dessin', 3], ['Woody', 'Toy Story', 'dessin', 1, 'Woody (Toy Story)'], ['Buzz l’Éclair', 'Toy Story', 'dessin', 1, 'Buzz Lightyear'], ['Shrek', 'Shrek', 'dessin', 1], ['Po', 'Kung Fu Panda', 'dessin', 2, 'Po (Kung Fu Panda)'],
     ['Flash McQueen', 'Cars', 'dessin', 2, 'Lightning McQueen'], ['Rémy', 'Ratatouille', 'dessin', 3, 'Remy'], ['M. Indestructible', 'Les Indestructibles', 'dessin', 2, 'Mr. Incredible'], ['Krokmou', 'Dragons', 'dessin', 2, 'Toothless'], ['Elsa', 'La Reine des neiges', 'dessin', 1],
     ['Kirikou', 'Kirikou', 'dessin', 3], ['Titeuf', 'Titeuf', 'dessin', 2], ['Aelita', 'Code Lyoko', 'dessin', 3, 'Aelita Schaeffer'], ['Finn', 'Adventure Time', 'dessin', 3, 'Finn the Human'],
+  ] },
+  // Plus de héros (wiki des héros)
+  { wiki: 'hero', liste: [
+    ['John Wick', 'John Wick', 'film', 2], ['Rambo', 'Rambo', 'film', 2, 'John Rambo'], ['Mad Max', 'Mad Max', 'film', 3, 'Max Rockatansky'], ['Furiosa', 'Mad Max : Fury Road', 'film', 3, 'Imperator Furiosa'],
+    ['Trinity', 'Matrix', 'film', 3, 'Trinity (The Matrix)'], ['Morpheus', 'Matrix', 'film', 3, 'Morpheus (The Matrix)'], ['Will Turner', 'Pirates des Caraïbes', 'film', 3], ['Elizabeth Swann', 'Pirates des Caraïbes', 'film', 3],
+    ['Gimli', 'Le Seigneur des anneaux', 'film', 3], ['Sam Gamegie', 'Le Seigneur des anneaux', 'film', 3, 'Samwise Gamgee'], ['Black Widow', 'Avengers', 'film', 2, 'Black Widow (Marvel Cinematic Universe)'], ['Œil-de-Faucon', 'Avengers', 'film', 3, 'Hawkeye (Marvel Cinematic Universe)'],
+    ['Ant-Man', 'Ant-Man', 'film', 3, 'Ant-Man (Marvel Cinematic Universe)'], ['Captain Marvel', 'Captain Marvel', 'film', 3, 'Captain Marvel (Marvel Cinematic Universe)'], ['Wanda Maximoff', 'WandaVision', 'film', 3, 'Scarlet Witch (Marvel Cinematic Universe)'], ['Shang-Chi', 'Shang-Chi', 'film', 4, 'Shang-Chi (Marvel Cinematic Universe)'],
+    ['Maui', 'Vaiana', 'disney', 2, 'Maui (Moana)'], ['Raiponce', 'Raiponce', 'disney', 2, 'Rapunzel'], ['Anna', 'La Reine des neiges', 'disney', 2, 'Anna (Frozen)'], ['Olaf', 'La Reine des neiges', 'disney', 2, 'Olaf (Frozen)'],
+    ['Sulli', 'Monstres & Cie', 'disney', 2, 'James P. Sullivan'], ['Bob Razowski', 'Monstres & Cie', 'disney', 2, 'Mike Wazowski'], ['Nemo', 'Le Monde de Nemo', 'disney', 2, 'Nemo (Finding Nemo)'], ['Dory', 'Le Monde de Nemo', 'disney', 2, 'Dory (Finding Nemo)'],
+    ['WALL-E', 'WALL-E', 'disney', 2], ['Joie', 'Vice-versa', 'disney', 3, 'Joy (Inside Out)'], ['Miguel', 'Coco', 'disney', 3, 'Miguel Rivera'], ['L’Âne', 'Shrek', 'dessin', 2, 'Donkey (Shrek)'],
+    ['Le Chat Potté', 'Shrek', 'dessin', 2, 'Puss in Boots (Shrek)'], ['Judy Hopps', 'Zootopie', 'disney', 3], ['Stitch', 'Lilo et Stitch', 'disney', 2, 'Stitch (Lilo & Stitch)'], ['Moana', 'Vaiana', 'disney', 2, 'Moana (character)'],
+    ['Onze', 'Stranger Things', 'serie', 2, 'Eleven (Stranger Things)'], ['Rick Grimes', 'The Walking Dead', 'serie', 2, 'Rick Grimes (TV Series)'], ['Daryl Dixon', 'The Walking Dead', 'serie', 3, 'Daryl Dixon (TV Series)'], ['Jon Snow', 'Game of Thrones', 'serie', 2],
+    ['Daenerys Targaryen', 'Game of Thrones', 'serie', 2], ['Arya Stark', 'Game of Thrones', 'serie', 3], ['Sherlock Holmes', 'Sherlock', 'serie', 3, 'Sherlock Holmes (Sherlock)'], ['Le Docteur', 'Doctor Who', 'serie', 4, 'The Doctor (Doctor Who)'],
+    ['Le Mandalorien', 'The Mandalorian', 'serie', 3, 'Din Djarin'], ['Grogu', 'The Mandalorian', 'serie', 2], ['Jim Hopper', 'Stranger Things', 'serie', 4, 'Jim Hopper'], ['Mercredi Addams', 'Mercredi', 'serie', 3, 'Wednesday Addams'],
+    ['Chat Noir', 'Miraculous', 'dessin', 2, 'Adrien Agreste'], ['Sam', 'Totally Spies!', 'dessin', 3, 'Samantha Simpson'], ['Clover', 'Totally Spies!', 'dessin', 3, 'Clover Ewing'], ['Ulrich Stern', 'Code Lyoko', 'dessin', 4],
+    ['Oggy', 'Oggy et les Cafards', 'dessin', 3], ['Obélix', 'Astérix', 'dessin', 2, 'Obelix'], ['Spirou', 'Spirou et Fantasio', 'dessin', 3],
+    ['Naruto Uzumaki', 'Naruto', 'anime', 1], ['Sasuke Uchiha', 'Naruto', 'anime', 2], ['Kakashi Hatake', 'Naruto', 'anime', 3], ['Nezuko Kamado', 'Demon Slayer', 'anime', 3],
+    ['Eren Jäger', 'L’Attaque des Titans', 'anime', 2, 'Eren Yeager'], ['Mikasa Ackerman', 'L’Attaque des Titans', 'anime', 3], ['Satoru Gojo', 'Jujutsu Kaisen', 'anime', 3], ['Light Yagami', 'Death Note', 'anime', 4],
+  ] },
+  // One Piece et Wakfu : depuis leurs propres wikis (images fiables)
+  { wiki: 'onepiece', liste: [
+    ['Roronoa Zoro', 'One Piece', 'anime', 2], ['Nami', 'One Piece', 'anime', 2], ['Sanji', 'One Piece', 'anime', 2], ['Usopp', 'One Piece', 'anime', 3], ['Tony Tony Chopper', 'One Piece', 'anime', 3],
+    ['Nico Robin', 'One Piece', 'anime', 3], ['Franky', 'One Piece', 'anime', 4], ['Brook', 'One Piece', 'anime', 4], ['Jinbe', 'One Piece', 'anime', 4], ['Portgas D. Ace', 'One Piece', 'anime', 3], ['Shanks', 'One Piece', 'anime', 3],
+  ] },
+  { wiki: 'wakfu', liste: [
+    ['Yugo', 'Wakfu', 'dessin', 2], ['Amalia', 'Wakfu', 'dessin', 3, 'Amalia Sheran Sharm'], ['Tristepin', 'Wakfu', 'dessin', 3, 'Sir Percedal of Sadlygrove'], ['Evangelyne', 'Wakfu', 'dessin', 3], ['Ruel Stroud', 'Wakfu', 'dessin', 4], ['Adamaï', 'Wakfu', 'dessin', 4],
   ] },
 ]
 
@@ -335,7 +387,7 @@ async function chercher(wiki, e) {
 const hash = (s) => [...s].reduce((h, c) => (h * 31 + c.charCodeAt(0)) | 0, 7)
 
 // Pages trouvées par la recherche mais fausses (page de série, d'homonymie, autre personnage) : écartées
-const EXCLURE = new Set(['Bob l’éponge', 'Jack', 'La Panthère rose', 'Steven Universe', 'Danny Fantôme', 'Ford Pines', 'Barbapapa', 'Le petit homme', 'Goldorak', 'Annabelle', 'Shrek', 'Caliméro', 'Astrid', 'Frollo', 'Lord Farquaad', 'Biff Tannen'])
+const EXCLURE = new Set(['Mad Max', 'Will Turner', 'Vecna', 'Le Démogorgon', 'Le Docteur Octopus', 'Homelander', 'Le Sphinx', 'Kaï', 'Bob l’éponge', 'Jack', 'La Panthère rose', 'Steven Universe', 'Danny Fantôme', 'Ford Pines', 'Barbapapa', 'Le petit homme', 'Goldorak', 'Annabelle', 'Shrek', 'Caliméro', 'Astrid', 'Frollo', 'Lord Farquaad', 'Biff Tannen'])
 async function ecrire(fichier, toutes) {
   const entrees = toutes.filter((e) => !EXCLURE.has(e.nom))
   // entrees : { nom, titre, palier, oeuvre, wiki, g }

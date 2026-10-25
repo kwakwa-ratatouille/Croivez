@@ -1,7 +1,10 @@
 import { useState } from 'react'
 import { useAuth } from '../auth'
 import { usePrefs } from '../i18n'
-import { FAMILLES } from '../themes'
+import { FAMILLES as TOUTES } from '../themes'
+
+// La famille Événements est déjà ouverte à tous : elle ne compte pas dans les quiz de départ
+const FAMILLES = TOUTES.filter((f) => f.k !== 'evt')
 import { QUIZ_DEPART, choisirQuiz } from '../progression'
 import Img from '../components/Img'
 import Illustration from '../components/Illustration'
