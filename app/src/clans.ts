@@ -1,5 +1,5 @@
 import { doc, getDoc, setDoc } from 'firebase/firestore'
-import { get, increment, ref as rref, remove, set, update } from 'firebase/database'
+import { get, increment, ref as rref, remove, set, update, runTransaction } from 'firebase/database'
 import { db, rtdb } from './firebase'
 import { semaine } from './social'
 
@@ -23,10 +23,13 @@ export const NIVEAU_MOTIF: Record<Motif, number> = { uni: 1, bande: 1, chevron: 
 export const BLASON_DEFAUT: Blason = { forme: 'ecu', motif: 'bande', c1: '#7C3AED', c2: '#FACC15', symbole: 'etoile' }
 
 // Niveaux : lents, c'est un effort collectif. Niveau 2 à 7 500 XP, 3 à 30 000, 5 à 120 000, 10 à 607 500, 20 à 2 707 500.
-export const niveauClan = (xp = 0) => Math.floor(Math.sqrt(xp / 7500)) + 1
-export const xpNiveau = (n: number) => (n - 1) ** 2 * 7500
+// Niveaux très lents : niveau 2 à 22 500 XP, 5 à 360 000, 10 à 1,8 million, 20 à 8,1 millions
+export const niveauClan = (xp = 0) => Math.floor(Math.sqrt(xp / 22500)) + 1
+export const xpNiveau = (n: number) => (n - 1) ** 2 * 22500
+// Plafond d'XP que le clan peut gagner par jour (tous membres confondus), un peu plus haut à chaque niveau
+export const plafondJour = (n: number) => 4000 + (n - 1) * 600
 export const maxMembres = (n: number) => Math.min(40, 10 + (n - 1) * 2)
-export const objectifSemaine = (n: number) => 10000 + (n - 1) * 4000
+export const objectifSemaine = (n: number) => 15000 + (n - 1) * 6000
 export const AVANTAGES: [number, string][] = [
   [1, 'Blason écu ou rond, 10 membres'], [2, 'Motif chevron'], [3, 'Forme hexagone'], [4, 'Motif pal'], [5, 'Forme pointe, halo doré autour du blason'],
   [6, 'Motif écartelé'], [8, 'Forme étoile'], [10, 'Motif rayons, blason animé'], [12, 'Forme couronne'], [15, 'Blason légendaire scintillant'],
@@ -110,10 +113,19 @@ export async function quitterClan(uid: string, code: string) {
 }
 
 // Chaque partie d'un membre fait monter l'XP du clan (et son rang dans l'index)
+// Chaque partie d'un membre fait monter le clan, dans la limite du plafond du jour (transaction : pas de dépassement à plusieurs)
 export async function gagnerXpClan(code: string, xp: number) {
   if (!code || xp <= 0) return
-  await update(rref(rtdb, chemin(code)), { xp: increment(xp) })
-  await update(rref(rtdb, `${INDEX}/${code}`), { xp: increment(xp) })
+  const aujourdhui = new Date().toISOString().slice(0, 10)
+  let ajoute = 0
+  await runTransaction(rref(rtdb, chemin(code)), (c: (Clan & { xpJour?: { jour: string; xp: number } }) | null) => {
+    if (!c) return c
+    const deja = c.xpJour?.jour === aujourdhui ? c.xpJour.xp : 0
+    ajoute = Math.max(0, Math.min(xp, plafondJour(niveauClan(c.xp)) - deja))
+    if (!ajoute) return undefined
+    return { ...c, xp: (c.xp ?? 0) + ajoute, xpJour: { jour: aujourdhui, xp: deja + ajoute } }
+  })
+  if (ajoute) await update(rref(rtdb, `${INDEX}/${code}`), { xp: increment(ajoute) })
 }
 
 // XP de la semaine de chaque membre (classement de la semaine), du meilleur au moins bon

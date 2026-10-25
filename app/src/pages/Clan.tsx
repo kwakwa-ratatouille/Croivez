@@ -4,7 +4,7 @@ import { useAuth } from '../auth'
 import { usePrefs } from '../i18n'
 import { noterActivite } from '../activite'
 import type { Clan as ClanT } from '../clans'
-import { AVANTAGES, clansPublics, inviterClan, BLASON_DEFAUT, FORMES, MOTIFS, NIVEAU_FORME, NIVEAU_MOTIF, PALETTE, SYMBOLES, cleNom, creerClan, lireClan, maxMembres, modifierClan, niveauClan, nomPris, objectifSemaine, quitterClan, rejoindreClan, scoresClan, xpNiveau, type Blason, type Clan as TClan, type EntreeIndex } from '../clans'
+import { plafondJour, AVANTAGES, clansPublics, inviterClan, BLASON_DEFAUT, FORMES, MOTIFS, NIVEAU_FORME, NIVEAU_MOTIF, PALETTE, SYMBOLES, cleNom, creerClan, lireClan, maxMembres, modifierClan, niveauClan, nomPris, objectifSemaine, quitterClan, rejoindreClan, scoresClan, xpNiveau, type Blason, type Clan as TClan, type EntreeIndex } from '../clans'
 import BlasonClan from '../components/BlasonClan'
 import Avatar from '../components/Avatar'
 import { profilsDe, type ProfilPublic } from '../social'
@@ -149,6 +149,7 @@ export default function Clan() {
       <section className="card clan-bloc">
         <div className="clan-objectif-tete"><strong>{fr ? 'Objectif de la semaine' : 'Weekly goal'}</strong><span>{nf(semaineXp)} / {nf(objectif)} XP</span></div>
         <div className="bar clan-barre"><span style={{ width: `${Math.min(100, (semaineXp / objectif) * 100)}%`, background: clan.blason.c1 }} /></div>
+        {(() => { const j = (clan as { xpJour?: { jour: string; xp: number } }).xpJour; const auj = j?.jour === new Date().toISOString().slice(0, 10) ? j.xp : 0; const max = plafondJour(niv); return <small style={{ color: 'var(--muted)', fontWeight: 700 }}>{fr ? `Aujourd’hui : ${nf(auj)} / ${nf(max)} XP pour le clan${auj >= max ? ' (plafond atteint, reprise demain)' : ''}` : `Today: ${nf(auj)} / ${nf(max)} XP`}</small> })()}
         <small style={{ color: 'var(--muted)' }}>{semaineXp >= objectif ? (fr ? '🎉 Objectif atteint, bravo à tout le clan !' : '🎉 Goal reached!') : (fr ? 'Remise à zéro chaque lundi.' : 'Resets Monday.')}</small>
       </section>
       <section className="card clan-bloc">
