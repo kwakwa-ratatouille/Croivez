@@ -2049,3 +2049,7 @@ button.rang-palier[aria-pressed="true"] { background: color-mix(in srgb, var(--r
 @keyframes la-onde { 0%, 49% { opacity: 0; transform: scale(.7); } 52% { opacity: .55; } 75%, 100% { opacity: 0; transform: scale(1.45); } }
 @media (prefers-reduced-motion: reduce) { .logo-anime * { animation: none !important; stroke-dashoffset: 0 !important; opacity: 1 !important; } .logo-anime .la-onde { opacity: 0 !important; } }
 .ecran-lancement { display: flex; flex-direction: column; height: 100%; align-items: center; justify-content: center; gap: 18px; }
+
+/* Intro du lancement : par-dessus l'appli qui se charge, puis fondu */
+.intro-lancement { position: fixed; inset: 0; z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; background: var(--bg); transition: opacity .35s ease, transform .35s ease; }
+.intro-lancement.part { opacity: 0; transform: scale(1.04); pointer-events: none; }

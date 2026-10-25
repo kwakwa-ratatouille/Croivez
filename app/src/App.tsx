@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { HashRouter, Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom'
 import { AuthProvider, useAuth } from './auth'
 import { PrefsProvider, usePrefs } from './i18n'
@@ -121,11 +121,24 @@ function Routeur() {
   )
 }
 
+// Au lancement, le logo animé joue une fois en entier (l'appli se charge derrière), puis s'efface en fondu
+function IntroLancement() {
+  const [etat, setEtat] = useState<'joue' | 'part' | 'fini'>('joue')
+  useEffect(() => {
+    const t1 = setTimeout(() => setEtat('part'), 1700)
+    const t2 = setTimeout(() => setEtat('fini'), 2050)
+    return () => { clearTimeout(t1); clearTimeout(t2) }
+  }, [])
+  if (etat === 'fini') return null
+  return <div className={`intro-lancement${etat === 'part' ? ' part' : ''}`} aria-hidden="true"><LogoAnime width={110} /><Wordmark size={30} /></div>
+}
+
 export default function App() {
   return (
     <PrefsProvider>
       <AuthProvider>
         <Routeur />
+        <IntroLancement />
       </AuthProvider>
     </PrefsProvider>
   )
