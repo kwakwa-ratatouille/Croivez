@@ -98,6 +98,7 @@ export default function Album() {
   const [cartes, setCartes] = useState<Carte[] | null>(null)
   const [page, setPage] = useState(0)
   const [sens, setSens] = useState<'g' | 'd'>('d')
+  const [feuille, setFeuille] = useState<{ de: number; sens: 'g' | 'd' } | null>(null)
   const toucher = useRef(0)
   const [ouverte, setOuverte] = useState<{ c: Carte; r: RareteCarte } | null>(null)
   const [large, setLarge] = useState(() => window.matchMedia('(min-width: 900px)').matches)
@@ -123,7 +124,7 @@ export default function Album() {
   const liste = cartes ?? []
   const pages = Math.max(1, Math.ceil(liste.length / PAR_PAGE))
   const pas = large ? 2 : 1
-  const tourner = (d: number) => { const p = Math.min(pages - 1, Math.max(0, page + d * pas)); const q = large ? p - (p % 2) : p; if (q !== page) { setSens(d > 0 ? 'd' : 'g'); setPage(q) } }
+  const tourner = (d: number) => { const p = Math.min(pages - 1, Math.max(0, page + d * pas)); const q = large ? p - (p % 2) : p; if (q !== page && !feuille) { setSens(d > 0 ? 'd' : 'g'); setFeuille({ de: page, sens: d > 0 ? 'd' : 'g' }); setPage(q); setTimeout(() => setFeuille(null), 750) } }
   const pageCartes = (p: number) => liste.slice(p * PAR_PAGE, p * PAR_PAGE + PAR_PAGE).map((c, j) => { const i = p * PAR_PAGE + j; const rr = rareteCarte(i, liste.length); return <CarteAlbum key={c.id} c={c} n={i + 1} rarete={rr} eue={eues.has(c.id)} onOuvrir={() => setOuverte({ c, r: rr })} /> })
 
   // ——— Un album ouvert : onglets des quiz, pages de 9 cartes qu'on feuillette ———
@@ -136,17 +137,28 @@ export default function Album() {
       <div className="album-onglets">
         {subs.map((s) => <button key={s.id} type="button" className="pill" aria-pressed={quiz === s.id} onClick={() => setQuiz(s.id)}>{s.nom[lang]} <small>{album[s.id]?.length ?? 0}</small></button>)}
       </div>
-      <div className="album-classeur" onPointerDown={(e) => { toucher.current = e.clientX }} onPointerUp={(e) => { const dx = e.clientX - toucher.current; if (Math.abs(dx) > 60) { tourner(dx < 0 ? 1 : -1); toucher.current = -1e9 } }} onClickCapture={(e) => { if (toucher.current === -1e9) { e.stopPropagation(); toucher.current = 0 } }}>
+      <div className="album-classeur" onPointerDown={(e) => { if (large) toucher.current = e.clientX }} onPointerUp={(e) => { if (!large) return; const dx = e.clientX - toucher.current; if (Math.abs(dx) > 60) { tourner(dx < 0 ? 1 : -1); toucher.current = -1e9 } }} onClickCapture={(e) => { if (toucher.current === -1e9) { e.stopPropagation(); toucher.current = 0 } }}>
         {!cartes && <p style={{ color: 'var(--muted)', padding: 30 }}>…</p>}
         {cartes && liste.length === 0 && <p style={{ color: 'var(--muted)', padding: 30 }}>{fr ? 'Pas de cartes pour ce quiz.' : 'No cards for this quiz.'}</p>}
         {cartes && liste.length > 0 && (
-          <div key={`${quiz}-${page}`} className={`album-double tourne-${sens}`}>
-            <div className="album-page gauche">{pageCartes(page)}<span className="album-folio">{page + 1}</span></div>
-            {large && <div className="album-page droite">{page + 1 < pages ? pageCartes(page + 1) : null}<span className="album-folio">{page + 2 <= pages ? page + 2 : ''}</span></div>}
-          </div>
+          large
+            ? <div className="album-double carnet-fixe" data-sens={sens}>
+                <div className="album-page gauche">{pageCartes(feuille?.sens === 'd' ? feuille.de : page)}<span className="album-folio">{(feuille?.sens === 'd' ? feuille.de : page) + 1}</span></div>
+                <div className="album-page droite">{(() => { const p = (feuille?.sens === 'g' ? feuille.de : page) + 1; return <>{p < pages ? pageCartes(p) : null}<span className="album-folio">{p < pages ? p + 1 : ''}</span></> })()}</div>
+                {feuille && (
+                  <div key={`${feuille.de}-${page}`} className={`carnet-feuille ${feuille.sens === 'd' ? 'vers-gauche' : 'vers-droite'}`} aria-hidden="true">
+                    {/* recto : la page qui s'en va ; verso : la page qui arrive de l'autre côté */}
+                    <div className="album-page carnet-recto">{feuille.sens === 'd' ? (feuille.de + 1 < pages ? pageCartes(feuille.de + 1) : null) : pageCartes(feuille.de)}</div>
+                    <div className="album-page carnet-verso">{feuille.sens === 'd' ? pageCartes(page) : (page + 1 < pages ? pageCartes(page + 1) : null)}</div>
+                  </div>
+                )}
+              </div>
+            : <div className="album-double carnet-defile">
+                {Array.from({ length: pages }, (_, p) => <div key={`${quiz}-${p}`} className="album-page gauche carnet-page-tel">{pageCartes(p)}<span className="album-folio">{p + 1}</span></div>)}
+              </div>
         )}
       </div>
-      {cartes && liste.length > 0 && (
+      {cartes && liste.length > 0 && large && (
         <div className="album-nav">
           <button className="btn btn-g" disabled={page === 0} onClick={() => tourner(-1)} aria-label={fr ? 'Page précédente' : 'Previous page'}><Icon d={ICONS.arrowL} /></button>
           <span>{fr ? 'Page' : 'Page'} {large && page + 1 < pages ? `${page + 1}-${page + 2}` : page + 1} / {pages} · {[...eues].filter((id) => liste.some((c) => c.id === id)).length} / {liste.length}</span>

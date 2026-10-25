@@ -1880,3 +1880,24 @@ button.rang-palier[aria-pressed="true"] { background: color-mix(in srgb, var(--r
 @keyframes fete-galaxie { 0% { opacity: 0; transform: translate(-50%, -50%) scale(.2) rotate(0); } 25% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -50%) scale(1.2) rotate(540deg); } }
 .confettis .nova { position: absolute; left: 50%; top: 50%; width: 30px; height: 30px; margin: -15px; border-radius: 50%; background: radial-gradient(circle, #fff, #FDE047 40%, rgba(249, 115, 22, 0) 70%); animation: fete-nova 1.6s ease-out forwards; }
 @keyframes fete-nova { 0% { transform: scale(0); opacity: 1; } 30% { transform: scale(18); opacity: 1; } 100% { transform: scale(60); opacity: 0; } }
+
+/* Carnet PC : la double page reste en place, une seule feuille tourne autour de la reliure */
+.album-double.carnet-fixe { position: relative; animation: none !important; perspective: 2200px; }
+.carnet-feuille { position: absolute; top: 0; bottom: 0; width: calc(50% - 4px); transform-style: preserve-3d; z-index: 3; pointer-events: none; }
+.carnet-feuille.vers-gauche { right: 0; transform-origin: left center; animation: feuille-g .72s cubic-bezier(.45, .05, .35, 1) forwards; }
+.carnet-feuille.vers-droite { left: 0; transform-origin: right center; animation: feuille-d .72s cubic-bezier(.45, .05, .35, 1) forwards; }
+@keyframes feuille-g { from { transform: rotateY(0); } to { transform: rotateY(-180deg); } }
+@keyframes feuille-d { from { transform: rotateY(0); } to { transform: rotateY(180deg); } }
+.carnet-feuille .album-page { position: absolute !important; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; background: var(--kt); padding: 16px 16px 30px; overflow: hidden; }
+.carnet-feuille .carnet-verso { transform: rotateY(180deg); }
+.carnet-feuille.vers-gauche .carnet-recto { border-radius: 4px 14px 14px 4px; box-shadow: inset 18px 0 22px -16px rgba(0,0,0,.35); }
+.carnet-feuille.vers-gauche .carnet-verso { border-radius: 14px 4px 4px 14px; box-shadow: inset -18px 0 22px -16px rgba(0,0,0,.35); }
+.carnet-feuille.vers-droite .carnet-recto { border-radius: 14px 4px 4px 14px; box-shadow: inset -18px 0 22px -16px rgba(0,0,0,.35); }
+.carnet-feuille.vers-droite .carnet-verso { border-radius: 4px 14px 14px 4px; box-shadow: inset 18px 0 22px -16px rgba(0,0,0,.35); }
+.carnet-feuille::after { content: ''; position: absolute; inset: 0; border-radius: 14px; background: linear-gradient(90deg, rgba(0,0,0,.18), transparent 40%); animation: feuille-ombre .72s ease-in-out forwards; pointer-events: none; }
+@keyframes feuille-ombre { 0%, 100% { opacity: 0; } 50% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .carnet-feuille { display: none; } }
+/* Carnet téléphone : les pages défilent de haut en bas, comme un carnet à spirale */
+.carnet-defile { display: flex; flex-direction: column; gap: 26px; }
+.carnet-defile .carnet-page-tel { animation: none !important; }
+.album-double.carnet-defile { display: flex !important; flex-direction: column !important; gap: 30px; animation: none !important; }
