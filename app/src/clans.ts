@@ -22,11 +22,11 @@ export const NIVEAU_FORME: Record<Forme, number> = { ecu: 1, rond: 1, hexa: 3, p
 export const NIVEAU_MOTIF: Record<Motif, number> = { uni: 1, bande: 1, chevron: 2, pal: 4, quartiers: 6, rayons: 10 }
 export const BLASON_DEFAUT: Blason = { forme: 'ecu', motif: 'bande', c1: '#7C3AED', c2: '#FACC15', symbole: 'etoile' }
 
-// Niveaux : lents, c'est un effort collectif. Niveau 2 à 2 500 XP, 5 à 40 000, 10 à 202 500, 20 à 902 500.
-export const niveauClan = (xp = 0) => Math.floor(Math.sqrt(xp / 2500)) + 1
-export const xpNiveau = (n: number) => (n - 1) ** 2 * 2500
+// Niveaux : lents, c'est un effort collectif. Niveau 2 à 7 500 XP, 3 à 30 000, 5 à 120 000, 10 à 607 500, 20 à 2 707 500.
+export const niveauClan = (xp = 0) => Math.floor(Math.sqrt(xp / 7500)) + 1
+export const xpNiveau = (n: number) => (n - 1) ** 2 * 7500
 export const maxMembres = (n: number) => Math.min(40, 10 + (n - 1) * 2)
-export const objectifSemaine = (n: number) => 2000 + (n - 1) * 750
+export const objectifSemaine = (n: number) => 10000 + (n - 1) * 4000
 export const AVANTAGES: [number, string][] = [
   [1, 'Blason écu ou rond, 10 membres'], [2, 'Motif chevron'], [3, 'Forme hexagone'], [4, 'Motif pal'], [5, 'Forme pointe, halo doré autour du blason'],
   [6, 'Motif écartelé'], [8, 'Forme étoile'], [10, 'Motif rayons, blason animé'], [12, 'Forme couronne'], [15, 'Blason légendaire scintillant'],
