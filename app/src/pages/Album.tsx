@@ -135,7 +135,7 @@ export default function Album() {
     Promise.all(aLire.map(async ([q, ids]) => {
       const liste = await cartesDe(q, lang).catch(() => [] as Carte[])
       const rang = new Map(liste.map((c, i) => [c.id, i]))
-      return ids.filter((id) => rang.has(id)).map((id) => ({ cle: `${q}:${id}`, gain: GAIN_CARTE[rareteCarte(rang.get(id)!, liste.length)] }))
+      return ids.map((id) => ({ cle: `${q}:${id}`, gain: rang.has(id) ? GAIN_CARTE[rareteCarte(rang.get(id)!, liste.length)] : GAIN_CARTE.commun })) // carte hors album (quiz sans album, carte retirée) : on la marque lue aussi
     })).then((r) => { if (!annule) { const t = r.flat(); setRecolte({ cles: t.map((x) => x.cle), gain: t.reduce((n, x) => n + x.gain, 0) }) } })
     return () => { annule = true }
   }, [profile?.album, profile?.albumLu, lang]) // eslint-disable-line react-hooks/exhaustive-deps
