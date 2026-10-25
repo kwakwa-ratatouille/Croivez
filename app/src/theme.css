@@ -2233,3 +2233,39 @@ img, svg { -webkit-user-drag: none; }
 .caisse-surprise-txt strong { font: 900 17px Nunito, sans-serif; }
 .caisse-surprise-txt small { font-size: 12.5px; opacity: .8; }
 .caisse-surprise-prix { display: inline-flex; align-items: center; gap: 5px; padding: 6px 12px; border-radius: 999px; background: rgba(255, 255, 255, .75); font-weight: 900; }
+
+/* Écran télé en jeu : énoncé en haut, image en grand à gauche, réponses à droite, joueurs bien visibles en bas */
+.tv-jeu { display: grid !important; grid-template-columns: minmax(0, 1fr); grid-template-areas: "entete" "barre" "enonce" "question" "options" "avatars"; gap: 1.6vh 2vw; align-content: start; }
+.tv-jeu.avec-media { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); grid-template-areas: "entete entete" "barre barre" "enonce enonce" "question options" "avatars avatars"; }
+.tv-jeu > .tv-entete { grid-area: entete; }
+.tv-jeu > .barre-chrono { grid-area: barre; margin-top: 0; }
+.tv-enonce { grid-area: enonce; margin: 0; text-align: center; font-size: clamp(28px, 3.2vw, 58px); font-weight: 900; line-height: 1.15; }
+.tv-jeu > .tv-question { grid-area: question; justify-content: center; min-height: 0; }
+.tv-jeu.avec-media .tv-image { max-height: 56vh; max-width: 100%; width: 100%; object-fit: contain; }
+.tv-jeu.avec-media .enonce-grand { font-size: clamp(60px, 7vw, 130px) !important; }
+.tv-jeu > .tv-options { grid-area: options; align-content: center; }
+.tv-jeu.avec-media .tv-options { grid-template-columns: minmax(0, 1fr); gap: 1.2vh; }
+.tv-jeu.avec-media .tv-option { min-height: 10vh; }
+.tv-jeu > .tv-avatars { grid-area: avatars; gap: 18px; padding-top: 1vh; }
+.tv-avatar { position: relative; opacity: .5; }
+.tv-avatar small { font-size: clamp(14px, 1.2vw, 20px); max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tv-avatar-etat { position: absolute; top: -4px; right: -6px; width: 26px; height: 26px; display: grid; place-items: center; border-radius: 50%; background: rgba(255,255,255,.2); font: 900 14px Nunito, sans-serif; }
+.tv-avatar.a-repondu .tv-avatar-etat { background: #4FD69B; color: #0b2a1c; }
+.tv-avatar.a-repondu:not(.juste) .tv-avatar-etat:is(:empty) { display: none; }
+.tv-code-jeu { padding: 6px 16px; border-radius: 999px; background: rgba(255,255,255,.14); font-size: clamp(14px, 1.3vw, 22px); }
+.tv-code-jeu strong { letter-spacing: 4px; color: #FDE68A; }
+@media (max-width: 760px) { .tv-jeu.avec-media { grid-template-columns: minmax(0, 1fr); grid-template-areas: "entete" "barre" "enonce" "question" "options" "avatars"; } }
+
+/* Pause / arrêt de la partie */
+.salon-commandes { display: inline-flex; gap: 8px; }
+.salon-cmd { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 14px; border-radius: 999px; border: 0; background: rgba(127,127,127,.18); color: inherit; font: 800 14px Nunito, sans-serif; cursor: pointer; }
+.salon-cmd.stop { background: #E3574B; color: #fff; }
+@media (max-width: 560px) { .salon-cmd span { display: none; } .salon-cmd { padding: 0 12px; } }
+.salon-pause { position: fixed; inset: 0; z-index: 60; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; background: rgba(15, 12, 35, .82); backdrop-filter: blur(6px); color: #fff; text-align: center; padding: 24px; }
+.salon-pause > span { font-size: 72px; }
+.salon-pause strong { font-size: 44px; }
+.salon-pause small { font-size: 16px; opacity: .85; }
+/* Reprendre une partie en cours (après avoir fermé l'appli) */
+.reprendre-partie { display: flex; align-items: center; gap: 12px; padding: 14px 18px; border-radius: 20px; text-decoration: none; color: #fff; background: linear-gradient(120deg, #4F46E5, #DB2777); box-shadow: 0 10px 24px rgba(79, 70, 229, .3); font-weight: 800; }
+.reprendre-partie span:first-child { font-size: 26px; }
+.reprendre-partie strong { flex: 1; }

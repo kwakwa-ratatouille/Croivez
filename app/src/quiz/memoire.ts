@@ -8,7 +8,7 @@ const HEURE = 36e5
 const JOUR = 24 * HEURE
 // Après 1, 2, 3, 4+ réussites d'affilée : la question est mise de côté de plus en plus longtemps
 const PAUSES = [0, 6 * HEURE, 2 * JOUR, 7 * JOUR, 30 * JOUR]
-const RATEE_DE_NOUVEAU = 3 * MIN // une erreur revient vite, mais pas dans la même partie
+const RATEE_DE_NOUVEAU = 45 * MIN // une erreur revient, mais pas dès la partie suivante
 
 const cle = (s: string) => `memoire:${s}`
 const cache = new Map<string, Memoire>()

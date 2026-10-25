@@ -1,3 +1,4 @@
+import ReprendrePartie from '../components/ReprendrePartie'
 import BandeauClan from '../components/BandeauClan'
 import { MINI_JEUX } from '../quiz/formats'
 import ChoixTheme from '../components/ChoixTheme'
@@ -117,6 +118,8 @@ export default function Duels() {
         <AjoutAmi uid={uid} />
         {message && <p role="status" style={{ fontSize: 14, color: 'var(--muted)' }}>{message}</p>}
       </section>
+
+      <ReprendrePartie />
 
       {/* Clan : grand bandeau (niveau, progression, membres) */}
       <BandeauClan code={profile?.clan} />

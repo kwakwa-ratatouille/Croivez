@@ -13,7 +13,7 @@ export const REVELATION_MS = 3500 // temps pour voir la bonne réponse et le cla
 const chemin = (code: string) => `duels/salon-${code}`
 
 export type Equipe = 'a' | 'b' | 'c' | 'd' | 'e' | 'f' | 'g' | 'h'
-export type JoueurSalon = { equipe?: Equipe; pseudo: string; avatar?: string; cadre?: string; score: number; parti?: boolean; rejoint: number; r?: Record<string, { j: boolean; ms: number; pts: number }> }
+export type JoueurSalon = { victoire?: string; equipe?: Equipe; pseudo: string; avatar?: string; cadre?: string; score: number; parti?: boolean; rejoint: number; r?: Record<string, { j: boolean; ms: number; pts: number }> }
 export type ReglesSalon = { s: string; n: number; d: 1 | 2 | 3 | 4; mj: MiniJeu; secondes: number; equipes?: boolean; nbEquipes?: number }
 export type Salon = {
   hote: string
@@ -21,6 +21,8 @@ export type Salon = {
   regles: ReglesSalon
   seed: number
   etape?: { q: number; debut: number }
+  vues?: string[] // questions déjà jouées dans ce salon (écartées des parties suivantes)
+  pause?: number | null // instant de la mise en pause (chrono figé, réponses bloquées)
   joueurs: Record<string, JoueurSalon>
   cree: number
   tv?: boolean // mode télé : l'hôte est l'écran (il ne joue pas), les joueurs répondent sur leur téléphone
@@ -32,8 +34,8 @@ export const MINI_JEUX_SALON: MiniJeu[] = ['qcm', 'vf', 'duo', 'eclair']
 // Thèmes de la partie « Aléatoire » en salon : les quiz les plus connus, pour que tout le monde ait une chance
 export const MIX_SALON: SousThemeId[] = ['drapeaux', 'capitales', 'films', 'acteurs', 'artistes', 'logos', 'animaux', 'personnalites', 'monuments', 'youtubeurs', 'emojis-films', 'repliques', 'fruits', 'desserts', 'sportifs', 'clubs', 'persos-jeux', 'series', 'superheros', 'idees-recues', 'dessins-animes', 'plats', 'chiens', 'affiches', 'voitures-photo', 'slogans', 'expressions', 'jeux-societe', 'dinosaures'] as SousThemeId[]
 
-type Moi = { uid: string; pseudo: string; avatar?: string; cadre?: string }
-const joueur = (m: Moi): JoueurSalon => ({ pseudo: m.pseudo, score: 0, rejoint: Date.now(), parti: false, ...(m.avatar ? { avatar: m.avatar } : {}), ...(m.cadre ? { cadre: m.cadre } : {}) })
+type Moi = { uid: string; pseudo: string; avatar?: string; cadre?: string; victoire?: string }
+const joueur = (m: Moi): JoueurSalon => ({ pseudo: m.pseudo, score: 0, rejoint: Date.now(), parti: false, ...(m.avatar ? { avatar: m.avatar } : {}), ...(m.cadre ? { cadre: m.cadre } : {}), ...(m.victoire ? { victoire: m.victoire } : {}) })
 
 const LETTRES = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789' // sans I, O, 0, 1 : impossible de confondre
 const nouveauCode = () => Array.from({ length: 5 }, () => LETTRES[Math.floor(Math.random() * LETTRES.length)]).join('')
@@ -63,7 +65,7 @@ export async function rejoindreSalon(code: string, m: Moi): Promise<'ok' | 'intr
   if (!s) return 'introuvable'
   if (s.tv && s.hote === m.uid) return 'ok' // l'écran télé ne rejoint pas comme joueur
   const deja = s.joueurs?.[m.uid]
-  if (!deja && s.etat !== 'attente') return 'commence'
+  // Partie déjà lancée : on peut quand même entrer, on joue à partir de la question en cours
   if (!deja && Object.values(s.joueurs ?? {}).filter((j) => !j.parti).length >= MAX_JOUEURS) return 'plein'
   await update(ref(rtdb, `${chemin(code)}/joueurs/${m.uid}`), deja ? { parti: false } : joueur(m))
   surveillerPresence(code, m.uid)
@@ -122,7 +124,14 @@ export async function avancerSalon(code: string, i: number, n: number, maintenan
   if (res.committed && i + 1 >= n) await update(ref(rtdb, chemin(code)), { etat: 'fini' })
 }
 
-export const rejouerSalon = (code: string) => update(ref(rtdb, chemin(code)), { etat: 'attente', etape: null })
+// Fin de partie : ses questions rejoignent la liste des déjà vues du salon (400 au plus)
+export const noterVuesSalon = (code: string, s: Salon, ids: string[]) => update(ref(rtdb, chemin(code)), { vues: [...ids, ...(s.vues ?? [])].filter((x, k, l) => l.indexOf(x) === k).slice(0, 400) })
+export const rejouerSalon = (code: string) => update(ref(rtdb, chemin(code)), { etat: 'attente', etape: null, pause: null })
+// Pause : le chrono s'arrête ; à la reprise, le début de la question est décalé d'autant
+export const pauserSalon = (code: string, t: number) => update(ref(rtdb, chemin(code)), { pause: t })
+export const reprendreSalon = (code: string, s: Salon, t: number) => update(ref(rtdb, chemin(code)), { pause: null, ...(s.etape && s.pause ? { 'etape/debut': s.etape.debut + (t - s.pause) } : {}) })
+// Arrêter la partie : tout le monde revient dans le salon d'attente
+export const arreterSalon = rejouerSalon
 
 export async function inviterAuSalon(code: string, m: Moi, ami: string) {
   await set(ref(rtdb, `invitations/${ami}/salon-${code}`), { de: m.pseudo, uid: m.uid, t: serverTimestamp(), salon: code })
@@ -136,12 +145,12 @@ export const lienRejoindre = (code: string) => `${URL_WEB}#/rejoindre/${code}`
 export const ecouterDecalage = (cb: (ms: number) => void) => onValue(ref(rtdb, '.info/serverTimeOffset'), (s) => cb(Number(s.val() ?? 0)))
 
 // Questions de la partie : mêmes pour tout le monde (même graine, quiz tirés avec un générateur reproductible)
-export async function questionsSalon(r: ReglesSalon, seed: number, lang: Lang): Promise<Question[]> {
+export async function questionsSalon(r: ReglesSalon, seed: number, lang: Lang, exclus: string[] = []): Promise<Question[]> {
   let a = seed
   const alea = () => { a = (a * 1103515245 + 12345) & 0x7fffffff; return a / 0x7fffffff }
   const appliquer = (q: Question) => appliquerMiniJeu(q, r.mj, lang)
   if (r.s !== 'mix') {
-    const qs = await genererPartie({ sousTheme: r.s as SousThemeId, difficulte: r.d as Difficulte, nombre: r.n, mode: 'qcm', lang, seed })
+    const qs = await genererPartie({ sousTheme: r.s as SousThemeId, difficulte: r.d as Difficulte, nombre: r.n, mode: 'qcm', lang, seed, exclus })
     return qs.map(appliquer)
   }
   const out: Question[] = []
@@ -150,7 +159,7 @@ export async function questionsSalon(r: ReglesSalon, seed: number, lang: Lang): 
     const choix = MIX_SALON.filter((s) => s !== precedent)
     const s = choix[Math.floor(alea() * choix.length)]
     precedent = s
-    const [q] = await genererPartie({ sousTheme: s, difficulte: r.d as Difficulte, nombre: 1, mode: 'qcm', lang, seed: seed + i * 7919 }).catch(() => [])
+    const [q] = await genererPartie({ sousTheme: s, difficulte: r.d as Difficulte, nombre: 1, mode: 'qcm', lang, seed: seed + i * 7919, exclus }).catch(() => [])
     if (q) out.push(appliquer({ ...q, s }))
   }
   return out

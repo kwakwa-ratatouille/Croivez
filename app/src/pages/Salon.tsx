@@ -10,9 +10,10 @@ import { infoMiniJeu } from '../quiz/formats'
 import { profilsDe, type ProfilPublic } from '../social'
 import {
   EQUIPES, listeEquipes, choisirEquipe, repartirEquipes, scoresEquipes, MAX_JOUEURS, MINI_JEUX_SALON, REVELATION_MS, avancerSalon, ecouterDecalage, ecouterSalon, inviterAuSalon, lancerSalon, lienRejoindre, majRegles,
-  pointsSalon, questionsSalon, quitterSalon, rejoindreSalon, rejouerSalon, repondreSalon, type JoueurSalon, type ReglesSalon, type Salon as SalonT,
+  arreterSalon, noterVuesSalon, pauserSalon, reprendreSalon, pointsSalon, questionsSalon, quitterSalon, rejoindreSalon, rejouerSalon, repondreSalon, type JoueurSalon, type ReglesSalon, type Salon as SalonT,
 } from '../salon'
-import { retourFin, retourReponse, retourTic } from '../retour'
+import { retourReponse, retourTic } from '../retour'
+import { feter } from '../effets'
 import { Coche, Croix, ICONS, Icon, Logo, Wordmark } from '../components/ui'
 import Avatar from '../components/Avatar'
 import Img from '../components/Img'
@@ -34,7 +35,7 @@ export default function Salon() {
   const { user, profile } = useAuth()
   const uid = user!.uid
   const invite = !!user?.isAnonymous
-  const moi = useMemo<Moi>(() => ({ uid, pseudo: profile?.pseudo ?? (pseudoInvite() || 'Invité'), avatar: profile?.avatar, cadre: profile?.cadre }), [uid, profile?.pseudo, profile?.avatar, profile?.cadre])
+  const moi = useMemo<Moi>(() => ({ uid, pseudo: profile?.pseudo ?? (pseudoInvite() || 'Invité'), avatar: profile?.avatar, cadre: profile?.cadre, victoire: profile?.victoire }), [uid, profile?.pseudo, profile?.avatar, profile?.cadre, profile?.victoire])
   const [salon, setSalon] = useState<SalonT | null | undefined>(undefined)
   const [erreur, setErreur] = useState('')
   const [decalage, setDecalage] = useState(0)
@@ -57,6 +58,15 @@ export default function Salon() {
   }, [salon, uid, code, moi, profile, invite, fr])
 
   const sortie = invite ? `/rejoindre/${code}` : '/duels'
+  // Téléphone mis en veille : la connexion coupe et on est marqué « parti ». Au réveil, on revient tout seul dans la partie.
+  const partiExprès = useRef(false)
+  const [reveil, setReveil] = useState(0)
+  useEffect(() => { const f = () => { if (document.visibilityState === 'visible') setReveil((x) => x + 1) }; document.addEventListener('visibilitychange', f); return () => document.removeEventListener('visibilitychange', f) }, [])
+  useEffect(() => {
+    if (!salon || partiExprès.current || !uid || (salon.tv && salon.hote === uid)) return
+    if (salon.joueurs?.[uid]) { try { localStorage.setItem('salonEnCours', code) } catch { /* rien */ } }
+    if (salon.joueurs?.[uid]?.parti && document.visibilityState === 'visible') rejoindreSalon(code, moi).catch(() => {})
+  }, [salon, reveil]) // eslint-disable-line react-hooks/exhaustive-deps
   if (salon === undefined) return <Centre><Logo width={72} /></Centre>
   if (salon === null || erreur) return (
     <Centre>
@@ -75,7 +85,7 @@ export default function Salon() {
   // il choisit le thème et les règles, lance et relance depuis son téléphone
   const telecommande = salon.tv ? [...actifs].sort((a, b) => a[1].rejoint - b[1].rejoint)[0]?.[0] : undefined
   const pilote = suisHote || (!!salon.tv && telecommande === uid)
-  const quitter = async () => { if (!ecranTv) await quitterSalon(code, uid); nav(sortie) }
+  const quitter = async () => { partiExprès.current = true; try { localStorage.removeItem('salonEnCours') } catch { /* rien */ } if (!ecranTv) await quitterSalon(code, uid); nav(sortie) }
 
   if (salon.etat === 'attente') return ecranTv
     ? <LobbyTv code={code} salon={salon} onQuitter={quitter} telecommande={telecommande} />
@@ -276,27 +286,28 @@ function useDeroulement(code: string, salon: SalonT, maintenant: number, suisHot
   const { lang } = usePrefs()
   const [questions, setQuestions] = useState<Question[] | null>(null)
   const r = salon.regles
-  useEffect(() => { setQuestions(null); questionsSalon(r, salon.seed, lang).then(setQuestions) }, [salon.seed, r.s, r.n, r.d, r.mj, lang]) // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { setQuestions(null); questionsSalon(r, salon.seed, lang, salon.vues ?? []).then(setQuestions) }, [salon.seed, r.s, r.n, r.d, r.mj, lang]) // eslint-disable-line react-hooks/exhaustive-deps
   const i = salon.etape?.q ?? 0
   const debut = salon.etape?.debut ?? maintenant
   const q = questions?.[i]
   const n = Math.min(r.n, questions?.length ?? r.n)
   const actifs = Object.entries(salon.joueurs ?? {}).filter(([, j]) => !j.parti)
-  const restant = Math.max(0, r.secondes - (maintenant - debut) / 1000)
+  const pause = salon.pause ?? null
+  const restant = Math.max(0, r.secondes - ((pause ?? maintenant) - debut) / 1000)
   const tousOntRepondu = actifs.length > 0 && actifs.every(([, j]) => j.r?.[i])
   const revele = !!q && (tousOntRepondu || restant <= 0)
   const classement = actifs.map(([id, j]) => ({ id, ...j })).sort((a, b) => b.score - a.score)
 
   // L'hôte passe à la suite après la révélation ; si l'hôte a disparu, n'importe qui le fait avec du retard
   useEffect(() => {
-    if (!revele || salon.etat !== 'jeu') return
+    if (!revele || salon.etat !== 'jeu' || pause) return
     const finQuestion = tousOntRepondu ? maintenant : debut + r.secondes * 1000
     const delai = suisHote ? REVELATION_MS : REVELATION_MS + 6000
     const t = setTimeout(() => avancerSalon(code, i, n, Date.now()).catch(console.error), Math.max(0, finQuestion + delai - maintenant))
     return () => clearTimeout(t)
-  }, [revele, tousOntRepondu, suisHote, i, n, code, salon.etat]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [revele, tousOntRepondu, suisHote, i, n, code, salon.etat, pause]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  return { questions, i, debut, q, n, actifs, restant, tousOntRepondu, revele, classement, r }
+  return { questions, i, debut, q, n, actifs, restant, tousOntRepondu, revele, classement, r, pause }
 }
 type Classe = (JoueurSalon & { id: string })[]
 
@@ -326,14 +337,25 @@ function Jeu({ code, salon, suisHote, pilote, ecranTv, maintenant, onQuitter }: 
   const { user, profile } = useAuth()
   const uid = user!.uid
   const d = useDeroulement(code, salon, maintenant, suisHote)
-  const { questions, i, debut, q, n, actifs, restant, revele, classement, r } = d
+  const { questions, i, debut, q, n, actifs, restant, revele, classement, r, pause } = d
+  const [confirmeArret, setConfirmeArret] = useState(false)
+  // Commandes de l'hôte (ou de la télécommande en mode télé) : pause / reprise, arrêt et retour au salon
+  const Commandes = () => !pilote ? null : (
+    <span className="salon-commandes">
+      <button type="button" className="salon-cmd" onClick={() => (pause ? reprendreSalon(code, salon, maintenant) : pauserSalon(code, maintenant))}>{pause ? '▶' : '⏸'}<span>{pause ? (fr ? 'Reprendre' : 'Resume') : 'Pause'}</span></button>
+      {confirmeArret
+        ? <button type="button" className="salon-cmd stop" onClick={() => arreterSalon(code)}>⏹<span>{fr ? 'Confirmer l’arrêt' : 'Confirm stop'}</span></button>
+        : <button type="button" className="salon-cmd" onClick={() => { setConfirmeArret(true); setTimeout(() => setConfirmeArret(false), 4000) }}>⏹<span>{fr ? 'Arrêter' : 'Stop'}</span></button>}
+    </span>
+  )
+  const VoilePause = () => !pause ? null : <div className="salon-pause" role="status"><span>⏸</span><strong className="t">{fr ? 'Pause' : 'Paused'}</strong><small>{pilote ? (fr ? 'Touche « Reprendre » pour continuer' : 'Tap Resume') : (fr ? 'L’hôte a mis la partie en pause' : 'The host paused the game')}</small>{pilote && <button type="button" className="btn btn-lg tv-lancer" onClick={() => reprendreSalon(code, salon, maintenant)}>▶ {fr ? 'Reprendre' : 'Resume'}</button>}</div>
   const moiJ = salon.joueurs?.[uid]
   const maRep = moiJ?.r?.[i]
   const [choisie, setChoisie] = useState<string | null>(null)
   useEffect(() => setChoisie(null), [i])
 
   const repondre = (label: string | null) => {
-    if (!q || maRep || !moiJ || revele) return
+    if (!q || maRep || !moiJ || revele || pause) return
     const juste = label === q.reponse
     const ms = Math.max(0, maintenant - debut)
     setChoisie(label)
@@ -341,7 +363,7 @@ function Jeu({ code, salon, suisHote, pilote, ecranTv, maintenant, onQuitter }: 
     repondreSalon(code, uid, i, juste, ms, pointsSalon(juste, ms, r.secondes), moiJ.score ?? 0)
   }
   // Temps écoulé sans réponse : 0 point
-  useEffect(() => { if (q && !maRep && moiJ && restant <= 0 && salon.etat === 'jeu') repondreSalon(code, uid, i, false, r.secondes * 1000, 0, moiJ.score ?? 0) }, [q, maRep, moiJ, restant, salon.etat, code, uid, i, r.secondes])
+  useEffect(() => { if (q && !maRep && moiJ && restant <= 0 && salon.etat === 'jeu' && !pause) repondreSalon(code, uid, i, false, r.secondes * 1000, 0, moiJ.score ?? 0) }, [q, maRep, moiJ, restant, salon.etat, code, uid, i, r.secondes])
   const tic = useRef(0)
   useEffect(() => { const s = Math.ceil(restant); if ((ecranTv || !maRep) && !revele && s <= 5 && s > 0 && s !== tic.current) { tic.current = s; retourTic(s) } }, [restant, maRep, ecranTv, revele])
 
@@ -350,7 +372,9 @@ function Jeu({ code, salon, suisHote, pilote, ecranTv, maintenant, onQuitter }: 
     if (salon.etat !== 'fini' || enregistre.current || !questions) return
     enregistre.current = true
     const rang = classement.findIndex((c) => c.id === uid)
-    retourFin(ecranTv || rang === 0)
+    void rang
+    if (suisHote) noterVuesSalon(code, salon, questions.map((x) => x.id)).catch(() => {})
+    feter(classement[0]?.victoire, 2) // la fête équipée par le gagnant, pour tout le monde
     if (ecranTv && profile) noterExploit(uid, 'tvHote').catch(console.error) // soirée télé animée
     if (!profile || !moiJ) return // invité ou écran télé : rien à enregistrer
     const resultats = questions.slice(0, n).map((qq, k) => ({ id: qq.id, juste: !!moiJ.r?.[k]?.j, s: qq.s ?? r.s }))
@@ -399,15 +423,18 @@ function Jeu({ code, salon, suisHote, pilote, ecranTv, maintenant, onQuitter }: 
 
   // ——— Écran télé : la question en grand, qui a répondu, puis la bonne réponse et le classement ———
   if (ecranTv) return (
-    <div className="tv tv-jeu">
+    <div className={`tv tv-jeu${q.image || q.grand || q.audio ? ' avec-media' : ''}`}>
       <header className="tv-entete">
         <span className="t">{fr ? 'Question' : 'Question'} {i + 1} / {n}</span>
+        <span className="tv-code-jeu">{fr ? 'Rejoindre :' : 'Join:'} <strong className="t">{code}</strong></span>
         <span className="tv-repondu">{actifs.filter(([, j]) => j.r?.[i]).length} / {actifs.length} {fr ? 'ont répondu' : 'answered'}</span>
-        <Chrono restant={restant} total={r.secondes} actif={!revele} />
+        <Commandes />
+        <Chrono restant={restant} total={r.secondes} actif={!revele && !pause} />
       </header>
-      <BarreChrono restant={restant} total={r.secondes} actif={!revele} />
+      <BarreChrono restant={restant} total={r.secondes} actif={!revele && !pause} />
+      <VoilePause />
+      <h1 key={`t${i}`} className="t tv-enonce rise">{q.enonce}</h1>
       <section key={i} className="tv-question rise">
-        <h1 className="t">{q.enonce}</h1>
         {q.grand && <p className={`t enonce-grand${/^[^\p{L}\d]+$/u.test(q.grand) ? ' emojis' : ''}`}>{q.grand}</p>}
         {q.image && <Img src={q.image} alt="" className="tv-image" style={{ background: q.fondGris ? 'var(--fond-logo)' : undefined }} />}
         {q.audio && <Extrait id={q.audio} />}
@@ -426,8 +453,9 @@ function Jeu({ code, salon, suisHote, pilote, ecranTv, maintenant, onQuitter }: 
       <div className="tv-avatars">
         {actifs.map(([id, j]) => (
           <span key={id} className={`tv-avatar${j.r?.[i] ? ' a-repondu' : ''}${revele && j.r?.[i]?.j ? ' juste' : ''}`}>
-            <Avatar pseudo={j.pseudo} avatar={j.avatar} cadre={j.cadre} taille={44} />
+            <Avatar pseudo={j.pseudo} avatar={j.avatar} cadre={j.cadre} taille={60} />
             <small>{j.pseudo}</small>
+            <span className="tv-avatar-etat">{revele ? (j.r?.[i]?.j ? '✓' : '✗') : j.r?.[i] ? '✓' : '…'}</span>
           </span>
         ))}
       </div>
@@ -457,9 +485,11 @@ function Jeu({ code, salon, suisHote, pilote, ecranTv, maintenant, onQuitter }: 
           <span style={{ fontWeight: 800 }}>{fr ? 'Question' : 'Question'} {i + 1} / {n}</span>
           <span style={{ fontSize: 13, color: 'var(--muted)' }}>{moiJ?.score ?? 0} pts · {rang > 0 ? `${rang}${rang === 1 ? (fr ? 'er' : 'st') : (fr ? 'e' : 'th')}` : ''} / {classement.length} · {actifs.filter(([, j]) => j.r?.[i]).length}/{actifs.length} {fr ? 'ont répondu' : 'answered'}</span>
         </div>
-        <Chrono restant={restant} total={r.secondes} actif={!maRep && !revele} />
+        <Commandes />
+        <Chrono restant={restant} total={r.secondes} actif={!maRep && !revele && !pause} />
       </header>
-      <BarreChrono restant={restant} total={r.secondes} actif={!maRep && !revele} />
+      <BarreChrono restant={restant} total={r.secondes} actif={!maRep && !revele && !pause} />
+      <VoilePause />
 
       <section key={i} className="rise" style={{ width: '100%', maxWidth: 1040, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 18 }}>
         <h1 className="t" style={{ fontSize: 26, fontWeight: 900, textAlign: 'center', maxWidth: 760 }}>{q.enonce}</h1>
