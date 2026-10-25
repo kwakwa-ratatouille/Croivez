@@ -346,6 +346,80 @@ const HEROS = [
   ] },
 ]
 
+// ——— Films d'animation (Disney, Pixar, DreamWorks, Illumination…) : personnages et leur film ———
+const ANIMATION = [
+  // Disney classiques
+  { oeuvre: 'Blanche-Neige et les Sept Nains', wiki: 'disney', g: 'disney', persos: `Blanche-Neige~1~Snow White | Prof~3~Doc (Snow White and the Seven Dwarfs) | Grincheux~2~Grumpy | Simplet~3~Dopey | La Méchante Reine~2~Evil Queen` },
+  { oeuvre: 'Cendrillon', wiki: 'disney', g: 'disney', persos: `Cendrillon~1~Cinderella | La Fée marraine~3~Fairy Godmother | Lady Trémaine~3~Lady Tremaine | Gus~4~Gus (Cinderella) | Jaq~4~Jaq` },
+  { oeuvre: 'La Belle au bois dormant', wiki: 'disney', g: 'disney', persos: `Aurore~2~Aurora | Maléfique~2~Maleficent | Prince Philippe~3~Prince Phillip | Flora~4~Flora, Fauna, and Merryweather` },
+  { oeuvre: 'Peter Pan', wiki: 'disney', g: 'disney', persos: `Peter Pan~1~Peter Pan | Clochette~1~Tinker Bell | Capitaine Crochet~2~Captain Hook | Wendy~3~Wendy Darling | M. Mouche~3~Mr. Smee | Tic-Tac le crocodile~4~Tick-Tock` },
+  { oeuvre: 'Alice au pays des merveilles', wiki: 'disney', g: 'disney', persos: `Alice~1~Alice | Le Chapelier fou~2~Mad Hatter | Le Chat du Cheshire~2~Cheshire Cat | La Reine de cœur~2~Queen of Hearts | Le Lapin blanc~3~White Rabbit` },
+  { oeuvre: 'Les Aristochats', wiki: 'disney', g: 'disney', persos: `Duchesse~2~Duchess | Thomas O\'Malley~3~Thomas O\'Malley | Marie~2~Marie (The Aristocats) | Edgar~4~Edgar Balthazar | Berlioz~4~Berlioz` },
+  { oeuvre: 'Robin des Bois', wiki: 'disney', g: 'disney', persos: `Robin des Bois~2~Robin Hood (character) | Petit Jean~3~Little John | Le Prince Jean~3~Prince John | Sire Hiss~4~Sir Hiss | Le Shérif de Nottingham~4~Sheriff of Nottingham` },
+  { oeuvre: 'Rox et Rouky', wiki: 'disney', g: 'disney', persos: `Rox~3~Tod | Rouky~3~Copper` },
+  { oeuvre: 'Bernard et Bianca', wiki: 'disney', g: 'disney', persos: `Bernard~3~Bernard | Bianca~3~Miss Bianca` },
+  { oeuvre: 'Basil, détective privé', wiki: 'disney', g: 'disney', persos: `Basil~4~Basil of Baker Street | Ratigan~4~Professor Ratigan` },
+  { oeuvre: 'La Petite Sirène', wiki: 'disney', g: 'disney', persos: `Ariel~1~Ariel | Sébastien~2~Sebastian | Polochon~2~Flounder | Ursula~2~Ursula | Le Roi Triton~3~King Triton | Eurêka~4~Scuttle` },
+  { oeuvre: 'La Belle et la Bête', wiki: 'disney', g: 'disney', persos: `Belle~1~Belle | La Bête~1~Beast | Lumière~2~Lumière | Big Ben~3~Cogsworth | Mme Samovar~3~Mrs. Potts | Zip~3~Chip Potts | Gaston~2~Gaston` },
+  { oeuvre: 'Pocahontas', wiki: 'disney', g: 'disney', persos: `Pocahontas~2~Pocahontas | John Smith~3~John Smith | Meeko~3~Meeko | Grand-mère Feuillage~4~Grandmother Willow | Ratcliffe~4~Governor Ratcliffe` },
+  { oeuvre: 'Le Bossu de Notre-Dame', wiki: 'disney', g: 'disney', persos: `Quasimodo~2~Quasimodo | Esmeralda~2~Esmeralda | Phœbus~3~Captain Phoebus | Frollo~3~Claude Frollo | Djali~4~Djali` },
+  { oeuvre: 'Hercule', wiki: 'disney', g: 'disney', persos: `Hercule~2~Hercules (character) | Mégara~3~Megara | Philoctète~3~Philoctetes | Hadès~2~Hades | Pégase~3~Pegasus | Peine et Panique~4~Pain and Panic` },
+  { oeuvre: 'Mulan', wiki: 'disney', g: 'disney', persos: `Mulan~1~Mulan (character) | Mushu~2~Mushu | Li Shang~3~Li Shang | Cri-Kee~4~Cri-Kee | Shan Yu~4~Shan Yu` },
+  { oeuvre: 'Tarzan', wiki: 'disney', g: 'disney', persos: `Tarzan~2~Tarzan (character) | Jane~3~Jane Porter | Terk~3~Terk | Tantor~4~Tantor | Kala~4~Kala | Clayton~4~Clayton` },
+  { oeuvre: 'Kuzco, l’empereur mégalo', wiki: 'disney', g: 'disney', persos: `Kuzco~2~Kuzco | Pacha~3~Pacha | Yzma~3~Yzma | Kronk~3~Kronk` },
+  { oeuvre: 'Atlantide, l’empire perdu', wiki: 'disney', g: 'disney', persos: `Milo Thatch~3~Milo Thatch | Kida~3~Kida` },
+  { oeuvre: 'La Planète au trésor', wiki: 'disney', g: 'disney', persos: `Jim Hawkins~3~Jim Hawkins | John Silver~3~John Silver` },
+  { oeuvre: 'Frère des ours', wiki: 'disney', g: 'disney', persos: `Kenai~3~Kenai | Koda~3~Koda` },
+  { oeuvre: 'Volt, star malgré lui', wiki: 'disney', g: 'disney', persos: `Volt~3~Bolt (character) | Mitaine~4~Mittens | Rhino~4~Rhino` },
+  { oeuvre: 'La Princesse et la Grenouille', wiki: 'disney', g: 'disney', persos: `Tiana~2~Tiana | Naveen~3~Prince Naveen | Louis~3~Louis (The Princess and the Frog) | Ray~4~Ray (The Princess and the Frog) | Dr Facilier~3~Dr. Facilier` },
+  { oeuvre: 'Raiponce', wiki: 'disney', g: 'disney', persos: `Raiponce~1~Rapunzel | Flynn Rider~2~Flynn Rider | Pascal~2~Pascal | Maximus~3~Maximus | Mère Gothel~3~Mother Gothel` },
+  { oeuvre: 'Les Mondes de Ralph', wiki: 'disney', g: 'disney', persos: `Ralph~2~Wreck-It Ralph (character) | Vanellope~2~Vanellope von Schweetz | Félix~3~Fix-It Felix, Jr. | Sergent Calhoun~4~Sergeant Calhoun` },
+  { oeuvre: 'La Reine des neiges', wiki: 'disney', g: 'disney', persos: `Elsa~1~Elsa | Anna~1~Anna | Olaf~1~Olaf | Kristoff~2~Kristoff | Sven~2~Sven | Hans~3~Hans` },
+  { oeuvre: 'Les Nouveaux Héros', wiki: 'disney', g: 'disney', persos: `Baymax~1~Baymax | Hiro Hamada~2~Hiro Hamada | GoGo~4~GoGo Tomago | Fred~4~Fred (Big Hero 6)` },
+  { oeuvre: 'Zootopie', wiki: 'disney', g: 'disney', persos: `Judy Hopps~2~Judy Hopps | Nick Wilde~2~Nick Wilde | Flash~3~Flash (Zootopia) | Chef Bogo~4~Chief Bogo | Clawhauser~4~Benjamin Clawhauser` },
+  { oeuvre: 'Vaiana', wiki: 'disney', g: 'disney', persos: `Vaiana~1~Moana (character) | Maui~1~Maui | Heihei~3~Heihei | Pua~3~Pua | Tamatoa~4~Tamatoa | Grand-mère Tala~4~Gramma Tala` },
+  { oeuvre: 'Encanto', wiki: 'disney', g: 'disney', persos: `Mirabel~2~Mirabel Madrigal | Bruno~2~Bruno Madrigal | Isabela~3~Isabela Madrigal | Luisa~3~Luisa Madrigal | Antonio~4~Antonio Madrigal` },
+  { oeuvre: 'Raya et le Dernier Dragon', wiki: 'disney', g: 'disney', persos: `Raya~3~Raya | Sisu~3~Sisu | Tuk Tuk~4~Tuk Tuk` },
+  { oeuvre: 'Wish', wiki: 'disney', g: 'disney', persos: `Asha~3~Asha | Valentino~4~Valentino | Le Roi Magnifico~4~King Magnifico` },
+  { oeuvre: 'Lilo et Stitch', wiki: 'disney', g: 'disney', persos: `Stitch~1~Stitch | Lilo~1~Lilo Pelekai | Nani~3~Nani Pelekai | Jumba~3~Jumba Jookiba | Pikly~4~Pleakley` },
+  // Pixar
+  { oeuvre: 'Toy Story', wiki: 'pixar', g: 'pixar', persos: `Woody~1~Woody | Buzz l’Éclair~1~Buzz Lightyear | Jessie~2~Jessie | Rex~2~Rex | Monsieur Patate~2~Mr. Potato Head | Zigzag~3~Slinky Dog | Bayonne~3~Hamm | Lotso~3~Lotso | Forky~3~Forky | Les Aliens~3~Aliens (Toy Story)` },
+  { oeuvre: '1001 Pattes', wiki: 'pixar', g: 'pixar', persos: `Tilt~3~Flik | Le Borgne~4~Hopper (A Bug's Life) | Atta~4~Atta` },
+  { oeuvre: 'Monstres & Cie', wiki: 'pixar', g: 'pixar', persos: `Sulli~1~James P. Sullivan | Bob Razowski~1~Mike Wazowski | Bouh~2~Boo | Léon~3~Randall Boggs | Roz~4~Roz` },
+  { oeuvre: 'Le Monde de Nemo', wiki: 'pixar', g: 'pixar', persos: `Nemo~1~Nemo | Marin~2~Marlin | Dory~1~Dory | Crush~3~Crush | Gill~4~Gill | Bruce~3~Bruce` },
+  { oeuvre: 'Les Indestructibles', wiki: 'pixar', g: 'pixar', persos: `M. Indestructible~2~Mr. Incredible | Elastigirl~2~Elastigirl | Frozone~3~Frozone | Edna Mode~2~Edna Mode | Dash~3~Dash Parr | Violette~3~Violet Parr | Jack-Jack~3~Jack-Jack Parr | Syndrome~3~Syndrome` },
+  { oeuvre: 'Cars', wiki: 'pixar', g: 'pixar', persos: `Flash McQueen~1~Lightning McQueen | Martin~1~Mater | Sally~3~Sally Carrera | Doc Hudson~3~Doc Hudson | Luigi~4~Luigi | Guido~4~Guido` },
+  { oeuvre: 'Ratatouille', wiki: 'pixar', g: 'pixar', persos: `Rémy~1~Remy | Alfredo Linguini~3~Alfredo Linguini | Anton Ego~3~Anton Ego | Colette~4~Colette Tatou | Auguste Gusteau~4~Auguste Gusteau | Émile~4~Emile` },
+  { oeuvre: 'WALL-E', wiki: 'pixar', g: 'pixar', persos: `WALL-E~1~WALL-E | EVE~2~EVE | M-O~4~M-O | AUTO~4~AUTO` },
+  { oeuvre: 'Là-haut', wiki: 'pixar', g: 'pixar', persos: `Carl Fredricksen~2~Carl Fredricksen | Russell~2~Russell | Doug~3~Dug | Kevin~3~Kevin | Charles Muntz~4~Charles F. Muntz` },
+  { oeuvre: 'Rebelle', wiki: 'pixar', g: 'pixar', persos: `Mérida~2~Merida | La Reine Elinor~4~Queen Elinor | Le Roi Fergus~4~King Fergus` },
+  { oeuvre: 'Vice-versa', wiki: 'pixar', g: 'pixar', persos: `Joie~2~Joy | Tristesse~2~Sadness | Colère~2~Anger | Peur~3~Fear | Dégoût~3~Disgust | Bing Bong~3~Bing Bong | Anxiété~3~Anxiety | Riley~4~Riley Andersen` },
+  { oeuvre: 'Coco', wiki: 'pixar', g: 'pixar', persos: `Miguel~2~Miguel Rivera | Héctor~3~Héctor Rivera | Ernesto de la Cruz~3~Ernesto de la Cruz | Dante~4~Dante | Mamá Coco~4~Mamá Coco` },
+  { oeuvre: 'En avant', wiki: 'pixar', g: 'pixar', persos: `Ian Lightfoot~4~Ian Lightfoot | Barley Lightfoot~4~Barley Lightfoot` },
+  { oeuvre: 'Soul', wiki: 'pixar', g: 'pixar', persos: `Joe Gardner~3~Joe Gardner | 22~3~22` },
+  { oeuvre: 'Luca', wiki: 'pixar', g: 'pixar', persos: `Luca~3~Luca Paguro | Alberto~3~Alberto Scorfano | Giulia~4~Giulia Marcovaldo` },
+  { oeuvre: 'Alerte rouge', wiki: 'pixar', g: 'pixar', persos: `Mei Lee~3~Meilin Lee | Ming Lee~4~Ming Lee` },
+  { oeuvre: 'Élémentaire', wiki: 'pixar', g: 'pixar', persos: `Flam~3~Ember Lumen | Flack~3~Wade Ripple` },
+  // DreamWorks
+  { oeuvre: 'Shrek', wiki: 'shrek', g: 'dreamworks', persos: `Shrek~1~Shrek (character) | L’Âne~1~Donkey | Fiona~1~Princess Fiona | Le Chat Potté~2~Puss in Boots | Ti-Biscuit~3~Gingerbread Man | Lord Farquaad~3~Lord Farquaad | Dragon~3~Dragon (Shrek) | Le Prince Charmant~4~Prince Charming | La Bonne Fée~4~Fairy Godmother` },
+  { oeuvre: 'Madagascar', wiki: 'madagascar', g: 'dreamworks', persos: `Alex~2~Alex | Marty~2~Marty | Gloria~3~Gloria | Melman~3~Melman | Le Roi Julian~2~King Julien | Skipper~3~Skipper | Mort~4~Mort` },
+  { oeuvre: 'Kung Fu Panda', wiki: 'kungfupanda', g: 'dreamworks', persos: `Po~1~Po | Maître Shifu~2~Master Shifu | Tigresse~2~Tigress | Oogway~3~Master Oogway | Taï Lung~3~Tai Lung | Singe~4~Monkey | Mante~4~Mantis | Vipère~4~Viper | Grue~4~Crane | Lord Shen~4~Lord Shen` },
+  { oeuvre: 'Dragons', wiki: 'howtotrainyourdragon', g: 'dreamworks', persos: `Krokmou~1~Toothless | Harold~2~Hiccup Horrendous Haddock III | Astrid~3~Astrid Hofferson | Stoïk~3~Stoick the Vast | Gueulfor~4~Gobber` },
+  { oeuvre: 'Megamind', wiki: 'dreamworks', g: 'dreamworks', persos: `Megamind~3~Megamind (character) | Metro Man~4~Metro Man` },
+  { oeuvre: 'Les Trolls', wiki: 'dreamworks', g: 'dreamworks', persos: `Poppy~3~Poppy | Branche~3~Branch` },
+  { oeuvre: 'Les Bad Guys', wiki: 'dreamworks', g: 'dreamworks', persos: `M. Loup~4~Mr. Wolf | M. Serpent~4~Mr. Snake` },
+  { oeuvre: 'Baby Boss', wiki: 'dreamworks', g: 'dreamworks', persos: `Baby Boss~3~Theodore Templeton` },
+  { oeuvre: 'Les Croods', wiki: 'dreamworks', g: 'dreamworks', persos: `Grug~4~Grug Crood | Eep~4~Eep Crood` },
+  { oeuvre: 'Gang de requins', wiki: 'dreamworks', g: 'dreamworks', persos: `Oscar~4~Oscar (Shark Tale) | Lenny~4~Lenny` },
+  { oeuvre: 'Le Robot sauvage', wiki: 'dreamworks', g: 'dreamworks', persos: `Roz~4~Roz (The Wild Robot) | Joli-Bec~4~Brightbill` },
+  // Illumination, Blue Sky, Aardman…
+  { oeuvre: 'Moi, moche et méchant', wiki: 'despicableme', g: 'illumination', persos: `Gru~1~Felonious Gru | Les Minions~1~Minions | Bob~2~Bob | Kevin~2~Kevin | Stuart~3~Stuart | Agnès~3~Agnes Gru | Margo~4~Margo Gru | Vector~3~Vector Perkins | Dr Nefario~4~Dr. Nefario | Lucy Wilde~4~Lucy Wilde` },
+  { oeuvre: 'L’Âge de glace', wiki: 'iceage', g: 'bluesky', persos: `Scrat~1~Scrat | Manny~2~Manny | Sid~2~Sid | Diego~2~Diego | Ellie~4~Ellie | Buck~4~Buck` },
+  { oeuvre: 'Comme des bêtes', wiki: 'thesecretlifeofpets', g: 'illumination', persos: `Max~3~Max | Pompon~4~Snowball` },
+  { oeuvre: 'Tous en scène', wiki: 'sing', g: 'illumination', persos: `Buster Moon~3~Buster Moon | Rosita~4~Rosita | Johnny~4~Johnny (Sing)` },
+  { oeuvre: 'Le Lorax', wiki: 'drseuss', g: 'illumination', persos: `Le Lorax~3~The Lorax` },
+]
+
 // ——— Construction ———
 const parse = (txt) => (txt ?? '').split('|').map((s) => s.trim()).filter(Boolean).map((s) => { const [nom, palier, titre] = s.split('~'); return { nom, palier: Number(palier) || 4, titre: titre ?? nom } })
 async function images(wiki, titres, essai = 1) {
@@ -414,6 +488,7 @@ async function ecrire(fichier, toutes) {
 }
 
 const quoi = process.argv[2]
+if (!quoi || quoi === 'animation') await ecrire('persos-animation', ANIMATION.flatMap((d) => parse(d.persos).map((p) => ({ ...p, oeuvre: d.oeuvre, wiki: d.wiki, g: d.g }))))
 if (!quoi || quoi === 'dessins') await ecrire('dessins-animes', DESSINS.flatMap((d) => parse(d.persos).map((p) => ({ ...p, oeuvre: d.oeuvre, wiki: d.wiki, g: d.g }))))
 if (!quoi || quoi === 'animes') {
   await ecrire('persos-animes', ANIMES.flatMap((d) => parse(d.persos).map((p) => ({ ...p, oeuvre: d.oeuvre, wiki: d.wiki, g: d.g }))))

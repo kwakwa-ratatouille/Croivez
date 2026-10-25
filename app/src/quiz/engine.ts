@@ -116,7 +116,7 @@ const CULTURE = {
   'voix-vf': { type: 'audio', q: { fr: () => 'Qui chante cette chanson en version française ?', en: () => 'Who sings this in the French version?' } },
   'musiques-jeux': { type: 'audio', q: { fr: () => 'De quel jeu vidéo vient cette musique ?', en: () => 'Which video game is this music from?' } },
   'musiques-films': { type: 'audio', q: { fr: () => 'De quel film vient cette musique ?', en: () => 'Which film is this music from?' } },
-  'chansons-disney': { type: 'audio', q: { fr: () => 'De quel film Disney vient cette chanson ?', en: () => 'Which Disney film is this song from?' } },
+  'chansons-disney': { type: 'audio', q: { fr: () => 'De quel film d’animation vient cette chanson ?', en: () => 'Which animated film is this song from?' } },
   generiques: { type: 'audio', q: { fr: () => 'De quel dessin animé vient ce générique ?', en: () => 'Which cartoon is this theme song from?' } },
   'blind-album': { type: 'audio', pack: 'extraits', champ: 'f:Album', q: { fr: () => 'De quel album vient ce morceau ?', en: () => 'Which album is this song from?' } },
   'artistes-genre': { type: 'attribut', pack: 'artistes', champ: 'genre', montrer: true, q: { fr: (n) => `Quel est le genre musical de ${n} ?`, en: (n) => `What music genre is ${n} known for?` } },
