@@ -2085,3 +2085,19 @@ details.multi-duel:not([open]) { gap: 0 !important; }
 .clan-inviter-liste { display: flex; flex-direction: column; gap: 6px; }
 .clan-inviter-ami { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 14px; background: var(--surface2); }
 .clan-inviter-ami span { flex: 1; min-width: 0; font-weight: 700; }
+
+/* Solde de pièces : pastille dorée */
+.puce-or { background: linear-gradient(135deg, #FFF4C9, #FDE68A) !important; color: #7A4A05 !important; border: 1px solid #F5C451; font-weight: 900; box-shadow: 0 2px 6px rgba(199, 127, 10, .2); }
+:root[data-theme="dark"] .puce-or { background: linear-gradient(135deg, #3A2A0A, #5A3E0C) !important; color: #FDE68A !important; border-color: #8A5E10; }
+.piece { filter: drop-shadow(0 1px 1px rgba(122, 74, 5, .35)); }
+
+/* Multi : l'en-tête « Mes amis » (Activité, Messages) tient sur un petit écran */
+.multi-amis-tete { flex-wrap: wrap; row-gap: 8px; }
+.multi-amis-tete h2 { min-width: 0; }
+.multi-amis-actions { flex-wrap: wrap; justify-content: flex-end; }
+@media (max-width: 480px) {
+  .multi-amis-tete h2 { font-size: 18px !important; }
+  .multi-mini { min-height: 30px; padding: 0 9px; font-size: 12px; }
+}
+
+.joueur-actions { display: flex; gap: 8px; flex-wrap: wrap; }

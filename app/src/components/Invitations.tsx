@@ -47,7 +47,7 @@ export default function Invitations() {
     if (i.type === 'ami-ok' || i.type === 'defi-res' || i.type === 'reaction') { await fermer(i); return }
     if (i.type === 'defi') { await fermer(i); if (i.url) nav(i.url); return }
     if (i.type === 'clan' && i.code) {
-      const r = await rejoindreClan(uid, { pseudo: profile?.pseudo ?? '?', depuis: Date.now(), ...(profile?.avatar ? { avatar: profile.avatar } : {}), ...(profile?.cadre ? { cadre: profile.cadre } : {}) }, i.code).catch(() => 'introuvable' as const)
+      const r = await rejoindreClan(uid, { pseudo: profile?.pseudo ?? '?', depuis: Date.now(), ...(profile?.avatar ? { avatar: profile.avatar } : {}), ...(profile?.cadre ? { cadre: profile.cadre } : {}) }, i.code, true).catch(() => 'introuvable' as const)
       await fermer(i)
       if (r === 'ok') nav('/clan')
       return

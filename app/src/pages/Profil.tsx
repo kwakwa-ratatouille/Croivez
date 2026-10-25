@@ -11,7 +11,7 @@ import { BADGES, PALIERS, palierAtteint } from '../badges'
 import { BOUTIQUE, SECRETS, possede } from '../meta'
 import { FONDS_ANIMES, Particules, Pseudo, fondAnime } from '../components/Cosmetiques'
 import { accesQuiz } from '../progression'
-import { profilPublic, publierVitrine, resumePublic, type ProfilPublic } from '../social'
+import { prevenirAmi, profilPublic, publierVitrine, resumePublic, type ProfilPublic } from '../social'
 import Avatar from '../components/Avatar'
 import CarteCouverture from '../components/CarteCouverture'
 import { Icon, ICONS } from '../components/ui'
@@ -273,12 +273,24 @@ export function Joueur() {
   const { lang } = usePrefs()
   const fr = lang === 'fr'
   const [p, setP] = useState<ProfilPublic | null | undefined>(undefined)
+  const { user, profile } = useAuth()
+  const [demande, setDemande] = useState(false)
   useEffect(() => { if (uid) profilPublic(uid).then(setP).catch(() => setP(null)) }, [uid])
+  // Ajouter en ami directement depuis son profil (il reçoit une demande à accepter)
+  const dejaAmi = !!uid && !!profile?.amis?.includes(uid)
+  const ajouter = async () => { if (!user || !uid || !profile) return; await prevenirAmi(user.uid, profile.pseudo, uid); setDemande(true) }
   return (
     <>
       <button type="button" onClick={() => history.back()} style={{ alignSelf: 'flex-start', display: 'inline-flex', alignItems: 'center', gap: 8, minHeight: 44, fontWeight: 600, border: 0, background: 'none', color: 'var(--muted)', cursor: 'pointer', font: 'inherit' }}><Icon d={ICONS.arrowL} />{fr ? 'Retour' : 'Back'}</button>
       {p === undefined && <p style={{ color: 'var(--muted)' }}>…</p>}
       {p === null && <p style={{ color: 'var(--muted)' }}>{fr ? 'Joueur introuvable.' : 'Player not found.'}</p>}
+      {p && user && !user.isAnonymous && uid !== user.uid && (
+        <div className="joueur-actions">
+          {dejaAmi
+            ? <span className="pill ok">✓ {fr ? 'Vous êtes amis' : 'Friends'}</span>
+            : <button type="button" className="btn btn-p" disabled={demande} onClick={ajouter}>{demande ? (fr ? '✓ Demande envoyée' : '✓ Request sent') : (fr ? '👋 Ajouter en ami' : '👋 Add friend')}</button>}
+        </div>
+      )}
       {p && <><CarteJoueur p={p} /><Vitrine p={p} moi={false} /></>}
     </>
   )

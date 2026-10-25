@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { BLASON_DEFAUT, chercherClans, lireClan, maxMembres, niveauClan, xpNiveau, type Clan, type EntreeIndex } from '../clans'
+import { BLASON_DEFAUT, clansPublics, lireClan, maxMembres, niveauClan, xpNiveau, type Clan, type EntreeIndex } from '../clans'
 import BlasonClan from './BlasonClan'
 import Avatar from './Avatar'
 
@@ -10,7 +10,7 @@ export default function BandeauClan({ code }: { code?: string }) {
   const [top, setTop] = useState<(EntreeIndex & { code: string })[]>([])
   useEffect(() => {
     if (code) lireClan(code).then(setClan).catch(() => setClan(null))
-    else { setClan(null); chercherClans().then((l) => setTop(l.slice(0, 3))).catch(() => setTop([])) }
+    else { setClan(null); clansPublics().then((l) => setTop(l.slice(0, 3))).catch(() => setTop([])) }
   }, [code])
 
   if (code && clan) {

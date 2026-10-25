@@ -14,7 +14,7 @@ const RARETES_CARTE: Record<RareteCarte, { nom: { fr: string; en: string }; coul
 import { useCouverture } from '../components/CarteCouverture'
 import Img from '../components/Img'
 import Illustration from '../components/Illustration'
-import { ICONS, Icon } from '../components/ui'
+import { ICONS, Icon, Piece } from '../components/ui'
 
 type Carte = { id: string; nom: string; img?: string }
 const PAR_PAGE = 9
@@ -72,7 +72,7 @@ function CarteAlbumBase({ c, n, rarete, eue, onOuvrir }: { c: Carte; n: number; 
 // Carte de l'album : une pastille de pièces tant qu'on n'a pas lu sa fiche
 function CarteAlbum(props: Parameters<typeof CarteAlbumBase>[0] & { aLire?: boolean }) {
   const { aLire, ...reste } = props
-  return <span className="album-carte-cadre">{CarteAlbumBase(reste)}{aLire && props.eue && <span className="album-pastille">🪙+{GAIN_CARTE[props.rarete]}</span>}</span>
+  return <span className="album-carte-cadre">{CarteAlbumBase(reste)}{aLire && props.eue && <span className="album-pastille"><Piece size={14} />+{GAIN_CARTE[props.rarete]}</span>}</span>
 }
 
 function FicheCarte({ c, rarete, onFermer, aLire, onLu }: { c: Carte; rarete: RareteCarte; onFermer: () => void; aLire?: boolean; onLu?: () => void }) {
@@ -95,7 +95,7 @@ function FicheCarte({ c, rarete, onFermer, aLire, onLu }: { c: Carte; rarete: Ra
         <p>{w === null ? '…' : w.texte || (lang === 'fr' ? 'Pas de résumé disponible.' : 'No summary available.')}</p>
         {aLire && (lecture < 100
           ? <div className="album-lecture"><span style={{ width: `${lecture}%` }} /><small>{lang === 'fr' ? `📖 Lis la fiche… +${GAIN_CARTE[rarete]} pièces` : 'Reading…'}</small></div>
-          : <button type="button" className="btn btn-p album-recolte" onClick={onLu}>🪙 {lang === 'fr' ? `Récupérer ${GAIN_CARTE[rarete]} pièces` : `Collect ${GAIN_CARTE[rarete]} coins`}</button>)}
+          : <button type="button" className="btn btn-p album-recolte" onClick={onLu}><Piece size={14} /> {lang === 'fr' ? `Récupérer ${GAIN_CARTE[rarete]} pièces` : `Collect ${GAIN_CARTE[rarete]} coins`}</button>)}
         {w?.lien && <a href={w.lien} target="_blank" rel="noreferrer" className="btn btn-s"><Icon d={ICONS.link} size={16} />Wikipédia</a>}
       </div>
     </div>

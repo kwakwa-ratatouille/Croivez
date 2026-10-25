@@ -61,20 +61,29 @@ export function Croix({ size = 26, color = 'var(--ko-i)', anim = true }: { size?
 }
 
 // Pièce d'or douce (moutarde de la DA) et compteur de pièces
+// Pièce de Croivez : or en dégradé, tranche en relief, « V » gravé et un reflet
 export function Piece({ size = 20 }: { size?: number }) {
+  const id = useId().replace(/:/g, '')
   return (
-    <svg viewBox="0 0 24 24" width={size} height={size} aria-hidden="true" style={{ flex: 'none' }}>
-      <circle cx="12" cy="12" r="10" fill="var(--his)" />
-      <circle cx="12" cy="12" r="6.5" fill="none" stroke="var(--his-i)" strokeWidth="1.6" opacity=".6" />
-      <path d="M10 9.5l2.5 5 2.5-5" fill="none" stroke="var(--his-i)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    <svg viewBox="0 0 24 24" width={size} height={size} aria-hidden="true" style={{ flex: 'none' }} className="piece">
+      <defs>
+        <linearGradient id={`po${id}`} x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#FFE58A" /><stop offset=".5" stopColor="#F5B824" /><stop offset="1" stopColor="#C77F0A" /></linearGradient>
+        <linearGradient id={`pi${id}`} x1="1" y1="1" x2="0" y2="0"><stop offset="0" stopColor="#FFE07A" /><stop offset="1" stopColor="#E3A21A" /></linearGradient>
+      </defs>
+      <circle cx="12" cy="12.6" r="10.4" fill="#A86408" />
+      <circle cx="12" cy="12" r="10.4" fill={`url(#po${id})`} />
+      <circle cx="12" cy="12" r="7.6" fill={`url(#pi${id})`} stroke="#B9770C" strokeWidth=".9" />
+      <path d="M8.9 8.6l3.1 6.6 3.1-6.6" fill="none" stroke="#FFF4C9" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" transform="translate(0 .6)" opacity=".7" />
+      <path d="M8.9 8.6l3.1 6.6 3.1-6.6" fill="none" stroke="#9A5B05" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M5.6 8.4a7.4 7.4 0 0 1 4.6-4.1" fill="none" stroke="#fff" strokeOpacity=".75" strokeWidth="1.3" strokeLinecap="round" />
     </svg>
   )
 }
 
 export function Pieces({ n }: { n: number }) {
   return (
-    <span className="chip" aria-label={`${n} pièces`} style={{ alignSelf: 'flex-start', background: 'var(--his-t)', color: 'var(--his-i)', gap: 6, fontSize: 14 }}>
-      <Piece size={18} />{n}
+    <span className="chip puce-or" aria-label={`${n} pièces`} style={{ alignSelf: 'flex-start', gap: 6, fontSize: 14 }}>
+      <Piece size={20} />{n.toLocaleString('fr-FR')}
     </span>
   )
 }

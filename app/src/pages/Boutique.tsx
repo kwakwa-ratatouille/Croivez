@@ -164,7 +164,7 @@ export default function Boutique() {
 
       {/* Deux boutiques : pièces ou jetons de rang, un seul interrupteur */}
       <div className="bascule-boutique" role="tablist">
-        <button type="button" role="tab" aria-selected={mode === 'pieces'} onClick={() => { setMode('pieces'); setCat('') }}>🪙 {fr ? 'Boutique' : 'Shop'}</button>
+        <button type="button" role="tab" aria-selected={mode === 'pieces'} onClick={() => { setMode('pieces'); setCat('') }}><Piece size={18} /> {fr ? 'Boutique' : 'Shop'}</button>
         <button type="button" role="tab" aria-selected={mode === 'rangs'} onClick={() => { setMode('rangs'); setCat('') }}>🎖️ {fr ? 'Rangs' : 'Ranks'}</button>
         <button type="button" role="tab" aria-selected={mode === 'album'} onClick={() => { setMode('album'); setCat('') }}>📖 Album</button>
       </div>

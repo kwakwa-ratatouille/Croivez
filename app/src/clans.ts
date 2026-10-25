@@ -10,8 +10,8 @@ export type Forme = 'ecu' | 'rond' | 'hexa' | 'pointe' | 'etoile' | 'couronne'
 export type Motif = 'uni' | 'bande' | 'chevron' | 'quartiers' | 'rayons' | 'pal'
 export type Symbole = 'etoile' | 'couronne' | 'eclair' | 'flamme' | 'feuille' | 'coeur' | 'lune' | 'diamant' | 'epee' | 'livre' | 'oeil' | 'aile'
 export type Membre = { pseudo: string; avatar?: string; cadre?: string; depuis: number }
-export type Clan = { code: string; nom: string; devise?: string; blason: Blason; embleme?: string; couleur?: string; chef: string; membres: Record<string, Membre>; cree: number; xp?: number }
-export type EntreeIndex = { nom: string; cle: string; xp: number; n: number; blason: Blason }
+export type Clan = { code: string; nom: string; devise?: string; blason: Blason; embleme?: string; couleur?: string; chef: string; membres: Record<string, Membre>; cree: number; xp?: number; prive?: boolean }
+export type EntreeIndex = { nom: string; cle: string; xp: number; n: number; blason: Blason; prive?: boolean }
 
 export const FORMES: Forme[] = ['ecu', 'rond', 'hexa', 'pointe', 'etoile', 'couronne']
 export const MOTIFS: Motif[] = ['uni', 'bande', 'chevron', 'quartiers', 'rayons', 'pal']
@@ -41,7 +41,7 @@ const marquer = (uid: string, code: string | null) => Promise.all([
   setDoc(doc(db, 'profils', uid), { clan: code ?? '' }, { merge: true }),
 ])
 const blasonDe = (c: Partial<Clan>): Blason => c.blason ?? { ...BLASON_DEFAUT, c1: c.couleur ?? BLASON_DEFAUT.c1 }
-const indexer = (c: Clan) => set(rref(rtdb, `${INDEX}/${c.code}`), { nom: c.nom, cle: cleNom(c.nom), xp: c.xp ?? 0, n: Object.keys(c.membres ?? {}).length, blason: blasonDe(c) } satisfies EntreeIndex)
+const indexer = (c: Clan) => set(rref(rtdb, `${INDEX}/${c.code}`), { nom: c.nom, cle: cleNom(c.nom), xp: c.xp ?? 0, n: Object.keys(c.membres ?? {}).length, blason: blasonDe(c), prive: !!c.prive } satisfies EntreeIndex)
 
 const cache = new Map<string, Promise<Clan | null>>()
 export async function lireClan(code: string, frais = true): Promise<Clan | null> {
@@ -56,6 +56,8 @@ export async function chercherClans(): Promise<(EntreeIndex & { code: string })[
   const s = await get(rref(rtdb, INDEX))
   return Object.entries((s.val() ?? {}) as Record<string, EntreeIndex>).map(([code, e]) => ({ ...e, code })).sort((a, b) => b.xp - a.xp)
 }
+// Clans visibles dans la recherche : les clans privés n'y apparaissent pas (on y entre seulement sur invitation)
+export const clansPublics = async () => (await chercherClans()).filter((c) => !c.prive)
 
 export async function nomPris(nom: string) {
   return (await chercherClans()).some((c) => c.cle === cleNom(nom))
@@ -72,7 +74,7 @@ export async function creerClan(uid: string, moi: Membre, nom: string, devise: s
   return code
 }
 
-export async function modifierClan(c: Clan, maj: { nom?: string; devise?: string; blason?: Blason }) {
+export async function modifierClan(c: Clan, maj: { nom?: string; devise?: string; blason?: Blason; prive?: boolean }) {
   await update(rref(rtdb, chemin(c.code)), maj)
   await indexer({ ...c, ...maj })
 }
@@ -81,9 +83,10 @@ export async function modifierClan(c: Clan, maj: { nom?: string; devise?: string
 export const inviterClan = (c: Clan, moi: { uid: string; pseudo: string }, ami: string) =>
   set(rref(rtdb, `invitations/${ami}/clan-${c.code}`), { type: 'clan', de: moi.pseudo, uid: moi.uid, code: c.code, nom: c.nom, t: Date.now() })
 
-export async function rejoindreClan(uid: string, moi: Membre, code: string): Promise<'ok' | 'introuvable' | 'plein'> {
+export async function rejoindreClan(uid: string, moi: Membre, code: string, invite = false): Promise<'ok' | 'introuvable' | 'plein' | 'prive'> {
   const c = await lireClan(code)
   if (!c) return 'introuvable'
+  if (c.prive && !invite && !c.membres?.[uid]) return 'prive'
   if (Object.keys(c.membres ?? {}).length >= maxMembres(niveauClan(c.xp)) && !c.membres?.[uid]) return 'plein'
   await update(rref(rtdb, `${chemin(c.code)}/membres`), { [uid]: moi })
   await indexer({ ...c, membres: { ...c.membres, [uid]: moi } })

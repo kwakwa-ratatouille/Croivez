@@ -53,7 +53,7 @@ function RangeeFamille({ f, filtre }: { f: (typeof FAMILLES)[number]; filtre: Fi
         <span className="lien-voir">{fr ? 'Voir' : 'See'}<Icon d={ICONS.arrowR} size={15} /></span>
       </Link>
       <Defileur>
-        {quiz.map((s) => <CarteCouverture key={s.id} id={s.id} pct={m[s.id] ?? 0} verrou={!accesQuiz(s.id, profile)} largeur={156} />)}
+        {quiz.map((s) => <CarteCouverture key={s.id} id={s.id} pct={m[s.id] ?? 0} verrou={!accesQuiz(s.id, profile)} largeur={156} famille={false} />)}
       </Defileur>
     </section>
   )
@@ -112,11 +112,11 @@ export default function Themes() {
 
         {ouverts.length > 0 && <h2 className="t titre-section">{fr ? 'Tes quiz' : 'Your quizzes'}</h2>}
         <section className="grille-quiz">
-          {ouverts.map((s) => <CarteCouverture key={s.id} id={s.id} pct={m[s.id] ?? 0} />)}
+          {ouverts.map((s) => <CarteCouverture key={s.id} id={s.id} pct={m[s.id] ?? 0} famille={false} />)}
         </section>
         {fermes.length > 0 && <h2 className="t titre-section">{fr ? 'À débloquer' : 'To unlock'} <span style={{ fontSize: 14, color: 'var(--muted)', fontWeight: 700 }}>· {fr ? 'en ouvrant des caisses' : 'by opening crates'}</span></h2>}
         <section className="grille-quiz">
-          {fermes.map((s) => <CarteCouverture key={s.id} id={s.id} verrou />)}
+          {fermes.map((s) => <CarteCouverture key={s.id} id={s.id} verrou famille={false} />)}
         </section>
       </>
     )

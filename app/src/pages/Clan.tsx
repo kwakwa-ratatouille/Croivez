@@ -4,7 +4,7 @@ import { useAuth } from '../auth'
 import { usePrefs } from '../i18n'
 import { noterActivite } from '../activite'
 import type { Clan as ClanT } from '../clans'
-import { AVANTAGES, inviterClan, BLASON_DEFAUT, FORMES, MOTIFS, NIVEAU_FORME, NIVEAU_MOTIF, PALETTE, SYMBOLES, chercherClans, cleNom, creerClan, lireClan, maxMembres, modifierClan, niveauClan, nomPris, objectifSemaine, quitterClan, rejoindreClan, scoresClan, xpNiveau, type Blason, type Clan as TClan, type EntreeIndex } from '../clans'
+import { AVANTAGES, clansPublics, inviterClan, BLASON_DEFAUT, FORMES, MOTIFS, NIVEAU_FORME, NIVEAU_MOTIF, PALETTE, SYMBOLES, cleNom, creerClan, lireClan, maxMembres, modifierClan, niveauClan, nomPris, objectifSemaine, quitterClan, rejoindreClan, scoresClan, xpNiveau, type Blason, type Clan as TClan, type EntreeIndex } from '../clans'
 import BlasonClan from '../components/BlasonClan'
 import Avatar from '../components/Avatar'
 import { profilsDe, type ProfilPublic } from '../social'
@@ -56,14 +56,15 @@ export default function Clan() {
   const [edition, setEdition] = useState(false)
   const [nom, setNom] = useState('')
   const [devise, setDevise] = useState('')
+  const [prive, setPrive] = useState(false) // clan privé : sur invitation seulement
   const [blason, setBlason] = useState<Blason>(BLASON_DEFAUT)
   const [msg, setMsg] = useState('')
   const [quitter, setQuitter] = useState(false)
   const moi = { pseudo: profile?.pseudo ?? '?', depuis: Date.now(), ...(profile?.avatar ? { avatar: profile.avatar } : {}), ...(profile?.cadre ? { cadre: profile.cadre } : {}) }
 
   const charger = () => {
-    if (!code) { setClan(null); chercherClans().then(setIndex).catch(() => setIndex([])); return }
-    lireClan(code).then(async (c) => { setClan(c); if (c) { setScores(await scoresClan(c)); setNom(c.nom); setDevise(c.devise ?? ''); setBlason(c.blason) } }).catch(() => setClan(null))
+    if (!code) { setClan(null); clansPublics().then(setIndex).catch(() => setIndex([])); return }
+    lireClan(code).then(async (c) => { setClan(c); if (c) { setScores(await scoresClan(c)); setNom(c.nom); setDevise(c.devise ?? ''); setPrive(!!c.prive); setBlason(c.blason) } }).catch(() => setClan(null))
   }
   useEffect(charger, [code]) // eslint-disable-line react-hooks/exhaustive-deps
   const resultats = useMemo(() => { const q = cleNom(cherche); return (q ? index.filter((c) => c.cle.includes(q)) : index).slice(0, 12) }, [index, cherche])
@@ -80,13 +81,14 @@ export default function Clan() {
     const r = await rejoindreClan(user.uid, moi, c)
     if (r === 'introuvable') setMsg(fr ? 'Ce clan n’existe plus.' : 'Clan not found.')
     else if (r === 'plein') setMsg(fr ? 'Ce clan est complet.' : 'Clan is full.')
+    else if (r === 'prive') setMsg(fr ? 'Ce clan est privé : il faut qu’un membre t’invite.' : 'Private clan: invitation only.')
     else noterActivite(user.uid, '🛡️', `a rejoint le clan ${n}`).catch(() => {})
   }
   const enregistrer = async () => {
     if (!clan) return
     if (nom.trim().length < 3) { setMsg(fr ? 'Il faut un nom d’au moins 3 lettres.' : 'Name needs 3+ letters.'); return }
     if (cleNom(nom) !== cleNom(clan.nom) && await nomPris(nom)) { setMsg(fr ? 'Ce nom de clan existe déjà.' : 'Name taken.'); return }
-    await modifierClan(clan, { nom: nom.trim().slice(0, 24), devise: devise.trim().slice(0, 60), blason })
+    await modifierClan(clan, { nom: nom.trim().slice(0, 24), devise: devise.trim().slice(0, 60), blason, prive })
     setEdition(false); setMsg(fr ? 'Clan mis à jour ✨' : 'Saved'); charger()
   }
 
@@ -139,6 +141,7 @@ export default function Clan() {
           <span className="clan-niveau">{fr ? 'Niveau' : 'Level'} {niv}</span>
           <h1 className="t">{clan.nom}</h1>
           {clan.devise && <p>« {clan.devise} »</p>}
+          <small className="clan-visibilite">{clan.prive ? (fr ? '🔒 Clan privé · sur invitation' : '🔒 Private') : (fr ? '🌍 Clan public' : '🌍 Public')}</small>
           <div className="clan-xp"><span style={{ width: `${((clan.xp ?? 0) - debut) / (fin - debut) * 100}%` }} /></div>
           <small>{nf((clan.xp ?? 0) - debut)} / {nf(fin - debut)} XP {fr ? `vers le niveau ${niv + 1}` : `to level ${niv + 1}`}</small>
         </div>
@@ -171,6 +174,11 @@ export default function Clan() {
           <h2 className="t">{fr ? 'Personnaliser' : 'Customize'}</h2>
           <input className="input" value={nom} maxLength={24} onChange={(e) => setNom(e.target.value)} />
           <input className="input" value={devise} maxLength={60} onChange={(e) => setDevise(e.target.value)} placeholder={fr ? 'Devise' : 'Motto'} />
+          <div className="segment" role="group" aria-label={fr ? 'Visibilité' : 'Visibility'}>
+            <button type="button" aria-pressed={!prive} onClick={() => setPrive(false)}>🌍 {fr ? 'Public' : 'Public'}</button>
+            <button type="button" aria-pressed={prive} onClick={() => setPrive(true)}>🔒 {fr ? 'Privé' : 'Private'}</button>
+          </div>
+          <small style={{ color: 'var(--muted)' }}>{prive ? (fr ? 'Privé : le clan n’apparaît pas dans la recherche, on y entre seulement sur invitation d’un membre.' : 'Private: invitation only.') : (fr ? 'Public : tout le monde peut trouver le clan et le rejoindre.' : 'Public: anyone can join.')}</small>
           <Atelier b={blason} setB={setBlason} niveau={niv} />
           <div className="clan-ligne"><button className="btn btn-g" onClick={() => setEdition(false)}>{fr ? 'Annuler' : 'Cancel'}</button><button className="btn btn-p" onClick={enregistrer}>{fr ? 'Enregistrer' : 'Save'}</button></div>
         </section>
