@@ -1,3 +1,6 @@
+import { GAIN_ALBUM, GAIN_CARTE, GAIN_PAGE, lireCarte, reclamerAlbum, reclamerPage } from '../albumRecompenses'
+import { feter } from '../effets'
+import { retourReponse } from '../retour'
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../auth'
@@ -54,7 +57,7 @@ function CouvertureAlbum({ k, onOuvrir }: { k: Famille; onOuvrir: () => void }) 
 }
 
 // Une carte à collectionner : photo, numéro, nom, liseré de rareté ; manquante = emplacement numéroté
-function CarteAlbum({ c, n, rarete, eue, onOuvrir }: { c: Carte; n: number; rarete: RareteCarte; eue: boolean; onOuvrir: () => void }) {
+function CarteAlbumBase({ c, n, rarete, eue, onOuvrir }: { c: Carte; n: number; rarete: RareteCarte; eue: boolean; onOuvrir: () => void }) {
   const r = RARETES_CARTE[rarete]
   if (!eue) return <div className="album-carte vide"><span>#{n}</span></div>
   return (
@@ -66,7 +69,15 @@ function CarteAlbum({ c, n, rarete, eue, onOuvrir }: { c: Carte; n: number; rare
   )
 }
 
-function FicheCarte({ c, rarete, onFermer }: { c: Carte; rarete: RareteCarte; onFermer: () => void }) {
+// Carte de l'album : une pastille de pièces tant qu'on n'a pas lu sa fiche
+function CarteAlbum(props: Parameters<typeof CarteAlbumBase>[0] & { aLire?: boolean }) {
+  const { aLire, ...reste } = props
+  return <span className="album-carte-cadre">{CarteAlbumBase(reste)}{aLire && props.eue && <span className="album-pastille">🪙+{GAIN_CARTE[props.rarete]}</span>}</span>
+}
+
+function FicheCarte({ c, rarete, onFermer, aLire, onLu }: { c: Carte; rarete: RareteCarte; onFermer: () => void; aLire?: boolean; onLu?: () => void }) {
+  const [lecture, setLecture] = useState(0) // les pièces se récupèrent après quelques secondes de lecture
+  useEffect(() => { if (!aLire) return; const t = setInterval(() => setLecture((x) => Math.min(100, x + 4)), 160); return () => clearInterval(t) }, [aLire])
   const { lang } = usePrefs()
   const [w, setW] = useState<{ texte: string; lien: string } | null>(null)
   useEffect(() => {
@@ -82,6 +93,9 @@ function FicheCarte({ c, rarete, onFermer }: { c: Carte; rarete: RareteCarte; on
         <span className="album-fiche-rarete">{r.nom[lang]}</span>
         <h2 className="t">{c.nom}</h2>
         <p>{w === null ? '…' : w.texte || (lang === 'fr' ? 'Pas de résumé disponible.' : 'No summary available.')}</p>
+        {aLire && (lecture < 100
+          ? <div className="album-lecture"><span style={{ width: `${lecture}%` }} /><small>{lang === 'fr' ? `📖 Lis la fiche… +${GAIN_CARTE[rarete]} pièces` : 'Reading…'}</small></div>
+          : <button type="button" className="btn btn-p album-recolte" onClick={onLu}>🪙 {lang === 'fr' ? `Récupérer ${GAIN_CARTE[rarete]} pièces` : `Collect ${GAIN_CARTE[rarete]} coins`}</button>)}
         {w?.lien && <a href={w.lien} target="_blank" rel="noreferrer" className="btn btn-s"><Icon d={ICONS.link} size={16} />Wikipédia</a>}
       </div>
     </div>
@@ -91,8 +105,9 @@ function FicheCarte({ c, rarete, onFermer }: { c: Carte; rarete: RareteCarte; on
 export default function Album() {
   const { lang } = usePrefs()
   const fr = lang === 'fr'
-  const { profile } = useAuth()
+  const { user, profile } = useAuth()
   const album = profile?.album ?? {}
+  const lus = new Set(profile?.albumLu ?? [])
   const [famille, setFamille] = useState<Famille | null>(null)
   const [quiz, setQuiz] = useState<string | null>(null)
   const [cartes, setCartes] = useState<Carte[] | null>(null)
@@ -125,26 +140,36 @@ export default function Album() {
   const pages = Math.max(1, Math.ceil(liste.length / PAR_PAGE))
   const pas = large ? 2 : 1
   const tourner = (d: number) => { const p = Math.min(pages - 1, Math.max(0, page + d * pas)); const q = large ? p - (p % 2) : p; if (q !== page && !feuille) { setSens(d > 0 ? 'd' : 'g'); setFeuille({ de: page, sens: d > 0 ? 'd' : 'g' }); setPage(q); setTimeout(() => setFeuille(null), 750) } }
-  const pageCartes = (p: number) => liste.slice(p * PAR_PAGE, p * PAR_PAGE + PAR_PAGE).map((c, j) => { const i = p * PAR_PAGE + j; const rr = rareteCarte(i, liste.length); return <CarteAlbum key={c.id} c={c} n={i + 1} rarete={rr} eue={eues.has(c.id)} onOuvrir={() => setOuverte({ c, r: rr })} /> })
+  const pageComplete = (p: number) => liste.slice(p * PAR_PAGE, p * PAR_PAGE + PAR_PAGE).every((c) => eues.has(c.id))
+  const pagesFaites = new Set(profile?.albumPages ?? [])
+  const BonusPage = ({ p }: { p: number }) => !liste.length || p >= pages ? null : pageComplete(p)
+    ? (pagesFaites.has(`${quiz}:${p}`) ? <span className="album-bonus fait">✓ {fr ? 'Page complète' : 'Page done'}</span> : <button type="button" className="album-bonus" onClick={() => { if (user && quiz) { reclamerPage(user.uid, quiz, p).catch(() => {}); feter(undefined, 1) } }}>🎁 {fr ? `Page complète : +${GAIN_PAGE}` : `Page done: +${GAIN_PAGE}`}</button>)
+    : null
+  const albumComplet = liste.length > 0 && liste.every((c) => eues.has(c.id))
+  const pageCartes = (p: number) => liste.slice(p * PAR_PAGE, p * PAR_PAGE + PAR_PAGE).map((c, j) => { const i = p * PAR_PAGE + j; const rr = rareteCarte(i, liste.length); return <CarteAlbum key={c.id} c={c} n={i + 1} rarete={rr} aLire={!lus.has(`${quiz}:${c.id}`)} eue={eues.has(c.id)} onOuvrir={() => setOuverte({ c, r: rr })} /> })
 
   // ——— Un album ouvert : onglets des quiz, pages de 9 cartes qu'on feuillette ———
   return (
     <>
-    {ouverte && <FicheCarte c={ouverte.c} rarete={ouverte.r} onFermer={() => setOuverte(null)} />}
+    {ouverte && <FicheCarte c={ouverte.c} rarete={ouverte.r} onFermer={() => setOuverte(null)} aLire={eues.has(ouverte.c.id) && !lus.has(`${quiz}:${ouverte.c.id}`)} onLu={() => { if (user && quiz) { lireCarte(user.uid, quiz, ouverte.c.id, GAIN_CARTE[ouverte.r]).catch(() => {}); retourReponse(true) } setOuverte(null) }} />}
     <div className="album" style={{ ['--k' as string]: `var(--${famille})`, ['--ki' as string]: `var(--${famille}-i)`, ['--kt' as string]: `var(--${famille}-t)` }}>
       <button type="button" onClick={() => setFamille(null)} className="mag-retour"><Icon d={ICONS.arrowL} />{fr ? 'Mes albums' : 'My albums'}</button>
       <h1 className="t" style={{ fontSize: 26, fontWeight: 900, color: 'var(--ki)' }}>{f.nom[lang]}</h1>
       <div className="album-onglets">
         {subs.map((s) => <button key={s.id} type="button" className="pill" aria-pressed={quiz === s.id} onClick={() => setQuiz(s.id)}>{s.nom[lang]} <small>{album[s.id]?.length ?? 0}</small></button>)}
       </div>
-      <div className="album-classeur" onPointerDown={(e) => { if (large) toucher.current = e.clientX }} onPointerUp={(e) => { if (!large) return; const dx = e.clientX - toucher.current; if (Math.abs(dx) > 60) { tourner(dx < 0 ? 1 : -1); toucher.current = -1e9 } }} onClickCapture={(e) => { if (toucher.current === -1e9) { e.stopPropagation(); toucher.current = 0 } }}>
+      <div className="album-recompenses">
+        {albumComplet && !(profile?.albumsFinis ?? []).includes(quiz ?? '') && <button type="button" className="album-bonus grand" onClick={() => { if (user && quiz) { reclamerAlbum(user.uid, quiz).catch(() => {}); feter(undefined, 2) } }}>🏆 {fr ? `Album complet ! Récupérer ${GAIN_ALBUM} pièces` : `Album complete! +${GAIN_ALBUM}`}</button>}
+        <Link to="/boutique?album=1" className="pill">📖 {fr ? 'Récompenses exclusives de l’album' : 'Album rewards'}</Link>
+      </div>
+      <div className="album-classeur" onPointerDown={(e) => { toucher.current = large ? e.clientX : e.clientY }} onPointerUp={(e) => { const d = (large ? e.clientX : e.clientY) - toucher.current; if (Math.abs(d) > 50) { tourner(d < 0 ? 1 : -1); toucher.current = -1e9 } }} onClickCapture={(e) => { if (toucher.current === -1e9) { e.stopPropagation(); toucher.current = 0 } }}>
         {!cartes && <p style={{ color: 'var(--muted)', padding: 30 }}>…</p>}
         {cartes && liste.length === 0 && <p style={{ color: 'var(--muted)', padding: 30 }}>{fr ? 'Pas de cartes pour ce quiz.' : 'No cards for this quiz.'}</p>}
         {cartes && liste.length > 0 && (
           large
             ? <div className="album-double carnet-fixe" data-sens={sens}>
-                <div className="album-page gauche">{pageCartes(feuille?.sens === 'd' ? feuille.de : page)}<span className="album-folio">{(feuille?.sens === 'd' ? feuille.de : page) + 1}</span></div>
-                <div className="album-page droite">{(() => { const p = (feuille?.sens === 'g' ? feuille.de : page) + 1; return <>{p < pages ? pageCartes(p) : null}<span className="album-folio">{p < pages ? p + 1 : ''}</span></> })()}</div>
+                <div className="album-page gauche">{pageCartes(feuille?.sens === 'd' ? feuille.de : page)}<BonusPage p={feuille?.sens === 'd' ? feuille.de : page} /><span className="album-folio">{(feuille?.sens === 'd' ? feuille.de : page) + 1}</span></div>
+                <div className="album-page droite">{(() => { const p = (feuille?.sens === 'g' ? feuille.de : page) + 1; return <>{p < pages ? pageCartes(p) : null}<BonusPage p={p} /><span className="album-folio">{p < pages ? p + 1 : ''}</span></> })()}</div>
                 {feuille && (
                   <div key={`${feuille.de}-${page}`} className={`carnet-feuille ${feuille.sens === 'd' ? 'vers-gauche' : 'vers-droite'}`} aria-hidden="true">
                     {/* recto : la page qui s'en va ; verso : la page qui arrive de l'autre côté */}
@@ -153,8 +178,9 @@ export default function Album() {
                   </div>
                 )}
               </div>
-            : <div className="album-double carnet-defile">
-                {Array.from({ length: pages }, (_, p) => <div key={`${quiz}-${p}`} className="album-page gauche carnet-page-tel">{pageCartes(p)}<span className="album-folio">{p + 1}</span></div>)}
+            : <div className="album-double carnet-tel">
+                <div key={`${quiz}-${page}`} className={`album-page gauche carnet-page-tel vers-${sens === 'd' ? 'haut' : 'bas'}`}>{pageCartes(page)}<BonusPage p={page} /><span className="album-folio">{page + 1} / {pages}</span></div>
+                <p className="carnet-astuce">{page + 1 < pages ? '↑ Glisse vers le haut pour la page suivante' : '↓ Glisse vers le bas pour revenir'}</p>
               </div>
         )}
       </div>

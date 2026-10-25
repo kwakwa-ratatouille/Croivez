@@ -1984,3 +1984,28 @@ button.rang-palier[aria-pressed="true"] { background: color-mix(in srgb, var(--r
 .atelier-couleurs button[aria-pressed="true"] { outline: 3px solid var(--text); outline-offset: 1px; }
 .badge-clan { align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px 3px 4px; border-radius: 999px; background: var(--surface2); border: 1px solid var(--line); text-decoration: none; color: var(--text); font: 800 13px Nunito, sans-serif; }
 .badge-clan small { color: var(--muted); font-weight: 700; }
+
+/* Album : récompenses */
+.album-carte-cadre { position: relative; display: block; min-width: 0; }
+.album-carte-cadre > * { width: 100%; }
+.album-pastille { position: absolute; top: -6px; right: -6px; z-index: 2; padding: 2px 7px; border-radius: 999px; background: #FACC15; color: #422006; font: 900 11px Nunito, sans-serif; box-shadow: 0 2px 6px rgba(0,0,0,.25); animation: pastille-saute 1.6s ease-in-out infinite; pointer-events: none; }
+@keyframes pastille-saute { 50% { transform: translateY(-3px) scale(1.06); } }
+.album-lecture { position: relative; height: 34px; border-radius: 12px; background: var(--surface2); overflow: hidden; display: grid; place-items: center; }
+.album-lecture span { position: absolute; left: 0; top: 0; bottom: 0; background: color-mix(in srgb, #FACC15 45%, transparent); transition: width .16s linear; }
+.album-lecture small { position: relative; font-weight: 800; }
+.album-recolte { animation: pop .3s; }
+.album-recompenses { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.album-bonus { grid-column: 1 / -1; justify-self: center; border: 0; border-radius: 999px; padding: 6px 14px; background: linear-gradient(90deg, #F59E0B, #FACC15); color: #422006; font: 900 13px Nunito, sans-serif; cursor: pointer; box-shadow: 0 4px 12px rgba(245, 158, 11, .4); animation: pastille-saute 1.8s ease-in-out infinite; }
+.album-bonus.fait { background: var(--ok-t); color: var(--ok-i); box-shadow: none; animation: none; cursor: default; }
+.album-bonus.grand { font-size: 15px; padding: 10px 18px; }
+.effet-livres::before { inset: 0 -200px 0 0; background: repeating-linear-gradient(90deg, #B91C1C 0 14px, #1E3A8A 14px 24px, #15803D 24px 40px, #A16207 40px 48px, #7C3AED 48px 62px, #0F766E 62px 70px, transparent 70px 74px) 0 0 / 200px 33.3%; -webkit-mask: repeating-linear-gradient(180deg, #000 0 26%, transparent 26% 33.3%); mask: repeating-linear-gradient(180deg, #000 0 26%, transparent 26% 33.3%); opacity: .85; animation: livres-glisse 14s linear infinite; }
+@keyframes livres-glisse { to { transform: translateX(200px); } }
+
+/* Carnet téléphone : une page, on la tourne vers le haut comme un carnet à spirale */
+@media (max-width: 899px) { .album-classeur { touch-action: none; } }
+.album-double.carnet-tel { display: flex !important; flex-direction: column; gap: 10px; perspective: 1600px; animation: none !important; }
+.carnet-page-tel.vers-haut { transform-origin: top center; animation: carnet-haut .5s cubic-bezier(.3, .7, .4, 1) !important; }
+.carnet-page-tel.vers-bas { transform-origin: top center; animation: carnet-bas .5s cubic-bezier(.3, .7, .4, 1) !important; }
+@keyframes carnet-haut { from { transform: rotateX(-75deg); opacity: .3; } to { transform: none; opacity: 1; } }
+@keyframes carnet-bas { from { transform: translateY(-30%) rotateX(60deg); opacity: .3; } to { transform: none; opacity: 1; } }
+.carnet-astuce { margin: 0; text-align: center; font-size: 12.5px; font-weight: 700; color: var(--muted); }

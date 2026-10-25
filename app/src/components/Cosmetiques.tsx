@@ -4,7 +4,7 @@ import { SAISONS } from '../evenements'
 import { TOUS_RANGS } from '../ligues'
 
 // ——— Fonds de vitrine animés : un dégradé et des particules qui tombent, montent ou flottent ———
-export type FondAnime = { id: string; nom: Record<Lang, string>; prix: number; fond: string; particules: string[]; mouvement: 'tombe' | 'monte' | 'flotte'; saison?: string; luxe?: 1 | 2; halo?: boolean; effet?: string; rang?: string; jetons?: number }
+export type FondAnime = { id: string; nom: Record<Lang, string>; prix: number; fond: string; particules: string[]; mouvement: 'tombe' | 'monte' | 'flotte'; saison?: string; luxe?: 1 | 2; halo?: boolean; effet?: string; album?: string; rang?: string; jetons?: number }
 export const FONDS_ANIMES: FondAnime[] = [
   { id: 'fond-pieces', nom: { fr: 'Pluie de pièces', en: 'Coin rain' }, prix: 400, fond: 'linear-gradient(140deg, #78350F, #D97706 55%, #FDE68A)', particules: ['🪙', '💰', '🪙'], mouvement: 'tombe' },
   { id: 'fond-neige', nom: { fr: 'Nuit enneigée', en: 'Snowy night' }, prix: 350, fond: 'linear-gradient(180deg, #0F172A, #1E3A8A)', particules: ['❄️', '❅', '❆'], mouvement: 'tombe' },
@@ -43,6 +43,10 @@ export const FONDS_ANIMES: FondAnime[] = [
   { id: 'fond-lx-ocean', nom: { fr: 'Houle profonde', en: 'Deep swell' }, prix: 4000, luxe: 1, effet: 'vagues', fond: 'linear-gradient(180deg, #0C4A6E, #082F49)', particules: ['·'], mouvement: 'monte' },
   { id: 'fond-lx-nebuleuse', nom: { fr: 'Nébuleuse vivante', en: 'Living nebula' }, prix: 9000, luxe: 1, halo: true, effet: 'nebuleuse', fond: 'linear-gradient(160deg, #0B0221, #1E1B4B)', particules: ['✦', '·', '✧'], mouvement: 'flotte' },
   { id: 'fond-lx-prisme', nom: { fr: 'Palais de cristal', en: 'Crystal palace' }, prix: 35000, luxe: 2, halo: true, effet: 'prisme', fond: 'conic-gradient(from 45deg, #312E81, #0E7490, #A21CAF, #312E81)', particules: ['✦', '✧', '◆'], mouvement: 'flotte' },
+  // Album (récompenses exclusives)
+  { id: 'fond-al-biblio', nom: { fr: 'Bibliothèque', en: 'Library' }, prix: 0, album: 'c300', effet: 'livres', fond: 'linear-gradient(180deg, #451A03, #78350F)', particules: [], mouvement: 'flotte' },
+  { id: 'fond-al-musee', nom: { fr: 'Musée infini', en: 'Endless museum' }, prix: 0, album: 'c2000', luxe: 2, halo: true, effet: 'prisme', fond: 'conic-gradient(from 45deg, #1E1B4B, #B45309, #7C3AED, #1E1B4B)', particules: ['✦', '◆', '✧'], mouvement: 'flotte' },
+  { id: 'fond-al-savoir', nom: { fr: 'Arbre du savoir', en: 'Tree of knowledge' }, prix: 0, album: 'a10', luxe: 2, halo: true, effet: 'rideaux', fond: 'radial-gradient(circle at 50% 110%, #FDE68A, #15803D 40%, #052E16)', particules: ['✦', '🍃', '✧'], mouvement: 'monte' },
   // Boutique des rangs (jetons)
   { id: 'fond-j-podium', nom: { fr: 'Podium', en: 'Podium' }, prix: 0, jetons: 45, fond: 'linear-gradient(180deg, #1E3A8A, #6D28D9)', particules: ['🏆', '🥇', '✨'], mouvement: 'monte' },
   { id: 'fond-j-arene', nom: { fr: 'Arène en feu', en: 'Blazing arena' }, prix: 0, jetons: 90, halo: true, fond: 'radial-gradient(circle at 50% 120%, #F97316, #7F1D1D 55%, #111827)', particules: ['🔥', '⚔️', '🔥'], mouvement: 'monte' },

@@ -40,6 +40,7 @@ export type Profile = {
   records?: Record<string, number> // meilleurs scores Express / Survie
   quetes?: EtatQuetes // quêtes du jour
   album?: Record<string, string[]> // cartes collectionnées (bonnes réponses) par quiz
+  albumLu?: string[]; albumPages?: string[]; albumsFinis?: string[] // récompenses d'album déjà touchées (« quiz:carte », « quiz:page », quiz)
   secrets?: string[] // succès secrets obtenus
   possede?: string[] // objets achetés (avatars, cadres)
   avatar?: string

@@ -21,8 +21,9 @@ type Vue = 'tout' | 'moi' | 'acheter' | 'gagner'
 type Tri = 'conseil' | 'prix-' | 'prix+' | 'nom'
 
 // Origine d'un objet : sert à ranger la boutique en sections claires
-type Origine = 'jetons' | 'boutique' | 'luxe' | 'exploits' | 'familles' | 'histoire' | 'evenements' | 'rangs'
+type Origine = 'album' | 'jetons' | 'boutique' | 'luxe' | 'exploits' | 'familles' | 'histoire' | 'evenements' | 'rangs'
 const ORIGINES: { k: Origine; nom: Record<Lang, string>; emoji: string }[] = [
+  { k: 'album', nom: { fr: 'Récompenses de l’album', en: 'Album rewards' }, emoji: '📖' },
   { k: 'boutique', nom: { fr: 'En vente', en: 'For sale' }, emoji: '🛍️' },
   { k: 'jetons', nom: { fr: 'Boutique des rangs (jetons)', en: 'Rank shop (tokens)' }, emoji: '🎖️' },
   { k: 'luxe', nom: { fr: 'Luxe et ultra', en: 'Luxury & ultra' }, emoji: '👑' },
@@ -33,7 +34,8 @@ const ORIGINES: { k: Origine; nom: Record<Lang, string>; emoji: string }[] = [
   { k: 'familles', nom: { fr: 'Maîtres des familles', en: 'Family masters' }, emoji: '📚' },
 ]
 const origine = (o: Objet): Origine =>
-  o.jetons ? 'jetons'
+  o.album ? 'album'
+  : o.jetons ? 'jetons'
   : /-rang-/.test(o.id) ? 'rangs'
     : o.evenement || o.saison || /saison/.test(o.id) ? 'evenements'
       : /tour-du-monde|mi-parcours|premier-boss|avatar-boss|astronaute-or|legendes-histoire|legende-histoire|cadre-arcade/.test(o.id) ? 'histoire'
@@ -55,7 +57,8 @@ export default function Boutique() {
   const [params] = useSearchParams()
   const [onglet, setOnglet] = useState<Onglet>(ONGLETS.find((o) => o === params.get('o')) ?? 'avatar')
   const [vue, setVue] = useState<Vue>('tout')
-  const [rangs, setRangs] = useState(params.get('rangs') === '1') // boutique des rangs (jetons) ou boutique des pièces
+  const [mode, setMode] = useState<'pieces' | 'rangs' | 'album'>(params.get('rangs') === '1' ? 'rangs' : params.get('album') === '1' ? 'album' : 'pieces') // boutique des pièces, des rangs (jetons) ou de l'album
+  const rangs = mode === 'rangs'
   const [filtres, setFiltres] = useState(false)
   const [cat, setCat] = useState('')
   const [tri, setTri] = useState<Tri>('conseil')
@@ -92,7 +95,7 @@ export default function Boutique() {
     setChoisi(o)
   }
 
-  const duType = useMemo(() => BOUTIQUE.filter((o) => o.type === onglet && !o.cache && !!o.jetons === rangs), [onglet, rangs])
+  const duType = useMemo(() => BOUTIQUE.filter((o) => o.type === onglet && !o.cache && (o.album ? mode === 'album' : mode !== 'album' && !!o.jetons === rangs)), [onglet, rangs])
   const liste = useMemo(() => {
     const q = sansAccents(cherche.trim())
     const l = duType.filter((o) => {
@@ -161,15 +164,16 @@ export default function Boutique() {
 
       {/* Deux boutiques : pièces ou jetons de rang, un seul interrupteur */}
       <div className="bascule-boutique" role="tablist">
-        <button type="button" role="tab" aria-selected={!rangs} onClick={() => { setRangs(false); setCat('') }}>🪙 {fr ? 'Boutique' : 'Shop'}</button>
-        <button type="button" role="tab" aria-selected={rangs} onClick={() => { setRangs(true); setCat('') }}>🎖️ {fr ? 'Boutique des rangs' : 'Rank shop'}</button>
+        <button type="button" role="tab" aria-selected={mode === 'pieces'} onClick={() => { setMode('pieces'); setCat('') }}>🪙 {fr ? 'Boutique' : 'Shop'}</button>
+        <button type="button" role="tab" aria-selected={mode === 'rangs'} onClick={() => { setMode('rangs'); setCat('') }}>🎖️ {fr ? 'Rangs' : 'Ranks'}</button>
+        <button type="button" role="tab" aria-selected={mode === 'album'} onClick={() => { setMode('album'); setCat('') }}>📖 Album</button>
       </div>
       {rangs && <p className="aide-rangs">{fr ? 'Objets exclusifs, payés en jetons de rang : tu en gagnes chaque lundi selon ton rang en classé.' : 'Exclusive items paid with rank tokens.'}</p>}
 
       {/* Types d'objets en grosses tuiles */}
       <div className="tuiles-boutique" role="tablist">
         {ONGLETS.map((id) => {
-          const l = BOUTIQUE.filter((o) => o.type === id && !o.cache && !!o.jetons === rangs)
+          const l = BOUTIQUE.filter((o) => o.type === id && !o.cache && (o.album ? mode === 'album' : mode !== 'album' && !!o.jetons === rangs))
           if (!l.length) return null
           return <button key={id} type="button" role="tab" aria-selected={onglet === id} className="tuile-boutique" onClick={() => { setOnglet(id); setCat(''); setMsg('') }}><span>{{ avatar: '🧑‍🎨', cadre: '🖼️', fond: '🌈', pseudo: '✍️', titre: '🏷️', effet: '✨' }[id]}</span><strong>{NOMS_ONGLETS[id][lang]}</strong><small>{nb(l)}</small></button>
         })}

@@ -1,3 +1,4 @@
+import { CONDITIONS_ALBUM } from './albumRecompenses'
 import { CHAMP_EFFET, EFFETS as EFFETS_BOUTIQUE, type Sorte } from './effets'
 import { PORTRAITS } from './components/Portrait'
 import { arrayUnion, doc, increment, runTransaction, setDoc } from 'firebase/firestore'
@@ -99,6 +100,7 @@ export type Objet = {
   categorie?: 'portrait' | 'metier' | 'animal' | 'fun' | 'famille'
   portrait?: string // personnage illustré (components/Portrait)
   k?: Famille; couleur?: string; perso?: string; animal?: string; emoji?: string; anim?: string
+  album?: boolean // récompense exclusive de l'album (onglet « Boutique de l'album »)
   cache?: boolean // retiré de la boutique (reste affichable s'il est déjà porté)
   orbite?: string[] // petits éléments qui tournent autour de l'avatar (planètes, notes, feuilles…)
   condition?: { desc: Record<Lang, string>; test: (p: Profile) => boolean }
@@ -302,7 +304,19 @@ export const BOUTIQUE: Objet[] = [
   }),
   // ——— Fonds de vitrine animés et styles de pseudo (achetables ; un fond par saison au palier 15) ———
   ...EFFETS_BOUTIQUE.map((e): Objet => ({ id: e.id, type: 'effet', sorte: e.sorte, nom: e.nom, prix: e.prix, emoji: e.emoji, luxe: e.luxe })),
-  ...FONDS_ANIMES.map((f): Objet => f.rang
+  // ——— Album : récompenses exclusives, plus la collection est grande, plus c'est beau ———
+  { id: 'titre-al-curieux', type: 'titre', nom: { fr: 'Curieux·se', en: 'Curious' }, prix: 0, album: true, anim: 'givre', condition: CONDITIONS_ALBUM.c50 },
+  { id: 'titre-al-relieur', type: 'titre', nom: { fr: 'Relieur·se', en: 'Bookbinder' }, prix: 0, album: true, anim: 'sakura', condition: CONDITIONS_ALBUM.p5 },
+  { id: 'cadre-al-cuir', type: 'cadre', nom: { fr: 'Reliure de cuir', en: 'Leather binding' }, prix: 0, album: true, couleur: 'repeating-conic-gradient(#78350F 0 10deg, #A16207 10deg 20deg)', anim: 'reflet', condition: CONDITIONS_ALBUM.c150 },
+  { id: 'titre-al-complet', type: 'titre', nom: { fr: 'Album complet', en: 'Full album' }, prix: 0, album: true, anim: 'or', condition: CONDITIONS_ALBUM.a1 },
+  { id: 'cadre-al-marque-page', type: 'cadre', nom: { fr: 'Marque-page', en: 'Bookmark' }, prix: 0, album: true, luxe: 1, couleur: 'conic-gradient(#B91C1C, #FDE68A, #B91C1C)', anim: 'sceau', condition: CONDITIONS_ALBUM.p20 },
+  { id: 'titre-al-archiviste', type: 'titre', nom: { fr: 'Archiviste', en: 'Archivist' }, prix: 0, album: true, luxe: 1, anim: 'diamant', condition: CONDITIONS_ALBUM.c600 },
+  { id: 'cadre-al-grimoire', type: 'cadre', nom: { fr: 'Grimoire doré', en: 'Golden grimoire' }, prix: 0, album: true, luxe: 1, couleur: 'linear-gradient(135deg, #451A03, #F59E0B, #FEF3C7, #B45309, #451A03)', anim: 'tourne reflet etincelles', condition: CONDITIONS_ALBUM.c1000 },
+  { id: 'cadre-al-encyclo', type: 'cadre', nom: { fr: 'Encyclopédie vivante', en: 'Living encyclopedia' }, prix: 0, album: true, luxe: 2, couleur: 'conic-gradient(#1E1B4B, #A78BFA, #FDE68A, #22D3EE, #1E1B4B)', anim: 'tourne eclipse aura', condition: CONDITIONS_ALBUM.a3 },
+  { id: 'titre-al-bibliothecaire', type: 'titre', nom: { fr: 'Grand·e bibliothécaire', en: 'Grand librarian' }, prix: 0, album: true, luxe: 2, anim: 'royal', condition: CONDITIONS_ALBUM.p50 },
+  ...FONDS_ANIMES.map((f): Objet => f.album
+    ? { id: f.id, type: 'fond', nom: f.nom, prix: 0, luxe: f.luxe, album: true, condition: CONDITIONS_ALBUM[f.album] }
+    : f.rang
     ? { id: f.id, type: 'fond', nom: f.nom, prix: 0, luxe: f.luxe, condition: { desc: { fr: `Finir 3 semaines au rang ${TOUS_RANGS.find((r) => r.id === f.rang)?.nom.fr} (ou plus haut)`, en: 'Finish 3 weeks at this rank' }, test: (p) => !!p.possede?.includes(f.id) } }
     : f.saison
     ? { id: f.id, type: 'fond', nom: f.nom, prix: 0, saison: f.saison, condition: { desc: { fr: `${SAISONS.find((s) => s.id === f.saison)?.emoji} ${f.nom.fr} : passe de combat, palier 15`, en: `${f.nom.en}: battle pass tier 15` }, test: (p) => !!p.possede?.includes(f.id) } }
