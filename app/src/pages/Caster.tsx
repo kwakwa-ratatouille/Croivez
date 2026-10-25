@@ -11,6 +11,24 @@ const ICONE_CAST = 'M3 18.5a2.5 2.5 0 0 1 2.5 2.5M3 14.5A6.5 6.5 0 0 1 9.5 21M3 
 
 // Mettre Croivez sur la télé avec un Chromecast, en un geste : on touche le bouton, on choisit la télé,
 // la partie se crée sur la télé et ce téléphone la rejoint tout seul. Les autres scannent le QR code.
+// Sortie de secours si la télé ne renvoie pas le code (récepteur pas encore publié, message perdu…)
+function SecoursCast({ fr }: { fr: boolean }) {
+  const nav = useNavigate()
+  const [visible, setVisible] = useState(false)
+  const [code, setCode] = useState('')
+  useEffect(() => { const t = setTimeout(() => setVisible(true), 15000); return () => clearTimeout(t) }, [])
+  if (!visible) return null
+  return (
+    <div className="caster-note caster-secours">
+      <p>{fr ? 'La télé ne répond pas ? Si un code s’affiche dessus, tape-le pour jouer depuis ce téléphone. Si la télé n’affiche rien, l’appli Croivez n’est pas encore disponible sur ton Chromecast : ouvre plutôt le mode télé dans le navigateur de la télé ou d’un ordinateur branché dessus.' : 'TV not responding? Type the code shown on it.'}</p>
+      <div style={{ display: 'flex', gap: 8, justifyContent: 'center' }}>
+        <input className="input" value={code} maxLength={5} onChange={(e) => setCode(e.target.value.toUpperCase())} placeholder="ABCDE" style={{ maxWidth: 160, textAlign: 'center', letterSpacing: 4, fontWeight: 900 }} />
+        <button type="button" className="btn tv-lancer" disabled={code.length < 5} onClick={() => nav('/rejoindre/' + code)}>{fr ? 'Jouer' : 'Play'}</button>
+      </div>
+    </div>
+  )
+}
+
 export default function Caster() {
   const { lang } = usePrefs()
   const fr = lang === 'fr'
@@ -69,6 +87,7 @@ export default function Caster() {
             <Icon d={ICONE_CAST} size={24} />
             {etat === 'connexion' ? (fr ? 'Connexion à la télé…' : 'Connecting…') : etat === 'attente' ? (fr ? 'La télé prépare la partie…' : 'The TV is getting ready…') : (fr ? 'Caster sur la télé' : 'Cast to TV')}
           </button>
+          {etat === 'attente' && <SecoursCast fr={fr} />}
           {etat === 'erreur' && (
             <p className="caster-note" style={{ color: '#FDE68A' }}>
               {codeErreur === 'receiver_unavailable' || codeErreur === 'session_error'
