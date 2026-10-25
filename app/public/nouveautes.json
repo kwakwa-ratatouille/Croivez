@@ -1,5 +1,16 @@
 [
  {
+  "id": "2026-10-25d",
+  "titre": "Quiz du jour entre amis",
+  "points": [
+   [
+    "📨",
+    "Envoyer à un ami",
+    "Sur la page du quiz du jour, envoie-le à tes amis : ils reçoivent une notification avec ton score à battre et un bouton « Jouer »."
+   ]
+  ]
+ },
+ {
   "id": "2026-10-25c",
   "titre": "Disney, Pixar, DreamWorks",
   "points": [
