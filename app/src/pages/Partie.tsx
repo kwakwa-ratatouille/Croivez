@@ -19,7 +19,7 @@ import Chrono, { BarreChrono } from '../components/Chrono'
 import LogoTruque, { type EffetLogo } from '../components/LogoTruque'
 import { lirePrefsJeu } from '../prefsJeu'
 import { saviezFaible, useResume } from '../quiz/resume'
-import { BONUS_PREMIERE, PRIX_INDICE, accesQuiz, facteurXp, partiesDuJour, payerIndice, payerPieces, piecesGagnees, plafonner, reussie } from '../progression'
+import { BONUS_PREMIERE, PRIX_INDICE, accesQuiz, facteurXp, partiesDuJour, payerIndice, payerPieces, piecesGagnees, plafonner, reussie, difficulteOuverte } from '../progression'
 import { FAMILLES } from '../themes'
 import { bonusEvenement } from '../meta'
 import { Coche, Croix, ICONS, Icon, LogoAnime, Piece } from '../components/ui'
@@ -521,6 +521,25 @@ function Fiche({ r, onNext, dernier, k, onFermer }: { r: Reponse; onNext: () => 
   )
 }
 
+// Fin de partie : passer à la difficulté d'après (ouverte seulement après un sans-faute ; la Légende après tous les Experts de la famille)
+function NiveauSuivant() {
+  const { t, lang } = usePrefs()
+  const { profile } = useAuth()
+  const fr = lang === 'fr'
+  const p = new URLSearchParams(location.hash.split('?')[1] ?? '')
+  const s = p.get('s') ?? '', d = Number(p.get('d') ?? 0)
+  if (!s || !trouverSousTheme(s) || p.get('jeu') || p.get('defi') || p.get('rev') || p.get('aventure') || d < 1 || d > 4) return null
+  const suivante = d + 1
+  const nom = suivante === 5 ? (fr ? 'Légende' : 'Legend') : t(`diff.${suivante}` as Parameters<typeof t>[0])
+  if (!difficulteOuverte(suivante, profile, s)) return (
+    <button type="button" className="btn btn-s btn-lg" disabled title={suivante === 5 ? (fr ? 'Réussis tous les niveaux Expert de cette famille' : 'Clear every Expert level of this family') : (fr ? 'Fais un sans-faute pour l’ouvrir' : 'Get a perfect score to unlock')}>
+      🔒 {nom} · {suivante === 5 ? (fr ? 'tous les Experts de la famille' : 'all Experts first') : (fr ? 'sans-faute requis' : 'perfect score needed')}
+    </button>
+  )
+  p.set('d', String(suivante)); p.delete('ids')
+  return <Link className={`btn btn-lg ${suivante === 5 ? 'btn-legende' : 'btn-p'}`} to={`/partie?${p}`} replace>{suivante === 5 ? '👑 ' : ''}{fr ? `Niveau suivant : ${nom}` : `Next level: ${nom}`}<Icon d={ICONS.arrowR} /></Link>
+}
+
 function Resultat({ reponses, xp, pieces, score, comboMax, k, reduit, onReplay }: { reponses: Reponse[]; xp: number; pieces: number; score: number; comboMax: number; k: string; reduit: { f: number; n: number; premiere: boolean; dejaValide: boolean } | null; onReplay: (ids?: string[]) => void }) {
   const { t, lang } = usePrefs()
   const bonnes = reponses.filter((r) => r.juste).length
@@ -559,6 +578,7 @@ function Resultat({ reponses, xp, pieces, score, comboMax, k, reduit, onReplay }
                 ? <Link className="btn btn-p btn-lg" to={urlEtape(n + 1)} autoFocus>{lang === 'fr' ? 'Étape suivante' : 'Next step'}<Icon d={ICONS.arrowR} /></Link>
                 : <Link className="btn btn-s btn-lg" to="/aventure">🗺️ {lang === 'fr' ? (reussi ? 'Voir la carte' : `Il faut ${seuilEtape(ETAPES[n])}/10 : retour à la carte`) : 'Back to map'}</Link>
             })()}
+            <NiveauSuivant />
             <button className="btn btn-p btn-lg" onClick={() => onReplay()} autoFocus>{t('res.replay')}<Icon d={ICONS.review} /></button>
             <button className="btn btn-s btn-lg" onClick={async () => { const r = await partagerDefi({ quiz: trouverSousTheme(reponses[0]?.q.s ?? new URLSearchParams(location.hash.split('?')[1]).get('s') ?? '')?.sous.id, nom: trouverSousTheme(reponses[0]?.q.s ?? new URLSearchParams(location.hash.split('?')[1]).get('s') ?? '')?.sous.nom[lang] ?? 'Mix', resultats: reponses.map((x) => x.juste), score, parrain: user?.uid }); setPartage(r) }}>{partage === 'copie' ? (lang === 'fr' ? 'Copié !' : 'Copied!') : (lang === 'fr' ? 'Défier un ami' : 'Challenge a friend')}</button>
             <DefiScore ids={reponses.map((r) => r.q.id)} bonnes={bonnes} score={score} quiz={trouverSousTheme(new URLSearchParams(location.hash.split('?')[1] ?? '').get('s') ?? '')?.sous.nom[lang] ?? 'Quiz'} />

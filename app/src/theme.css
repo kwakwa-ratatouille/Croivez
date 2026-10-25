@@ -2215,3 +2215,6 @@ img, svg { -webkit-user-drag: none; }
 /* Caisse : réglage de l'animation et bouton Passer */
 .caisse-reglage { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 12px; border-radius: 14px; background: var(--surface2); font-weight: 700; font-size: 14px; }
 .caisse-passer { align-self: center; min-height: 40px; }
+
+/* Fin de partie : passer à la Légende */
+.btn-legende { background: linear-gradient(135deg, #FDE047, #F59E0B 55%, #B45309); color: #422006; box-shadow: 0 6px 18px rgba(245, 158, 11, .4); }

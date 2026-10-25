@@ -4,9 +4,9 @@ import type { Profile } from './auth'
 
 // Récompenses de l'album : des pièces en lisant chaque carte obtenue, un bonus par page et par album complets,
 // et des cosmétiques exclusifs (boutique de l'album) débloqués par la collection.
-export const GAIN_CARTE: Record<string, number> = { commun: 3, rare: 6, epique: 12, legendaire: 25, exotique: 50 }
-export const GAIN_PAGE = 75
-export const GAIN_ALBUM = 500
+export const GAIN_CARTE: Record<string, number> = { commun: 1, rare: 2, epique: 4, legendaire: 10, exotique: 20 }
+export const GAIN_PAGE = 40
+export const GAIN_ALBUM = 300
 
 export const nbCartes = (p: Profile) => Object.values(p.album ?? {}).reduce((a, l) => a + l.length, 0)
 // Cartes obtenues dont on n'a pas encore récupéré les pièces (pastille « à récupérer »), d'un quiz ou de tous
