@@ -8,7 +8,7 @@ import { FAMILLES, type Famille } from './themes'
 // Au premier lancement, on choisit 6 sous-thèmes (dans n'importe quelles familles).
 // Les autres s'achètent un par un, au prix de leur rareté, avec une animation de révélation.
 export const QUIZ_DEPART = 6
-export const PRIX_INDICE = 20
+export const PRIX_INDICE = 35
 export const PRIX_SAUT = 100 // sauter une difficulté sans l'avoir réussie (jamais pour la Légende)
 
 export type Rarete = 'commun' | 'rare' | 'epique' | 'legendaire'
@@ -160,6 +160,8 @@ export const payerPieces = (uid: string, n: number) => depenser(uid, n)
 // Tout débloquer ouvre aussi la Légende de chaque famille (drapeau toutDebloque)
 export const testToutDebloquer = (uid: string) => setDoc(doc(db, 'users', uid), { familles: deleteField(), quiz: deleteField(), choixFait: deleteField(), toutDebloque: true }, { merge: true })
 // Repartir de zéro côté progression : choix des 6 sous-thèmes, 50 pièces (XP et stats conservés)
+// Tous les quiz ouverts, mais pas les difficultés ni les Légendes
+export const testQuizDebloques = (uid: string) => setDoc(doc(db, 'users', uid), { familles: FAMILLES.map((f) => f.k), choixFait: true, toutDebloque: deleteField() }, { merge: true })
 export const testReinitialiser = (uid: string) => setDoc(doc(db, 'users', uid), { familles: deleteField(), quiz: [], choixFait: false, sauts: deleteField(), toutDebloque: deleteField(), pieces: 50 }, { merge: true })
 // Remise à zéro complète (test) : toute la progression repart de rien ; compte, pseudo et amis conservés
 const EFFACES = ['familles', 'sauts', 'paliers', 'maitrise', 'revision', 'album', 'toutDebloque', 'farm', 'miniJeux', 'exploits', 'secrets', 'possede', 'avatar', 'cadre', 'titre', 'records', 'quetes', 'defiJour', 'vitrine', 'favori', 'bio', 'vitrineFond', 'pseudoStyle', 'caisses', 'ligue', 'jetons']

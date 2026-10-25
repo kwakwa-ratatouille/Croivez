@@ -35,7 +35,7 @@ type Reponse = { q: Question; donnee: string; juste: boolean; clic?: Clic; km?: 
 // Combo : bonnes réponses d'affilée → multiplicateur de points
 const multiplicateur = (combo: number) => (combo >= 8 ? 3 : combo >= 5 ? 2 : combo >= 3 ? 1.5 : 1)
 // Plus le bonus est fort, plus il coûte : +10 s < seconde chance < points ×2 < passer (comptée juste)
-const PRIX = { temps: 10, seconde: 35, double: 30, passer: 90 } as const // les outils qui donnent la bonne réponse coûtent le plus cher
+const PRIX = { temps: 10, seconde: 60, double: 20, passer: 150 } as const // les outils qui donnent la bonne réponse coûtent le plus cher ; ×2 ne double que le score de la prochaine bonne réponse
 type Bonus = keyof typeof PRIX
 
 // Quitter une partie ramène d'où l'on vient : mode histoire, révision, quiz du jour, ou la famille du quiz

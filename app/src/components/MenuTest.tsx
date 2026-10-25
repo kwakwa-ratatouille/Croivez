@@ -1,5 +1,5 @@
 import { useAuth } from '../auth'
-import { testPieces, testReinitialiser, testRemiseAZero, testToutDebloquer } from '../progression'
+import { testPieces, testQuizDebloques, testReinitialiser, testRemiseAZero, testToutDebloquer } from '../progression'
 import { ICONS, Icon } from './ui'
 
 // Menu de test, ouvert par 3 appuis rapides sur le logo Croivez
@@ -15,6 +15,7 @@ export default function MenuTest({ onFermer }: { onFermer: () => void }) {
           <button className="btn btn-g" aria-label="Fermer" onClick={onFermer} style={{ minHeight: 40, padding: '0 10px' }}><Icon d={ICONS.close} size={18} /></button>
         </div>
         <button className="btn btn-p" onClick={action(() => testToutDebloquer(user.uid))}>Tout débloquer (Légendes comprises)</button>
+        <button className="btn btn-p" onClick={action(() => testQuizDebloques(user.uid))}>Débloquer tous les quiz (pas les difficultés)</button>
         <button className="btn btn-s" onClick={action(() => testReinitialiser(user.uid))}>Réinitialiser (choix des 6 quiz, 50 pièces)</button>
         <button className="btn btn-s" onClick={action(() => testPieces(user.uid, 500000))}>+500 000 pièces</button>
         <button className="btn btn-g" style={{ color: 'var(--ko-i)', borderColor: 'var(--ko)' }} onClick={action(async () => { if (confirm('Tout remettre à zéro ? Quiz, niveaux, maîtrise, révision, XP, pièces, récompenses : tout repart de rien (compte, pseudo et amis gardés).')) await testRemiseAZero(user.uid) })}>Tout remettre à zéro (progression complète)</button>
