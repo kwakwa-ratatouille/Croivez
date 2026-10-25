@@ -5,7 +5,7 @@ import { readFile, writeFile } from 'node:fs/promises'
 
 const UA = { 'User-Agent': 'Croivez/0.1 (app perso de quiz)' }
 const CHOIX = {
-  'evt-halloween': 'en:Jack-o\'-lantern',
+  'evt-halloween': 'en:Halloween',
   // Écologie & planète
   'eco-eau': 'en:Drop (liquid)', 'eco-electricite': 'en:Transmission tower', 'eco-co2': 'en:Air pollution', 'eco-decomposition': 'en:Marine debris',
   'eco-tri': 'en:Recycling bin', 'eco-saison': 'en:Farmers\' market', 'eco-energies': 'en:Wind farm', 'eco-dates': 'en:The Blue Marble', 'eco-vf': 'en:Rainforest',
