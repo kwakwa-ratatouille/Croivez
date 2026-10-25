@@ -2,6 +2,7 @@ const { app, BrowserWindow, shell } = require('electron')
 const path = require('path')
 
 const DEV_URL = process.env.VITE_DEV_SERVER_URL
+const EN_LIGNE = 'https://kwakwa-ratatouille.github.io/Croivez/'
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -22,8 +23,13 @@ function createWindow() {
     return { action: 'deny' }
   })
 
+  // Le .exe ouvre la version en ligne (toujours à jour) ; sans connexion, la copie embarquée prend le relais
+  const local = () => win.loadFile(path.join(__dirname, '..', 'dist', 'index.html'))
   if (DEV_URL) win.loadURL(DEV_URL)
-  else win.loadFile(path.join(__dirname, '..', 'dist', 'index.html'))
+  else if (app.isPackaged) {
+    win.webContents.once('did-fail-load', local)
+    win.loadURL(EN_LIGNE)
+  } else local()
 }
 
 app.whenReady().then(() => {

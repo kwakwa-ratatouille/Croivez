@@ -1,0 +1,41 @@
+# Appli PC : fabrique Croivez.exe (portable, un seul fichier, rien à installer) et le publie
+# dans la release « Croivez pour PC » (lien stable : …/releases/download/pc/Croivez.exe).
+# Le .exe ouvre la version en ligne : il reste à jour sans être republié ; on le refait seulement si l'appli PC change.
+name: Appli PC (.exe)
+
+on:
+  push:
+    tags: ['v*', 'pc-*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  exe:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      - run: npm ci
+      - run: npm run exe
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: pc
+          name: Croivez pour PC
+          body: |
+            Télécharge **Croivez.exe** et double-clique dessus : rien à installer.
+            Windows peut afficher « Windows a protégé votre ordinateur » : clique sur « Informations complémentaires » puis « Exécuter quand même ».
+            L'appli se met à jour toute seule (elle ouvre toujours la dernière version de Croivez).
+          files: app/release/Croivez.exe
+          make_latest: false
