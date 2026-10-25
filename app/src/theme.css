@@ -2120,3 +2120,25 @@ img, svg { -webkit-user-drag: none; }
   .question-image { max-height: 34dvh !important; min-height: 120px !important; }
   .partie h1.t { font-size: 18px !important; }
 }
+
+/* ——— Vitrines : motifs dessinés en mosaïque, deux couches en parallaxe (translation seule) ——— */
+.particules.motifs > .couche-motif { position: absolute; left: 0; right: 0; top: -240px; bottom: -240px; background-repeat: repeat; will-change: transform; pointer-events: none; }
+.couche-motif.loin { background-size: 84px 84px; opacity: .45; animation: motif-tombe-loin 14s linear infinite; }
+.couche-motif.pres { background-size: 140px 140px; opacity: .9; animation: motif-tombe-pres 8s linear infinite; background-position: 37px 51px; filter: drop-shadow(0 2px 3px rgba(0,0,0,.25)); }
+.particules.motifs.monte .couche-motif.loin { animation-name: motif-monte-loin; }
+.particules.motifs.monte .couche-motif.pres { animation-name: motif-monte-pres; }
+.particules.motifs.flotte .couche-motif.loin { animation: motif-flotte-loin 22s linear infinite; }
+.particules.motifs.flotte .couche-motif.pres { animation: motif-flotte-pres 14s linear infinite; }
+@keyframes motif-tombe-loin { from { transform: translate3d(0, -84px, 0) } to { transform: translate3d(0, 0, 0) } }
+@keyframes motif-tombe-pres { from { transform: translate3d(0, -140px, 0) } to { transform: translate3d(0, 0, 0) } }
+@keyframes motif-monte-loin { from { transform: translate3d(0, 0, 0) } to { transform: translate3d(0, -84px, 0) } }
+@keyframes motif-monte-pres { from { transform: translate3d(0, 0, 0) } to { transform: translate3d(0, -140px, 0) } }
+@keyframes motif-flotte-loin { from { transform: translate3d(-84px, 0, 0) } to { transform: translate3d(0, -84px, 0) } }
+@keyframes motif-flotte-pres { from { transform: translate3d(0, 0, 0) } to { transform: translate3d(-140px, -140px, 0) } }
+.particules.motifs.ultra .couche-motif.pres { animation-duration: 5s; }
+.particules.motifs.monte .couche-motif.loin, .particules.motifs.tombe .couche-motif.loin, .particules.motifs.flotte .couche-motif.loin { left: -140px; right: -140px; }
+.particules.motifs .couche-motif.pres { left: -140px; right: -140px; }
+@media (prefers-reduced-motion: reduce) { .couche-motif { animation: none !important; } }
+:root[data-calme="1"] .couche-motif { animation: none !important; }
+
+.pastille-fond.anime { position: relative; overflow: hidden; }

@@ -206,7 +206,7 @@ export default function Profil() {
           <strong>{fr ? 'Fond de la vitrine' : 'Showcase background'}</strong>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             {Object.entries(FONDS_VITRINE).map(([id, g]) => <button key={id} type="button" aria-label={id} aria-pressed={(profile.vitrineFond ?? 'aurore') === id} className="pastille-fond" style={{ background: g }} onClick={() => publierVitrine(user.uid, profile, { vitrineFond: id })} />)}
-            {FONDS_ANIMES.filter((f) => BOUTIQUE.some((o) => o.id === f.id && possede(profile, o))).map((f) => <button key={f.id} type="button" aria-label={f.nom[lang]} title={f.nom[lang]} aria-pressed={profile.vitrineFond === f.id} className="pastille-fond anime" style={{ background: f.fond }} onClick={() => publierVitrine(user.uid, profile, { vitrineFond: f.id })}>{f.particules[0]}</button>)}
+            {FONDS_ANIMES.filter((f) => BOUTIQUE.some((o) => o.id === f.id && possede(profile, o))).map((f) => <button key={f.id} type="button" aria-label={f.nom[lang]} title={f.nom[lang]} aria-pressed={profile.vitrineFond === f.id} className="pastille-fond anime" style={{ background: f.fond }} onClick={() => publierVitrine(user.uid, profile, { vitrineFond: f.id })}><Particules f={f} /></button>)}
             <Link to="/boutique?o=fond" className="pastille-fond plus" aria-label={fr ? 'Plus de fonds animés en boutique' : 'More animated backgrounds'}>🛍️</Link>
           </div>
           <label style={{ display: 'flex', flexDirection: 'column', gap: 6, fontWeight: 600 }}>{fr ? 'Ta phrase (60 caractères)' : 'Your line (60 chars)'}

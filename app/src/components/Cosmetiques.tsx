@@ -60,14 +60,59 @@ export const FONDS_ANIMES: FondAnime[] = [
 export const fondAnime = (id?: string) => FONDS_ANIMES.find((f) => f.id === id)
 
 // Particules réparties en largeur, délais et tailles variés, en boucle (transform/opacity seulement)
-export function Particules({ f, nb = 14 }: { f: FondAnime; nb?: number }) {
+// ——— Motifs dessinés (plus d'émojis) : chaque fond devient un motif SVG en mosaïque, sur deux couches
+// qui glissent à des vitesses différentes (profondeur). Une seule animation de translation par couche :
+// c'est la carte graphique qui travaille, l'appli reste fluide.
+type Forme = 'piece' | 'flocon' | 'coeur' | 'bulle' | 'flamme' | 'note' | 'etoile' | 'diamant' | 'feuille' | 'fleur' | 'confetti' | 'eclair' | 'luciole' | 'couronne' | 'cercle'
+const FORME_DE: Record<string, Forme> = {
+  '🪙': 'piece', '💰': 'piece', '💸': 'piece', '❄️': 'flocon', '❅': 'flocon', '❆': 'flocon', '⛄': 'flocon', '🎄': 'flocon',
+  '💖': 'coeur', '💕': 'coeur', '💗': 'coeur', '💝': 'coeur', '🌹': 'coeur', '🫧': 'bulle', '🐠': 'bulle', '🌊': 'bulle', '🐚': 'bulle',
+  '🔥': 'flamme', '🎃': 'flamme', '☀️': 'etoile', '🎵': 'note', '🎶': 'note', '🎸': 'note', '🎤': 'note', '⭐': 'etoile', '🌟': 'etoile', '✨': 'etoile', '💫': 'etoile',
+  '☄️': 'etoile', '🚀': 'etoile', '🪐': 'cercle', '🌌': 'etoile', '💎': 'diamant', '🔷': 'diamant', '♦️': 'diamant', '🔮': 'diamant', '💠': 'diamant',
+  '🍂': 'feuille', '🍁': 'feuille', '🍃': 'feuille', '🌿': 'feuille', '🌸': 'fleur', '🌼': 'fleur', '🌷': 'fleur', '🐣': 'fleur', '🥚': 'cercle', '🍫': 'cercle',
+  '🎊': 'confetti', '🎉': 'confetti', '🎆': 'confetti', '🥂': 'confetti', '⚡': 'eclair', '🧠': 'eclair', '💡': 'eclair', '❓': 'eclair', '⚔️': 'eclair',
+  '👑': 'couronne', '🏆': 'couronne', '🥇': 'couronne', '🥈': 'couronne', '🥉': 'couronne', '🏛️': 'couronne', '🟢': 'cercle', '👻': 'luciole', '🦇': 'luciole',
+}
+const COULEUR: Partial<Record<Forme, string>> = { piece: '#F5B824', flocon: '#FFFFFF', coeur: '#FF6FA5', bulle: '#BAE6FD', flamme: '#FB923C', note: '#F0ABFC', etoile: '#FFF3B0', diamant: '#A5F3FC', feuille: '#F59E0B', fleur: '#FBCFE8', eclair: '#FDE047', luciole: '#D9F99D', couronne: '#FCD34D', cercle: '#FDE68A' }
+function dessin(f: Forme, c: string) {
+  switch (f) {
+    case 'piece': return `<circle r="9" fill="${c}"/><circle r="6.5" fill="none" stroke="#A86408" stroke-width="1.2"/><path d="M-3-3l3 6 3-6" fill="none" stroke="#8A5205" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M-6-3a7 7 0 0 1 4-4" stroke="#fff" stroke-opacity=".7" fill="none"/>`
+    case 'flocon': return `<g stroke="${c}" stroke-width="1.6" stroke-linecap="round"><path d="M0-9V9M-7.8-4.5L7.8 4.5M-7.8 4.5L7.8-4.5"/><path d="M-2-6.5L0-4.5 2-6.5M-2 6.5L0 4.5 2 6.5" fill="none"/></g>`
+    case 'coeur': return `<path d="M0 7C-9 1-8-6-4-7c2-.5 3.5.6 4 2 .5-1.4 2-2.5 4-2 4 1 5 8-4 14Z" fill="${c}"/>`
+    case 'bulle': return `<circle r="7" fill="none" stroke="${c}" stroke-width="1.5"/><circle cx="-2.5" cy="-2.5" r="1.6" fill="#fff" opacity=".8"/>`
+    case 'flamme': return `<path d="M0-10C4-4 6-1 6 3a6 6 0 0 1-12 0c0-3 2-5 3-7 0 3 1 4 2 4 0-4-1-6 1-10Z" fill="${c}"/><path d="M0-1c2 2 3 3 3 5a3 3 0 0 1-6 0c0-2 2-3 3-5Z" fill="#FDE68A"/>`
+    case 'note': return `<path d="M-3 5a3 2.4 0 1 1-1-3.8V-8l8-2v9a3 2.4 0 1 1-1-3.8V-7l-6 1.5Z" fill="${c}"/>`
+    case 'etoile': return `<path d="M0-9L2 -2 9 0 2 2 0 9-2 2-9 0-2-2Z" fill="${c}"/>`
+    case 'diamant': return `<path d="M0-9L7 0 0 9-7 0Z" fill="${c}"/><path d="M0-9L2 0 0 9" fill="#fff" opacity=".35"/>`
+    case 'feuille': return `<path d="M-7 7C-8-3-2-8 8-8 8 2 3 8-7 7Z" fill="${c}"/><path d="M-7 7L5-5" stroke="#7C2D12" stroke-opacity=".5" stroke-width="1"/>`
+    case 'fleur': return `<g fill="${c}"><circle cy="-4.5" r="3.6"/><circle cx="4.3" cy="-1.4" r="3.6"/><circle cx="2.6" cy="3.8" r="3.6"/><circle cx="-2.6" cy="3.8" r="3.6"/><circle cx="-4.3" cy="-1.4" r="3.6"/></g><circle r="2.4" fill="#FDE047"/>`
+    case 'confetti': return `<rect x="-2" y="-6" width="4" height="10" rx="1" fill="#F472B6"/><rect x="5" y="-2" width="3.5" height="8" rx="1" fill="#60A5FA" transform="rotate(35)"/><rect x="-9" y="1" width="3.5" height="8" rx="1" fill="#FDE047" transform="rotate(-30)"/>`
+    case 'eclair': return `<path d="M2-10L-5 1h4l-2 9 8-12H1Z" fill="${c}"/>`
+    case 'luciole': return `<circle r="5" fill="${c}" opacity=".25"/><circle r="2" fill="${c}"/>`
+    case 'couronne': return `<path d="M-8 5L-9-5l5 4 4-7 4 7 5-4-1 10Z" fill="${c}"/><rect x="-8" y="5" width="16" height="3" rx="1" fill="${c}"/>`
+    default: return `<circle r="5" fill="${c}"/>`
+  }
+}
+const cacheMotif = new Map<string, string>()
+// Mosaïque 120 px : trois formes du fond, tournées et de tailles différentes
+function motif(f: FondAnime) {
+  if (cacheMotif.has(f.id)) return cacheMotif.get(f.id)!
+  const formes = f.particules.map((e) => FORME_DE[e] ?? 'etoile')
+  const pos: [number, number, number, number][] = [[22, 26, 1.2, -15], [84, 58, .9, 20], [42, 98, 1.05, 8], [102, 12, .7, -30]]
+  const corps = pos.map(([x, y, s, r], i) => { const fo = formes[i % formes.length]; return `<g transform="translate(${x} ${y}) rotate(${r}) scale(${s})">${dessin(fo, COULEUR[fo] ?? '#fff')}</g>` }).join('')
+  const url = `url("data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120">${corps}</svg>`)}")`
+  cacheMotif.set(f.id, url)
+  return url
+}
+
+export function Particules({ f }: { f: FondAnime; nb?: number }) {
+  const m = motif(f)
   return (
-    <span className={`particules ${f.mouvement}${f.luxe === 2 ? ' ultra' : ''}`} aria-hidden="true">
+    <span className={`particules motifs ${f.mouvement}${f.luxe === 2 ? ' ultra' : ''}`} aria-hidden="true">
       {f.halo && <span className="fond-halo" />}
       {f.effet && <span className={`fond-effet effet-${f.effet}`} />}
-      {Array.from({ length: nb }, (_, i) => (
-        <span key={i} style={{ left: `${(i * 73) % 100}%`, animationDelay: `${-(i * 1.37) % 7}s`, animationDuration: `${6 + (i % 5)}s`, fontSize: `${14 + ((i * 7) % 16)}px` }}>{f.particules[i % f.particules.length]}</span>
-      ))}
+      <i className="couche-motif loin" style={{ backgroundImage: m }} />
+      <i className="couche-motif pres" style={{ backgroundImage: m }} />
     </span>
   )
 }
