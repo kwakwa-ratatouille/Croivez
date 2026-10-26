@@ -6,7 +6,7 @@ import { db } from './firebase'
 import type { Lang } from './i18n'
 import { niveau, type Profile } from './auth'
 import { BADGES, palierAtteint } from './badges'
-import { legendeOuverte } from './progression'
+import { legendeOuverte, progresLegende } from './progression'
 import { FAMILLES, type Famille } from './themes'
 import { erudition, semaine } from './social'
 import { EVENEMENTS, SAISONS, evenementActif } from './evenements'
@@ -103,7 +103,8 @@ export type Objet = {
   album?: boolean // récompense exclusive de l'album (onglet « Boutique de l'album »)
   cache?: boolean // retiré de la boutique (reste affichable s'il est déjà porté)
   orbite?: string[] // petits éléments qui tournent autour de l'avatar (planètes, notes, feuilles…)
-  condition?: { desc: Record<Lang, string>; test: (p: Profile) => boolean }
+  // avance : où on en est ([valeur, objectif]), affiché en direct dans la boutique
+  condition?: { desc: Record<Lang, string>; test: (p: Profile) => boolean; avance?: (p: Profile) => [number, number] }
   evenement?: string; saison?: string // récompense d'un événement ou d'une saison
   luxe?: 1 | 2 // 1 = cher, 2 = ultra (le plus beau de sa catégorie, très cher)
   fondAvatar?: string // fond animé des avatars de luxe
@@ -125,45 +126,47 @@ const st = (p: Profile, k: keyof NonNullable<Profile['exploits']>) => p.exploits
 const maitriseFamille = (p: Profile, k: Famille) => { const j = FAMILLES.find((f) => f.k === k)?.subs.filter((s) => s.jouable) ?? []; return j.length ? j.reduce((a, s) => a + (p.maitrise?.[s.id] ?? 0), 0) / j.length : 0 }
 const unLegende = (p: Profile) => FAMILLES.some((f) => legendeOuverte(f.k, p))
 const C = (fr: string, en: string, test: (p: Profile) => boolean) => ({ desc: { fr, en }, test })
+// Condition chiffrée : débloquée à « objectif », progression visible dans la boutique
+const N = (fr: string, en: string, valeur: (p: Profile) => number, objectif: number) => ({ desc: { fr, en }, test: (p: Profile) => valeur(p) >= objectif, avance: (p: Profile): [number, number] => [Math.min(Math.floor(valeur(p)), objectif), objectif] })
 
 // Conditions réutilisées par les avatars, cadres et titres
 const EXPLOITS = {
-  multi3: C('Gagner 3 parties en salon', 'Win 3 room games', (p) => st(p, 'victoiresMulti') >= 3),
-  multi10: C('Gagner 10 parties en salon', 'Win 10 room games', (p) => st(p, 'victoiresMulti') >= 10),
-  salons10: C('Jouer 10 parties en salon', 'Play 10 room games', (p) => st(p, 'salons') >= 10),
-  tv5: C('Jouer 5 parties en mode télé', 'Play 5 TV games', (p) => st(p, 'tv') >= 5),
-  tvHote3: C('Lancer 3 soirées en mode télé', 'Host 3 TV nights', (p) => st(p, 'tvHote') >= 3),
-  duels5: C('Gagner 5 duels', 'Win 5 duels', (p) => st(p, 'duelsGagnes') >= 5),
-  miniJeux: C('Jouer tous les mini-jeux', 'Play every mini-game', (p) => (p.miniJeux?.length ?? 0) >= 8),
-  express20: C('20 bonnes réponses en Express', '20 right in Express', (p) => (p.records?.express ?? 0) >= 20),
-  express30: C('30 bonnes réponses en Express', '30 right in Express', (p) => (p.records?.express ?? 0) >= 30),
-  survie25: C('25 bonnes réponses en Survie', '25 right in Survival', (p) => (p.records?.survie ?? 0) >= 25),
-  erud500: C('500 points d’érudition', '500 knowledge points', (p) => erudition(p) >= 500),
-  erud1000: C('1 000 points d’érudition', '1,000 knowledge points', (p) => erudition(p) >= 1000),
-  erud2000: C('2 000 points d’érudition', '2,000 knowledge points', (p) => erudition(p) >= 2000),
-  erud5000: C('5 000 points d’érudition', '5,000 knowledge points', (p) => erudition(p) >= 5000),
-  legende: C('Ouvrir la Légende d’une famille', 'Unlock a family Legend', unLegende),
-  serie7: C('Série de 7 jours', '7-day streak', (p) => (p.meilleureSerie ?? p.serie ?? 0) >= 7),
-  serie30: C('Série de 30 jours', '30-day streak', (p) => (p.meilleureSerie ?? p.serie ?? 0) >= 30),
-  niv10: C('Niveau 10', 'Level 10', (p) => niveau(p.xp ?? 0) >= 10),
-  niv25: C('Niveau 25', 'Level 25', (p) => niveau(p.xp ?? 0) >= 25),
-  parties100: C('100 parties jouées', '100 games played', (p) => (p.parties ?? 0) >= 100),
-  sansFaute10: C('10 sans-fautes', '10 perfect games', (p) => (p.sansFaute ?? 0) >= 10),
-  paliers40: C('40 niveaux réussis au sans-faute', '40 perfect levels', (p) => paliersReussis(p) >= 40),
-  or10: C('10 badges en or', '10 gold badges', (p) => orBadges(p) >= 10),
+  multi3: N('Gagner 3 parties en salon', 'Win 3 room games', (p) => st(p, 'victoiresMulti'), 3),
+  multi10: N('Gagner 10 parties en salon', 'Win 10 room games', (p) => st(p, 'victoiresMulti'), 10),
+  salons10: N('Jouer 10 parties en salon', 'Play 10 room games', (p) => st(p, 'salons'), 10),
+  tv5: N('Jouer 5 parties en mode télé', 'Play 5 TV games', (p) => st(p, 'tv'), 5),
+  tvHote3: N('Lancer 3 soirées en mode télé', 'Host 3 TV nights', (p) => st(p, 'tvHote'), 3),
+  duels5: N('Gagner 5 duels', 'Win 5 duels', (p) => st(p, 'duelsGagnes'), 5),
+  miniJeux: N('Jouer tous les mini-jeux', 'Play every mini-game', (p) => (p.miniJeux?.length ?? 0), 8),
+  express20: N('20 bonnes réponses en Express', '20 right in Express', (p) => (p.records?.express ?? 0), 20),
+  express30: N('30 bonnes réponses en Express', '30 right in Express', (p) => (p.records?.express ?? 0), 30),
+  survie25: N('25 bonnes réponses en Survie', '25 right in Survival', (p) => (p.records?.survie ?? 0), 25),
+  erud500: N('500 points d’érudition', '500 knowledge points', (p) => erudition(p), 500),
+  erud1000: N('1 000 points d’érudition', '1,000 knowledge points', (p) => erudition(p), 1000),
+  erud2000: N('2 000 points d’érudition', '2,000 knowledge points', (p) => erudition(p), 2000),
+  erud5000: N('5 000 points d’érudition', '5,000 knowledge points', (p) => erudition(p), 5000),
+  legende: { ...C('Ouvrir la Légende d’une famille', 'Unlock a family Legend', unLegende), avance: (p: Profile): [number, number] => { const l = FAMILLES.map((f) => progresLegende(f.k, p)).sort((a, b) => b.faits / Math.max(1, b.total) - a.faits / Math.max(1, a.total))[0]; return [l?.faits ?? 0, l?.total ?? 1] } },
+  serie7: N('Série de 7 jours', '7-day streak', (p) => (p.meilleureSerie ?? p.serie ?? 0), 7),
+  serie30: N('Série de 30 jours', '30-day streak', (p) => (p.meilleureSerie ?? p.serie ?? 0), 30),
+  niv10: N('Niveau 10', 'Level 10', (p) => niveau(p.xp ?? 0), 10),
+  niv25: N('Niveau 25', 'Level 25', (p) => niveau(p.xp ?? 0), 25),
+  parties100: N('100 parties jouées', '100 games played', (p) => (p.parties ?? 0), 100),
+  sansFaute10: N('10 sans-fautes', '10 perfect games', (p) => (p.sansFaute ?? 0), 10),
+  paliers40: N('40 niveaux réussis au sans-faute', '40 perfect levels', (p) => paliersReussis(p), 40),
+  or10: N('10 badges en or', '10 gold badges', (p) => orBadges(p), 10),
   nuit: C('Succès secret : Oiseau de nuit', 'Secret: Night owl', (p) => !!p.secrets?.includes('nuit')),
   boss: C('Succès secret : Tueur de boss', 'Secret: Boss slayer', (p) => !!p.secrets?.includes('boss')),
   machine: C('Succès secret : Machine (combo de 15)', 'Secret: Machine', (p) => !!p.secrets?.includes('combo15')),
   immortel: C('Succès secret : Immortel', 'Secret: Immortal', (p) => !!p.secrets?.includes('immortel')),
   marathon: C('Succès secret : Marathonien', 'Secret: Marathoner', (p) => !!p.secrets?.includes('marathon')),
-  geo: C('60 % de maîtrise en Géographie', '60% Geography mastery', (p) => maitriseFamille(p, 'geo') >= 60),
-  cine: C('60 % de maîtrise en Cinéma', '60% Film mastery', (p) => maitriseFamille(p, 'cine') >= 60),
-  jv: C('60 % de maîtrise en Jeux vidéo', '60% Video games mastery', (p) => maitriseFamille(p, 'jv') >= 60),
-  nat: C('60 % de maîtrise en Nature', '60% Nature mastery', (p) => maitriseFamille(p, 'nat') >= 60),
-  mus: C('60 % de maîtrise en Musique', '60% Music mastery', (p) => maitriseFamille(p, 'mus') >= 60),
-  cui: C('60 % de maîtrise en Cuisine', '60% Food mastery', (p) => maitriseFamille(p, 'cui') >= 60),
-  pop: C('60 % de maîtrise en Pop culture', '60% Pop culture mastery', (p) => maitriseFamille(p, 'pop') >= 60),
-  riche: C('Avoir 2 000 pièces en poche', 'Hold 2,000 coins', (p) => (p.pieces ?? 0) >= 2000),
+  geo: N('60 % de maîtrise en Géographie', '60% Geography mastery', (p) => maitriseFamille(p, 'geo'), 60),
+  cine: N('60 % de maîtrise en Cinéma', '60% Film mastery', (p) => maitriseFamille(p, 'cine'), 60),
+  jv: N('60 % de maîtrise en Jeux vidéo', '60% Video games mastery', (p) => maitriseFamille(p, 'jv'), 60),
+  nat: N('60 % de maîtrise en Nature', '60% Nature mastery', (p) => maitriseFamille(p, 'nat'), 60),
+  mus: N('60 % de maîtrise en Musique', '60% Music mastery', (p) => maitriseFamille(p, 'mus'), 60),
+  cui: N('60 % de maîtrise en Cuisine', '60% Food mastery', (p) => maitriseFamille(p, 'cui'), 60),
+  pop: N('60 % de maîtrise en Pop culture', '60% Pop culture mastery', (p) => maitriseFamille(p, 'pop'), 60),
+  riche: N('Avoir 2 000 pièces en poche', 'Hold 2,000 coins', (p) => (p.pieces ?? 0), 2000),
 }
 
 // Avatars métiers : les premiers gratuits, la plupart à acheter, les plus prestigieux à gagner
@@ -273,15 +276,15 @@ export const BOUTIQUE: Objet[] = [
     ]
   }),
   // ——— Mode histoire terminé ———
-  { id: 'cadre-tour-du-monde', type: 'cadre', nom: { fr: 'Tour du monde', en: 'World tour' }, prix: 0, couleur: 'conic-gradient(#4FAE6A, #3A86C8, #E3A72F, #8E4FC4, #4FAE6A)', anim: 'tourne holo', orbite: ['🌍', '✈️', '🗺️'], condition: { desc: { fr: 'Finir les 8 premiers mondes du mode histoire', en: 'Finish the first 8 story worlds' }, test: (p: Profile) => (p.aventure ?? 0) >= 64 } },
-  { id: 'cadre-mi-parcours', type: 'cadre', nom: { fr: 'Voyageur', en: 'Traveller' }, prix: 0, couleur: 'conic-gradient(#3A86C8, #8ED3F0, #3A86C8)', anim: 'vague', orbite: ['🧭', '🎒'], condition: { desc: { fr: 'Atteindre le 4ᵉ monde du mode histoire', en: 'Reach story world 4' }, test: (p: Profile) => (p.aventure ?? 0) >= 24 } },
-  { id: 'titre-tour-du-monde', type: 'titre', nom: { fr: 'Aventurier·ère du monde', en: 'World adventurer' }, prix: 0, anim: 'aurore', condition: { desc: { fr: 'Finir les 8 premiers mondes du mode histoire', en: 'Finish the first 8 story worlds' }, test: (p: Profile) => (p.aventure ?? 0) >= 64 } },
-  { id: 'cadre-legendes-histoire', type: 'cadre', nom: { fr: 'Dragon légendaire', en: 'Legendary dragon' }, prix: 0, couleur: 'conic-gradient(#7F1D1D, #F59E0B, #FDE047, #F59E0B, #7F1D1D)', anim: 'tourne holo', orbite: ['🐉', '🔥', '👑'], condition: { desc: { fr: 'Vaincre le boss ultime du mode histoire (104 étapes)', en: 'Beat the ultimate story boss' }, test: (p: Profile) => (p.aventure ?? 0) >= 104 } },
-  { id: 'titre-legende-histoire', type: 'titre', nom: { fr: 'Légende vivante', en: 'Living legend' }, prix: 0, anim: 'royal', condition: { desc: { fr: 'Vaincre le boss ultime du mode histoire', en: 'Beat the ultimate story boss' }, test: (p: Profile) => (p.aventure ?? 0) >= 104 } },
-  { id: 'cadre-arcade', type: 'cadre', nom: { fr: 'Pixel', en: 'Pixel' }, prix: 0, couleur: 'conic-gradient(#22C55E, #3B82F6, #EF4444, #22C55E)', anim: 'tourne', orbite: ['🕹️', '👾', '🎮'], condition: { desc: { fr: 'Finir l’arcade infinie (monde 9 du mode histoire)', en: 'Finish story world 9' }, test: (p: Profile) => (p.aventure ?? 0) >= 72 } },
-  { id: 'titre-premier-boss', type: 'titre', nom: { fr: 'Tueur de boss', en: 'Boss slayer' }, prix: 0, condition: { desc: { fr: 'Battre le premier boss du mode histoire', en: 'Beat the first story boss' }, test: (p: Profile) => (p.aventure ?? 0) >= 8 } },
-  { id: 'perso-astronaute-or', type: 'avatar', nom: { fr: 'Explorateur·rice doré·e', en: 'Golden explorer' }, prix: 0, perso: 'astronaute', categorie: 'metier', condition: { desc: { fr: 'Finir le mode histoire', en: 'Finish story mode' }, test: (p: Profile) => (p.aventure ?? 0) >= 64 } },
-  { id: 'avatar-boss', type: 'avatar', nom: { fr: 'Boss', en: 'Boss' }, prix: 0, emoji: '👑', categorie: 'fun', condition: { desc: { fr: 'Battre 4 boss du mode histoire', en: 'Beat 4 story bosses' }, test: (p: Profile) => (p.aventure ?? 0) >= 32 } },
+  { id: 'cadre-tour-du-monde', type: 'cadre', nom: { fr: 'Tour du monde', en: 'World tour' }, prix: 0, couleur: 'conic-gradient(#4FAE6A, #3A86C8, #E3A72F, #8E4FC4, #4FAE6A)', anim: 'tourne holo', orbite: ['🌍', '✈️', '🗺️'], condition: { desc: { fr: 'Finir les 8 premiers mondes du mode histoire', en: 'Finish the first 8 story worlds' }, test: (p: Profile) => (p.aventure ?? 0) >= 64, avance: (p: Profile): [number, number] => [Math.min(p.aventure ?? 0, 64), 64] } },
+  { id: 'cadre-mi-parcours', type: 'cadre', nom: { fr: 'Voyageur', en: 'Traveller' }, prix: 0, couleur: 'conic-gradient(#3A86C8, #8ED3F0, #3A86C8)', anim: 'vague', orbite: ['🧭', '🎒'], condition: { desc: { fr: 'Atteindre le 4ᵉ monde du mode histoire', en: 'Reach story world 4' }, test: (p: Profile) => (p.aventure ?? 0) >= 24, avance: (p: Profile): [number, number] => [Math.min(p.aventure ?? 0, 24), 24] } },
+  { id: 'titre-tour-du-monde', type: 'titre', nom: { fr: 'Aventurier·ère du monde', en: 'World adventurer' }, prix: 0, anim: 'aurore', condition: { desc: { fr: 'Finir les 8 premiers mondes du mode histoire', en: 'Finish the first 8 story worlds' }, test: (p: Profile) => (p.aventure ?? 0) >= 64, avance: (p: Profile): [number, number] => [Math.min(p.aventure ?? 0, 64), 64] } },
+  { id: 'cadre-legendes-histoire', type: 'cadre', nom: { fr: 'Dragon légendaire', en: 'Legendary dragon' }, prix: 0, couleur: 'conic-gradient(#7F1D1D, #F59E0B, #FDE047, #F59E0B, #7F1D1D)', anim: 'tourne holo', orbite: ['🐉', '🔥', '👑'], condition: { desc: { fr: 'Vaincre le boss ultime du mode histoire (104 étapes)', en: 'Beat the ultimate story boss' }, test: (p: Profile) => (p.aventure ?? 0) >= 104, avance: (p: Profile): [number, number] => [Math.min(p.aventure ?? 0, 104), 104] } },
+  { id: 'titre-legende-histoire', type: 'titre', nom: { fr: 'Légende vivante', en: 'Living legend' }, prix: 0, anim: 'royal', condition: { desc: { fr: 'Vaincre le boss ultime du mode histoire', en: 'Beat the ultimate story boss' }, test: (p: Profile) => (p.aventure ?? 0) >= 104, avance: (p: Profile): [number, number] => [Math.min(p.aventure ?? 0, 104), 104] } },
+  { id: 'cadre-arcade', type: 'cadre', nom: { fr: 'Pixel', en: 'Pixel' }, prix: 0, couleur: 'conic-gradient(#22C55E, #3B82F6, #EF4444, #22C55E)', anim: 'tourne', orbite: ['🕹️', '👾', '🎮'], condition: { desc: { fr: 'Finir l’arcade infinie (monde 9 du mode histoire)', en: 'Finish story world 9' }, test: (p: Profile) => (p.aventure ?? 0) >= 72, avance: (p: Profile): [number, number] => [Math.min(p.aventure ?? 0, 72), 72] } },
+  { id: 'titre-premier-boss', type: 'titre', nom: { fr: 'Tueur de boss', en: 'Boss slayer' }, prix: 0, condition: { desc: { fr: 'Battre le premier boss du mode histoire', en: 'Beat the first story boss' }, test: (p: Profile) => (p.aventure ?? 0) >= 8, avance: (p: Profile): [number, number] => [Math.min(p.aventure ?? 0, 8), 8] } },
+  { id: 'perso-astronaute-or', type: 'avatar', nom: { fr: 'Explorateur·rice doré·e', en: 'Golden explorer' }, prix: 0, perso: 'astronaute', categorie: 'metier', condition: { desc: { fr: 'Finir le mode histoire', en: 'Finish story mode' }, test: (p: Profile) => (p.aventure ?? 0) >= 64, avance: (p: Profile): [number, number] => [Math.min(p.aventure ?? 0, 64), 64] } },
+  { id: 'avatar-boss', type: 'avatar', nom: { fr: 'Boss', en: 'Boss' }, prix: 0, emoji: '👑', categorie: 'fun', condition: { desc: { fr: 'Battre 4 boss du mode histoire', en: 'Beat 4 story bosses' }, test: (p: Profile) => (p.aventure ?? 0) >= 32, avance: (p: Profile): [number, number] => [Math.min(p.aventure ?? 0, 32), 32] } },
   // ——— Événements (Halloween, Noël…) : cadre dès la 1ʳᵉ partie pendant l'événement, avatar et titre à la 5ᵉ ———
   ...EVENEMENTS.flatMap((e): Objet[] => {
     const a = (txt: string) => (p: Profile) => !!p.possede?.includes(txt)

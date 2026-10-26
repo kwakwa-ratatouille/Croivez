@@ -27,10 +27,10 @@ export const lireToutes = (uid: string, cles: string[], gain: number) => ecrire(
 export const reclamerPage = (uid: string, quiz: string, page: number) => ecrire(uid, { pieces: increment(GAIN_PAGE), albumPages: arrayUnion(`${quiz}:${page}`) })
 export const reclamerAlbum = (uid: string, quiz: string) => ecrire(uid, { pieces: increment(GAIN_ALBUM), albumsFinis: arrayUnion(quiz) })
 
-type Cond = { desc: { fr: string; en: string }; test: (p: Profile) => boolean }
-const cartes = (n: number): Cond => ({ desc: { fr: `Collectionner ${n.toLocaleString('fr-FR')} cartes d’album`, en: `Collect ${n} album cards` }, test: (p) => nbCartes(p) >= n })
-const pages = (n: number): Cond => ({ desc: { fr: `Compléter ${n} pages d’album`, en: `Complete ${n} album pages` }, test: (p) => nbPages(p) >= n })
-const albums = (n: number): Cond => ({ desc: { fr: n === 1 ? 'Compléter un album entier' : `Compléter ${n} albums entiers`, en: `Complete ${n} full albums` }, test: (p) => nbAlbums(p) >= n })
+type Cond = { desc: { fr: string; en: string }; test: (p: Profile) => boolean; avance?: (p: Profile) => [number, number] }
+const cartes = (n: number): Cond => ({ desc: { fr: `Collectionner ${n.toLocaleString('fr-FR')} cartes d’album`, en: `Collect ${n} album cards` }, test: (p) => nbCartes(p) >= n, avance: (p) => [Math.min(nbCartes(p), n), n] })
+const pages = (n: number): Cond => ({ desc: { fr: `Compléter ${n} pages d’album`, en: `Complete ${n} album pages` }, test: (p) => nbPages(p) >= n, avance: (p) => [Math.min(nbPages(p), n), n] })
+const albums = (n: number): Cond => ({ desc: { fr: n === 1 ? 'Compléter un album entier' : `Compléter ${n} albums entiers`, en: `Complete ${n} full albums` }, test: (p) => nbAlbums(p) >= n, avance: (p) => [Math.min(nbAlbums(p), n), n] })
 export const CONDITIONS_ALBUM: Record<string, Cond> = {
   c50: cartes(50), c150: cartes(150), c300: cartes(300), c600: cartes(600), c1000: cartes(1000), c2000: cartes(2000),
   p5: pages(5), p20: pages(20), p50: pages(50), a1: albums(1), a3: albums(3), a10: albums(10),

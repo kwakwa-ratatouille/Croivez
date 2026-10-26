@@ -11,11 +11,14 @@ import Avatar from '../components/Avatar'
 import { Particules, Pseudo, fondAnime } from '../components/Cosmetiques'
 import { ICONS, Icon, Piece, Pieces } from '../components/ui'
 
-type Onglet = 'avatar' | 'cadre' | 'fond' | 'pseudo' | 'titre' | 'effet'
-const ONGLETS: Onglet[] = ['avatar', 'cadre', 'fond', 'pseudo', 'titre', 'effet']
+type Onglet = 'avatar' | 'cadre' | 'fond' | 'pseudo' | 'titre' | 'couleur' | 'victoire' | 'son'
+const ONGLETS: Onglet[] = ['avatar', 'cadre', 'fond', 'pseudo', 'titre', 'couleur', 'victoire', 'son']
+// Un objet appartient à un onglet : son type, ou pour les effets leur sorte (thème, fête de victoire, son)
+const dansOnglet = (o: Objet, g: Onglet) => (o.type === 'effet' ? o.sorte === g : o.type === g)
+const EMOJI_ONGLET: Record<Onglet, string> = { avatar: '🧑‍🎨', cadre: '🖼️', fond: '🌈', pseudo: '✍️', titre: '🏷️', couleur: '🎨', victoire: '🎉', son: '🔊' }
 const NOMS_ONGLETS: Record<Onglet, Record<Lang, string>> = {
   avatar: { fr: 'Avatars', en: 'Avatars' }, cadre: { fr: 'Cadres', en: 'Frames' }, fond: { fr: 'Vitrines', en: 'Showcases' },
-  pseudo: { fr: 'Pseudos', en: 'Names' }, titre: { fr: 'Titres', en: 'Titles' }, effet: { fr: 'Effets', en: 'Effects' },
+  pseudo: { fr: 'Pseudos', en: 'Names' }, titre: { fr: 'Titres', en: 'Titles' }, couleur: { fr: 'Thèmes', en: 'Themes' }, victoire: { fr: 'Fêtes de victoire', en: 'Victory effects' }, son: { fr: 'Sons', en: 'Sounds' },
 }
 type Vue = 'tout' | 'moi' | 'acheter' | 'gagner'
 type Tri = 'conseil' | 'prix-' | 'prix+' | 'nom'
@@ -55,7 +58,7 @@ export default function Boutique() {
   const fr = lang === 'fr'
   const { user, profile } = useAuth()
   const [params] = useSearchParams()
-  const [onglet, setOnglet] = useState<Onglet>(ONGLETS.find((o) => o === params.get('o')) ?? 'avatar')
+  const [onglet, setOnglet] = useState<Onglet>(ONGLETS.find((o) => o === (params.get('o') === 'effet' ? 'couleur' : params.get('o'))) ?? 'avatar')
   const [vue, setVue] = useState<Vue>('tout')
   const [mode, setMode] = useState<'pieces' | 'rangs' | 'album'>(params.get('rangs') === '1' ? 'rangs' : params.get('album') === '1' ? 'album' : 'pieces') // boutique des pièces, des rangs (jetons) ou de l'album
   const rangs = mode === 'rangs'
@@ -95,7 +98,7 @@ export default function Boutique() {
     setChoisi(o)
   }
 
-  const duType = useMemo(() => BOUTIQUE.filter((o) => o.type === onglet && !o.cache && (o.album ? mode === 'album' : mode !== 'album' && !!o.jetons === rangs)), [onglet, rangs])
+  const duType = useMemo(() => BOUTIQUE.filter((o) => dansOnglet(o, onglet) && !o.cache && (o.album ? mode === 'album' : mode !== 'album' && !!o.jetons === rangs)), [onglet, rangs])
   const liste = useMemo(() => {
     const q = sansAccents(cherche.trim())
     const l = duType.filter((o) => {
@@ -124,6 +127,19 @@ export default function Boutique() {
       : o.type === 'titre' ? <span className={`apercu-titre t${o.anim ? ' titre-affiche ' + o.anim.split(' ').map((x) => 'titre-fx-' + x).join(' ') : ''}`}>{o.nom[lang]}</span>
         : <Avatar pseudo={profile?.pseudo} avatar={o.type === 'avatar' ? o.id : profile?.avatar} cadre={o.type === 'cadre' ? o.id : profile?.cadre} taille={taille} anime={o.type === 'cadre' || !!o.luxe} />
 
+  // Défi d'un objet à gagner : ce qu'il faut faire et où on en est, sans avoir à ouvrir la fiche
+  const Defi = ({ o, grand = false }: { o: Objet; grand?: boolean }) => {
+    if (!o.condition || possede(profile, o)) return null
+    const av = profile ? o.condition.avance?.(profile) : undefined
+    return (
+      <span className={`objet-defi${grand ? ' grand' : ''}`}>
+        <span className="objet-defi-texte">{o.condition.desc[lang]}</span>
+        {av && <span className="objet-defi-barre"><span style={{ width: `${Math.min(100, (av[0] / Math.max(1, av[1])) * 100)}%` }} /></span>}
+        {av && <span className="objet-defi-chiffres">{av[0].toLocaleString(fr ? 'fr-FR' : 'en-GB')} / {av[1].toLocaleString(fr ? 'fr-FR' : 'en-GB')}</span>}
+      </span>
+    )
+  }
+
   const Carte = ({ o }: { o: Objet }) => {
     const a = possede(profile, o)
     const porte = equipe(o)
@@ -136,6 +152,7 @@ export default function Boutique() {
         <span className={`objet-etat${porte ? ' ok' : a ? '' : o.condition ? ' cond' : ' prix'}`}>
           {porte ? (fr ? '✓ Équipé' : '✓ Equipped') : a ? (fr ? 'Équiper' : 'Equip') : o.condition ? <><Icon d={ICONS.lock} size={13} />{fr ? 'À gagner' : 'To earn'}</> : <Prix o={o} />}
         </span>
+        <Defi o={o} />
       </button>
     )
   }
@@ -146,10 +163,7 @@ export default function Boutique() {
     : onglet === 'avatar'
       // Avatars : par catégorie (métiers, animaux, fun, familles), le luxe à part
       ? [...CATEGORIES.map((c) => ({ g: { k: c.k, nom: c.nom, emoji: c.emoji }, l: liste.filter((o) => o.categorie === c.k && !o.luxe) })), { g: { k: 'luxe', nom: { fr: 'Luxe et ultra', en: 'Luxury & ultra' }, emoji: '👑' }, l: liste.filter((o) => o.luxe) }].filter((s) => s.l.length)
-      : onglet === 'effet'
-        // Effets : thèmes de couleur, fêtes de victoire, sons
-        ? ([['couleur', { fr: 'Thèmes de couleur', en: 'Colour themes' }, '🎨'], ['victoire', { fr: 'Fêtes de victoire', en: 'Victory effects' }, '🎉'], ['son', { fr: 'Sons des réponses', en: 'Answer sounds' }, '🔊']] as const).map(([k, nom, emoji]) => ({ g: { k, nom, emoji }, l: liste.filter((o) => o.sorte === k) })).filter((s) => s.l.length)
-        : ORIGINES.map((g) => ({ g, l: liste.filter((o) => origine(o) === g.k) })).filter((s) => s.l.length)
+      : ORIGINES.map((g) => ({ g, l: liste.filter((o) => origine(o) === g.k) })).filter((s) => s.l.length)
 
   return (
     <>
@@ -173,9 +187,9 @@ export default function Boutique() {
       {/* Types d'objets en grosses tuiles */}
       <div className="tuiles-boutique" role="tablist">
         {ONGLETS.map((id) => {
-          const l = BOUTIQUE.filter((o) => o.type === id && !o.cache && (o.album ? mode === 'album' : mode !== 'album' && !!o.jetons === rangs))
+          const l = BOUTIQUE.filter((o) => dansOnglet(o, id) && !o.cache && (o.album ? mode === 'album' : mode !== 'album' && !!o.jetons === rangs))
           if (!l.length) return null
-          return <button key={id} type="button" role="tab" aria-selected={onglet === id} className="tuile-boutique" onClick={() => { setOnglet(id); setCat(''); setMsg('') }}><span>{{ avatar: '🧑‍🎨', cadre: '🖼️', fond: '🌈', pseudo: '✍️', titre: '🏷️', effet: '✨' }[id]}</span><strong>{NOMS_ONGLETS[id][lang]}</strong><small>{nb(l)}</small></button>
+          return <button key={id} type="button" role="tab" aria-selected={onglet === id} className="tuile-boutique" onClick={() => { setOnglet(id); setCat(''); setMsg('') }}><span>{EMOJI_ONGLET[id]}</span><strong>{NOMS_ONGLETS[id][lang]}</strong><small>{nb(l)}</small></button>
         })}
       </div>
 
@@ -221,7 +235,7 @@ export default function Boutique() {
             <strong className="t" style={{ fontSize: 22 }}>{choisi.nom[lang]}</strong>
             {confirmer && !choisi.condition && <p className="confirmer-achat">{choisi.jetons ? (fr ? `Dépenser ${choisi.jetons} jetons de rang pour « ${choisi.nom.fr} » ? Il t’en restera ${jetons - choisi.jetons}.` : `Spend ${choisi.jetons} tokens?`) : (fr ? `Dépenser ${choisi.prix.toLocaleString('fr-FR')} pièces pour « ${choisi.nom.fr} » ? Il te restera ${(solde - choisi.prix).toLocaleString('fr-FR')} pièces.` : `Spend ${choisi.prix} coins?`)}</p>}
             {confirmer && !choisi.condition ? null : choisi.condition
-              ? <p style={{ color: 'var(--muted)' }}>🔒 {choisi.condition.desc[lang]}</p>
+              ? <Defi o={choisi} grand />
               : <p style={{ color: 'var(--muted)' }}>{choisi.jetons ? (jetons >= choisi.jetons ? (fr ? 'Exclusif à la boutique des rangs. Il sera équipé tout de suite.' : 'Rank shop exclusive.') : (fr ? `Il te manque ${choisi.jetons - jetons} jetons de rang. Tu en gagnes chaque lundi selon ton rang (5 en Bronze … 75 en Légende).` : `You need ${choisi.jetons - jetons} more tokens.`)) : peutPayer(choisi) ? (fr ? 'Il sera équipé tout de suite.' : 'It will be equipped right away.') : (fr ? `Il te manque ${(choisi.prix - solde).toLocaleString('fr-FR')} pièces.` : `You need ${choisi.prix - solde} more coins.`)}</p>}
             <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
               <button type="button" className="btn btn-g" onClick={() => setChoisi(null)}>{confirmer ? (fr ? 'Annuler' : 'Cancel') : (fr ? 'Fermer' : 'Close')}</button>

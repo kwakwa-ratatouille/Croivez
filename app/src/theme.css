@@ -2377,3 +2377,14 @@ img, svg { -webkit-user-drag: none; }
 /* Quiz sonore : badge « À écouter » sur la carte et la fiche */
 .couverture-son { position: absolute; left: 8px; bottom: 8px; z-index: 2; display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 999px; background: rgba(17, 12, 40, .78); color: #fff; font: 800 12px 'DM Sans', sans-serif; backdrop-filter: blur(4px); box-shadow: 0 2px 8px rgba(0, 0, 0, .25); }
 .fiche-son { display: inline-flex; align-items: center; gap: 6px; margin-top: 4px; padding: 3px 10px; border-radius: 999px; background: var(--kt, var(--surface2)); color: var(--ki, var(--text)); font-size: 13px; font-weight: 800; }
+
+/* Boutique : défi et progression visibles sur chaque objet à gagner */
+.objet-defi { display: flex; flex-direction: column; gap: 4px; width: 100%; margin-top: 2px; text-align: left; }
+.objet-defi-texte { font-size: 11.5px; line-height: 1.25; color: var(--muted); font-weight: 600; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.objet-defi-barre { height: 6px; border-radius: 999px; background: var(--surface2); overflow: hidden; }
+.objet-defi-barre > span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #F59E0B, #FDE047); }
+.objet-defi-chiffres { font-size: 11px; font-weight: 800; color: var(--text); }
+.objet-defi.grand { gap: 6px; text-align: center; }
+.objet-defi.grand .objet-defi-texte { font-size: 14.5px; -webkit-line-clamp: 4; }
+.objet-defi.grand .objet-defi-barre { height: 10px; }
+.objet-defi.grand .objet-defi-chiffres { font-size: 14px; }
