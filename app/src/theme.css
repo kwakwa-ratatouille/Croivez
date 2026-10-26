@@ -1438,8 +1438,10 @@ button.rang-palier[aria-pressed="true"] { background: color-mix(in srgb, var(--r
 /* Mini-jeux Flash et Zoom */
 .image-flash { animation: flash-image 1.5s steps(1, end) forwards; }
 @keyframes flash-image { 0% { filter: none; } 100% { filter: brightness(0) blur(12px); } }
+.cadre-image { display: contents; }
+.cadre-zoom { display: inline-block; max-width: 100%; overflow: hidden; border-radius: 18px; line-height: 0; }
 .image-zoom { animation: zoom-image 9s cubic-bezier(.3, 0, .5, 1) forwards; transform-origin: 50% 45%; }
-@keyframes zoom-image { from { transform: scale(4.5); clip-path: inset(38.9%); } to { transform: scale(1); clip-path: inset(0); } }
+@keyframes zoom-image { from { transform: scale(4.5); } to { transform: scale(1); } }
 
 
 .changer-pseudo { display: flex; flex-direction: column; gap: 8px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }

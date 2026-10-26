@@ -169,7 +169,7 @@ export default function Duel() {
         <section key={i} className="rise" style={{ width: '100%', maxWidth: 1040, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20 }}>
           <h1 className="t" style={{ fontSize: 28, fontWeight: 900, textAlign: 'center' }}>{q.enonce}</h1>
           {q.format === 'vf' && <p className="t" style={{ fontSize: 22, fontWeight: 900, textAlign: 'center' }}>{q.propose} ?</p>}
-          {q.image && <Img src={q.image} alt="" className={`question-image${q.flou && !maReponse ? ' image-floue' : ''}${q.effet && !maReponse ? ` image-${q.effet}` : ''}`} style={{ height: 180, maxWidth: '100%', borderRadius: 16, border: '1px solid var(--line)', objectFit: 'contain' }} />}
+          {q.image && <span className={q.effet === 'zoom' && !maReponse ? 'cadre-zoom' : 'cadre-image'}><Img src={q.image} alt="" className={`question-image${q.flou && !maReponse ? ' image-floue' : ''}${q.effet && !maReponse ? ` image-${q.effet}` : ''}`} style={{ height: 180, maxWidth: '100%', borderRadius: 16, border: '1px solid var(--line)', objectFit: 'contain' }} /></span>}
           {q.carte && <CarteQuiz carte={q.carte} repondu={!!maReponse} onClic={() => {}} />}
           {q.audio && <Extrait id={q.audio} />}
           <div style={{ width: '100%', display: 'grid', gridTemplateColumns: q.imagesOnly ? 'repeat(auto-fit, minmax(180px, 1fr))' : 'repeat(2, minmax(0, 1fr))', gap: 12 }}>

@@ -369,8 +369,11 @@ export default function Partie() {
           {combo >= 2 && <span key={combo} className={`chip combo combo-${multiplicateur(combo) >= 3 ? 3 : multiplicateur(combo) >= 2 ? 2 : multiplicateur(combo) > 1 ? 1 : 0}`}>{combo} {lang === 'fr' ? 'd’affilée' : 'in a row'}{multiplicateur(combo) > 1 ? ` · ×${multiplicateur(combo)}` : ''}</span>}
           {double && <span className="chip" style={{ background: 'var(--mus-t)', color: 'var(--mus-i)' }}>{lang === 'fr' ? '×2 actif' : '×2 on'}</span>}
         </div>
+        {/* Mini-jeu Zoom : le gros plan se fait dans le cadre de l'image, qui coupe ce qui dépasse */}
         {q.image && (
-          <Img src={q.image} alt="" className={`question-image${q.flou && !courante ? ' image-floue' : ''}${q.silhouette && !courante ? ' image-silhouette' : ''}${q.silhouette && courante ? ' image-revelee' : ''}${q.effet && !courante ? ` image-${q.effet}` : ''}`} style={{ height: 220, maxWidth: '100%', borderRadius: 18, boxShadow: 'var(--shadow)', border: '1px solid var(--line)', objectFit: 'contain', background: q.fondGris ? 'var(--fond-logo)' : 'var(--surface)', padding: q.fondGris ? 14 : 0 }} />
+          <span className={q.effet === 'zoom' && !courante ? 'cadre-zoom' : 'cadre-image'}>
+            <Img src={q.image} alt="" className={`question-image${q.flou && !courante ? ' image-floue' : ''}${q.silhouette && !courante ? ' image-silhouette' : ''}${q.silhouette && courante ? ' image-revelee' : ''}${q.effet && !courante ? ` image-${q.effet}` : ''}`} style={{ height: 220, maxWidth: '100%', borderRadius: 18, boxShadow: 'var(--shadow)', border: '1px solid var(--line)', objectFit: 'contain', background: q.fondGris ? 'var(--fond-logo)' : 'var(--surface)', padding: q.fondGris ? 14 : 0 }} />
+          </span>
         )}
         {q.image && q.flou && !courante && <p className="legende-flou">{lang === 'fr' ? '🔍 L’image se précise peu à peu : réponds tôt pour marquer plus' : '🔍 The picture sharpens: answer early to score more'}</p>}
         {q.carte && <CarteQuiz carte={q.carte} clic={courante?.clic} repondu={!!courante} onClic={repondreCarte} />}
