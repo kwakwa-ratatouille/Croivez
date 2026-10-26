@@ -48,7 +48,11 @@ async function recherches(liste) {
   const vus = new Set()
   return out.filter((x) => !vus.has(x.id) && vus.add(x.id))
 }
-const ecrire = async (id, items) => { await writeFile(`public/packs/culture/${id}.json`, JSON.stringify(items)); console.log(`${id} : ${items.length}`) }
+const ecrire = async (id, items) => {
+  const avant = new Map(JSON.parse(await readFile(`public/packs/culture/${id}.json`, 'utf8').catch(() => '[]')).map((x) => [x.id, x]))
+  for (const it of items) { const a = avant.get(it.id); if (a?.an) it.an = a.an }
+  await writeFile(`public/packs/culture/${id}.json`, JSON.stringify(items)); console.log(`${id} : ${items.length}`)
+}
 
 // ——— Extraits : nouveaux artistes (pop, rock, chanson française, électro, latino, K-pop…) ———
 const EXTRAITS = [
@@ -72,7 +76,9 @@ const EXTRAITS = [
   'Whitney Houston', 'Stevie Wonder', 'Prince', 'David Bowie', 'Elton John', 'Tina Turner', 'Cyndi Lauper', 'Lenny Kravitz', 'Amy Winehouse', 'Alicia Keys', 'Usher', 'Pharrell Williams', 'Gnarls Barkley', 'Mark Ronson', 'Jason Derulo', 'Flo Rida', 'Black Eyed Peas', 'Gotye', 'Lykke Li', 'Vance Joy',
 ]
 // ——— Rap (listes d'origine + quelques ajouts) ———
-const RAP_FR = ['Timar', 'Yvnnis', 'Luther', 'RK', 'JRK 19', 'Kobalad', 'La Fève', 'Rnboi', 'Oboy', 'Guy2Bezbar', 'Zamdane', 'Kerchak', 'Bekar', 'La Mano 1.9', 'Jolagreen23', 'Soolking', 'Niro', 'Hatik', 'Kekra', 'Green Montana', 'Ninho', 'Gims', 'Dosseh', 'Isha', 'Disiz', 'Nekfeu', 'Georgio', 'Prince Waly', 'Captaine Roshi', 'Houdi', 'Kalash', 'Elams', 'Ashe 22', 'Zuukou Mayzie', 'Khali', 'Sto', 'Mairo', 'Jul', 'Ninho', 'PNL', 'Booba', 'SCH', 'Soprano', 'Nekfeu', 'Orelsan', 'Damso', 'Niska', 'Gazo', 'Tiakola', 'Werenoi', 'Hamza', 'Vald', 'Naps', 'Heuss l\'Enfoiré', 'Lacrim',
+const RAP_FR = ['1PLIKÉ140', 'Anyme023', 'Yurz', 'Arma Jackson', 'NTRÈ$', 'Temper City', 'HLD', 'Mauvais Djo', 'Tibadj', 'KLN', 'IDS', 'Columbine', 'Djaksparo', 'Lushe', 'Vacra',
+  'kulturr', 'Beendo Z', 'Dr. Yaro', 'Asky', 'a6el', 'La Rvfleuze', 'L2B', 'Yorssy', 'JKSN', 'Zokush', 'skabe', 'gapman', 'Bilouki', 'J9ueve', 'Lujipeka', 'Shaga', 'Prompto', '55ASKY',
+  'Bu$hi', 'Ziak', 'Gambi', 'Favé', 'Mister V', 'Sasso', 'Zed', 'Kanoé', 'Baby Neelou', 'Leto', 'Tiakola', 'Gazo', 'Freeze Corleone', 'Ashe 22', 'Kerchak', 'Bekar', 'Timar', 'Yvnnis', 'Luther', 'RK', 'JRK 19', 'Kobalad', 'La Fève', 'Rnboi', 'Oboy', 'Guy2Bezbar', 'Zamdane', 'Kerchak', 'Bekar', 'La Mano 1.9', 'Jolagreen23', 'Soolking', 'Niro', 'Hatik', 'Kekra', 'Green Montana', 'Ninho', 'Gims', 'Dosseh', 'Isha', 'Disiz', 'Nekfeu', 'Georgio', 'Prince Waly', 'Captaine Roshi', 'Houdi', 'Kalash', 'Elams', 'Ashe 22', 'Zuukou Mayzie', 'Khali', 'Sto', 'Mairo', 'Jul', 'Ninho', 'PNL', 'Booba', 'SCH', 'Soprano', 'Nekfeu', 'Orelsan', 'Damso', 'Niska', 'Gazo', 'Tiakola', 'Werenoi', 'Hamza', 'Vald', 'Naps', 'Heuss l\'Enfoiré', 'Lacrim',
   'Kaaris', 'Lomepal', 'Maes', 'Alonzo', 'PLK', 'Koba LaD', 'Zola', 'Leto', 'Sexion d\'Assaut', 'La Fouine', 'Rohff', 'Diam\'s', 'MC Solaar', 'IAM', 'Suprême NTM', 'Oxmo Puccino', 'Kery James',
   'Sinik', 'Lunatic', '113', 'Fonky Family', 'Médine', 'Freeze Corleone', 'Laylow', 'Josman', 'Luv Resval', 'Gradur', 'MHD', 'Dinos', 'Kalash Criminel', 'Sofiane', 'Jok\'Air', 'Ziak',
   'Doc Gynéco', 'Passi', 'Ärsenik', 'Stomy Bugsy', 'Lino', 'Youssoupha', 'Sniper', 'Gambi', 'SDM', 'Rim\'K', 'Sadek', 'Tayc', 'Dadju', 'Lartiste', 'Bouss', 'Zkr', 'Rsko', 'Favé', 'Theodora',
@@ -80,7 +86,7 @@ const RAP_FR = ['Timar', 'Yvnnis', 'Luther', 'RK', 'JRK 19', 'Kobalad', 'La Fèv
   'Soolking', "L'Algérino", 'Nabil', 'Kofs', 'Moha La Squale', 'Djadja & Dinaz', 'Hornet La Frappe', 'Dosseh', 'Tsew The Kid', 'Ninho', 'Ninho', 'Kekra', 'Hatik', 'Nekfeu', 'Lefa', 'Georgio', 'Népal', 'Alpha Wann', 'Sneazzy', 'Nemir',
   'Caballero & JeanJass', 'Hamza', 'Damso', 'Shay', 'Roméo Elvis', 'Green Montana', 'Krisy', 'Le Motel', 'Tiakola', 'Leto', 'Tif', 'Guy2Bezbar', 'Jolagreen23', 'Zamdane', 'Kerchak', 'La Mano 1.9', 'Ninho', 'Timal', 'Landy', 'Bramsito',
   'Hugo TSR', 'Scylla', 'Disiz', 'Akhenaton', "Shurik'n", 'Psy 4 de la Rime', 'Keny Arkana', 'Casey', 'Booba', 'Nessbeal', 'Mac Tyer', 'Despo Rutti', 'Seth Gueko', 'Alkpote', 'Jazzy Bazz', 'Deen Burbigo', 'Lujipeka', 'Columbine', 'Lord Esperanza', 'Bekar']
-const RAP_US = ['DaBaby', 'Don Toliver', 'Lil Tjay', 'Roddy Ricch', 'NBA YoungBoy', 'Polo G', 'Rod Wave', 'Lil Yachty', 'Ken Carson', 'Yeat', 'GloRilla', 'Latto', 'Offset', 'Migos', 'Tyga', 'Wiz Khalifa', 'Denzel Curry', 'JID', 'Baby Keem', 'Lil Peep', 'Trippie Redd', 'Ski Mask the Slump God', 'Lil Skies', 'A Boogie wit da Hoodie', 'Fivio Foreign', 'Eminem', 'Drake', 'Kendrick Lamar', 'Travis Scott', 'Kanye West', 'JAY-Z', '50 Cent', 'Snoop Dogg', 'Dr. Dre', '2Pac', 'The Notorious B.I.G.', 'Nicki Minaj', 'Cardi B', 'Post Malone',
+const RAP_US = ['NF', 'BigXthaPlug', '$NOT', 'Lil Tecca', 'Polo G', 'Pop Smoke', 'Yeat', 'Travis Scott', 'Juice WRLD', 'Drake', 'Kendrick Lamar', 'Metro Boomin', 'Tyler, The Creator', 'XXXTENTACION', 'Eminem', 'Lil Baby', 'Don Toliver', 'DaBaby', 'Don Toliver', 'Lil Tjay', 'Roddy Ricch', 'NBA YoungBoy', 'Polo G', 'Rod Wave', 'Lil Yachty', 'Ken Carson', 'Yeat', 'GloRilla', 'Latto', 'Offset', 'Migos', 'Tyga', 'Wiz Khalifa', 'Denzel Curry', 'JID', 'Baby Keem', 'Lil Peep', 'Trippie Redd', 'Ski Mask the Slump God', 'Lil Skies', 'A Boogie wit da Hoodie', 'Fivio Foreign', 'Eminem', 'Drake', 'Kendrick Lamar', 'Travis Scott', 'Kanye West', 'JAY-Z', '50 Cent', 'Snoop Dogg', 'Dr. Dre', '2Pac', 'The Notorious B.I.G.', 'Nicki Minaj', 'Cardi B', 'Post Malone',
   'Lil Wayne', 'J. Cole', 'Future', 'Lil Uzi Vert', '21 Savage', 'A$AP Rocky', 'Tyler, The Creator', 'Kid Cudi', 'Juice WRLD', 'XXXTENTACION', 'Pop Smoke', 'Lil Nas X', 'Megan Thee Stallion',
   'Doja Cat', 'Playboi Carti', 'Wu-Tang Clan', 'Nas', 'Outkast', 'Missy Elliott', 'Run–D.M.C.', 'Public Enemy', 'N.W.A', 'Ice Cube', 'Busta Rhymes', 'DMX', 'Mac Miller', 'Childish Gambino',
   'Lil Baby', 'Gunna', 'Young Thug', 'Logic', 'Coolio', 'Nelly', 'Ludacris', 'Kodak Black', 'Metro Boomin', 'Lil Durk', 'Ice Spice', 'Central Cee', 'Stormzy', 'Jack Harlow', 'Lil Tecca']
@@ -224,20 +230,20 @@ const DISNEY = [
 ]
 
 // ——— Pop & R&B internationale ———
-const POP = ['The Weeknd', 'Dua Lipa', 'Doja Cat', 'Bruno Mars', 'Imagine Dragons', 'Twenty One Pilots', 'Black Eyed Peas', 'Michael Jackson', 'Rihanna', 'Beyoncé', 'Taylor Swift',
+const POP = ['OneRepublic', 'Charlie Puth', 'Keane', 'willow', 'Bad Bunny', 'Black Eyed Peas', 'Bruno Mars', 'Dua Lipa', 'Doja Cat', 'Michael Jackson', 'twenty one pilots', 'Imagine Dragons', 'Rauw Alejandro', 'Karol G', 'Feid', 'Tini', 'Calvin Harris', 'David Guetta', 'Sean Paul', 'Pitbull', 'Shakira', 'Coldplay', 'The Weeknd', 'Dua Lipa', 'Doja Cat', 'Bruno Mars', 'Imagine Dragons', 'Twenty One Pilots', 'Black Eyed Peas', 'Michael Jackson', 'Rihanna', 'Beyoncé', 'Taylor Swift',
   'Ariana Grande', 'Billie Eilish', 'Harry Styles', 'Ed Sheeran', 'Justin Bieber', 'Sabrina Carpenter', 'Olivia Rodrigo', 'Chappell Roan', 'SZA', 'Frank Ocean', 'Chris Brown', 'Usher',
   'Alicia Keys', 'Lady Gaga', 'Katy Perry', 'Selena Gomez', 'Shawn Mendes', 'Miley Cyrus', 'Post Malone', 'Coldplay', 'Maroon 5', 'OneRepublic', 'Sam Smith', 'Adele', 'Charli xcx',
   'Tate McRae', 'Benson Boone', 'Teddy Swims', 'Jason Derulo', 'Ne-Yo', 'Akon', 'Nelly Furtado', 'Britney Spears', 'Christina Aguilera', 'Mariah Carey', 'Whitney Houston', 'Prince',
   'Stevie Wonder', 'Madonna', 'George Michael', 'Janet Jackson', 'TLC', 'Destiny\'s Child', 'Daniel Caesar', 'Giveon', 'Khalid', 'Brent Faiyaz', 'Summer Walker', 'H.E.R.', 'Kehlani',
   'Lizzo', 'Ellie Goulding', 'Zara Larsson', 'Camila Cabello', 'Halsey', 'The Kid LAROI', 'Jung Kook', 'ROSÉ', 'Mark Ronson', 'Pharrell Williams', 'Justin Timberlake', 'Nelly', 'Jennifer Lopez']
 // ——— Indie / alternatif ———
-const INDIE = ['Mitski', 'Tame Impala', 'Cigarettes After Sex', 'Dominic Fike', 'James Blake', 'sombr', 'Arctic Monkeys', 'The Strokes', 'Mac DeMarco', 'Clairo', 'beabadoobee', 'Steve Lacy',
+const INDIE = ['TV Girl', 'The Walters', 'Cœur de pirate', 'The Neighbourhood', 'Glass Animals', 'Cigarettes After Sex', 'Tame Impala', 'sombr', 'Dominic Fike', 'Mitski', 'Lana Del Rey', 'Daniel Caesar', 'Her', 'Lomepal', 'Eddy de Pretto', 'Yoa', 'Zaho de Sagazan', 'Mitski', 'Tame Impala', 'Cigarettes After Sex', 'Dominic Fike', 'James Blake', 'sombr', 'Arctic Monkeys', 'The Strokes', 'Mac DeMarco', 'Clairo', 'beabadoobee', 'Steve Lacy',
   'Rex Orange County', 'Phoebe Bridgers', 'Lorde', 'The 1975', 'Glass Animals', 'Hozier', 'Florence + The Machine', 'Lana Del Rey', 'The Neighbourhood', 'Wallows', 'Cage The Elephant',
   'Foster The People', 'MGMT', 'Vampire Weekend', 'Phoenix', 'Two Door Cinema Club', 'alt-J', 'Bon Iver', 'Beach House', 'Radiohead', 'The Smiths', 'The Cure', 'Pixies', 'Franz Ferdinand',
   'Kings of Leon', 'The Killers', 'Gorillaz', 'Laufey', 'Djo', 'Gracie Abrams', 'Men I Trust', 'Still Woozy', 'Joji', 'Faye Webster', 'Mazzy Star', 'The xx', 'Fleet Foxes', 'Arcade Fire',
   'Louise Attaque', "L'Impératrice", 'Air', 'Justice', 'Pomme', 'Clara Luciani', 'Juliette Armanet', 'Feu! Chatterton', 'La Femme', 'Odezenne', 'Hervé', 'November Ultra', 'Malik Djoudi']
 // ——— Afro / Shatta / Afro-trap ———
-const AFRO = ['Meryl', 'Aya Nakamura', 'Tiakola', 'MHD', 'Keblack', 'Nono La Grinta', 'Burna Boy', 'Wizkid', 'Davido', 'Rema', 'Tems', 'Ayra Starr', 'Asake', 'Fireboy DML', 'CKay',
+const AFRO = ['Meryl', 'Nono La Grinta', 'Naza', 'KeBlack', 'MHD', 'Tiakola', 'Shaga', 'Asky', 'Dr. Yaro', 'Bamby', 'Theodora', 'Joé Dwèt Filé', 'Franglish', 'Tayc', 'Dadju', 'Meryl', 'Aya Nakamura', 'Tiakola', 'MHD', 'Keblack', 'Nono La Grinta', 'Burna Boy', 'Wizkid', 'Davido', 'Rema', 'Tems', 'Ayra Starr', 'Asake', 'Fireboy DML', 'CKay',
   'Omah Lay', 'Tyla', 'Black Sherif', 'Mr Eazi', 'Joeboy', 'Kizz Daniel', 'Yemi Alade', 'Tiwa Savage', 'Fally Ipupa', "Innoss'B", 'Franglish', 'Naza', 'Dadju', 'Tayc', 'Ronisia',
   'Marwa Loud', 'Lartiste', 'Kalash', 'Admiral T', 'Krys', 'Nesly', 'Jahyanai King', 'Bamby', 'Magic System', 'DJ Arafat', 'Koffi Olomidé', 'Vegedream', 'Niska', 'Ninho', 'Soolking',
   'Locko', 'Charlotte Dipanda', 'Singuila', 'Hiro', 'Damso', 'Joé Dwèt Filé', 'Kaysha', 'Lynnsha', 'Fanny J', 'Slaï', 'Medhy Custos', 'Wizkid', 'Diamond Platnumz', 'Sauti Sol']
