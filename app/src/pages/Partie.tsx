@@ -2,7 +2,7 @@ import DefiScore from '../components/DefiScore'
 import { noterActivite } from '../activite'
 import Signaler from '../components/Signaler'
 import { createPortal } from 'react-dom'
-import { ETAPES, seuilEtape, urlEtape, validerEtape } from '../aventure'
+import { ETAPES, questionsEtape, seuilEtape, urlEtape, validerEtape } from '../aventure'
 import { publierScoreJour } from '../jour'
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
@@ -367,6 +367,8 @@ export default function Partie() {
         <div className="jauge-combo" aria-label={`Score ${score}, combo ${combo}`}>
           <span className="t" style={{ fontWeight: 900 }}>{score.toLocaleString(lang === 'fr' ? 'fr-FR' : 'en-GB')} pts</span>
           {combo >= 2 && <span key={combo} className={`chip combo combo-${multiplicateur(combo) >= 3 ? 3 : multiplicateur(combo) >= 2 ? 2 : multiplicateur(combo) > 1 ? 1 : 0}`}>{combo} {lang === 'fr' ? 'd’affilée' : 'in a row'}{multiplicateur(combo) > 1 ? ` · ×${multiplicateur(combo)}` : ''}</span>}
+          {/* Mode histoire : on sait qu'on affronte un mini-boss, un boss ou l'Ultime */}
+          {(() => { const x = ETAPES[Number(params.get('aventure') ?? NaN)]; return x?.type ? <span className={`chip chip-boss ${x.type}`}>{x.type === 'mini' ? '⚔️ Mini-boss' : x.type === 'ultime' ? '🌌 Boss ultime' : '👑 Boss'} : {x.nom[lang]} · {seuilEtape(x)}/{questionsEtape(x)}</span> : null })()}
           {double && <span className="chip" style={{ background: 'var(--mus-t)', color: 'var(--mus-i)' }}>{lang === 'fr' ? '×2 actif' : '×2 on'}</span>}
         </div>
         {/* Mini-jeu Zoom : le gros plan se fait dans le cadre de l'image, qui coupe ce qui dépasse */}
@@ -580,7 +582,7 @@ function Resultat({ reponses, xp, pieces, score, comboMax, k, reduit, onReplay }
               const reussi = bonnes >= seuilEtape(ETAPES[n])
               return reussi && ETAPES[n + 1]
                 ? <Link className="btn btn-p btn-lg" to={urlEtape(n + 1)} autoFocus>{lang === 'fr' ? 'Étape suivante' : 'Next step'}<Icon d={ICONS.arrowR} /></Link>
-                : <Link className="btn btn-s btn-lg" to="/aventure">🗺️ {lang === 'fr' ? (reussi ? 'Voir la carte' : `Il faut ${seuilEtape(ETAPES[n])}/10 : retour à la carte`) : 'Back to map'}</Link>
+                : <Link className="btn btn-s btn-lg" to="/aventure">🗺️ {lang === 'fr' ? (reussi ? 'Voir la carte' : `Il faut ${seuilEtape(ETAPES[n])}/${questionsEtape(ETAPES[n])} : retour à la carte`) : 'Back to map'}</Link>
             })()}
             <NiveauSuivant />
             <button className="btn btn-p btn-lg" onClick={() => onReplay()} autoFocus>{t('res.replay')}<Icon d={ICONS.review} /></button>

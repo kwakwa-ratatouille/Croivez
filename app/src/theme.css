@@ -852,7 +852,7 @@ body.glisse-en-cours { user-select: none; }
 .histoire-tete { display: flex; flex-direction: column; gap: 6px; }
 .histoire-tete h1 { font-size: 30px; font-weight: 900; }
 .histoire-tete p, .histoire-tete small { color: var(--muted); font-size: 14px; }
-.carte-region { position: relative; height: 870px; border-radius: 28px; overflow: hidden; box-shadow: inset 0 0 0 3px rgba(255,255,255,.35), 0 10px 26px rgba(0,0,0,.12); }
+.carte-region { position: relative; height: 980px; border-radius: 28px; overflow: hidden; box-shadow: inset 0 0 0 3px rgba(255,255,255,.35), 0 10px 26px rgba(0,0,0,.12); }
 .carte-region.fermee { filter: grayscale(.7) brightness(.9); }
 .carte-region-titre { position: absolute; top: 14px; left: 16px; z-index: 2; font-size: 19px; font-weight: 900; padding: 6px 12px; border-radius: 14px; background: rgba(255,255,255,.25); backdrop-filter: blur(6px); }
 .carte-deco { position: absolute; font-size: 30px; opacity: .55; transform: translate(-50%, -50%); pointer-events: none; }
@@ -2388,3 +2388,39 @@ img, svg { -webkit-user-drag: none; }
 .objet-defi.grand .objet-defi-texte { font-size: 14.5px; -webkit-line-clamp: 4; }
 .objet-defi.grand .objet-defi-barre { height: 10px; }
 .objet-defi.grand .objet-defi-chiffres { font-size: 14px; }
+
+/* Mode histoire : un mode à part, boss mis en valeur, décor qui flotte (transform et opacité seulement) */
+.histoire-hero { padding: 18px; border-radius: 24px; background: linear-gradient(135deg, color-mix(in srgb, #8E4FC4 16%, var(--surface)), color-mix(in srgb, #F59E0B 14%, var(--surface))); box-shadow: var(--shadow); }
+.histoire-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.histoire-stats > span { display: flex; flex-direction: column; align-items: center; padding: 8px 4px; border-radius: 16px; background: var(--surface); font-size: 18px; line-height: 1.1; }
+.histoire-stats strong { font: 900 22px Nunito, sans-serif; }
+.histoire-stats small { font-size: 11.5px; color: var(--muted); font-weight: 700; }
+.histoire-prochaine { align-self: flex-start; padding: 6px 12px; border-radius: 999px; background: var(--surface); font-size: 13.5px; }
+.carte-region-titre { display: flex; flex-direction: column; gap: 0; }
+.carte-region-titre small { font-size: 12px; font-weight: 700; opacity: .85; }
+.carte-deco { animation: deco-flotte 7s ease-in-out infinite alternate; will-change: transform; }
+@keyframes deco-flotte { from { transform: translate(-50%, -50%) translateY(-6px) rotate(-4deg); } to { transform: translate(-50%, -50%) translateY(6px) rotate(4deg); } }
+.carte-pastille.mini { width: 60px; height: 60px; font-size: 24px; background: linear-gradient(160deg, #FDBA74, #EA580C); color: #fff; }
+.carte-pastille.boss { width: 74px; height: 74px; font-size: 30px; background: linear-gradient(160deg, #FFE08A, #E3A72F 55%, #B45309); }
+.carte-pastille.ultime { width: 92px; height: 92px; font-size: 40px; background: conic-gradient(#7C3AED, #EC4899, #22D3EE, #FDE047, #7C3AED); color: #fff; box-shadow: 0 0 0 4px rgba(255,255,255,.85), 0 8px 24px rgba(124, 58, 237, .6); }
+.carte-aura { position: absolute; top: 0; left: 50%; border-radius: 50%; pointer-events: none; transform: translateX(-50%); animation: aura-boss 2.2s ease-in-out infinite; }
+.carte-aura.mini { width: 60px; height: 60px; background: radial-gradient(circle, rgba(249, 115, 22, .55), transparent 70%); }
+.carte-aura.boss { width: 74px; height: 74px; background: radial-gradient(circle, rgba(250, 204, 21, .65), transparent 70%); }
+.carte-aura.ultime { width: 92px; height: 92px; background: radial-gradient(circle, rgba(236, 72, 153, .7), rgba(124, 58, 237, .4) 50%, transparent 72%); }
+@keyframes aura-boss { 0%, 100% { transform: translateX(-50%) scale(1); opacity: .8; } 50% { transform: translateX(-50%) scale(1.7); opacity: 0; } }
+.carte-badge { font: 900 9.5px Nunito, sans-serif; letter-spacing: 1px; padding: 1px 7px; border-radius: 999px; color: #fff; margin-top: -10px; z-index: 1; }
+.carte-badge.mini { background: #C2410C; }
+.carte-badge.boss { background: #B45309; }
+.carte-badge.ultime { background: linear-gradient(90deg, #7C3AED, #EC4899); }
+.carte-etape.faite .carte-pastille.mini, .carte-etape.faite .carte-pastille.boss, .carte-etape.faite .carte-pastille.ultime { background: #4FAE6A; color: #fff; }
+.carte-recompenses { position: absolute; left: 12px; right: 12px; bottom: 12px; z-index: 2; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 8px 10px; border-radius: 16px; background: rgba(0, 0, 0, .32); color: #fff; font-size: 12.5px; font-weight: 800; }
+.carte-recompenses > span:not(:first-child) { padding: 3px 9px; border-radius: 999px; background: rgba(255, 255, 255, .18); }
+.carte-recompenses > span.eue { background: rgba(79, 174, 106, .85); }
+.carte-region.finale { box-shadow: inset 0 0 0 3px rgba(236, 72, 153, .6), 0 0 40px rgba(124, 58, 237, .45); }
+.histoire-fin { text-align: center; font-size: 22px; font-weight: 900; }
+@media (prefers-reduced-motion: reduce) { .carte-deco, .carte-aura { animation: none; } }
+.chip-boss { font-weight: 900; color: #fff !important; }
+.chip-boss.mini { background: #C2410C !important; }
+.chip-boss.boss { background: linear-gradient(90deg, #B45309, #E3A72F) !important; }
+.chip-boss.ultime { background: linear-gradient(90deg, #7C3AED, #EC4899) !important; }
+.carte-region.fermee .carte-recompenses { bottom: 58px; }
