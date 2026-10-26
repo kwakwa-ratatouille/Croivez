@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { AVEC_EPOQUES, EPOQUES } from '../quiz/engine'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth'
 import { usePrefs } from '../i18n'
@@ -12,9 +13,9 @@ import Illustration from './Illustration'
 import { ICONS, Icon, Piece, Toggle } from './ui'
 
 // Derniers réglages : la fiche se rouvre comme on l'a laissée
-type Reglages = { d: Difficulte; m: Format; rapide: boolean; chrono: boolean }
+type Reglages = { d: Difficulte; m: Format; rapide: boolean; chrono: boolean; ep?: string[] }
 // Par défaut : les réglages de Paramètres → Partie
-const lire = (): Omit<Reglages, 'd'> => { const p = lirePrefsJeu(); try { if (!localStorage.getItem('qcmFiche')) { localStorage.setItem('qcmFiche', '1'); const r = JSON.parse(localStorage.getItem('reglages') ?? '{}'); if (r.m === 'auto') localStorage.setItem('reglages', JSON.stringify({ ...r, m: 'qcm' })) } } catch { /* stockage indisponible */ } const def = { m: p.m, rapide: p.rapide, chrono: p.chrono }; try { const v = { ...def, ...JSON.parse(localStorage.getItem('reglages') ?? '{}') }; return { m: FORMATS.some((x) => x.v === v.m) ? v.m : 'qcm', rapide: v.rapide, chrono: v.chrono } } catch { return def } }
+const lire = (): Omit<Reglages, 'd'> => { const p = lirePrefsJeu(); try { if (!localStorage.getItem('qcmFiche')) { localStorage.setItem('qcmFiche', '1'); const r = JSON.parse(localStorage.getItem('reglages') ?? '{}'); if (r.m === 'auto') localStorage.setItem('reglages', JSON.stringify({ ...r, m: 'qcm' })) } } catch { /* stockage indisponible */ } const def = { m: p.m, rapide: p.rapide, chrono: p.chrono }; try { const v = { ...def, ...JSON.parse(localStorage.getItem('reglages') ?? '{}') }; return { m: FORMATS.some((x) => x.v === v.m) ? v.m : 'qcm', rapide: v.rapide, chrono: v.chrono, ep: Array.isArray(v.ep) ? v.ep : [] } } catch { return def } }
 
 // Fiche rapide : un quiz se lance en deux appuis (le quiz, puis « Jouer »), réglages à portée de pouce
 export default function FicheLancement({ id, onFermer }: { id: string; onFermer: () => void }) {
@@ -46,7 +47,8 @@ export default function FicheLancement({ id, onFermer }: { id: string; onFermer:
     const m = carte ? 'libre' : qcmSeul ? 'qcm' : r.m
     const d = difficulteOuverte(r.d, profile, id) ? r.d : 0
     const p = lirePrefsJeu()
-    nav(`/partie?s=${id}&m=${m}&n=${p.n}&d=${d}&t=${r.chrono ? p.duree : 0}${r.rapide ? '&r=1' : ''}`)
+    const ep = AVEC_EPOQUES.has(id) && r.ep?.length && r.ep.length < EPOQUES.length ? `&ep=${r.ep.join(',')}` : ''
+    nav(`/partie?s=${id}&m=${m}&n=${p.n}&d=${d}&t=${r.chrono ? p.duree : 0}${r.rapide ? '&r=1' : ''}${ep}`)
   }
 
   return (
@@ -80,6 +82,19 @@ export default function FicheLancement({ id, onFermer }: { id: string; onFermer:
           })}
         </div>
 
+        {AVEC_EPOQUES.has(id) && (() => {
+          const ep = r.ep ?? []
+          const toutes = !ep.length || ep.length === EPOQUES.length
+          return (
+            <div className="fiche-epoques" role="group" aria-label={fr ? 'Époques' : 'Eras'}>
+              <span className="fiche-epoques-titre">{fr ? 'Époques' : 'Eras'}</span>
+              <button type="button" className="pill" aria-pressed={toutes} onClick={() => maj({ ep: [] })}>{fr ? 'Toutes' : 'All'}</button>
+              {EPOQUES.map((e) => (
+                <button key={e.id} type="button" className="pill" aria-pressed={!toutes && ep.includes(e.id)} onClick={() => { const l = toutes ? [e.id] : ep.includes(e.id) ? ep.filter((x) => x !== e.id) : [...ep, e.id]; maj({ ep: l.length === EPOQUES.length ? [] : l }) }}>{e[lang]}</button>
+              ))}
+            </div>
+          )
+        })()}
         {msg && verrou === 0 && <p role="status" className="fiche-legende" style={{ color: 'var(--ko-i)', fontWeight: 600 }}>{msg}</p>}
         {!legende && (() => { const pl = progresLegende(k, profile); return <p className="fiche-legende"><Icon d={ICONS.lock} size={14} />{fr ? `Légende : la difficulté ultime (6 choix presque identiques, des fautes pièges partout, 12 s, XP et pièces ×3). Elle s’ouvre sur toute la famille quand chaque quiz a ses 4 niveaux réussis : ${pl.faits} / ${pl.total}.` : `Legend: the ultimate level. Unlocks for the whole family once every quiz has its 4 levels passed: ${pl.faits} / ${pl.total}.`}</p> })()}
 

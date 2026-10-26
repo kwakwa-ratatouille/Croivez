@@ -28,7 +28,7 @@ export type SousThemeId = 'drapeaux' | 'drapeaux-europe' | 'drapeaux-afrique' | 
 
 // Thèmes générés depuis Wikidata (scripts/build-culture.mjs)
 type Texte = Record<Lang, string>
-export type ItemCulture = { id: string; n: Texte; d?: Texte; img?: string; r?: string | Texte; g?: string; alt?: Texte[]; x?: Record<string, string | Texte | undefined>; f?: [Texte, string | Texte | undefined][] }
+export type ItemCulture = { id: string; n: Texte; d?: Texte; img?: string; r?: string | Texte; g?: string; an?: number; rk?: number; alt?: Texte[]; x?: Record<string, string | Texte | undefined>; f?: [Texte, string | Texte | undefined][] }
 type TypeCulture = 'image' | 'attribut' | 'annee' | 'audio'
 const minuscule = (n: string) => n.charAt(0).toLowerCase() + n.slice(1)
 // « de Paris », « du Havre », « de la Rochelle », « d’Angers »
@@ -109,6 +109,9 @@ const CULTURE = {
   // Blind tests rap et animés (scripts/build-deezer.mjs)
   'rap-fr': { type: 'audio', q: { fr: () => 'Qui rappe sur ce morceau ?', en: () => 'Who is rapping on this track?' } },
   'rap-us': { type: 'audio', q: { fr: () => 'Qui rappe sur ce morceau ?', en: () => 'Who is rapping on this track?' } },
+  'pop-inter': { type: 'audio', q: { fr: () => 'Qui interprète ce titre ?', en: () => 'Who performs this song?' } },
+  indie: { type: 'audio', q: { fr: () => 'Qui interprète ce titre ?', en: () => 'Who performs this song?' } },
+  afro: { type: 'audio', q: { fr: () => 'Qui interprète ce titre ?', en: () => 'Who performs this song?' } },
   'rap-titre': { type: 'audio', pack: 'rap-fr', champ: 'nom', q: { fr: () => 'Quel est le titre de ce son ?', en: () => 'What is this track called?' } },
   openings: { type: 'audio', q: { fr: () => 'De quel animé vient cet opening ?', en: () => 'Which anime is this opening from?' } },
   'pokemon-photo': { type: 'image', q: { fr: () => 'Quel est ce Pokémon ?', en: () => 'Who’s that Pokémon?' } },
@@ -438,7 +441,7 @@ export function distanceKm([lat1, lng1]: [number, number], [lat2, lng2]: [number
 }
 
 // max : difficulté la plus haute débloquée (pour le mode Tout)
-type Opts = { exclus?: string[]; sousTheme: SousThemeId; difficulte: Difficulte; max?: Palier; nombre: number; mode: Mode; lang: Lang; ids?: string[]; seed?: number }
+type Opts = { epoques?: string[]; exclus?: string[]; sousTheme: SousThemeId; difficulte: Difficulte; max?: Palier; nombre: number; mode: Mode; lang: Lang; ids?: string[]; seed?: number }
 
 // Paliers cumulatifs : chaque difficulté contient celles d'en dessous, mais 60 % des questions
 // viennent de son propre palier (Expert = surtout du très pointu). Mode Tout : tout ce qui est débloqué.
@@ -643,6 +646,21 @@ const PART_PALIER = { 1: 0.12, 2: 0.32, 3: 0.62, 4: 1 } as const
 const finCulture = (n: number) => (d: Palier) => (d === 4 ? n : Math.min(n, Math.max(POOL_CULTURE[d], Math.round(n * PART_PALIER[d]))))
 const texte = (v: string | Texte | undefined, lang: Lang) => (v === undefined ? '' : typeof v === 'string' ? v : v[lang])
 
+// Époques des quiz musique (année de sortie de chaque son) : on peut en cocher plusieurs, ou toutes
+export const EPOQUES: { id: string; fr: string; en: string; dans: (an: number) => boolean }[] = [
+  { id: '60-80', fr: 'Années 60-80', en: '60s-80s', dans: (a) => a < 1990 },
+  { id: '90', fr: 'Années 90', en: '90s', dans: (a) => a >= 1990 && a < 2000 },
+  { id: '2000', fr: 'Années 2000', en: '2000s', dans: (a) => a >= 2000 && a < 2010 },
+  { id: '2010', fr: '2010 à aujourd’hui', en: '2010s-today', dans: (a) => a >= 2010 },
+]
+export const AVEC_EPOQUES = new Set(['extraits', 'blind-titre', 'blind-album', 'rap-fr', 'rap-titre', 'rap-us', 'pop-inter', 'indie', 'afro'])
+const filtrerEpoques = (items: ItemCulture[], o: Opts) => {
+  const ep = EPOQUES.filter((e) => o.epoques?.includes(e.id))
+  if (!ep.length || ep.length === EPOQUES.length || !AVEC_EPOQUES.has(o.sousTheme)) return items
+  const l = items.filter((it) => it.an && ep.some((e) => e.dans(it.an!)))
+  return l.length >= 12 ? l : items // trop peu de sons sur ces années : on garde tout plutôt qu'une partie vide
+}
+
 function culture(o: Opts, tousItems: ItemCulture[]): Question[] {
   const { sousTheme, mode, lang } = o
   const difficulte = palierDe(o.difficulte)
@@ -659,7 +677,8 @@ function culture(o: Opts, tousItems: ItemCulture[]): Question[] {
   const items = cfg.type === 'image' ? (lisibles.length >= 30 ? lisibles : tousItems).filter((it) => it.img) : tousItems.filter((it) => val(it) && !(sousTheme.startsWith('traduction') && simple(texte(val(it), 'fr')) === simple(it.n.fr))
     // Question où la réponse se lit dans l'énoncé et ne peut pas être masquée : écartée
     && (!avecTexte || masquer(it.n.fr, texte(val(it), 'fr'), cfg.type === 'annee') !== null))
-  const { cibles, pool } = tirer(items, finCulture(items.length), o, (it) => it.id)
+  const choisis = filtrerEpoques(items, o)
+  const { cibles, pool } = tirer(choisis, finCulture(choisis.length), o, (it) => it.id)
   // Années proposées autour de la bonne : à 1 ou 2 ans près en difficile
   // Légende : toutes les années à 1, 2 ou 3 ans près
   const ecarts = o.difficulte === LEGENDE ? [-3, -2, -1, 1, 2, 3] : { 1: [-15, -10, -7, -5, 5, 7, 10, 15], 2: [-6, -4, -3, -2, 2, 3, 4, 6], 3: [-3, -2, -1, 1, 2, 3], 4: [-2, -1, 1, 2] }[difficulte]

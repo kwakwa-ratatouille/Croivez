@@ -74,6 +74,7 @@ export default function Partie() {
   // Éclair et Pile ou face imposent leur propre chrono
   const chrono = legende ? 10 : infoMj?.chrono ?? Number(params.get('t') ?? 0)
   const defi = params.get('defi') === '1'
+  const epoques = params.get('ep')?.split(',').filter(Boolean)
   const revision = params.get('rev') === '1'
   // Mode rapide : pas de fiche, question suivante automatique (toujours en Express et Survie)
   const rapide = params.get('r') === '1' || jeu === 'express' || jeu === 'survie' || !prefs.fiches
@@ -138,7 +139,7 @@ export default function Partie() {
     }
     // Question boss : une dernière question très dure (difficulté max débloquée) en partie classique
     const avecBoss = !ids && !defi && !revision && !legende
-    genererPartie({ sousTheme, difficulte, max, nombre: avecBoss ? Math.max(1, nombre - 1) : nombre, mode, lang, ids, seed: ids ? undefined : seed }).then(async (qs) => {
+    genererPartie({ sousTheme, difficulte, max, nombre: avecBoss ? Math.max(1, nombre - 1) : nombre, mode, lang, ids, seed: ids ? undefined : seed, epoques }).then(async (qs) => {
       if (avecBoss) {
         const candidats = await genererPartie({ sousTheme, difficulte: max, max, nombre: 3, mode, lang }).catch(() => [])
         const boss = candidats.find((c) => !qs.some((x) => x.id === c.id))

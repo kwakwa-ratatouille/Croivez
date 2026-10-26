@@ -2367,3 +2367,7 @@ img, svg { -webkit-user-drag: none; }
 .salon-code-mini { margin-left: 8px; padding: 2px 8px; border-radius: 999px; background: var(--surface2); font-size: 12px; font-weight: 700; color: var(--muted); }
 .salon-code-mini strong { letter-spacing: 2px; color: var(--text); }
 @media (max-width: 760px) and (orientation: landscape) { .tv-jeu.avec-media { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); grid-template-areas: "entete entete" "barre barre" "question enonce" "question options" "avatars avatars"; } }
+
+/* Fiche de lancement : époques des quiz musique (plusieurs, ou toutes) */
+.fiche-epoques { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.fiche-epoques-titre { width: 100%; font-size: 13px; font-weight: 800; color: var(--muted); }
