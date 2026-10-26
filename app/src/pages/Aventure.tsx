@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../auth'
 import { usePrefs } from '../i18n'
@@ -31,7 +31,24 @@ const SOMBRES = ['espace', 'foret', 'ocean', 'studio', 'scene', 'arcade', 'arene
 const DECOR_DEFAUT = { fond: 'linear-gradient(180deg, #E2E8F0, #94A3B8)', deco: ['⭐', '🗺️', '✨', '🧭', '⭐', '🗝️'] }
 // Positions en zigzag (en % de la largeur) pour 8 étapes par région, et des éléments de décor
 const X = [22, 62, 80, 48, 18, 40, 75, 50]
-const DECO_POS: [number, number][] = [[7, 13], [88, 21], [36, 45], [92, 66], [7, 80], [62, 90]]
+const DECO_POS: [number, number][] = [[7, 13], [88, 21], [36, 45], [92, 66], [7, 80], [62, 90], [93, 40], [5, 55], [70, 8], [30, 70]]
+// Particules d'ambiance qui traversent la carte (feuilles, bulles, étoiles, notes…) : transform et opacité seulement
+const AMBIANCE: Record<string, { e: string[]; sens: 'monte' | 'tombe' | 'derive' }> = {
+  depart: { e: ['🦋', '🌼', '🐝'], sens: 'derive' }, foret: { e: ['🍃', '🍂', '🍃'], sens: 'tombe' }, montagne: { e: ['❄️', '❄️', '✨'], sens: 'tombe' },
+  cite: { e: ['✨', '🕊️', '✨'], sens: 'derive' }, studio: { e: ['⭐', '🍿', '✨'], sens: 'monte' }, scene: { e: ['🎵', '🎶', '✨'], sens: 'monte' },
+  ocean: { e: ['🫧', '🫧', '🐟'], sens: 'monte' }, espace: { e: ['✦', '⭐', '✧'], sens: 'derive' }, arcade: { e: ['👾', '⭐', '🪙'], sens: 'monte' },
+  labo: { e: ['🫧', '⚛️', '🫧'], sens: 'monte' }, arene: { e: ['🎉', '⭐', '🎊'], sens: 'tombe' }, temps: { e: ['⏳', '✨', '📜'], sens: 'derive' },
+  legendes: { e: ['🔥', '✨', '🔥'], sens: 'monte' }, toons: { e: ['🎈', '💖', '⭐'], sens: 'monte' }, festival: { e: ['🎶', '✨', '🎵'], sens: 'monte' },
+  curiosites: { e: ['❓', '✨', '❗'], sens: 'derive' }, multivers: { e: ['✦', '✧', '🌠'], sens: 'derive' },
+}
+// Décor supplémentaire de chaque monde (en plus des 6 de base)
+const DECO_PLUS: Record<string, string[]> = {
+  depart: ['🐑', '🌷', '🚜', '🐕'], foret: ['🐿️', '🌿', '🍄', '🐻'], montagne: ['🐐', '🏕️', '🌲', '🚡'], cite: ['🎻', '📯', '🖌️', '⛲'],
+  studio: ['🎟️', '📽️', '💄', '🏆'], scene: ['🎺', '🪩', '🎷', '💡'], ocean: ['🐬', '🐢', '🦈', '🐚'], espace: ['🚀', '🌍', '🔭', '🌟'],
+  arcade: ['🍒', '🏁', '🎲', '⭐'], labo: ['🧲', '🦠', '🧫', '🔋'], arene: ['🏈', '🥊', '🏆', '🚴'], temps: ['🕰️', '🏺', '🗡️', '🛡️'],
+  legendes: ['🧚', '🦄', '🗡️', '📜'], toons: ['🐻', '🦆', '🐰', '🌈'], festival: ['🎸', '🎟️', '🔊', '🌟'], curiosites: ['🧀', '🎩', '🔮', '🦖'],
+  multivers: ['🪐', '🌍', '🌀', '🌌'],
+}
 const ICONE = { mini: '⚔️', boss: '👑', ultime: '🌌' } as const
 
 // Mode histoire : un vrai mode à part, 17 mondes, des mini-boss, des boss et l'Ultime, avec leurs récompenses uniques
@@ -51,6 +68,24 @@ export default function Aventure() {
   // Prochaine récompense unique : celle du monde en cours
   const regionEnCours = REGIONS.find((r) => fait < FIN_MONDE[r.k])
   const prochaine = regionEnCours ? BOUTIQUE.find((o) => o.monde === regionEnCours.k && !possede(profile, o)) : undefined
+
+  // Mondes dessinés seulement quand ils approchent de l'écran (et le monde en cours, pour y arriver directement) :
+  // la carte reste fluide sur les téléphones modestes, sans que ça se voie au défilement
+  const indexEnCours = Math.max(0, REGIONS.findIndex((r) => fait < FIN_MONDE[r.k]))
+  const [proches, setProches] = useState<Set<number>>(() => new Set([indexEnCours - 1, indexEnCours, indexEnCours + 1]))
+  const refs = useRef<(HTMLElement | null)[]>([])
+  useEffect(() => {
+    if (typeof IntersectionObserver === 'undefined') { setProches(new Set(REGIONS.map((_, i) => i))); return }
+    const obs = new IntersectionObserver((entrees) => {
+      setProches((avant) => {
+        const l = new Set(avant)
+        for (const e of entrees) { const i = Number((e.target as HTMLElement).dataset.i); if (e.isIntersecting) l.add(i); else l.delete(i) }
+        return l
+      })
+    }, { rootMargin: '900px 0px' })
+    refs.current.forEach((el) => el && obs.observe(el))
+    return () => obs.disconnect()
+  }, [])
 
   let n = 0
   return (
@@ -74,13 +109,23 @@ export default function Aventure() {
         const verrouillee = fait < debut
         const faitsIci = Math.max(0, Math.min(r.etapes.length, fait - debut))
         const recompenses = BOUTIQUE.filter((o) => o.monde === r.k)
+        const proche = proches.has(ir)
+        const amb = AMBIANCE[r.k]
+        // Loin de l'écran : seulement le fond et le titre (les étapes comptent quand même pour la numérotation)
+        if (!proche) { n += r.etapes.length; return (
+          <section key={r.k} ref={(el) => { refs.current[ir] = el }} data-i={ir} className={`carte-region${verrouillee ? ' fermee' : ''}`} style={{ background: d.fond, color: SOMBRES.includes(r.k) ? '#fff' : '#2a2a2a' }}>
+            <div className="carte-region-titre"><span className="t">{r.emoji} {r.nom[lang]}</span><small>{fr ? `Monde ${ir + 1}` : `World ${ir + 1}`} · {faitsIci}/{r.etapes.length}</small></div>
+          </section>
+        ) }
         return (
-          <section key={r.k} className={`carte-region${verrouillee ? ' fermee' : ''}${r.k === 'multivers' ? ' finale' : ''}`} style={{ background: d.fond, color: SOMBRES.includes(r.k) ? '#fff' : '#2a2a2a' }}>
+          <section key={r.k} ref={(el) => { refs.current[ir] = el }} data-i={ir} className={`carte-region${verrouillee ? ' fermee' : ''}${r.k === 'multivers' ? ' finale' : ''}${proche ? ' proche' : ''}`} style={{ background: d.fond, color: SOMBRES.includes(r.k) ? '#fff' : '#2a2a2a' }}>
             <div className="carte-region-titre">
               <span className="t">{r.emoji} {r.nom[lang]}</span>
               <small>{fr ? `Monde ${ir + 1}` : `World ${ir + 1}`} · {faitsIci}/{r.etapes.length}</small>
             </div>
-            {d.deco.map((e, i) => <span key={i} className="carte-deco" style={{ left: `${DECO_POS[i][0]}%`, top: `${DECO_POS[i][1]}%`, animationDelay: `${-i * 1.3}s` }}>{e}</span>)}
+            {[...d.deco, ...(DECO_PLUS[r.k] ?? [])].map((e, i) => DECO_POS[i] && <span key={i} className="carte-deco" style={{ left: `${DECO_POS[i][0]}%`, top: `${DECO_POS[i][1]}%`, animationDelay: `${-i * 1.3}s`, ['--entree' as string]: `${(i % 5) * 0.08}s` }}>{e}</span>)}
+            {/* Particules d'ambiance */}
+            {amb && Array.from({ length: 7 }, (_, i) => <span key={`a${i}`} className={`carte-ambiance ${amb.sens}`} style={{ left: `${8 + ((i * 37) % 86)}%`, top: `${10 + ((i * 53) % 80)}%`, animationDelay: `${-i * 1.7}s`, animationDuration: `${9 + (i % 4) * 2}s` }}>{amb.e[i % amb.e.length]}</span>)}
             {/* Le chemin pointillé qui relie les étapes */}
             <svg className="carte-chemin" viewBox="0 0 100 980" preserveAspectRatio="none" aria-hidden="true">
               <path d={r.etapes.map((_, i) => `${i ? 'L' : 'M'} ${X[i]} ${150 + i * 92}`).join(' ')} />

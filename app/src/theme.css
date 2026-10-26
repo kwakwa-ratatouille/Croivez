@@ -2424,3 +2424,21 @@ img, svg { -webkit-user-drag: none; }
 .chip-boss.boss { background: linear-gradient(90deg, #B45309, #E3A72F) !important; }
 .chip-boss.ultime { background: linear-gradient(90deg, #7C3AED, #EC4899) !important; }
 .carte-region.fermee .carte-recompenses { bottom: 58px; }
+
+/* Mode histoire : plus d'animations (transform et opacité seulement) ; chaque monde isolé pour limiter les redessins */
+.carte-region { contain: layout paint; }
+.carte-region.proche .carte-deco { animation: deco-entree .7s cubic-bezier(.3,1.5,.5,1) var(--entree, 0s) backwards, deco-flotte 7s ease-in-out infinite alternate; }
+@keyframes deco-entree { from { scale: 0; opacity: 0; } }
+.carte-ambiance { position: absolute; z-index: 0; font-size: 18px; opacity: 0; pointer-events: none; will-change: transform, opacity; animation: ambiance-monte 10s linear infinite; }
+.carte-ambiance.monte { animation-name: ambiance-monte; }
+.carte-ambiance.tombe { animation-name: ambiance-tombe; }
+.carte-ambiance.derive { animation-name: ambiance-derive; }
+@keyframes ambiance-monte { 0% { transform: translate(0, 60px) scale(.7); opacity: 0; } 15% { opacity: .85; } 85% { opacity: .85; } 100% { transform: translate(18px, -170px) scale(1.1); opacity: 0; } }
+@keyframes ambiance-tombe { 0% { transform: translate(0, -80px) rotate(0); opacity: 0; } 15% { opacity: .85; } 85% { opacity: .85; } 100% { transform: translate(-30px, 170px) rotate(260deg); opacity: 0; } }
+@keyframes ambiance-derive { 0% { transform: translate(-50px, 10px); opacity: 0; } 20% { opacity: .8; } 50% { transform: translate(0, -14px); } 80% { opacity: .8; } 100% { transform: translate(50px, 10px); opacity: 0; } }
+.carte-etape.actuelle::before { content: ''; position: absolute; top: -9px; left: 50%; width: 72px; height: 72px; margin-left: -36px; border-radius: 50%; border: 3px dashed rgba(255, 255, 255, .95); pointer-events: none; animation: tourne 7s linear infinite; }
+.carte-etape.actuelle.etape-mini::before { width: 78px; height: 78px; margin-left: -39px; }
+.carte-etape.actuelle.etape-boss::before { width: 92px; height: 92px; margin-left: -46px; border-color: #FDE047; }
+.carte-etape.actuelle.etape-ultime::before { width: 112px; height: 112px; margin-left: -56px; border-color: #F0ABFC; }
+.carte-etape.faite .carte-pastille { box-shadow: 0 5px 0 rgba(0,0,0,.18), 0 0 0 3px rgba(255,255,255,.5); }
+@media (prefers-reduced-motion: reduce) { .carte-ambiance { display: none; } .carte-region.proche .carte-deco, .carte-etape.actuelle::before { animation: none; } }
