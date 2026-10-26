@@ -249,11 +249,14 @@ const CULTURE = {
   'eco-saison': { type: 'attribut', q: { fr: (n) => n, en: (n) => n } },
   'eco-energies': { type: 'attribut', q: { fr: (n) => n, en: (n) => n } },
   'eco-dates': { type: 'attribut', q: { fr: (n) => n, en: (n) => n } },
+  // Comparaisons improbables (scripts/build-comparaisons.mjs) : chaque question a ses pièges dans la même unité
+  'eco-comparaisons': { type: 'attribut', fixe: true, pieges: true, q: { fr: (n) => n, en: (n) => n } },
+  comparaisons: { type: 'attribut', fixe: true, pieges: true, q: { fr: (n) => n, en: (n) => n } },
   'eco-vf': { type: 'attribut', grand: true, fixe: true, q: { fr: () => 'Écologie : vrai ou faux ?', en: () => 'Ecology: true or false?' } },
   'cris-animaux': { type: 'audio', q: { fr: () => 'Quel animal fait ce cri ?', en: () => 'Which animal makes this sound?' } },
   'idees-recues': { type: 'attribut', grand: true, fixe: true, q: { fr: () => 'Vrai ou faux ?', en: () => 'True or false?' } },
   'persos-univers': { type: 'attribut', pack: 'persos-jeu', montrer: true, groupe: 'genre', q: { fr: (n) => `De quel jeu vient ce personnage : ${n} ?`, en: (n) => `Which game is ${n} from?` } },
-} satisfies Record<string, { type: TypeCulture; silhouette?: boolean; montrer?: boolean; pack?: string; champ?: string; grand?: boolean; fixe?: boolean; groupe?: string; q: Record<Lang, (nom: string, genre?: string) => string> }>
+} satisfies Record<string, { type: TypeCulture; silhouette?: boolean; montrer?: boolean; pack?: string; champ?: string; grand?: boolean; fixe?: boolean; pieges?: boolean; groupe?: string; q: Record<Lang, (nom: string, genre?: string) => string> }>
 // (les quiz de dates gardent l'image : le titre est déjà dans la question)
 const TRAHIT = new Set(['albums', 'livres', 'jeux', 'studios', 'logos', 'bd'])
 export type CultureId = keyof typeof CULTURE
@@ -669,14 +672,14 @@ const filtrerEpoques = (items: ItemCulture[], o: Opts) => {
 function culture(o: Opts, tousItems: ItemCulture[]): Question[] {
   const { sousTheme, mode, lang } = o
   const difficulte = palierDe(o.difficulte)
-  const cfg = CULTURE[sousTheme as CultureId] as { type: TypeCulture; montrer?: boolean; champ?: string; grand?: boolean; fixe?: boolean; groupe?: string; q: Record<Lang, (nom: string, genre?: string) => string> }
+  const cfg = CULTURE[sousTheme as CultureId] as { type: TypeCulture; montrer?: boolean; champ?: string; grand?: boolean; fixe?: boolean; pieges?: boolean; groupe?: string; q: Record<Lang, (nom: string, genre?: string) => string> }
   // Question dérivée (année d'un film, pays d'une personnalité…) : la réponse vient d'un champ annexe
   // Champ « nom » : le nom lui-même ; « f:Libellé » : un fait de la fiche ; sinon un attribut x (ou la réponse r)
   const champ = (cfg as { champ?: string }).champ
   const val = (it: ItemCulture) => (champ === 'nom' ? it.n : champ?.startsWith('f:') ? it.f?.find(([l]) => l.fr === champ.slice(2))?.[1] : champ ? it.x?.[champ] : it.r)
   // Traduction identique au mot français (« sari » → « sari ») : question sans intérêt, on l'écarte
   const simple = (v: string) => v.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
-  const avecTexte = cfg.type === 'attribut' || cfg.type === 'annee'
+  const avecTexte = (cfg.type === 'attribut' || cfg.type === 'annee') && !cfg.pieges // comparaisons : l'unité est dans la question et la réponse, rien à masquer
   // Quiz en image : on écarte les images où la réponse est écrite (repérées par scripts/ocr-tout.sh)
   const lisibles = tousItems.filter((it) => !it.x?.nomVisible)
   const items = cfg.type === 'image' ? (lisibles.length >= 30 ? lisibles : tousItems).filter((it) => it.img) : tousItems.filter((it) => val(it) && !(sousTheme.startsWith('traduction') && simple(texte(val(it), 'fr')) === simple(it.n.fr))
@@ -732,8 +735,9 @@ function culture(o: Opts, tousItems: ItemCulture[]): Question[] {
             .map((x) => ({ x, s: ressemblance(valeur(x), reponse) })).sort((a, b) => b.s - a.s).slice(0, 10)
           cand = [...melanger(proches.map((p) => p.x)), ...cand]
         }
-        const pieges = typeof it.x?.pieges === 'string' && (o.difficulte === LEGENDE || difficulte >= 3) ? melanger(it.x.pieges.split('|')) : []
-        for (const p of pieges.slice(0, o.difficulte === LEGENDE ? nb : Math.ceil(nb / 2))) if (!vus.has(p)) { vus.add(p); autres.push(p) }
+        // Pièges propres à la question : à partir de Difficile, ou toujours (et seuls) pour les quiz « pieges »
+        const pieges = typeof it.x?.pieges === 'string' && (cfg.pieges || o.difficulte === LEGENDE || difficulte >= 3) ? melanger(it.x.pieges.split('|')) : []
+        for (const p of pieges.slice(0, cfg.pieges || o.difficulte === LEGENDE ? nb : Math.ceil(nb / 2))) if (!vus.has(p)) { vus.add(p); autres.push(p) }
         for (const x of cand) {
           if (autres.length >= nb) break
           const v = cfg.type === 'image' ? x.n[lang] : texte(val(x), lang)

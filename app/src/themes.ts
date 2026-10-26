@@ -49,7 +49,7 @@ export const FAMILLES: { k: Famille; nom: Record<Lang, string>; icon: string; mo
     k: 'eco', nom: { fr: 'Écologie & planète', en: 'Ecology & planet' },
     icon: 'M5 19c0-8 6-14 15-14 0 9-6 15-14 15M5 19l8-8',
     motif: 'M20 100c0-46 34-80 86-80 0 52-34 86-80 86M20 100l46-46',
-    subs: [j('eco-eau', 'Eau cachée : combien de litres ?', 'Hidden water'), j('eco-electricite', 'Électricité des appareils', 'Appliance power'), j('eco-co2', 'Empreinte carbone', 'Carbon footprint'), j('eco-decomposition', 'Temps de décomposition', 'Decomposition time'), j('eco-tri', 'Le tri des déchets', 'Waste sorting'), j('eco-saison', 'Fruits et légumes de saison', 'Seasonal produce'), j('eco-energies', 'Les énergies', 'Energy sources'), j('eco-dates', 'Dates clés de l’écologie', 'Ecology milestones'), j('eco-vf', 'Écologie : vrai ou faux ?', 'Ecology: true or false?')],
+    subs: [j('eco-comparaisons', 'Combien de terrains de foot ? Comparaisons insolites', 'Odd comparisons'), j('eco-eau', 'Eau cachée : combien de litres ?', 'Hidden water'), j('eco-electricite', 'Électricité des appareils', 'Appliance power'), j('eco-co2', 'Empreinte carbone', 'Carbon footprint'), j('eco-decomposition', 'Temps de décomposition', 'Decomposition time'), j('eco-tri', 'Le tri des déchets', 'Waste sorting'), j('eco-saison', 'Fruits et légumes de saison', 'Seasonal produce'), j('eco-energies', 'Les énergies', 'Energy sources'), j('eco-dates', 'Dates clés de l’écologie', 'Ecology milestones'), j('eco-vf', 'Écologie : vrai ou faux ?', 'Ecology: true or false?')],
   },
   {
     k: 'cine', nom: { fr: 'Cinéma & séries', en: 'Film & TV' },
@@ -130,7 +130,7 @@ export const FAMILLES: { k: Famille; nom: Record<Lang, string>; icon: string; mo
     k: 'vie', nom: { fr: 'Vie quotidienne & mythes', en: 'Everyday life & myths' },
     icon: 'M5 20.5h14M7 20.5V11l5-6.5 5 6.5v9.5M10 20.5v-5h4v5',
     motif: 'M20 70h80M30 70V40l30-26 30 26v30M50 70V52h20v18',
-    subs: [j('metiers', 'Métiers : qui fait quoi ?', 'Jobs'), j('records-monde', 'Records du monde', 'World records'), j('voitures', 'Voitures : le constructeur', 'Cars: maker'), j('voitures-photo', 'Voitures en photo', 'Cars in pictures'), j('dieux', 'Divinités', 'Deities'), j('dieux-mythologie', 'Quelle mythologie ?', 'Which mythology?'), j('instruments', 'Instruments de musique', 'Musical instruments'), j('jeux-societe', 'Jeux de société et de café', 'Board & bar games'), j('legendes', 'Légendes urbaines et mythes', 'Urban legends & myths'), j('panneaux', 'Panneaux du code de la route', 'Road signs'), j('code-route', 'Code de la route : règles', 'Highway code')],
+    subs: [j('comparaisons', 'Combien de tacos ? Comparaisons absurdes', 'Absurd comparisons'), j('metiers', 'Métiers : qui fait quoi ?', 'Jobs'), j('records-monde', 'Records du monde', 'World records'), j('voitures', 'Voitures : le constructeur', 'Cars: maker'), j('voitures-photo', 'Voitures en photo', 'Cars in pictures'), j('dieux', 'Divinités', 'Deities'), j('dieux-mythologie', 'Quelle mythologie ?', 'Which mythology?'), j('instruments', 'Instruments de musique', 'Musical instruments'), j('jeux-societe', 'Jeux de société et de café', 'Board & bar games'), j('legendes', 'Légendes urbaines et mythes', 'Urban legends & myths'), j('panneaux', 'Panneaux du code de la route', 'Road signs'), j('code-route', 'Code de la route : règles', 'Highway code')],
   },
   {
     k: 'pop', nom: { fr: 'Pop culture & Internet', en: 'Pop culture & Internet' },
