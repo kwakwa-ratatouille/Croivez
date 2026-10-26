@@ -2442,3 +2442,9 @@ img, svg { -webkit-user-drag: none; }
 .carte-etape.actuelle.etape-ultime::before { width: 112px; height: 112px; margin-left: -56px; border-color: #F0ABFC; }
 .carte-etape.faite .carte-pastille { box-shadow: 0 5px 0 rgba(0,0,0,.18), 0 0 0 3px rgba(255,255,255,.5); }
 @media (prefers-reduced-motion: reduce) { .carte-ambiance { display: none; } .carte-region.proche .carte-deco, .carte-etape.actuelle::before { animation: none; } }
+
+/* Connexion : bouton pour voir le mot de passe */
+.champ-mdp { position: relative; display: flex; }
+.champ-mdp .input { flex: 1; padding-right: 52px; }
+.voir-mdp { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; border: 0; border-radius: 10px; background: none; font-size: 19px; cursor: pointer; }
+.voir-mdp:hover { background: var(--surface2); }
