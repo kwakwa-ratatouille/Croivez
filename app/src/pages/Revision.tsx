@@ -1,4 +1,7 @@
+import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
+import { deleteField, doc, setDoc } from 'firebase/firestore'
+import { db } from '../firebase'
 import { useAuth } from '../auth'
 import { usePrefs } from '../i18n'
 import { trouverSousTheme } from '../themes'
@@ -30,9 +33,13 @@ function LigneQuiz({ s, cartes }: { s: string; cartes: CarteRevision[] }) {
 export default function Revision() {
   const { lang } = usePrefs()
   const fr = lang === 'fr'
-  const { profile } = useAuth()
-  const toutes = Object.values(profile?.revision ?? {})
-  const dues = aReviser(profile?.revision)
+  const { user, profile } = useAuth()
+  // Cartes rangées sous un faux quiz (« tout », mix… : anciennes révisions mélangées) : ignorées puis effacées
+  const valides = Object.fromEntries(Object.entries(profile?.revision ?? {}).filter(([, c]) => !!trouverSousTheme(c.s)))
+  const fausses = Object.keys(profile?.revision ?? {}).filter((k) => !valides[k])
+  useEffect(() => { if (user && fausses.length) setDoc(doc(db, 'users', user.uid), { revision: Object.fromEntries(fausses.map((k) => [k, deleteField()])) }, { merge: true }).catch(() => {}) }, [user, fausses.join(',')]) // eslint-disable-line react-hooks/exhaustive-deps
+  const toutes = Object.values(valides)
+  const dues = aReviser(valides)
   const parTheme = Object.entries(dues.reduce<Record<string, CarteRevision[]>>((acc, c) => ((acc[c.s] ??= []).push(c), acc), {})).sort((a, b) => b[1].length - a[1].length)
   const prochaine = toutes.filter((c) => c.due > Date.now()).sort((a, b) => a.due - b.due)[0]
   const acquises = toutes.filter((c) => c.reps >= 3).length

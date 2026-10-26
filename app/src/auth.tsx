@@ -11,6 +11,7 @@ import { avancerLigue, type EtatLigue } from './ligues'
 import { avancerQuetes, type EtatQuetes, type StatsPartie } from './quetes'
 import { secretsObtenus } from './meta'
 import { evenementActif } from './evenements'
+import { trouverSousTheme } from './themes'
 
 export type CarteVitrine = { s: string; id: string; nom: string; img?: string }
 export type Profile = {
@@ -181,6 +182,7 @@ export async function enregistrerPartie(uid: string, profile: Profile, p: Partie
   const revision: Record<string, unknown> = {}
   for (const r of p.sansRevision ? [] : p.resultats) {
     const s = (r.s ?? p.sousTheme) as typeof p.sousTheme
+    if (!trouverSousTheme(s)) continue // pas un vrai quiz (révision mélangée « tout », mix…) : on ne sait pas d'où vient la question
     const cle = cleRevision(s, r.id)
     const carte = profile.revision?.[cle]
     const suite = planifier(carte, s, r.id, r.juste)
