@@ -1,5 +1,21 @@
 [
  {
+  "id": "2026-10-26e",
+  "titre": "Bienvenue à bord",
+  "points": [
+   [
+    "🧭",
+    "Visite guidée",
+    "Les nouveaux joueurs ont un tuto au premier lancement. Tu peux le revoir dans Paramètres → Revoir le tuto."
+   ],
+   [
+    "👁️",
+    "Mot de passe",
+    "Un bouton pour voir son mot de passe et une confirmation à l’inscription."
+   ]
+  ]
+ },
+ {
   "id": "2026-10-26d",
   "titre": "Le mode histoire en grand",
   "points": [

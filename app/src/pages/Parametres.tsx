@@ -3,6 +3,7 @@ import { planifierRappels, rappelsActifs, reglerRappels } from '../rappels'
 import { TAILLES, appliquerTaille, lireTaille } from '../taille'
 import { useEffect, useState } from 'react'
 import { signOut } from 'firebase/auth'
+import { revoirTuto } from '../components/Tuto'
 import { auth, natif } from '../firebase'
 import { App } from '@capacitor/app'
 import { CapacitorUpdater } from '@capgo/capacitor-updater'
@@ -149,6 +150,7 @@ export default function Parametres() {
               </div>
             )}
           </div>
+          <button className="btn btn-g" onClick={revoirTuto}>🧭 {lang === 'fr' ? 'Revoir le tuto' : 'Replay the tour'}</button>
           <button className="btn btn-g" onClick={() => signOut(auth)}>{t('set.logout')}</button>
         </div>
       </section>

@@ -18,6 +18,7 @@ import MiseAJour from './MiseAJour'
 import { useEffect, useRef, useState } from 'react'
 import MenuTest from './MenuTest'
 import Nouveautes from './Nouveautes'
+import Tuto from './Tuto'
 import PluiePieces from './PluiePieces'
 import Avatar from './Avatar'
 import FicheLancement from './FicheLancement'
@@ -99,7 +100,9 @@ export default function Layout() {
   return (
     <div className="shell">
       {test && <MenuTest onFermer={() => setTest(false)} />}
-      <Nouveautes />
+      {/* Nouveau joueur : la visite guidée d'abord, pas la note des nouveautés */}
+      {profile && (profile.tutoFait || (profile.parties ?? 0) > 0) && <Nouveautes />}
+      <Tuto />
       <PluiePieces />
       {achat && <Achat k={achat as Famille | 'tout'} onFermer={() => setAchat(null)} />}
       {fiche && <FicheLancement id={fiche} onFermer={() => setFiche(null)} />}
