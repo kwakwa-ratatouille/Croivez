@@ -2347,3 +2347,23 @@ img, svg { -webkit-user-drag: none; }
 .edition-lien span { font-size: 18px; }
 .edition-lien .input { flex: 1; min-width: 0; min-height: 38px; border: 0; background: transparent; }
 @media (max-width: 560px) { .edition-liens { grid-template-columns: 1fr; } }
+
+/* Soirée quiz (télé) : image à gauche sur toute la hauteur, question et réponses à droite, joueurs bien visibles */
+.tv-jeu.avec-media { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); grid-template-areas: "entete entete" "barre barre" "question enonce" "question options" "avatars avatars"; }
+.tv-jeu.avec-media .tv-enonce { text-align: left; align-self: end; }
+.tv-jeu.avec-media > .tv-question { align-self: stretch; justify-content: center; }
+.tv-jeu.avec-media .tv-options { align-content: start; }
+.tv-jeu > .tv-avatars { max-height: 24vh; gap: clamp(8px, 1.4vw, 22px) !important; padding: 6px 0 0; }
+.tv-jeu .tv-avatar { opacity: .55; }
+.tv-jeu .tv-avatar.a-repondu { opacity: 1; }
+.tv-jeu .tv-avatar .avatar { width: clamp(44px, 8.5vh, 88px) !important; height: clamp(44px, 8.5vh, 88px) !important; }
+.tv-jeu .tv-avatar small { font-size: clamp(13px, 2vh, 22px); max-width: 160px; }
+.tv-avatar-pts { font-style: normal; font-weight: 900; font-size: clamp(12px, 1.8vh, 20px); color: #86EFAC; }
+.tv-jeu .tv-code-jeu { display: inline-flex; align-items: center; gap: 10px; padding: 4px 14px 4px 4px; border-radius: 16px; background: rgba(255, 255, 255, .16); }
+.tv-code-jeu img { width: clamp(44px, 8vh, 84px); height: clamp(44px, 8vh, 84px); border-radius: 10px; }
+.tv-code-jeu > span { display: flex; flex-direction: column; line-height: 1.05; }
+.tv-code-jeu small { font-size: clamp(11px, 1.6vh, 16px); font-weight: 700; opacity: .85; }
+.tv-code-jeu strong { font-size: clamp(20px, 3.6vh, 40px); letter-spacing: 4px; color: #FDE68A; }
+.salon-code-mini { margin-left: 8px; padding: 2px 8px; border-radius: 999px; background: var(--surface2); font-size: 12px; font-weight: 700; color: var(--muted); }
+.salon-code-mini strong { letter-spacing: 2px; color: var(--text); }
+@media (max-width: 760px) and (orientation: landscape) { .tv-jeu.avec-media { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); grid-template-areas: "entete entete" "barre barre" "question enonce" "question options" "avatars avatars"; } }

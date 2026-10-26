@@ -345,6 +345,8 @@ function Jeu({ code, salon, suisHote, pilote, ecranTv, maintenant, onQuitter }: 
   const d = useDeroulement(code, salon, maintenant, suisHote)
   const { questions, i, debut, q, n, actifs, restant, revele, classement, r, pause } = d
   const [confirmeArret, setConfirmeArret] = useState(false)
+  const [qr, setQr] = useState('')
+  useEffect(() => { if (ecranTv) QRCode.toDataURL(lienRejoindre(code), { width: 320, margin: 1, color: { dark: '#1d1b33', light: '#ffffff' } }).then(setQr).catch(() => {}) }, [ecranTv, code])
   // Commandes de l'hôte (ou de la télécommande en mode télé) : pause / reprise, arrêt et retour au salon
   const Commandes = () => !pilote ? null : (
     <span className="salon-commandes">
@@ -445,7 +447,7 @@ function Jeu({ code, salon, suisHote, pilote, ecranTv, maintenant, onQuitter }: 
     <div className={`tv tv-jeu${q.image || q.grand || q.audio ? ' avec-media' : ''}`}>
       <header className="tv-entete">
         <span className="t">{fr ? 'Question' : 'Question'} {i + 1} / {n}</span>
-        <span className="tv-code-jeu">{fr ? 'Rejoindre :' : 'Join:'} <strong className="t">{code}</strong></span>
+        <span className="tv-code-jeu">{qr && <img src={qr} alt="" />}<span><small>{fr ? 'Rejoindre la partie' : 'Join the game'}</small><strong className="t">{code}</strong></span></span>
         <span className="tv-repondu">{actifs.filter(([, j]) => j.r?.[i]).length} / {actifs.length} {fr ? 'ont répondu' : 'answered'}</span>
         <Commandes />
         <Chrono restant={restant} total={r.secondes} actif={!revele && !pause} />
@@ -472,8 +474,9 @@ function Jeu({ code, salon, suisHote, pilote, ecranTv, maintenant, onQuitter }: 
       <div className="tv-avatars">
         {actifs.map(([id, j]) => (
           <span key={id} className={`tv-avatar${j.r?.[i] ? ' a-repondu' : ''}${revele && j.r?.[i]?.j ? ' juste' : ''}`}>
-            <Avatar pseudo={j.pseudo} avatar={j.avatar} cadre={j.cadre} taille={60} />
+            <Avatar pseudo={j.pseudo} avatar={j.avatar} cadre={j.cadre} taille={84} />
             <small>{j.pseudo}</small>
+            {revele && j.r?.[i]?.pts ? <em className="tv-avatar-pts">+{j.r[i].pts}</em> : null}
             <span className="tv-avatar-etat">{revele ? (j.r?.[i]?.j ? '✓' : '✗') : j.r?.[i] ? '✓' : '…'}</span>
           </span>
         ))}
@@ -501,7 +504,7 @@ function Jeu({ code, salon, suisHote, pilote, ecranTv, maintenant, onQuitter }: 
       <header style={{ width: '100%', maxWidth: 1040, display: 'flex', alignItems: 'center', gap: 14 }}>
         <button className="btn btn-g" onClick={onQuitter} aria-label={fr ? 'Quitter' : 'Leave'} style={{ minHeight: 44, padding: '0 14px' }}><Icon d={ICONS.close} /></button>
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <span style={{ fontWeight: 800 }}>{fr ? 'Question' : 'Question'} {i + 1} / {n}</span>
+          <span style={{ fontWeight: 800 }}>{fr ? 'Question' : 'Question'} {i + 1} / {n} <span className="salon-code-mini">{fr ? 'code' : 'code'} <strong>{code}</strong></span></span>
           <span style={{ fontSize: 13, color: 'var(--muted)' }}>{moiJ?.score ?? 0} pts · {rang > 0 ? `${rang}${rang === 1 ? (fr ? 'er' : 'st') : (fr ? 'e' : 'th')}` : ''} / {classement.length} · {actifs.filter(([, j]) => j.r?.[i]).length}/{actifs.length} {fr ? 'ont répondu' : 'answered'}</span>
         </div>
         <Commandes />

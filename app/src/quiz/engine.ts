@@ -356,7 +356,7 @@ type Segmenteur = { segment: (s: string) => Iterable<{ segment: string }> }
 const Seg = (Intl as unknown as { Segmenter?: new (l: string, o: { granularity: 'grapheme' }) => Segmenteur }).Segmenter
 const segmenteur = Seg ? new Seg('fr', { granularity: 'grapheme' }) : null
 export function melangerEmojis(s: string, niveau: number) {
-  if (niveau <= 1 || !segmenteur || !/^[^p{L}d]+$/u.test(s)) return s
+  if (niveau <= 1 || !segmenteur || !/^[^\p{L}\d]+$/u.test(s)) return s // seulement les suites d'émojis, jamais un texte
   const g = [...segmenteur.segment(s)].map((x) => x.segment).filter((x) => x.trim())
   if (g.length < 2) return s
   const avant = g.join('')
