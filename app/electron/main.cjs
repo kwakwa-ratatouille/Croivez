@@ -28,7 +28,8 @@ function createWindow() {
   if (DEV_URL) win.loadURL(DEV_URL)
   else if (app.isPackaged) {
     win.webContents.once('did-fail-load', local)
-    win.loadURL(EN_LIGNE)
+    // Sans cache pour la page : chaque lancement prend la dernière version (les fichiers JS/CSS gardent le leur)
+    win.loadURL(EN_LIGNE, { extraHeaders: 'pragma: no-cache\ncache-control: no-cache\n' })
   } else local()
 }
 
