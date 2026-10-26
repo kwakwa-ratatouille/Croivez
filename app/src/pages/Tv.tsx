@@ -30,11 +30,14 @@ export default function Tv() {
       nav(`/salon/${code}`)
     } catch (e) {
       console.error(e)
+      if (window.parent !== window) window.parent.postMessage({ croivez: 'erreur', message: String((e as Error)?.message ?? e) }, '*')
       setMsg(fr ? 'Impossible de créer la partie (connexion ?).' : 'Could not create the game.')
       setEnCours(false)
     }
   }
   useEffect(() => { if (auto && !lance.current) { lance.current = true; creer() } }, [auto]) // eslint-disable-line react-hooks/exhaustive-deps
+  // Dans le récepteur Chromecast : on lui dit que l'appli a démarré (il retire son bandeau d'attente)
+  useEffect(() => { if (window.parent !== window) window.parent.postMessage({ croivez: 'pret' }, '*') }, [])
 
   return (
     <div className="tv tv-accueil">

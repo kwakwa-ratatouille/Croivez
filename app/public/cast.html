@@ -6,34 +6,71 @@
   <title>Croivez sur la télé</title>
   <!-- Récepteur Chromecast : la télé affiche le mode télé de Croivez (création de la partie, QR code, questions en grand).
        Le code du salon est renvoyé au téléphone qui a lancé la diffusion, pour qu’il rejoigne tout seul.
+       Un bandeau d'état s'affiche tant que le mode télé n'a pas démarré (et montre l'erreur s'il y en a une).
        Publié sur GitHub Pages (workflow « Version web »). -->
   <script src="https://www.gstatic.com/cast/sdk/libs/caf_receiver/v3/cast_receiver_framework.js"></script>
   <style>
-    html, body { margin: 0; height: 100%; background: #FAF7F2; overflow: hidden; }
+    html, body { margin: 0; height: 100%; background: #15122B; overflow: hidden; font-family: system-ui, sans-serif; }
     iframe { position: fixed; inset: 0; width: 100%; height: 100%; border: 0; }
+    #etat { position: fixed; left: 50%; bottom: 6%; transform: translateX(-50%); z-index: 2; max-width: 80%; padding: 18px 28px; border-radius: 22px;
+      background: rgba(21, 18, 43, .92); color: #fff; font-size: 26px; font-weight: 700; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,.4); }
+    #etat small { display: block; margin-top: 8px; font-size: 18px; font-weight: 500; color: #FFB4A8; }
   </style>
 </head>
 <body>
+  <div id="etat">Croivez se prépare…</div>
   <iframe id="tv" src="./#/tv?auto=1&cast=1" allow="autoplay"></iframe>
   <script>
+    var etat = document.getElementById('etat')
+    var pret = false
+    function afficher(texte, erreur) {
+      if (pret && !erreur) return
+      etat.style.display = 'block'
+      etat.innerHTML = texte + (erreur ? '<small>' + String(erreur).slice(0, 220) + '</small>' : '')
+    }
+    window.addEventListener('error', function (e) { afficher('Erreur du récepteur', e.message) })
+
     var NS = 'urn:x-cast:fr.croivez.tv'
-    var context = cast.framework.CastReceiverContext.getInstance()
     var dernier = null
-    // Le mode télé (dans l'iframe) annonce le code du salon créé : on le transmet aux téléphones connectés
+    var context = null
+    try {
+      context = cast.framework.CastReceiverContext.getInstance()
+    } catch (e) { afficher('Le récepteur Google n’a pas pu se charger', e && e.message) }
+
+    // Messages du mode télé (dans l'iframe) : prêt, code du salon créé, erreur
     window.addEventListener('message', function (e) {
-      if (!e.data || e.data.croivez !== 'salon') return
-      dernier = e.data.code
-      context.sendCustomMessage(NS, undefined, { type: 'salon', code: dernier })
+      if (!e.data) return
+      if (e.data.croivez === 'pret') { pret = true; etat.style.display = 'none' }
+      if (e.data.croivez === 'erreur') afficher('Le mode télé a rencontré un problème', e.data.message)
+      if (e.data.croivez === 'salon') {
+        dernier = e.data.code
+        if (context) context.sendCustomMessage(NS, undefined, { type: 'salon', code: dernier })
+      }
     })
-    // Un téléphone qui se connecte plus tard demande le code
-    context.addCustomMessageListener(NS, function (ev) {
-      if (ev.data && ev.data.type === 'code' && dernier) context.sendCustomMessage(NS, ev.senderId, { type: 'salon', code: dernier })
+    // Erreurs de l'appli dans l'iframe (même site : on peut les écouter)
+    document.getElementById('tv').addEventListener('load', function () {
+      afficher('Démarrage du mode télé…')
+      try {
+        var w = document.getElementById('tv').contentWindow
+        w.addEventListener('error', function (e) { afficher('Le mode télé a planté', e.message) })
+        w.addEventListener('unhandledrejection', function (e) { afficher('Le mode télé a planté', e.reason && (e.reason.message || e.reason)) })
+      } catch (e) { /* rien */ }
     })
-    var options = new cast.framework.CastReceiverOptions()
-    options.disableIdleTimeout = true // pas de vidéo : la télé reste allumée sur le quiz
-    options.customNamespaces = {}
-    options.customNamespaces[NS] = cast.framework.system.MessageType.JSON
-    context.start(options)
+    setTimeout(function () { if (!pret) afficher('Le mode télé met du temps à démarrer…', 'Vérifie la connexion Wi-Fi de la télé, puis relance la diffusion.') }, 20000)
+
+    if (context) {
+      // Un téléphone qui se connecte plus tard demande le code
+      context.addCustomMessageListener(NS, function (ev) {
+        if (ev.data && ev.data.type === 'code' && dernier) context.sendCustomMessage(NS, ev.senderId, { type: 'salon', code: dernier })
+      })
+      var options = new cast.framework.CastReceiverOptions()
+      options.disableIdleTimeout = true // pas de vidéo : la télé reste allumée sur le quiz
+      options.skipPlayersLoad = true // pas de lecteur vidéo à charger : démarrage plus rapide
+      options.statusText = 'Croivez'
+      options.customNamespaces = {}
+      options.customNamespaces[NS] = cast.framework.system.MessageType.JSON
+      try { context.start(options) } catch (e) { afficher('Le récepteur Google n’a pas pu démarrer', e && e.message) }
+    }
   </script>
 </body>
 </html>
