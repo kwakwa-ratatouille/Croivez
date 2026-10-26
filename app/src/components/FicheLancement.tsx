@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { AVEC_EPOQUES, EPOQUES } from '../quiz/engine'
+import { AVEC_EPOQUES, EPOQUES, estAudio } from '../quiz/engine'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth'
 import { usePrefs } from '../i18n'
@@ -60,6 +60,7 @@ export default function FicheLancement({ id, onFermer }: { id: string; onFermer:
           <div style={{ flex: 1, minWidth: 0 }}>
             <span className="eyebrow" style={{ color: 'var(--ki)' }}>{famille.nom[lang]}</span>
             <h2 className="t" style={{ fontSize: 22, fontWeight: 900, lineHeight: 1.2 }}>{sous.nom[lang]}</h2>
+            {estAudio(id) && <span className="fiche-son">🎧 {fr ? 'Quiz sonore : monte le son !' : 'Audio quiz: turn the sound up!'}</span>}
           </div>
           <button className="btn btn-g" aria-label={fr ? 'Fermer' : 'Close'} onClick={onFermer} style={{ minHeight: 40, padding: '0 10px' }}><Icon d={ICONS.close} size={18} /></button>
         </div>

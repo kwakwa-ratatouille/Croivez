@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { estAudio } from '../quiz/engine'
 import { usePrefs } from '../i18n'
 import { trouverSousTheme } from '../themes'
 import Img from './Img'
@@ -41,6 +42,7 @@ export default function CarteCouverture({ id, pct = 0, verrou = false, largeur, 
             : <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%', background: 'var(--kt)' }}><Illustration k={k} taille={150} fond={false} /></span>}
         {/* Pastille de la famille, pour différencier d'un coup d'œil */}
         {famille && <span className="couverture-famille"><Icon d={t.famille.icon} size={14} />{t.famille.nom[lang].split(/[ ,&]/)[0]}</span>}
+        {estAudio(id) && <span className="couverture-son" title={lang === 'fr' ? 'Quiz sonore : monte le son' : 'Audio quiz: turn the sound up'}>🎧 {lang === 'fr' ? 'À écouter' : 'Listen'}</span>}
         {verrou && <span className="couverture-verrou" style={{ background: RARETES[rareteDe(id)].couleur }}><Icon d={ICONS.lock} size={14} />{RARETES[rareteDe(id)].nom[lang]}</span>}
       </span>
       <span className="couverture-bas">

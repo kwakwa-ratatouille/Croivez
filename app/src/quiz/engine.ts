@@ -257,6 +257,8 @@ const CULTURE = {
 const TRAHIT = new Set(['albums', 'livres', 'jeux', 'studios', 'logos', 'bd'])
 export type CultureId = keyof typeof CULTURE
 export const estCulture = (s: string): s is CultureId => s in CULTURE
+// Quiz sonore : on écoute un extrait (affiché avec un badge « à écouter » sur la carte et la fiche)
+export const estAudio = (s: string) => estCulture(s) && CULTURE[s].type === 'audio'
 export const packCulture = (s: CultureId) => (CULTURE[s] as { pack?: string }).pack ?? s
 // Nature d'un quiz : sert aux mini-jeux (photo floue → quiz en images, avant / après → quiz d'années)
 export function natureQuiz(s: string): 'image' | 'annee' | 'texte' | 'audio' | 'carte' {

@@ -2371,3 +2371,7 @@ img, svg { -webkit-user-drag: none; }
 /* Fiche de lancement : époques des quiz musique (plusieurs, ou toutes) */
 .fiche-epoques { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
 .fiche-epoques-titre { width: 100%; font-size: 13px; font-weight: 800; color: var(--muted); }
+
+/* Quiz sonore : badge « À écouter » sur la carte et la fiche */
+.couverture-son { position: absolute; left: 8px; bottom: 8px; z-index: 2; display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 999px; background: rgba(17, 12, 40, .78); color: #fff; font: 800 12px 'DM Sans', sans-serif; backdrop-filter: blur(4px); box-shadow: 0 2px 8px rgba(0, 0, 0, .25); }
+.fiche-son { display: inline-flex; align-items: center; gap: 6px; margin-top: 4px; padding: 3px 10px; border-radius: 999px; background: var(--kt, var(--surface2)); color: var(--ki, var(--text)); font-size: 13px; font-weight: 800; }
