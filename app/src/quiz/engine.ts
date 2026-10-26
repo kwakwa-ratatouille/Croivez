@@ -678,6 +678,46 @@ const filtrerEpoques = (items: ItemCulture[], o: Opts) => {
   return l.length >= 12 ? l : items // trop peu de sons sur ces années : on garde tout plutôt qu'une partie vide
 }
 
+// Réponse chiffrée (« 2 secondes », « 0,2 g/L », « 15 000 litres », « 1998 ») : leurres dans la même unité,
+// nettement différents en Facile (moitié, double…), très proches en Expert et Légende (± 10 à 20 %).
+// Une année n'est jamais proposée dans le futur.
+const ANNEE = new Date().getFullYear()
+const RE_CHIFFRE = /^(\d{1,3}(?:[  ]\d{3})+|\d+)(?:,(\d+))?(\s*\S.*)?$/
+export function leurresChiffres(reponse: string, nb: number, niveau: Palier | 5, hasard: () => number): string[] | null {
+  const m = RE_CHIFFRE.exec(reponse.trim())
+  if (!m) return null
+  const entier = m[1].replace(/[  ]/g, ''), decimales = m[2]?.length ?? 0, unite = m[3] ?? ''
+  const v = Number(entier + (m[2] ? '.' + m[2] : ''))
+  if (!Number.isFinite(v) || v <= 0) return null
+  const annee = !unite && !decimales && v >= 1000 && v <= ANNEE + 1
+  const ecrire = (x: number) => {
+    // M\u00eame s\u00e9parateur de milliers que la r\u00e9ponse (\u00ab 1 000 litres \u00bb \u2192 \u00ab 800 litres \u00bb, \u00ab 1 200 litres \u00bb)
+    const sep = /[  ]/.exec(m[1])?.[0]
+    const n = Math.round(x)
+    const t = decimales ? x.toFixed(decimales).replace('.', ',') : annee || (!sep && n < 10000) ? String(n) : String(n).replace(/\B(?=(\d{3})+(?!\d))/g, sep ?? ' ')
+    return t + unite
+  }
+  let cand: number[]
+  if (annee) {
+    const e = niveau >= 5 ? [1, 2, 3] : ({ 1: [5, 7, 10, 15], 2: [2, 3, 4, 6], 3: [1, 2, 3], 4: [1, 2] } as Record<number, number[]>)[niveau]
+    cand = e.flatMap((d) => [v - d, v + d]).map((y) => (y > ANNEE ? v - (y - v) : y))
+  } else if (!decimales && v <= 20) {
+    // Petits nombres (points, années de permis, secondes…) : quelques unités autour
+    const e = niveau >= 4 ? [1, 2] : niveau === 3 ? [1, 2, 3] : niveau === 2 ? [1, 2, 3, 4] : [2, 3, 5, 8]
+    cand = e.flatMap((d) => [v - d, v + d]).filter((x) => x > 0)
+  } else {
+    const facteurs = niveau >= 5 ? [0.85, 0.9, 1.1, 1.15] : ({ 1: [0.3, 0.5, 1.6, 2, 3], 2: [0.5, 0.67, 1.5, 2], 3: [0.7, 0.8, 1.25, 1.4], 4: [0.8, 0.9, 1.1, 1.2] } as Record<number, number[]>)[niveau]
+    // Arrondi « humain » : même nombre de chiffres significatifs que la réponse
+    const sig = Math.max(1, entier.replace(/0+$/, '').length)
+    const arrondir = (x: number) => { if (decimales) return Number(x.toFixed(decimales)); const p = 10 ** Math.max(0, Math.floor(Math.log10(Math.max(1, x))) + 1 - sig); return Math.round(x / p) * p }
+    cand = facteurs.map((k) => arrondir(v * k)).filter((x) => x > 0)
+  }
+  const vus = new Set([reponse.trim()])
+  const out: string[] = []
+  for (const x of cand.sort(() => hasard() - 0.5)) { const t = ecrire(x); if (!vus.has(t)) { vus.add(t); out.push(t) } if (out.length === nb) break }
+  return out.length >= Math.min(nb, 2) ? out : null
+}
+
 function culture(o: Opts, tousItems: ItemCulture[]): Question[] {
   const { sousTheme, mode, lang } = o
   const difficulte = palierDe(o.difficulte)
@@ -688,7 +728,9 @@ function culture(o: Opts, tousItems: ItemCulture[]): Question[] {
   const val = (it: ItemCulture) => (champ === 'nom' ? it.n : champ?.startsWith('f:') ? it.f?.find(([l]) => l.fr === champ.slice(2))?.[1] : champ ? it.x?.[champ] : it.r)
   // Traduction identique au mot français (« sari » → « sari ») : question sans intérêt, on l'écarte
   const simple = (v: string) => v.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
-  const avecTexte = (cfg.type === 'attribut' || cfg.type === 'annee') && !cfg.pieges // comparaisons : l'unité est dans la question et la réponse, rien à masquer
+  // Masquer la réponse dans l'énoncé : seulement quand l'énoncé cite un nom, pas quand l'élément est la question elle-même
+  // (« Combien d'eau pour 1 litre de lait ? » garde son « litre ») ; comparaisons : unité dans la question et la réponse
+  const avecTexte = (cfg.type === 'attribut' || cfg.type === 'annee') && !cfg.pieges && cfg.q.fr('§', '') !== '§'
   // Quiz en image : on écarte les images où la réponse est écrite (repérées par scripts/ocr-tout.sh)
   const lisibles = tousItems.filter((it) => !it.x?.nomVisible)
   const items = cfg.type === 'image' ? (lisibles.length >= 30 ? lisibles : tousItems).filter((it) => it.img) : tousItems.filter((it) => val(it) && !(sousTheme.startsWith('traduction') && simple(texte(val(it), 'fr')) === simple(it.n.fr))
@@ -716,10 +758,13 @@ function culture(o: Opts, tousItems: ItemCulture[]): Question[] {
       const autres: string[] = []
       if (cfg.type === 'annee') {
         for (const d of melanger(ecarts)) {
-          const y = String(Number(reponse) + d)
+          const brut = Number(reponse) + d
+          const y = String(brut > ANNEE ? Number(reponse) - Math.abs(d) : brut) // jamais une année future (un film de 2023 ne propose pas 2038)
           if (!vus.has(y)) { vus.add(y); autres.push(y) }
           if (autres.length === nb) break
         }
+      } else if (cfg.type === 'attribut' && !cfg.pieges && !it.x?.pieges && leurresChiffres(reponse, nb, o.difficulte === LEGENDE ? 5 : difficulte, rand)) {
+        for (const x of leurresChiffres(reponse, nb, o.difficulte === LEGENDE ? 5 : difficulte, rand)!) { vus.add(x); autres.push(x) }
       } else if (sousTheme === 'elements') {
         for (const s of melanger(piegesSymbole(it.n.fr, it.n.en, reponse, symboles))) {
           if (!vus.has(s)) { vus.add(s); autres.push(s) }

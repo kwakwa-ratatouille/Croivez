@@ -40,6 +40,23 @@ const REGLES = [
   ['Âge minimum pour passer le permis B', '17 ans', 'd'], ['Couleur des panneaux de direction sur autoroute', 'Bleu', 'c'], ['Couleur des panneaux de signalisation temporaire (travaux)', 'Jaune', 'c'],
   ['Feu à allumer par forte pluie ou brouillard, en plus des feux de croisement', 'Feux de brouillard avant', 'f'], ['Feu interdit en agglomération sauf danger', 'Feux de route', 'f'],
   ['Qui a la priorité dans un rond-point (sauf panneau contraire) ?', 'Les véhicules déjà engagés', 'r'], ['Règle de priorité par défaut à une intersection sans panneau', 'Priorité à droite', 'r'],
+  // Encore plus de questions variées (amendes, points, examen, équipement)
+  ['Amende forfaitaire pour un téléphone tenu en main en conduisant', '135 €', 'e'], ['Amende forfaitaire pour une ceinture non attachée', '135 €', 'e'],
+  ['Amende forfaitaire pour un stationnement gênant', '35 €', 'e'], ['Amende forfaitaire pour un stationnement très gênant', '135 €', 'e'],
+  ['Amende forfaitaire pour un petit excès de vitesse (moins de 20 km/h) hors agglomération', '68 €', 'e'],
+  ['Points retirés pour une ceinture non attachée', '3 points', 'p'], ['Points retirés pour un stop non respecté', '4 points', 'p'],
+  ['Points retirés pour le franchissement d’une ligne continue', '3 points', 'p'], ['Points retirés pour un excès de vitesse de 50 km/h ou plus', '6 points', 'p'],
+  ['Points retirés pour un excès de vitesse de moins de 20 km/h', '1 point', 'p'], ['Points retirés pour une alcoolémie entre 0,5 et 0,8 g/L', '6 points', 'p'],
+  ['Points récupérés avec un stage de sensibilisation', '4 points', 'p'], ['Points gagnés chaque année sans infraction en permis probatoire (sans conduite accompagnée)', '2 points', 'p'],
+  ['Taux d’alcool à partir duquel l’alcool au volant devient un délit, en g/L de sang', '0,8 g/L', 'a'],
+  ['Âge minimum pour commencer la conduite accompagnée', '15 ans', 'd'], ['Âge minimum pour le permis AM (scooter 50 cm³)', '14 ans', 'd'],
+  ['Durée de validité de l’examen du code de la route', '5 ans', 'd'], ['Nombre de questions à l’examen du code de la route', '40 questions', 'q'],
+  ['Nombre de bonnes réponses minimum pour réussir l’examen du code', '35 bonnes réponses', 'q'], ['Profondeur minimale légale des sculptures d’un pneu', '1,6 mm', 'm'],
+  ['Âge d’une voiture neuve à son premier contrôle technique', '4 ans', 'd'], ['Délai entre deux contrôles techniques (voiture particulière)', '2 ans', 'd'],
+  ['Vitesse maximale en zone 30', '30 km/h', 'v'], ['Vitesse minimale sur la voie la plus à gauche d’une autoroute (par beau temps)', '80 km/h', 'v'],
+  ['Vitesse maximale sur autoroute pour un poids lourd de plus de 3,5 tonnes', '90 km/h', 'v'], ['Portée des feux de croisement (environ)', '30 mètres', 'm'],
+  ['Portée des feux de route (au moins)', '100 mètres', 'm'], ['Distance minimale pour dépasser un cycliste hors agglomération', '1,5 mètre', 'm'],
+  ['Distance minimale pour dépasser un cycliste en agglomération', '1 mètre', 'm'],
 ]
 await writeFile('public/packs/culture/code-route.json', JSON.stringify(REGLES.map(([n, r, g], i) => ({ id: 'code-route' + i, n: { fr: n, en: n }, r: { fr: r, en: r }, g }))))
 console.log('code-route', REGLES.length)
