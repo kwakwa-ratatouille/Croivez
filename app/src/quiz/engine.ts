@@ -138,7 +138,8 @@ const CULTURE = {
   politiques: { type: 'image', q: { fr: (_, g) => (g === 'f' ? 'Qui est cette personnalité politique ?' : 'Qui est cet homme politique ?'), en: () => 'Who is this politician?' } },
   dirigeants: { type: 'image', q: { fr: () => 'Qui est ce dirigeant ?', en: () => 'Who is this world leader?' } },
   'plats-photo': { type: 'image', q: { fr: () => 'Quel est ce plat ?', en: () => 'What is this dish?' } },
-  'verlan': { type: 'attribut', q: { fr: (n) => `Que veut dire ce mot en verlan : ${n} ?`, en: (n) => `Que veut dire ce mot en verlan : ${n} ?` } },
+  // Verlan et argot : la question dépend du mot (g : verlan, argot, mot des réseaux ou expression)
+  'verlan': { type: 'attribut', q: { fr: (n, g) => (g === 'verlan' ? `Que veut dire ce mot en verlan : ${n} ?` : g === 'reseaux' ? `Que veut dire ce mot des réseaux : ${n} ?` : g === 'expression' ? `Que veut dire l’expression « ${n} » ?` : `Que veut dire ce mot d’argot : ${n} ?`), en: (n) => `What does the French slang “${n}” mean?` } },
   'petits-animaux': { type: 'attribut', q: { fr: (n) => `Comment s’appelle le petit de cet animal : ${n} ?`, en: (n) => `Comment s’appelle le petit de cet animal : ${n} ?` } },
   'groupes-animaux': { type: 'attribut', q: { fr: (n) => `Comment appelle-t-on un groupe de : ${n} ?`, en: (n) => `Comment appelle-t-on un groupe de : ${n} ?` } },
   'surnoms-villes': { type: 'attribut', q: { fr: (n) => `Quelle ville surnomme-t-on « ${n} » ?`, en: (n) => `Quelle ville surnomme-t-on « ${n} » ?` } },
