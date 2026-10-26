@@ -36,6 +36,7 @@ import Activite from './pages/Activite'
 import Clan from './pages/Clan'
 import CeJour from './pages/CeJour'
 import Frise from './pages/Frise'
+import RelaisGoogle from './pages/RelaisGoogle'
 
 function BientotDisponible() {
   const { t } = usePrefs()
@@ -62,6 +63,8 @@ function PartieCle() { const l = useLocation(); return <Partie key={l.search} />
 function Routeur() {
   const { user, profile, loading } = useAuth()
   if (loading) return <div className="ecran-lancement"><LogoAnime width={110} /><Wordmark size={30} /></div>
+  // Page ouverte dans le navigateur par l'appli pour la connexion Google (connecté ou non)
+  if (location.hash.startsWith('#/relais-google')) return <RelaisGoogle />
   // Invités (QR code du mode télé) : rejoindre un salon ou lancer la télé sans compte
   const pageInvite = /^#\/(rejoindre|tv|salon)/.test(location.hash)
   if ((!user && pageInvite) || user?.isAnonymous) return (

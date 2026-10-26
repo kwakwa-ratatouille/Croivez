@@ -2471,3 +2471,8 @@ img, svg { -webkit-user-drag: none; }
 .tuto-bulle.centre .tuto-boutons { justify-content: center; }
 .tuto-boutons .btn { min-height: 42px; }
 @media (prefers-reduced-motion: reduce) { .tuto-trou::after, .tuto-bulle.centre .tuto-emoji { animation: none; } }
+
+/* Connexion Google dans les applis : attente du retour du navigateur */
+.attente-google { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 16px; border-radius: 16px; background: var(--surface2); text-align: center; }
+.attente-google small { color: var(--muted); }
+.attente-google .spin { width: 28px; height: 28px; border-radius: 50%; border: 3px solid var(--line); border-top-color: var(--accent, #6C5CE7); animation: tourne .9s linear infinite; }

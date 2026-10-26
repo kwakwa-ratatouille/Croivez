@@ -17,6 +17,13 @@
     "attente": {
       ".read": "auth != null",
       ".write": "auth != null"
+    },
+    "relaisGoogle": {
+      "$id": {
+        ".read": "$id.length >= 20",
+        ".write": "$id.length >= 20 && ((!data.exists() && auth != null) || !newData.exists())",
+        ".validate": "!newData.exists() || (newData.child('d').isString() && newData.child('d').val().length < 12000)"
+      }
     }
   }
 }
