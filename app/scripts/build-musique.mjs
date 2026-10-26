@@ -56,6 +56,27 @@ const ecrire = async (id, items) => {
 
 // ——— Extraits : nouveaux artistes (pop, rock, chanson française, électro, latino, K-pop…) ———
 const EXTRAITS = [
+  // Récents et en tournée (2025-2026)
+  'Helena', 'Zaho de Sagazan', 'Jeanne Cherhal', 'Charlotte Cardin', 'Yamê', 'Nuit Incolore', 'Marguerite', 'Julien Granel', 'Joyce Jonathan', 'Suzane', 'L.E.J', 'Mentissa',
+  'Lyna Mahyem', 'Aloïse Sauvage', 'Emma Peters', 'Claudio Capéo', 'Boulevard des Airs', 'Trois Cafés Gourmands', 'Amel Bent', "Shy'm", 'Jérémy Frérot', 'Tryo', "Keen'V", 'Héléna',
+  'Doechii', 'Gracie Abrams', 'Myles Smith', 'Alex Warren', 'Lola Young', 'KATSEYE', 'Addison Rae', 'Stray Kids', 'TWICE', 'NewJeans', 'aespa', 'LE SSERAFIM', 'RAYE', 'Tyla',
+  'Shaboozey', 'Morgan Wallen', 'Zach Bryan', 'Noah Kahan', 'Foo Fighters', 'Rush', 'Journey', 'Kylie Minogue', 'Robbie Williams', 'Jung Kook', 'Jimin', 'Djo', 'Sombr',
+  // Classiques (années 50 à 80), pour les quiz « darons »
+  'Frank Sinatra', 'Aretha Franklin', 'Ray Charles', 'The Doors', 'Jimi Hendrix', 'Simon & Garfunkel', 'The Beach Boys', 'Bob Dylan', 'Johnny Cash', 'Marvin Gaye', 'James Brown',
+  'Barry White', 'Gloria Gaynor', 'Donna Summer', 'Chic', 'Diana Ross', 'The Jackson 5', 'Otis Redding', 'Nina Simone', 'Louis Armstrong', 'Chuck Berry', 'Little Richard', 'The Kinks',
+  'The Who', 'Creedence Clearwater Revival', 'Dire Straits', 'Genesis', 'Phil Collins', 'Duran Duran', 'Tears for Fears', 'Culture Club', 'Simple Minds', 'Pet Shop Boys', 'Kim Wilde',
+  'Bananarama', 'Rick Astley', 'Bonnie Tyler', 'Joe Cocker', 'Supertramp', 'Scorpions', 'Status Quo', 'Deep Purple', 'Black Sabbath', 'KISS', 'Aerosmith', 'Van Halen', 'The Clash',
+  'Ramones', 'Blondie', 'Talking Heads', 'Roxy Music', 'Electric Light Orchestra', 'The Bangles', 'Huey Lewis & The News', 'Lionel Richie', 'Billy Joel', 'Rod Stewart', 'Cat Stevens',
+  'Michel Polnareff', 'Nino Ferrer', 'Alain Bashung', 'Hubert-Félix Thiéfaine', 'Jean Ferrat', 'Yves Montand', 'Barbara', 'Gilbert Bécaud', 'Mike Brant', 'Sheila', 'Hervé Vilard',
+  'Dave', 'Gérard Lenorman', 'Desireless', 'Gold', 'Images', 'Début de Soirée', 'Lio', 'Philippe Lavil', 'Gilbert Montagné', 'Jeanne Mas', 'Les Forbans', 'Patrick Hernandez',
+  'Plastic Bertrand', 'Ottawan', 'Charles Trenet', 'Bourvil', 'Henri Salvador', 'Serge Lama', 'Julien Clerc', 'Véronique Sanson', 'Maxime Le Forestier', 'Yves Duteil', 'Eddy Mitchell',
+  'Michel Delpech', 'Nicoletta', 'Stone et Charden', 'Daniel Guichard', 'Claude Nougaro', 'Pierre Bachelet', 'Herbert Léonard', 'Frédéric François', 'Mort Shuman', 'Cookie Dingler',
+  'Jean-Patrick Capdevielle', 'Gérard Blanc', 'Partenaire Particulier', 'Niagara', 'Étienne Daho', 'Axel Bauer', 'Marc Lavoine', 'Francis Lalanne', 'Michel Jonasz', 'William Sheller',
+  // Années 90 et 2000
+  'Spice Girls', 'Destiny\'s Child', 'Britney Spears', 'Eminem', 'Avril Lavigne', 'Blink-182', 'The Offspring', 'No Doubt', 'Shania Twain', 'Ace of Base', 'Aqua', 'Eiffel 65',
+  'Haddaway', 'Dr. Alban', '2 Unlimited', 'La Bouche', 'Snap!', 'Vengaboys', 'Las Ketchup', 'Shaggy', 'Wyclef Jean', 'Fugees', 'TLC', 'Nelly Furtado', 'Gwen Stefani',
+  'Alliage', 'Worlds Apart', '2Be3', 'Larusso', 'Lorie', 'Priscilla', 'Ophélie Winter', 'Hélène Ségara', 'Lââm', 'Yannick', 'Matt Houston', 'Sinsemilia',
+  'Manau', 'Pow woW', 'Faudel', 'Khaled', 'Magic System', 'Corneille', 'Raphaël', 'Diam\'s', 'Sexion d\'Assaut', 'Psy 4 de la Rime', 'Tragédie', 'Billy Crawford',
   'Taylor Swift', 'Beyoncé', 'Rihanna', 'Ed Sheeran', 'Adele', 'Bruno Mars', 'Lady Gaga', 'Ariana Grande', 'Dua Lipa', 'The Weeknd', 'Justin Bieber', 'Shakira', 'Coldplay',
   'Imagine Dragons', 'Maroon 5', 'Sia', 'Miley Cyrus', 'Olivia Rodrigo', 'Sabrina Carpenter', 'Lana Del Rey', 'Lorde', 'Sam Smith', 'Shawn Mendes', 'Lewis Capaldi', 'One Direction',
   'Backstreet Boys', 'Spice Girls', 'Madonna', 'Mariah Carey', 'Christina Aguilera', 'P!nk', 'Avicii', 'David Guetta', 'Calvin Harris', 'Daft Punk', 'Martin Garrix', 'Kygo',

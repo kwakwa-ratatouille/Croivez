@@ -31,6 +31,7 @@ export const FAMILLES: { k: Famille; nom: Record<Lang, string>; icon: string; mo
       { id: 'capitales', nom: { fr: 'Capitales', en: 'Capitals' }, jouable: 'capitales' },
       { id: 'capitales-inverse', nom: { fr: 'Capitale → pays', en: 'Capital → country' }, jouable: 'capitales-inverse' },
       { id: 'villes-fr', nom: { fr: 'Villes de France', en: 'French cities' }, jouable: 'villes-fr' },
+      { id: 'villes-idf', nom: { fr: 'Paris et banlieue : villes d’Île-de-France', en: 'Paris region towns' }, jouable: 'villes-idf' },
       { id: 'villes-monde', nom: { fr: 'Villes du monde', en: 'World cities' }, jouable: 'villes-monde' },
       { id: 'pays-carte', nom: { fr: 'Pays sur la carte', en: 'Countries on the map' }, jouable: 'pays-carte' },
       { id: 'monuments', nom: { fr: 'Monuments', en: 'Landmarks' }, jouable: 'monuments' },

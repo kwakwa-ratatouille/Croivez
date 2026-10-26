@@ -24,7 +24,7 @@ export const LEGENDE = 5
 const nbLeurres = (d: Difficulte) => (d === LEGENDE ? 6 : d === 4 ? 5 : d >= 1 && d <= 3 ? d : 3)
 export type Palier = 1 | 2 | 3 | 4
 
-export type SousThemeId = 'drapeaux' | 'drapeaux-europe' | 'drapeaux-afrique' | 'drapeaux-asie' | 'drapeaux-ameriques' | 'drapeaux-oceanie' | 'drapeaux-inverse' | 'capitales' | 'capitales-inverse' | 'villes-fr' | 'villes-monde' | 'pays-carte' | 'logos-vrai' | CultureId
+export type SousThemeId = 'drapeaux' | 'drapeaux-europe' | 'drapeaux-afrique' | 'drapeaux-asie' | 'drapeaux-ameriques' | 'drapeaux-oceanie' | 'drapeaux-inverse' | 'capitales' | 'capitales-inverse' | 'villes-fr' | 'villes-idf' | 'villes-monde' | 'pays-carte' | 'logos-vrai' | CultureId
 
 // Thèmes générés depuis Wikidata (scripts/build-culture.mjs)
 type Texte = Record<Lang, string>
@@ -266,7 +266,7 @@ export const estAudio = (s: string) => estCulture(s) && CULTURE[s].type === 'aud
 export const packCulture = (s: CultureId) => (CULTURE[s] as { pack?: string }).pack ?? s
 // Nature d'un quiz : sert aux mini-jeux (photo floue → quiz en images, avant / après → quiz d'années)
 export function natureQuiz(s: string): 'image' | 'annee' | 'texte' | 'audio' | 'carte' {
-  if (s === 'villes-fr' || s === 'villes-monde' || s === 'pays-carte') return 'carte'
+  if (s === 'villes-fr' || s === 'villes-idf' || s === 'villes-monde' || s === 'pays-carte') return 'carte'
   if (s === 'drapeaux') return 'image'
   if (!estCulture(s)) return 'texte'
   const t = CULTURE[s].type
@@ -314,7 +314,7 @@ export const quizFixe = (s: string) => estCulture(s) && !!(CULTURE[s] as { fixe?
 export type Option = { label: string; image?: string; effet?: { filter?: string; transform?: string; truc?: string; force?: number; graine?: number; secours?: string } }
 export type Fiche = { image?: string; faits: { l: string; v: string }[]; saviez: string; wiki: string }
 export type Carte = {
-  vue: 'france' | 'monde'
+  vue: 'france' | 'idf' | 'monde'
   cible?: [number, number] // lat, lng à placer
   zoomPays?: string // code numérique : la carte se cadre sur ce pays
   surligne?: string // code numérique du pays mis en évidence (QCM « quel est ce pays ? »)
@@ -420,6 +420,10 @@ const MIN_MONDE = { 1: 3_000_000, 2: 800_000, 3: 200_000, 4: 30_000 } as const
 // Tolérance (km) : large en facile, plus serrée en expert
 // Tolérance (km) : large en facile pour apprendre où sont les villes, serrée en expert
 const SEUIL_FR = { 1: 220, 2: 140, 3: 80, 4: 45 } as const
+// Paris et Île-de-France : carte zoomée sur la région, tolérance bien plus serrée
+const MIN_IDF = { 1: 40_000, 2: 15_000, 3: 5_000, 4: 0 } as const
+const SEUIL_IDF = { 1: 12, 2: 8, 3: 5, 4: 3 } as const
+export const DEPS_IDF = ['75', '77', '78', '91', '92', '93', '94', '95']
 const FACTEUR_MONDE = { 1: 4, 2: 2.6, 3: 1.7, 4: 1.2 } as const
 
 // Distracteurs « similaires » : même continent d'abord
@@ -489,7 +493,7 @@ let rand = Math.random
 // Mix / Express / Survie : questions piochées dans des quiz variés (sans carte, pour enchaîner vite).
 // difficultes : la difficulté de chaque question, dans l'ordre (Survie : de plus en plus dur).
 export async function genererMix(o: { quiz: SousThemeId[]; difficultes: Difficulte[]; lang: Lang; max?: Palier }): Promise<Question[]> {
-  const possibles = o.quiz.filter((s) => !['villes-fr', 'villes-monde', 'pays-carte'].includes(s))
+  const possibles = o.quiz.filter((s) => !['villes-fr', 'villes-idf', 'villes-monde', 'pays-carte'].includes(s))
   const out: Question[] = []
   let precedent = ''
   for (const d of o.difficultes) {
@@ -505,13 +509,14 @@ export async function genererMix(o: { quiz: SousThemeId[]; difficultes: Difficul
 
 export async function genererPartie(o: Opts): Promise<Question[]> {
   const tous = await chargerPays()
-  await (o.sousTheme === 'villes-fr' ? pack('villes-fr.json') : o.sousTheme === 'villes-monde' ? pack('villes-monde.json') : o.sousTheme === 'logos-vrai' ? pack('culture/logos.json') : null)
+  await (o.sousTheme === 'villes-fr' || o.sousTheme === 'villes-idf' ? pack('villes-fr.json') : o.sousTheme === 'villes-monde' ? pack('villes-monde.json') : o.sousTheme === 'logos-vrai' ? pack('culture/logos.json') : null)
   if (estCulture(o.sousTheme)) await pack(`culture/${packCulture(o.sousTheme)}.json`)
   // Packs chargés avant de fixer la graine : la génération qui suit est synchrone, donc reproductible
   rand = o.seed ? mulberry32(o.seed) : Math.random
   if (o.sousTheme === 'logos-vrai') return logosVrai(o, await pack<ItemCulture[]>('culture/logos.json'))
   if (estCulture(o.sousTheme)) return culture(o, await pack<ItemCulture[]>(`culture/${packCulture(o.sousTheme)}.json`))
   if (o.sousTheme === 'villes-fr') return villesFrance(o)
+  if (o.sousTheme === 'villes-idf') return villesFrance(o, true)
   if (o.sousTheme === 'villes-monde') return villesMonde(o, tous)
   return questionsPays(o, tous)
 }
@@ -553,14 +558,17 @@ function questionsPays(o: Opts, tousMonde: Pays[]): Question[] {
   })
 }
 
-async function villesFrance(o: Opts): Promise<Question[]> {
+// Villes de France (hors Île-de-France) ou, avec idf, Paris et sa banlieue sur une carte de la région
+async function villesFrance(o: Opts, idf = false): Promise<Question[]> {
   const { lang } = o
   const difficulte = palierDe(o.difficulte)
   const { deps, villes: toutes } = await pack<{ deps: Record<string, string>; villes: Ville[] }>('villes-fr.json')
   // La carte ne montre que la métropole (Corse comprise) : les communes d'outre-mer (Nouméa, Papeete…) sont écartées
-  const villes = toutes.filter((v) => v[2] > 41 && v[2] < 51.5 && v[3] > -5.5 && v[3] < 10)
+  const metro = toutes.filter((v) => v[2] > 41 && v[2] < 51.5 && v[3] > -5.5 && v[3] < 10)
+  const villes = metro.filter((v) => DEPS_IDF.includes(v[4]) === idf)
+  const MIN = idf ? MIN_IDF : MIN_FR
   const idDe = (v: Ville) => `${v[0]}|${v[4]}`
-  const finSeuil = (d: Palier) => { const i = villes.findIndex((v) => v[1] < MIN_FR[d]); return i < 0 ? villes.length : i }
+  const finSeuil = (d: Palier) => { const i = villes.findIndex((v) => v[1] < MIN[d]); return i < 0 ? villes.length : i }
   const { cibles } = tirer(villes, finSeuil, o, idDe)
   const fmt = new Intl.NumberFormat(lang === 'fr' ? 'fr-FR' : 'en-GB')
   return cibles.map(([nom, pop, lat, lng, dep]) => {
@@ -568,10 +576,10 @@ async function villesFrance(o: Opts): Promise<Question[]> {
     return {
       id: `${nom}|${dep}`, imagesOnly: false, options: [], acceptees: [], reponse: nom,
       enonce: lang === 'fr' ? `Placez ${nom} sur la carte` : `Place ${nom} on the map`,
-      carte: { vue: 'france', cible: [lat, lng], seuilKm: o.difficulte === LEGENDE ? 25 : SEUIL_FR[difficulte] },
+      carte: { vue: idf ? 'idf' : 'france', cible: [lat, lng], seuilKm: idf ? (o.difficulte === LEGENDE ? 2 : SEUIL_IDF[difficulte]) : o.difficulte === LEGENDE ? 25 : SEUIL_FR[difficulte] },
       fiche: {
         faits: [{ l: L[lang].dep, v: `${deps[dep] ?? dep} (${dep})` }, { l: L[lang].population, v: fmt.format(pop) }],
-        saviez: lang === 'fr' ? `${nom} est la ${ordinal(rang, lang).replace('1er', '1re')} commune la plus peuplée de France métropolitaine.` : `${nom} is the ${ordinal(rang, lang)} most populous town in mainland France.`,
+        saviez: lang === 'fr' ? `${nom} est la ${ordinal(rang, lang).replace('1er', '1re')} commune la plus peuplée ${idf ? 'd’Île-de-France' : 'de France métropolitaine (hors Île-de-France)'}.` : `${nom} is the ${ordinal(rang, lang)} most populous town in ${idf ? 'the Paris region' : 'mainland France (outside the Paris region)'}.`,
         wiki: wiki(nom, lang),
       },
     }

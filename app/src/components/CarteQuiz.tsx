@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState, type PointerEvent, type WheelEven
 import { geoConicConformal, geoContains, geoNaturalEarth1, geoPath, type GeoProjection } from 'd3-geo'
 import { feature } from 'topojson-client'
 import type { Feature, FeatureCollection, Geometry } from 'geojson'
-import type { Carte } from '../quiz/engine'
+import { DEPS_IDF, type Carte } from '../quiz/engine'
 import { usePrefs } from '../i18n'
 
 type Geo = FeatureCollection<Geometry, { name?: string; nom?: string }>
@@ -15,6 +15,8 @@ function chargerFond(vue: Carte['vue']) {
   if (!fonds.has(vue)) {
     fonds.set(vue, vue === 'france'
       ? fetch('./packs/france.geojson').then((r) => r.json())
+      // Île-de-France : les 8 départements de la région seulement
+      : vue === 'idf' ? fetch('./packs/france.geojson').then((r) => r.json()).then((g: Geo) => ({ ...g, features: g.features.filter((f) => DEPS_IDF.includes(String((f.properties as { code?: string }).code))) }))
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       : fetch('./packs/monde.json').then((r) => r.json()).then((topo: any) => feature(topo, topo.objects.countries) as unknown as Geo))
   }
@@ -41,7 +43,7 @@ export default function CarteQuiz({ carte, clic, repondu, onClic }: { carte: Car
 
   const projection = useMemo<GeoProjection | null>(() => {
     if (!geo) return null
-    if (carte.vue === 'france') return geoConicConformal().parallels([44, 49]).rotate([-3, 0]).fitExtent([[20, 20], [W - 20, H - 20]], geo)
+    if (carte.vue === 'france' || carte.vue === 'idf') return geoConicConformal().parallels([44, 49]).rotate([-3, 0]).fitExtent([[20, 20], [W - 20, H - 20]], geo)
     const proj = geoNaturalEarth1()
     const focus = carte.zoomPays ?? carte.surligne
     const f = focus ? geo.features.find((x) => idDe(x) === focus) : null
