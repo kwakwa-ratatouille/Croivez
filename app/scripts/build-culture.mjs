@@ -96,6 +96,7 @@ async function enrichir(items, prop, champ, libelle) {
 }
 
 const GENRES = { Q6581097: 'm', Q6581072: 'f' }
+const ESTACTEUR = /act(eur|rice|or|ress)|com[ée]dien/i
 
 // Regroupe toutes les valeurs ?x d'un élément : la première sert de réponse, les autres sont aussi acceptées
 function avecAlternatives(lignes, map) {
@@ -145,8 +146,16 @@ const THEMES = {
   series: () => sparql(req('?item wdt:P31 wd:Q5398426; wdt:P580 ?date.', { sl: 30, select: '?date' }))
     .then((l) => finaliser(l, (b) => annee(b) && ({ ...base(b), r: annee(b) }))),
 
+  // Wikidata range parmi les « acteurs » quiconque a fait un caméo (Dalí, Castro, Pelé…) : on garde ceux dont c'est le métier
+  // (description « acteur », « actrice », « comédien ») ; les autres vont aux personnalités (scripts/trier-acteurs.mjs)
   acteurs: () => sparql(req('?item wdt:P106 wd:Q10800557; wdt:P18 ?img; wdt:P21 ?genre.', { sl: 50, select: '?genre' }))
-    .then((l) => finaliser(l, (b) => ({ ...base(b), img: image(b), g: GENRES[b.genre.value.split('/').pop()] }))),
+    .then((l) => finaliser(l, (b) => ({ ...base(b), img: image(b), g: GENRES[b.genre.value.split('/').pop()] })))
+    .then((items) => items.filter((it) => ESTACTEUR.test(`${it.d?.fr ?? ''} ${it.d?.en ?? ''}`))),
+
+  realisateurs: () => sparql(req('VALUES ?metier { wd:Q2526255 wd:Q3455803 } ?item wdt:P106 ?metier; wdt:P18 ?img; wdt:P21 ?genre.', { sl: 40, select: '?genre' }))
+    .then((l) => finaliser(l, (b) => ({ ...base(b), img: image(b), g: GENRES[b.genre.value.split('/').pop()] })))
+    // Cinéma seulement (pas le théâtre), et pas ceux qui sont d'abord acteurs (Brando, Jackie Chan)
+    .then((items) => items.filter((it) => /r[ée]alisat|cin[ée]aste/i.test(it.d?.fr ?? '') && !/^(acteur|actrice|com[ée]dien)/i.test(it.d?.fr ?? ''))),
 
   // Maison de disques obligatoire : écarte les personnalités historiques qui « chantaient » aussi
   artistes: () => sparql(req('VALUES ?metier { wd:Q177220 wd:Q639669 wd:Q2252262 } ?item wdt:P106 ?metier; wdt:P18 ?img; wdt:P21 ?genre; wdt:P264 [].', { sl: 40, select: '?genre' }))

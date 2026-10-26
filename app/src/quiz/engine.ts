@@ -36,6 +36,7 @@ const deVille = (n: string) => n.startsWith('Le ') ? `du ${n.slice(3)}` : n.star
 const CULTURE = {
   films: { type: 'attribut', q: { fr: (n) => `Qui a réalisé « ${n} » ?`, en: (n) => `Who directed “${n}”?` } },
   series: { type: 'annee', q: { fr: (n) => `En quelle année a débuté la série « ${n} » ?`, en: (n) => `In what year did “${n}” first air?` } },
+  realisateurs: { type: 'image', q: { fr: (_, g) => (g === 'f' ? 'Qui est cette réalisatrice ?' : 'Qui est ce réalisateur ?'), en: () => 'Who is this film director?' } },
   acteurs: { type: 'image', q: { fr: (_, g) => (g === 'f' ? 'Qui est cette actrice ?' : 'Qui est cet acteur ?'), en: () => 'Who is this actor?' } },
   artistes: { type: 'image', q: { fr: (_, g) => (g === 'f' ? 'Qui est cette artiste ?' : 'Qui est cet artiste ?'), en: () => 'Who is this artist?' } },
   albums: { type: 'attribut', q: { fr: (n) => `Quel artiste a sorti l’album « ${n} » ?`, en: (n) => `Which artist released the album “${n}”?` } },
@@ -552,7 +553,9 @@ function questionsPays(o: Opts, tousMonde: Pays[]): Question[] {
 async function villesFrance(o: Opts): Promise<Question[]> {
   const { lang } = o
   const difficulte = palierDe(o.difficulte)
-  const { deps, villes } = await pack<{ deps: Record<string, string>; villes: Ville[] }>('villes-fr.json')
+  const { deps, villes: toutes } = await pack<{ deps: Record<string, string>; villes: Ville[] }>('villes-fr.json')
+  // La carte ne montre que la métropole (Corse comprise) : les communes d'outre-mer (Nouméa, Papeete…) sont écartées
+  const villes = toutes.filter((v) => v[2] > 41 && v[2] < 51.5 && v[3] > -5.5 && v[3] < 10)
   const idDe = (v: Ville) => `${v[0]}|${v[4]}`
   const finSeuil = (d: Palier) => { const i = villes.findIndex((v) => v[1] < MIN_FR[d]); return i < 0 ? villes.length : i }
   const { cibles } = tirer(villes, finSeuil, o, idDe)

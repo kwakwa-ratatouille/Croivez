@@ -1,5 +1,26 @@
 [
  {
+  "id": "2026-10-26b",
+  "titre": "Cinéma et personnalités rangés",
+  "points": [
+   [
+    "🎬",
+    "Réalisateurs en photo",
+    "Nouveau quiz : 605 réalisateurs, de Hitchcock à Miyazaki."
+   ],
+   [
+    "🎭",
+    "Que des vrais acteurs",
+    "Le quiz acteurs ne garde que les acteurs et actrices ; les autres sont passés dans Personnalités."
+   ],
+   [
+    "🗺️",
+    "Villes de France",
+    "Plus de villes d’outre-mer à placer sur la carte de la métropole."
+   ]
+  ]
+ },
+ {
   "id": "2026-10-26a",
   "titre": "Blind tests par genre et par époque",
   "points": [
