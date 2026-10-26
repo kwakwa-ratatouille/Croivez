@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { jour, useAuth } from '../auth'
 import { usePrefs } from '../i18n'
-import { NB_PALIERS, XP_JOUR_PASSE, XP_PALIER, etatSaison, finSaison, recompense, reclamerPalier } from '../saison'
+import { NB_PALIERS, xpJourPasse, xpPalier, etatSaison, finSaison, recompense, reclamerPalier } from '../saison'
 import { saisonDuMois } from '../evenements'
 import { retourFin } from '../retour'
 import Avatar from '../components/Avatar'
@@ -21,6 +21,7 @@ export default function Saison() {
   const cadreSaison = `cadre-s-${theme.id}`
   const mois = new Date().toLocaleDateString(fr ? 'fr-FR' : 'en-GB', { month: 'long' })
   const xpAujourdhui = profile?.saison?.id === s.id && profile.saison.jour === jour() ? profile.saison.xpJour ?? 0 : 0
+  const XP_PALIER = xpPalier(), XP_JOUR_PASSE = xpJourPasse()
   const dansPalier = s.palier >= NB_PALIERS ? XP_PALIER : s.xp % XP_PALIER
   const aRecuperer = Array.from({ length: s.palier }, (_, i) => i + 1).filter((n) => !s.recl.includes(n))
 

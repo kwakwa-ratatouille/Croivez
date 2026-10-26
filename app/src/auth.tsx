@@ -161,6 +161,12 @@ export const halloween = (d = new Date()) => (d.getMonth() === 9 && d.getDate() 
 // Passe de combat : au plus 450 XP comptées par jour (le reste compte pour le niveau, pas pour le passe)
 export const XP_JOUR_PASSE = 450
 export const saisonId = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+// Formule normale du pass : paliers de 500 XP, 450 XP par jour au plus (≈ 3 semaines de jeu pour tout finir).
+// Certaines saisons ont une formule allégée (octobre 2026 : lancé en fin de mois) : paliers de 200 XP, 1 000 XP par jour,
+// le pass se finit en 4 jours. L'XP déjà gagnée compte : on recalcule juste les paliers.
+const PASS_ALLEGE: Record<string, { palier: number; jour: number }> = { '2026-10': { palier: 200, jour: 1000 } }
+export const xpPalierPass = (id = saisonId()) => PASS_ALLEGE[id]?.palier ?? 500
+export const xpJourPasse = (id = saisonId()) => PASS_ALLEGE[id]?.jour ?? XP_JOUR_PASSE
 
 export async function enregistrerPartie(uid: string, profile: Profile, p: Partie) {
   const today = jour()
@@ -229,7 +235,7 @@ export async function enregistrerPartie(uid: string, profile: Profile, p: Partie
     saison: (() => {
       const s = profile.saison?.id === saisonId() ? profile.saison : { id: saisonId(), xp: 0, recl: [] as number[] }
       const deja = s.jour === today ? s.xpJour ?? 0 : 0
-      const gain = Math.max(0, Math.min(p.xp, XP_JOUR_PASSE - deja))
+      const gain = Math.max(0, Math.min(p.xp, xpJourPasse() - deja))
       return { ...s, xp: s.xp + gain, jour: today, xpJour: deja + gain }
     })(),
     // Historique des 30 derniers jours et précision par famille (statistiques)

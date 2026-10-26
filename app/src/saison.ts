@@ -1,13 +1,14 @@
 import { arrayUnion, doc, increment, runTransaction } from 'firebase/firestore'
 import { db } from './firebase'
-import { saisonId, type Profile } from './auth'
+import { saisonId, xpPalierPass, type Profile } from './auth'
 import { saisonDuMois } from './evenements'
 
 // Saison = un mois. L'XP gagnée pendant le mois fait avancer le pass : 20 paliers de 500 XP,
-// avec au plus XP_JOUR_PASSE (450) XP par jour : il faut jouer une bonne partie du mois pour tout finir.
+// avec au plus 450 XP par jour (formule normale ; certaines saisons sont allégées, voir PASS_ALLEGE dans auth.tsx).
 // Chaque palier rapporte des pièces ; le 10ᵉ et le 20ᵉ donnent en plus un objet exclusif.
-export const XP_PALIER = 500
-export { XP_JOUR_PASSE } from './auth'
+// XP d'un palier pour la saison en cours (formule normale ou allégée, voir auth.tsx)
+export const xpPalier = () => xpPalierPass()
+export { xpJourPasse } from './auth'
 export const NB_PALIERS = 20
 export type Recompense = { pieces: number; objet?: string; nom?: { fr: string; en: string } }
 // Récompenses de la saison du mois (thème : givre, cœurs, fleurs… Halloween, fêtes) : avatar, titre, cadre animé
@@ -22,7 +23,7 @@ export const recompense = (n: number, d = new Date()): Recompense => {
 
 export const etatSaison = (p?: Profile | null) => {
   const s = p?.saison?.id === saisonId() ? p.saison : { id: saisonId(), xp: 0, recl: [] as number[] }
-  return { ...s, palier: Math.min(NB_PALIERS, Math.floor(s.xp / XP_PALIER)) }
+  return { ...s, palier: Math.min(NB_PALIERS, Math.floor(s.xp / xpPalier())) }
 }
 export function finSaison(d = new Date()) {
   const fin = new Date(d.getFullYear(), d.getMonth() + 1, 1)
@@ -35,7 +36,7 @@ export async function reclamerPalier(uid: string, n: number) {
     const ref = doc(db, 'users', uid)
     const p = (await tx.get(ref)).data() as Profile | undefined
     const s = p?.saison
-    if (!s || s.id !== saisonId() || s.recl?.includes(n) || Math.floor(s.xp / XP_PALIER) < n) return false
+    if (!s || s.id !== saisonId() || s.recl?.includes(n) || Math.floor(s.xp / xpPalier()) < n) return false
     const r = recompense(n)
     tx.update(ref, { 'saison.recl': arrayUnion(n), pieces: increment(r.pieces), ...(r.objet ? { possede: arrayUnion(r.objet) } : {}) })
     return true
