@@ -57,7 +57,8 @@ export type Profile = {
   pseudoStyle?: string // style du pseudo acheté en boutique
   clan?: string // code du clan
   couleurApp?: string; victoire?: string; sonReponse?: string // effets portés (thème de couleur, fête de victoire, son des réponses)
-  caisses?: number // caisses ouvertes (le prix augmente avec)
+  caisses?: number // caisses ouvertes en tout (statistique)
+  caissesF?: Record<string, number> // caisses ouvertes par famille (le prix de la famille augmente avec)
   jetons?: number // jetons de rang (boutique des rangs)
   ligue?: EtatLigue // rang : points de rang, dernier jour joué, semaine en cours, semaines finies par rang
   farm?: Record<string, Record<string, number>> // parties du jour par niveau (XP dégressive), clé = date

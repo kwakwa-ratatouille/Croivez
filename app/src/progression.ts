@@ -39,9 +39,18 @@ const RARETE: Record<string, Rarete> = {
 export const rareteDe = (id: string): Rarete => RARETE[id] ?? 'rare'
 // Chances relatives à l'ouverture d'une caisse (parmi les quiz encore verrouillés : on finit forcément par tout avoir)
 export const POIDS: Record<Rarete, number> = { commun: 60, rare: 25, epique: 11, legendaire: 4 }
-// Prix des caisses : 100 pièces, puis +15 à chaque caisse ouverte, plafonné à 350 (≈ quelques parties de plus à chaque fois)
+// Prix des caisses, propre à chaque famille : 100 pièces, puis +20 à chaque caisse ouverte dans CETTE famille,
+// sans plafond (ça s'arrête tout seul quand la famille est complète). Une autre famille repart de 100.
+// La caisse surprise coûte le prix de la famille la moins chère parmi celles qui ont encore des quiz à gagner.
 export const PRIX_CAISSE = 100
-export const prixCaisse = (p?: Pick<Profile, 'caisses'> | null) => Math.min(350, PRIX_CAISSE + 15 * (p?.caisses ?? 0))
+export const HAUSSE_CAISSE = 20
+type AvecCaisses = Pick<Profile, 'caissesF' | 'quiz' | 'familles' | 'toutDebloque' | 'choixFait'>
+const prixFamille = (k: Famille, p?: Pick<Profile, 'caissesF'> | null) => PRIX_CAISSE + HAUSSE_CAISSE * (p?.caissesF?.[k] ?? 0)
+export function prixCaisse(p: AvecCaisses | null | undefined, k: Famille | 'tout') {
+  if (k !== 'tout') return prixFamille(k, p)
+  const prix = FAMILLES.filter((f) => quizVerrouilles(f.k, p as Profile).length).map((f) => prixFamille(f.k, p))
+  return prix.length ? Math.min(...prix) : PRIX_CAISSE
+}
 
 // ——— XP anti-farm : refaire sans cesse le même niveau ne fait plus grimper ———
 // Le même niveau (ou le même mode) rejoué le même jour rapporte de moins en moins d'XP ; un niveau déjà réussi
@@ -145,9 +154,11 @@ export async function ouvrirCaisse(uid: string, k: Famille | 'tout', p?: Profile
   return (await runTransaction(db, async (tx) => {
     const ref = doc(db, 'users', uid)
     const d = (await tx.get(ref)).data() ?? {}
-    const prix = prixCaisse({ caisses: d.caisses as number | undefined })
+    const prix = prixCaisse({ ...p, caissesF: d.caissesF as Record<string, number> | undefined } as Profile, k)
     if (((d.pieces as number | undefined) ?? 0) < prix) return false
-    tx.update(ref, { pieces: increment(-prix), quiz: arrayUnion(gain.id), caisses: increment(1) })
+    // Le compteur monte dans la famille du quiz gagné (aussi pour la caisse surprise)
+    const fam = familleDe(gain.id)?.k ?? (k === 'tout' ? 'geo' : k)
+    tx.update(ref, { pieces: increment(-prix), quiz: arrayUnion(gain.id), caisses: increment(1), [`caissesF.${fam}`]: increment(1) })
     return true
   })) ? gain : false
 }
@@ -164,7 +175,7 @@ export const testToutDebloquer = (uid: string) => setDoc(doc(db, 'users', uid), 
 export const testQuizDebloques = (uid: string) => setDoc(doc(db, 'users', uid), { familles: FAMILLES.map((f) => f.k), choixFait: true, toutDebloque: deleteField() }, { merge: true })
 export const testReinitialiser = (uid: string) => setDoc(doc(db, 'users', uid), { familles: deleteField(), quiz: [], choixFait: false, sauts: deleteField(), toutDebloque: deleteField(), pieces: 50 }, { merge: true })
 // Remise à zéro complète (test) : toute la progression repart de rien ; compte, pseudo et amis conservés
-const EFFACES = ['familles', 'sauts', 'paliers', 'maitrise', 'revision', 'album', 'toutDebloque', 'farm', 'miniJeux', 'exploits', 'secrets', 'possede', 'avatar', 'cadre', 'titre', 'records', 'quetes', 'defiJour', 'vitrine', 'favori', 'bio', 'vitrineFond', 'pseudoStyle', 'caisses', 'ligue', 'jetons']
+const EFFACES = ['familles', 'sauts', 'paliers', 'maitrise', 'revision', 'album', 'toutDebloque', 'farm', 'miniJeux', 'exploits', 'secrets', 'possede', 'avatar', 'cadre', 'titre', 'records', 'quetes', 'defiJour', 'vitrine', 'favori', 'bio', 'vitrineFond', 'pseudoStyle', 'caisses', 'caissesF', 'ligue', 'jetons']
 export async function testRemiseAZero(uid: string) {
   await setDoc(doc(db, 'users', uid), {
     ...Object.fromEntries(EFFACES.map((k) => [k, deleteField()])),

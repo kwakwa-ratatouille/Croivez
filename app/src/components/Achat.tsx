@@ -26,7 +26,7 @@ export default function Achat({ k, onFermer }: { k: Famille | 'tout'; onFermer: 
   if (ouverte) return <Caisse k={trouverSousTheme(ouverte.gain.id)?.famille.k ?? 'geo'} possibles={ouverte.possibles} gain={ouverte.gain} onFermer={onFermer} />
   const restants = quizVerrouilles(k, profile)
   const solde = profile?.pieces ?? 0
-  const prix = prixCaisse(profile)
+  const prix = prixCaisse(profile, k)
   const assez = solde >= prix
   // Combien de quiz restent par rareté, et la vraie chance de tomber sur chacune
   const parRarete = (Object.keys(RARETES) as Rarete[]).map((r) => ({ r, n: restants.filter((s) => rareteDe(s.id) === r).length }))

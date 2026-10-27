@@ -97,7 +97,7 @@ export default function Themes() {
 
         <div className="famille-actions">
           {ouverts.length >= 2 && <Link className="btn btn-p" to={`/partie?jeu=mix&f=${famille.k}&d=0&m=qcm`}>🎲 {fr ? 'Jouer au hasard dans la famille' : 'Random game in this family'}</Link>}
-          {fermes.length > 0 && <button className="btn btn-s" onClick={() => proposerCaisse(famille.k)}><Icon d={ICONS.sparkle} size={18} />{fr ? 'Ouvrir une caisse' : 'Open a crate'} · <Piece size={18} />{prixCaisse(profile)}</button>}
+          {fermes.length > 0 && <button className="btn btn-s" onClick={() => proposerCaisse(famille.k)}><Icon d={ICONS.sparkle} size={18} />{fr ? 'Ouvrir une caisse' : 'Open a crate'} · <Piece size={18} />{prixCaisse(profile, famille.k)}</button>}
         </div>
 
         {/* Légende : ce qu'il reste à faire, en clair */}
@@ -150,7 +150,7 @@ export default function Themes() {
         <button type="button" className="caisse-surprise" onClick={() => proposerCaisse('tout')}>
           <span className="caisse-surprise-de">🎲</span>
           <span className="caisse-surprise-txt"><strong>{fr ? 'Caisse surprise' : 'Surprise crate'}</strong><small>{fr ? `Un quiz au hasard parmi toutes les familles · ${quizVerrouilles('tout', profile).length} à gagner` : 'A random quiz from any family'}</small></span>
-          <span className="caisse-surprise-prix"><Piece size={18} />{prixCaisse(profile)}</span>
+          <span className="caisse-surprise-prix"><Piece size={18} />{prixCaisse(profile, 'tout')}</span>
         </button>
       )}
       {!n && <AFaire />}

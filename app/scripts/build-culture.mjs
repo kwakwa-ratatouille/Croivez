@@ -448,7 +448,8 @@ SELECT ?item ?sl ?nFr ?nEn ?dFr ?dEn ?img WHERE {
   'artistes-fr': () => sparql(req('VALUES ?metier { wd:Q177220 wd:Q2252262 wd:Q639669 wd:Q130857 } ?item wdt:P106 ?metier; wdt:P27 wd:Q142; wdt:P569 ?nais; wdt:P18 ?img; wdt:P21 ?genre. FILTER(YEAR(?nais) >= 1975)', { sl: 8, select: '?genre' }))
     .then((l) => finaliser(l, (b) => ({ ...base(b), img: image(b), g: GENRES[b.genre.value.split('/').pop()] }))),
   // Personnages classiques (dessins animés et films d'avant 1990)
-  'persos-classiques': () => sparql(req('VALUES ?t { wd:Q15711870 wd:Q15773317 wd:Q1114461 wd:Q15632617 } ?item wdt:P31 ?t; wdt:P18 ?img; wdt:P571|wdt:P580 ?date. FILTER(YEAR(?date) < 1990)', { sl: 4, select: '?date' }))
+  // Retirés à la main : image déplacée (Femlin), mauvaise image (Grinch = photo de l'auteur), pas de vrais personnages
+  'persos-classiques': () => sparql(req('VALUES ?t { wd:Q15711870 wd:Q15773317 wd:Q1114461 wd:Q15632617 } ?item wdt:P31 ?t; wdt:P18 ?img; wdt:P571|wdt:P580 ?date. FILTER(YEAR(?date) < 1990) FILTER(?item NOT IN (wd:Q1110081, wd:Q719748, wd:Q190529, wd:Q445461, wd:Q739085, wd:Q1248567, wd:Q2919541, wd:Q4892566, wd:Q7727013))', { sl: 4, select: '?date' }))
     .then((l) => finaliser(l, (b) => ({ ...base(b), img: image(b), x: { annee: annee(b) } }))),
   // Licences : films des grands studios (Pixar, Disney, Marvel, DreamWorks, Ghibli, Illumination, Lucasfilm)
   studios: () => sparql(req('VALUES ?x { wd:Q127552 wd:Q1047410 wd:Q367466 wd:Q238557 wd:Q182950 wd:Q1136155 wd:Q242446 } ?item wdt:P31/wdt:P279* wd:Q11424; wdt:P272 ?x. OPTIONAL { ?item wdt:P577 ?date }', { sl: 20, select: `?date ${libSelect('x')}`, extra: lib('x') }))

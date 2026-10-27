@@ -29,7 +29,7 @@ function suggestions(p: Profile | null, lang: Lang, nav: (to: string) => void): 
     const neuf = possedes.find((s) => !((p?.maitrise?.[s.id] ?? 0) > 0))
     if (neuf) out.push({ id: `neuf-${neuf.id}`, emoji: '✨', titre: neuf.nom[lang], detail: fr ? 'Pas encore joué : à découvrir' : 'Never played', k: f.k, action: () => ouvrirFiche(neuf.id), poids: 2 })
     // Caisse à ouvrir si on a les pièces
-    if ((p?.pieces ?? 0) >= prixCaisse(p) && quizVerrouilles(f.k, p).length && possedes.length) out.push({ id: `caisse-${f.k}`, emoji: '🎁', titre: f.nom[lang], detail: fr ? `Tu peux ouvrir une caisse (${prixCaisse(p)} pièces)` : `Open a crate (${prixCaisse(p)} coins)`, k: f.k, action: () => proposerCaisse(f.k), poids: 4 })
+    if ((p?.pieces ?? 0) >= prixCaisse(p, f.k) && quizVerrouilles(f.k, p).length && possedes.length) out.push({ id: `caisse-${f.k}`, emoji: '🎁', titre: f.nom[lang], detail: fr ? `Tu peux ouvrir une caisse (${prixCaisse(p, f.k)} pièces)` : `Open a crate (${prixCaisse(p, f.k)} coins)`, k: f.k, action: () => proposerCaisse(f.k), poids: 4 })
   }
   // Un peu de hasard à poids égal, pour varier d'un jour à l'autre
   return out.sort((a, b) => b.poids - a.poids || a.id.localeCompare(b.id)).slice(0, 12)
