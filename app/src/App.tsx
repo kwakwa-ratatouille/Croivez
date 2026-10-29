@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { HashRouter, Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom'
 import { AuthProvider, useAuth } from './auth'
 import { PrefsProvider, usePrefs } from './i18n'
@@ -9,33 +9,34 @@ import Themes from './pages/Themes'
 import { ouvrirFiche } from './components/FicheLancement'
 import { trouverSousTheme } from './themes'
 import Partie from './pages/Partie'
-import Parametres from './pages/Parametres'
+const Parametres = lazy(() => import('./pages/Parametres'))
 import Connexion from './pages/Connexion'
-import ChoixFamilles from './pages/ChoixFamilles'
+const ChoixFamilles = lazy(() => import('./pages/ChoixFamilles'))
 import { choixAFaire } from './progression'
-import Revision from './pages/Revision'
-import Fiches from "./pages/Fiches"
-import ClassementJour from "./pages/ClassementJour"
-import Soiree from "./pages/Soiree"
-import Stats from "./pages/Stats"
-import Saison from "./pages/Saison"
-import Aventure from "./pages/Aventure"
-import Amis from "./pages/Amis"
-import Profil, { Joueur } from './pages/Profil'
-import Duels from './pages/Duels'
-import Duel from './pages/Duel'
-import Salon from './pages/Salon'
-import Rejoindre from './pages/Rejoindre'
-import Tv from './pages/Tv'
-import Caster from './pages/Caster'
+const Revision = lazy(() => import('./pages/Revision'))
+const Fiches = lazy(() => import('./pages/Fiches'))
+const ClassementJour = lazy(() => import('./pages/ClassementJour'))
+const Soiree = lazy(() => import('./pages/Soiree'))
+const Stats = lazy(() => import('./pages/Stats'))
+const Saison = lazy(() => import('./pages/Saison'))
+const Aventure = lazy(() => import('./pages/Aventure'))
+const Amis = lazy(() => import('./pages/Amis'))
+const Profil = lazy(() => import('./pages/Profil'))
+const Joueur = lazy(() => import('./pages/Profil').then((m) => ({ default: m.Joueur })))
+const Duels = lazy(() => import('./pages/Duels'))
+const Duel = lazy(() => import('./pages/Duel'))
+const Salon = lazy(() => import('./pages/Salon'))
+const Rejoindre = lazy(() => import('./pages/Rejoindre'))
+const Tv = lazy(() => import('./pages/Tv'))
+const Caster = lazy(() => import('./pages/Caster'))
 import LiensAppli from './components/LiensAppli'
-import Classements from './pages/Classements'
-import Album from './pages/Album'
-import Boutique from './pages/Boutique'
-import Activite from './pages/Activite'
-import Clan from './pages/Clan'
-import CeJour from './pages/CeJour'
-import Frise from './pages/Frise'
+const Classements = lazy(() => import('./pages/Classements'))
+const Album = lazy(() => import('./pages/Album'))
+const Boutique = lazy(() => import('./pages/Boutique'))
+const Activite = lazy(() => import('./pages/Activite'))
+const Clan = lazy(() => import('./pages/Clan'))
+const CeJour = lazy(() => import('./pages/CeJour'))
+const Frise = lazy(() => import('./pages/Frise'))
 import RelaisGoogle from './pages/RelaisGoogle'
 
 function BientotDisponible() {
@@ -70,14 +71,14 @@ function Routeur() {
   if ((!user && pageInvite) || user?.isAnonymous) return (
     <HashRouter>
       <LiensAppli />
-      <Routes>
+      <Suspense fallback={<div className="ecran-lancement"><LogoAnime width={84} /></div>}><Routes>
         <Route path="/rejoindre" element={<Rejoindre />} />
         <Route path="/rejoindre/:code" element={<Rejoindre />} />
         <Route path="/tv" element={<Tv />} />
         <Route path="/cast" element={<Caster />} />
         <Route path="/salon/:code" element={user ? <Salon /> : <Navigate to="/rejoindre" replace />} />
         <Route path="*" element={<Navigate to="/rejoindre" replace />} />
-      </Routes>
+      </Routes></Suspense>
     </HashRouter>
   )
   if (!user) return <Connexion />
@@ -86,7 +87,7 @@ function Routeur() {
   return (
     <HashRouter>
       <LiensAppli />
-      <Routes>
+      <Suspense fallback={<div className="ecran-lancement"><LogoAnime width={84} /></div>}><Routes>
         <Route path="/partie" element={<PartieCle />} />
         <Route path="/duel/:id" element={<Duel />} />
         <Route path="/salon/:code" element={<Salon />} />
@@ -119,7 +120,7 @@ function Routeur() {
           <Route path="/frise" element={<Frise />} />
           <Route path="*" element={<BientotDisponible />} />
         </Route>
-      </Routes>
+      </Routes></Suspense>
     </HashRouter>
   )
 }

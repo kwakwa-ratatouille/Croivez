@@ -42,3 +42,11 @@ createRoot(document.getElementById('root')!).render(
     <Garde><App /></Garde>
   </StrictMode>,
 )
+
+// Après une mise à jour, une page chargée à la demande peut avoir changé de nom : on recharge l'appli (une seule fois)
+window.addEventListener('vite:preloadError', (e) => {
+  e.preventDefault()
+  try { if (sessionStorage.getItem('rechargeMaj') === '1') return; sessionStorage.setItem('rechargeMaj', '1') } catch { /* rien */ }
+  location.reload()
+})
+window.addEventListener('load', () => setTimeout(() => { try { sessionStorage.removeItem('rechargeMaj') } catch { /* rien */ } }, 10000))
