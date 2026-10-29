@@ -1,3 +1,4 @@
+import { graineTournoi, publierTournoi } from '../tournoi'
 import DefiScore from '../components/DefiScore'
 import { noterActivite } from '../activite'
 import Signaler from '../components/Signaler'
@@ -40,6 +41,7 @@ type Bonus = keyof typeof PRIX
 
 // Quitter une partie ramène d'où l'on vient : mode histoire, révision, quiz du jour, ou la famille du quiz
 function retourVers(p: URLSearchParams) {
+  if (p.get('tournoi') === '1') return '/tournoi'
   if (p.get('aventure') !== null) return '/aventure'
   if (p.get('rev') === '1') return '/revision'
   if (p.get('defi') === '1') return '/jour'
@@ -78,7 +80,8 @@ export default function Partie() {
   const revision = params.get('rev') === '1'
   // Mode rapide : pas de fiche, question suivante automatique (toujours en Express et Survie)
   const rapide = params.get('r') === '1' || jeu === 'express' || jeu === 'survie' || !prefs.fiches
-  const seed = defi ? Number(jour().replace(/-/g, '')) : undefined
+  const tournoi = params.get('tournoi') === '1'
+  const seed = defi ? Number(jour().replace(/-/g, '')) : tournoi ? graineTournoi() : undefined
   const difficulte = diffChoisie // 0 = tout mélangé
   const max = diffChoisie === 0 ? 4 : plafonner(4, profile, sousTheme) // « Tout » : toutes les difficultés ; sinon la plus haute débloquée
   const k = trouverSousTheme(sousTheme)?.famille.k ?? (params.get('f') as Famille | null) ?? (jeu ? 'jv' : 'geo')
@@ -138,7 +141,7 @@ export default function Partie() {
       return
     }
     // Question boss : une dernière question très dure (difficulté max débloquée) en partie classique
-    const avecBoss = !ids && !defi && !revision && !legende
+    const avecBoss = !ids && !defi && !tournoi && !revision && !legende
     genererPartie({ sousTheme, difficulte, max, nombre: avecBoss ? Math.max(1, nombre - 1) : nombre, mode, lang, ids, seed: ids ? undefined : seed, epoques }).then(async (qs) => {
       if (avecBoss) {
         const candidats = await genererPartie({ sousTheme, difficulte: max, max, nombre: 3, mode, lang }).catch(() => [])
@@ -282,6 +285,7 @@ export default function Partie() {
     if (defi) publierScoreJour(jour(), { uid: user.uid, pseudo: profile.pseudo, score, bonnes, total: reponses.length, grille: reponses.map((r) => (r.juste ? '🟩' : '🟥')).join(''), ...(profile.avatar ? { avatar: profile.avatar } : {}), ...(profile.cadre ? { cadre: profile.cadre } : {}) }).catch(console.error)
     // Fil d'activité : seulement les belles parties (8/10 ou plus), pour ne pas inonder les amis
     if (!revision && reponses.length >= 5 && bonnes / reponses.length >= 0.8) noterActivite(user.uid, bonnes === reponses.length ? '💯' : '⭐', `${bonnes === reponses.length ? 'a fait un sans-faute' : `a fait ${bonnes}/${reponses.length}`} en ${trouverSousTheme(sousTheme)?.sous.nom.fr ?? 'quiz'}`).catch(() => {})
+    if (tournoi) publierTournoi(user.uid, profile, score, bonnes, reponses.length).catch(console.error)
     enregistrerPartie(user.uid, profile, { sousTheme, xp, pieces, stats: { bonnes, comboMax, jeu: jeu ?? undefined, famille: k, difficulte },  defi, revision: revision || !!jeu, sansRevision: !!jeu, record: jeu && jeu !== 'mix' ? { jeu, score: bonnes } : undefined, difficulte: jeu ? undefined : difficulte, resultats: reponses.map((r) => ({ id: r.q.id, juste: r.juste, s: r.q.s ?? sousTheme })), bossReussi, difficulteJouee: difficulte, miniJeu: mj ?? undefined, cleFarm: revision ? undefined : cleFarm }).catch(console.error)
   }, [fini, user, profile, sousTheme, xp, pieces, defi, revision, reponses, questions])
 

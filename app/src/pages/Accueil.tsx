@@ -1,3 +1,5 @@
+import { trouverSousTheme } from '../themes'
+import { themeTournoi } from '../tournoi'
 import SerieHebdo from '../components/SerieHebdo'
 import { ETAPES, REGIONS } from '../aventure'
 import { etatSaison } from '../saison'
@@ -120,6 +122,13 @@ export default function Accueil() {
           </Link>
         )
       })()}
+
+      {/* Tournoi de la semaine */}
+      <Link to="/tournoi" className="bandeau-tournoi rise">
+        <span className="bandeau-tournoi-coupe" aria-hidden="true">🏆</span>
+        <span className="bandeau-tournoi-texte"><span className="eyebrow">{fr ? 'Tournoi de la semaine' : 'Weekly tournament'}</span><strong className="t">{trouverSousTheme(themeTournoi())?.sous.nom[lang] ?? ''}</strong><small>{fr ? 'Même quiz pour tous · 3 essais · jusqu’à 1 500 pièces' : 'Same quiz for all · 3 tries'}</small></span>
+        <span className="bandeau-histoire-bouton">{fr ? 'Jouer' : 'Play'}<Icon d={ICONS.arrowR} size={18} /></span>
+      </Link>
 
       {/* Aujourd'hui : quiz du jour et pass de saison */}
       <section className="accueil-objectifs">

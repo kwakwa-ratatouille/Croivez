@@ -2476,3 +2476,44 @@ img, svg { -webkit-user-drag: none; }
 .attente-google { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 16px; border-radius: 16px; background: var(--surface2); text-align: center; }
 .attente-google small { color: var(--muted); }
 .attente-google .spin { width: 28px; height: 28px; border-radius: 50%; border: 3px solid var(--line); border-top-color: var(--accent, #6C5CE7); animation: tourne .9s linear infinite; }
+
+/* Tournoi de la semaine */
+.bandeau-tournoi { position: relative; overflow: hidden; display: flex; align-items: center; gap: 14px; padding: 18px 20px; border-radius: 26px; text-decoration: none; color: #fff; background: radial-gradient(circle at 90% -20%, rgba(253, 224, 71, .55), transparent 50%), linear-gradient(120deg, #78350F, #B45309 50%, #F59E0B); box-shadow: 0 14px 30px rgba(180, 83, 9, .3); }
+.bandeau-tournoi-coupe { font-size: 46px; flex: none; animation: emoji-flotte 3s ease-in-out infinite alternate; filter: drop-shadow(0 4px 10px rgba(0,0,0,.25)); }
+.bandeau-tournoi-texte { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.bandeau-tournoi-texte .eyebrow { color: rgba(255,255,255,.85); }
+.bandeau-tournoi-texte strong { font-size: 21px; line-height: 1.15; }
+.bandeau-tournoi-texte small { font-size: 13px; opacity: .92; }
+.bandeau-tournoi .bandeau-histoire-bouton { color: #78350F; }
+@media (max-width: 560px) { .bandeau-tournoi { padding: 14px; gap: 10px; } .bandeau-tournoi-coupe { font-size: 34px; } .bandeau-tournoi-texte strong { font-size: 17px; } }
+.tournoi-hero { display: flex; align-items: center; gap: 18px; padding: 22px; border-radius: 28px; color: #fff; background: radial-gradient(circle at 90% -10%, rgba(253, 224, 71, .55), transparent 50%), linear-gradient(130deg, #451A03, #B45309 55%, #F59E0B); box-shadow: 0 16px 34px rgba(180, 83, 9, .3); }
+.tournoi-trophee { font-size: 64px; flex: none; animation: emoji-flotte 3s ease-in-out infinite alternate; }
+.tournoi-hero-texte { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.tournoi-hero-texte h1 { margin: 0; font-size: 28px; }
+.tournoi-hero-texte p { margin: 0; opacity: .92; font-size: 14px; }
+.tournoi-hero-texte small { font-weight: 800; }
+.tournoi-recompense { display: flex; align-items: center; gap: 14px; padding: 16px 18px; background: linear-gradient(120deg, color-mix(in srgb, #FACC15 22%, var(--surface)), var(--surface)); }
+.tournoi-recompense > span { font-size: 38px; }
+.tournoi-recompense > div { flex: 1; display: flex; flex-direction: column; }
+.tournoi-recompense small { color: var(--muted); }
+.tournoi-moi { padding: 18px; display: flex; flex-direction: column; gap: 14px; align-items: stretch; }
+.tournoi-chiffres { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.tournoi-chiffres > div { display: flex; flex-direction: column; align-items: center; padding: 10px 6px; border-radius: 14px; background: var(--surface2); text-align: center; }
+.tournoi-chiffres strong { font-size: 22px; }
+.tournoi-chiffres small { color: var(--muted); font-size: 12px; font-weight: 700; }
+.tournoi-jouer { justify-content: center; text-decoration: none; }
+.tournoi-fini { margin: 0; text-align: center; font-weight: 800; color: var(--muted); }
+.tournoi-lots { display: inline-flex; align-items: center; justify-content: center; gap: 4px; color: var(--muted); font-weight: 700; flex-wrap: wrap; }
+.tournoi-classement { padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+.tournoi-classement h2 { margin: 0; font-size: 18px; }
+.tournoi-classement ol { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.tournoi-classement li { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 14px; background: var(--surface2); }
+.tournoi-classement li.podium-1 { background: linear-gradient(90deg, rgba(250, 204, 21, .3), var(--surface2)); }
+.tournoi-classement li.podium-2 { background: linear-gradient(90deg, rgba(148, 163, 184, .35), var(--surface2)); }
+.tournoi-classement li.podium-3 { background: linear-gradient(90deg, rgba(234, 88, 12, .25), var(--surface2)); }
+.tournoi-classement li.moi { outline: 2px solid var(--primary); }
+.tournoi-rang { width: 30px; text-align: center; font-weight: 900; font-size: 16px; }
+.tournoi-joueur { flex: 1; min-width: 0; display: flex; align-items: center; gap: 8px; text-decoration: none; color: inherit; font-weight: 800; }
+.tournoi-joueur span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tournoi-classement li small { color: var(--muted); font-weight: 700; }
+.tournoi-classement li strong { min-width: 64px; text-align: right; }

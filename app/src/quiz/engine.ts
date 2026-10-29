@@ -511,11 +511,12 @@ export async function genererMix(o: { quiz: SousThemeId[]; difficultes: Difficul
 export async function genererPartie(o: Opts): Promise<Question[]> {
   const tous = await chargerPays()
   await (o.sousTheme === 'villes-fr' || o.sousTheme === 'villes-idf' ? pack('villes-fr.json') : o.sousTheme === 'villes-monde' ? pack('villes-monde.json') : o.sousTheme === 'logos-vrai' ? pack('culture/logos.json') : null)
-  if (estCulture(o.sousTheme)) await pack(`culture/${packCulture(o.sousTheme)}.json`)
-  // Packs chargés avant de fixer la graine : la génération qui suit est synchrone, donc reproductible
+  // Données prêtes AVANT de fixer la graine : plus aucune attente ensuite, sinon une autre génération (sans graine)
+  // pourrait remettre le hasard normal entre-temps et le tirage ne serait plus le même pour tous
+  const donnees = o.sousTheme === 'logos-vrai' ? await pack<ItemCulture[]>('culture/logos.json') : estCulture(o.sousTheme) ? await pack<ItemCulture[]>(`culture/${packCulture(o.sousTheme)}.json`) : null
   rand = o.seed ? mulberry32(o.seed) : Math.random
-  if (o.sousTheme === 'logos-vrai') return logosVrai(o, await pack<ItemCulture[]>('culture/logos.json'))
-  if (estCulture(o.sousTheme)) return culture(o, await pack<ItemCulture[]>(`culture/${packCulture(o.sousTheme)}.json`))
+  if (o.sousTheme === 'logos-vrai') return logosVrai(o, donnees!)
+  if (estCulture(o.sousTheme)) return culture(o, donnees!)
   if (o.sousTheme === 'villes-fr') return villesFrance(o)
   if (o.sousTheme === 'villes-idf') return villesFrance(o, true)
   if (o.sousTheme === 'villes-monde') return villesMonde(o, tous)
