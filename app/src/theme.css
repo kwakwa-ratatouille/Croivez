@@ -2536,3 +2536,22 @@ img, svg { -webkit-user-drag: none; }
 .multi-duel-mode button { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 10px 8px; border-radius: 16px; border: 2px solid var(--line); background: var(--surface); font: 900 15px Nunito, sans-serif; color: var(--text); cursor: pointer; }
 .multi-duel-mode button small { font: 700 12px Nunito, sans-serif; color: var(--muted); }
 .multi-duel-mode button[aria-pressed="true"] { border-color: var(--primary); background: var(--surface2); box-shadow: 0 4px 12px rgba(0,0,0,.08); }
+
+/* Calendriers à cases */
+.cal-hero { display: flex; align-items: center; gap: 16px; padding: 22px; border-radius: 28px; color: #fff; box-shadow: 0 14px 30px rgba(0,0,0,.18); }
+.cal-emoji { font-size: 60px; flex: none; animation: emoji-flotte 3s ease-in-out infinite alternate; }
+.cal-hero h1 { margin: 0; font-size: 26px; }
+.cal-hero p { margin: 2px 0; font-weight: 800; opacity: .95; }
+.cal-hero small { opacity: .9; }
+.cal-info { color: var(--muted); font-weight: 700; margin: 0; }
+.cal-grille { display: grid; grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)); gap: 10px; }
+.cal-case { position: relative; aspect-ratio: 1; border-radius: 18px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; text-decoration: none; color: var(--text); background: var(--surface); border: 2px solid var(--line); }
+.cal-num { font-size: 26px; font-weight: 900; }
+.cal-ico { font-size: 16px; }
+.cal-gain { display: inline-flex; align-items: center; gap: 3px; font: 900 12px Nunito, sans-serif; color: var(--his-i); }
+.cal-case.fermee { opacity: .55; background: var(--surface2); }
+.cal-case.ouverte { background: var(--ok-t); border-color: var(--ok); }
+.cal-case.jour { background: linear-gradient(135deg, #FDE68A, #F59E0B); border-color: #F59E0B; color: #451A03; box-shadow: 0 8px 20px rgba(245, 158, 11, .45); animation: pastille-saute 1.8s ease-in-out infinite; }
+.cal-case.retard { border-style: dashed; }
+.cal-case.finale { grid-column: span 2; aspect-ratio: auto; min-height: 78px; }
+.cal-case.finale .cal-num::after { content: ' 🎁'; }

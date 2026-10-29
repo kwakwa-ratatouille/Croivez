@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Croivez — mascotte</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;900&display=swap" rel="stylesheet">
+<style>
+  body { margin: 0; padding: 28px 16px 60px; background: #FBF8F3; font-family: Nunito, system-ui, sans-serif; color: #1F2933; }
+  h1 { margin: 0 0 4px; font-size: 28px; } h2 { margin: 30px 0 12px; font-size: 20px; }
+  p.sous { margin: 0 0 16px; color: #5D646A; }
+  .ligne { display: flex; flex-wrap: wrap; gap: 14px; }
+  .case { background: #fff; border-radius: 22px; padding: 14px; box-shadow: 0 8px 24px rgba(80,62,35,.08); display: flex; flex-direction: column; align-items: center; gap: 6px; width: 150px; }
+  .case strong { font-size: 15px; } .case small { color: #5D646A; text-align: center; }
+  svg { overflow: visible; }
+  .flotte { animation: flotte 2.6s ease-in-out infinite; transform-origin: 50% 100%; }
+  @keyframes flotte { 50% { transform: translateY(-5px) scale(1.02, .98); } }
+  .cligne { animation: cligne 4s infinite; transform-origin: center; transform-box: fill-box; }
+  @keyframes cligne { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(.1); } }
+</style>
+</head>
+<body>
+<h1>Croivy, la mascotte de Croivez</h1>
+<p class="sous">Une petite boule toute ronde avec une crête en forme de coche ✓ et une tache en croix ✗ sur le ventre : le « Croix-V » de l'appli. Elle grandit avec ton niveau et sa tête change selon ta série.</p>
+
+<h2>Évolution avec le niveau</h2>
+<div class="ligne" id="stades"></div>
+
+<h2>Humeur selon ta série</h2>
+<div class="ligne" id="humeurs"></div>
+
+<h2>Personnalisation (onglet boutique « Mascotte »)</h2>
+<div class="ligne" id="perso"></div>
+
+<script>
+// Dessin : corps rond, crête en coche, croix sur le ventre, yeux, joues, bouche selon l'humeur
+function croivy({ taille = 120, couleur = '#6FC59F', stade = 3, humeur = 'content', tete = '', yeux = '' } = {}) {
+  const sombre = `color-mix(in srgb, ${couleur} 70%, #000)`
+  const clair = `color-mix(in srgb, ${couleur} 60%, #fff)`
+  if (stade === 0) return `<svg viewBox="0 0 100 100" width="${taille}" class="flotte"><ellipse cx="50" cy="92" rx="22" ry="4" fill="#000" opacity=".1"/><path d="M50 14c18 0 30 26 30 46s-13 32-30 32-30-12-30-32 12-46 30-46Z" fill="#FFF7E6" stroke="#E9DCC0" stroke-width="2"/><path d="M30 52l8-6 8 7 8-7 8 7 8-6" fill="none" stroke="${couleur}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="40" cy="36" r="4" fill="${couleur}" opacity=".5"/><circle cx="60" cy="70" r="5" fill="${couleur}" opacity=".4"/></svg>`
+  const r = [0, 26, 30, 33, 35][stade]
+  const cy = 62
+  const bouche = humeur === 'content' ? `<path d="M44 ${cy + 8}q6 7 12 0" fill="#7A2E2E" />`
+    : humeur === 'fier' ? `<path d="M42 ${cy + 6}q8 11 16 0Z" fill="#7A2E2E"/><path d="M45 ${cy + 7}h10" stroke="#fff" stroke-width="2"/>`
+    : humeur === 'endormi' ? `<ellipse cx="50" cy="${cy + 10}" rx="3" ry="2" fill="#7A2E2E"/>`
+    : `<path d="M44 ${cy + 11}q6 -5 12 0" fill="none" stroke="#7A2E2E" stroke-width="2.4" stroke-linecap="round"/>`
+  const oeil = (x) => humeur === 'endormi' ? `<path d="M${x - 5} ${cy - 4}q5 4 10 0" fill="none" stroke="#1F2933" stroke-width="2.6" stroke-linecap="round"/>`
+    : humeur === 'fier' ? `<path d="M${x - 5} ${cy - 2}q5 -6 10 0" fill="none" stroke="#1F2933" stroke-width="3" stroke-linecap="round"/>`
+    : `<g class="cligne"><ellipse cx="${x}" cy="${cy - 3}" rx="4.6" ry="5.4" fill="#1F2933"/><circle cx="${x + 1.6}" cy="${cy - 5}" r="1.7" fill="#fff"/></g>`
+  const lunettes = yeux === 'lunettes' ? `<g fill="rgba(186,230,253,.35)" stroke="#1F2933" stroke-width="2"><circle cx="41" cy="${cy - 3}" r="8"/><circle cx="59" cy="${cy - 3}" r="8"/></g><path d="M49 ${cy - 3}h2" stroke="#1F2933" stroke-width="2"/>`
+    : yeux === 'soleil' ? `<path d="M31 ${cy - 8}h38v6q-4 8-12 7-6 0-7-6-1 6-7 6-8 1-12-7Z" fill="#111"/>` : ''
+  const chapeau = tete === 'couronne' ? `<path d="M36 ${cy - r - 2}l3-12 6 7 5-10 5 10 6-7 3 12Z" fill="#FACC15" stroke="#CA8A04" stroke-width="1.5"/>`
+    : tete === 'diplome' ? `<path d="M30 ${cy - r + 2}l20-9 20 9-20 9Z" fill="#1F2933"/><path d="M40 ${cy - r + 6}v6q10 5 20 0v-6" fill="#1F2933"/><path d="M68 ${cy - r + 3}v10" stroke="#FACC15" stroke-width="2"/>`
+    : tete === 'bonnet' ? `<path d="M32 ${cy - r + 8}q18-24 36 0Z" fill="#E11D48"/><rect x="30" y="${cy - r + 5}" width="40" height="7" rx="3.5" fill="#BE123C"/><circle cx="50" cy="${cy - r - 10}" r="5" fill="#FDE68A"/>`
+    : tete === 'fleur' ? `<g transform="translate(64 ${cy - r + 6})">${[0, 72, 144, 216, 288].map((a) => `<ellipse rx="3.5" ry="6" fill="#F472B6" transform="rotate(${a}) translate(0 -5)"/>`).join('')}<circle r="3" fill="#FDE68A"/></g>` : ''
+  const ailes = stade >= 4 ? `<path d="M${50 - r} ${cy}q-18 -14 -10 -26q8 10 14 12Z M${50 + r} ${cy}q18 -14 10 -26q-8 10 -14 12Z" fill="${clair}" stroke="${sombre}" stroke-width="1.5"/>` : ''
+  const aura = stade >= 4 ? `<circle cx="50" cy="${cy}" r="${r + 10}" fill="none" stroke="#FACC15" stroke-width="2" stroke-dasharray="3 6" opacity=".8"/>` : ''
+  const pattes = stade >= 2 ? `<ellipse cx="${50 - r * .45}" cy="${cy + r - 1}" rx="7" ry="4" fill="${sombre}"/><ellipse cx="${50 + r * .45}" cy="${cy + r - 1}" rx="7" ry="4" fill="${sombre}"/>` : ''
+  const bras = stade >= 3 ? `<path d="M${50 - r + 2} ${cy + 4}q-10 2 -12 -8" fill="none" stroke="${sombre}" stroke-width="5" stroke-linecap="round"/><path d="M${50 + r - 2} ${cy + 4}q10 2 12 -8" fill="none" stroke="${sombre}" stroke-width="5" stroke-linecap="round"/>` : ''
+  return `<svg viewBox="0 0 100 100" width="${taille}" class="flotte">
+    <ellipse cx="50" cy="${cy + r + 3}" rx="${r * .8}" ry="4" fill="#000" opacity=".1"/>
+    ${aura}${ailes}${bras}${pattes}
+    <path d="M${50 - 9} ${cy - r + 3}l6 7 14 -16" fill="none" stroke="${sombre}" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="50" cy="${cy}" r="${r}" fill="${couleur}"/>
+    <ellipse cx="${50 - r * .35}" cy="${cy - r * .45}" rx="${r * .35}" ry="${r * .2}" fill="#fff" opacity=".35"/>
+    <ellipse cx="50" cy="${cy + r * .45}" rx="${r * .55}" ry="${r * .4}" fill="${clair}"/>
+    <path d="M47 ${cy + r * .38}l6 6M53 ${cy + r * .38}l-6 6" stroke="#E3574B" stroke-width="2.4" stroke-linecap="round"/>
+    ${oeil(41)}${oeil(59)}
+    <circle cx="34" cy="${cy + 4}" r="4" fill="#F87171" opacity=".35"/><circle cx="66" cy="${cy + 4}" r="4" fill="#F87171" opacity=".35"/>
+    ${bouche}${lunettes}${chapeau}
+  </svg>`
+}
+const ajoute = (id, svg, titre, sous) => document.getElementById(id).insertAdjacentHTML('beforeend', `<div class="case">${svg}<strong>${titre}</strong><small>${sous}</small></div>`)
+ajoute('stades', croivy({ stade: 0 }), 'Œuf', 'Niveaux 1 à 4')
+ajoute('stades', croivy({ stade: 1 }), 'Bébé', 'Niveaux 5 à 14')
+ajoute('stades', croivy({ stade: 2 }), 'Petit', 'Niveaux 15 à 29 · pattes')
+ajoute('stades', croivy({ stade: 3, humeur: 'fier' }), 'Grand', 'Niveaux 30 à 49 · bras')
+ajoute('stades', croivy({ stade: 4, humeur: 'fier' }), 'Légende', 'Niveau 50+ · ailes et aura')
+ajoute('humeurs', croivy({ humeur: 'content' }), 'Content', 'Tu as joué aujourd’hui')
+ajoute('humeurs', croivy({ humeur: 'fier' }), 'Fier', 'Série de 7 jours ou plus')
+ajoute('humeurs', croivy({ humeur: 'triste' }), 'Boudeur', 'Ta série est en danger')
+ajoute('humeurs', croivy({ humeur: 'endormi' }), 'Endormi', 'Pas joué depuis 3 jours')
+ajoute('perso', croivy({ couleur: '#7C3AED', tete: 'couronne' }), 'Violet + couronne', 'Couleurs et chapeaux')
+ajoute('perso', croivy({ couleur: '#F59E0B', tete: 'diplome', yeux: 'lunettes' }), 'Orange + diplôme', 'Lunettes, chapeaux')
+ajoute('perso', croivy({ couleur: '#0EA5E9', tete: 'bonnet', yeux: 'soleil' }), 'Bleu + bonnet', 'Lunettes de soleil')
+ajoute('perso', croivy({ couleur: '#F472B6', tete: 'fleur' }), 'Rose + fleur', 'Accessoires')
+</script>
+</body>
+</html>

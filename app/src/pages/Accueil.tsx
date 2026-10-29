@@ -1,3 +1,4 @@
+import { calendrierActif, prochainCalendrier } from '../calendriers'
 import { trouverSousTheme } from '../themes'
 import { themeTournoi } from '../tournoi'
 import SerieHebdo from '../components/SerieHebdo'
@@ -122,6 +123,14 @@ export default function Accueil() {
           </Link>
         )
       })()}
+
+      {/* Calendrier à cases (Avent, Pâques) : visible pendant la période et la semaine d'avant */}
+      {(() => { const a = calendrierActif(); const pr = prochainCalendrier(); const j = Math.ceil((pr.date.getTime() - Date.now()) / 864e5); if (!a && j > 7) return null; const c = a ?? pr.c; return (
+        <Link to="/calendrier" className="bandeau-tournoi rise" style={{ background: c.fond }}>
+          <span className="bandeau-tournoi-coupe" aria-hidden="true">{c.emoji}</span>
+          <span className="bandeau-tournoi-texte"><span className="eyebrow">{a ? (fr ? 'Case du jour à ouvrir' : 'Today’s box') : (fr ? `Dans ${j} jour${j > 1 ? 's' : ''}` : `In ${j} days`)}</span><strong className="t">{c.nom}</strong><small>{fr ? 'Un mini-quiz et un cadeau chaque jour' : 'A mini-quiz and a gift every day'}</small></span>
+          <span className="bandeau-histoire-bouton">{fr ? 'Ouvrir' : 'Open'}<Icon d={ICONS.arrowR} size={18} /></span>
+        </Link>) })()}
 
       {/* Tournoi de la semaine */}
       <Link to="/tournoi" className="bandeau-tournoi rise">

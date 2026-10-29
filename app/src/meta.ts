@@ -1,3 +1,4 @@
+import { finalObtenue } from './calendriers'
 import { CONDITIONS_ALBUM } from './albumRecompenses'
 import { CHAMP_EFFET, EFFETS as EFFETS_BOUTIQUE, type Sorte } from './effets'
 import { PORTRAITS } from './components/Portrait'
@@ -322,6 +323,11 @@ export const BOUTIQUE: Objet[] = [
   }),
   // ——— Fonds de vitrine animés et styles de pseudo (achetables ; un fond par saison au palier 15) ———
   ...EFFETS_BOUTIQUE.map((e): Objet => ({ id: e.id, type: 'effet', sorte: e.sorte, nom: e.nom, prix: e.prix, emoji: e.emoji, luxe: e.luxe })),
+  // ——— Calendriers : récompense finale (toutes les cases, ou presque) ———
+  { id: 'cadre-cal-avent', type: 'cadre', nom: { fr: 'Étoile du sapin', en: 'Tree star' }, prix: 0, luxe: 1, couleur: 'conic-gradient(#14532D, #FACC15, #B91C1C, #FACC15, #14532D)', anim: 'tourne etincelles', orbite: ['⭐', '🎁', '❄️'], condition: { desc: { fr: 'Ouvrir le calendrier de l’Avent (22 cases sur 24)', en: 'Open the Advent calendar' }, test: (p) => finalObtenue(p, 'avent') } },
+  { id: 'titre-cal-avent', type: 'titre', nom: { fr: 'Lutin de l’Avent', en: 'Advent elf' }, prix: 0, anim: 'givre', condition: { desc: { fr: 'Ouvrir le calendrier de l’Avent (22 cases sur 24)', en: 'Open the Advent calendar' }, test: (p) => finalObtenue(p, 'avent') } },
+  { id: 'cadre-cal-oeufs', type: 'cadre', nom: { fr: 'Œuf doré', en: 'Golden egg' }, prix: 0, luxe: 1, couleur: 'conic-gradient(#FDE68A, #F59E0B, #FEF3C7, #F59E0B, #FDE68A)', anim: 'tourne reflet', orbite: ['🥚', '🐣', '🌷'], condition: { desc: { fr: 'Finir la chasse aux œufs (12 cases sur 14)', en: 'Finish the Easter egg hunt' }, test: (p) => finalObtenue(p, 'oeufs') } },
+  { id: 'titre-cal-oeufs', type: 'titre', nom: { fr: 'Chasseur d’œufs en or', en: 'Golden egg hunter' }, prix: 0, anim: 'or', condition: { desc: { fr: 'Finir la chasse aux œufs (12 cases sur 14)', en: 'Finish the Easter egg hunt' }, test: (p) => finalObtenue(p, 'oeufs') } },
   // ——— Album : récompenses exclusives, plus la collection est grande, plus c'est beau ———
   { id: 'titre-al-curieux', type: 'titre', nom: { fr: 'Curieux·se', en: 'Curious' }, prix: 0, album: true, anim: 'givre', condition: CONDITIONS_ALBUM.c50 },
   { id: 'titre-al-relieur', type: 'titre', nom: { fr: 'Relieur·se', en: 'Bookbinder' }, prix: 0, album: true, anim: 'sakura', condition: CONDITIONS_ALBUM.p5 },

@@ -37,6 +37,7 @@ const Activite = lazy(() => import('./pages/Activite'))
 const Clan = lazy(() => import('./pages/Clan'))
 const CeJour = lazy(() => import('./pages/CeJour'))
 const Tournoi = lazy(() => import('./pages/Tournoi'))
+const Calendrier = lazy(() => import('./pages/Calendrier'))
 const Frise = lazy(() => import('./pages/Frise'))
 import RelaisGoogle from './pages/RelaisGoogle'
 
@@ -119,6 +120,7 @@ function Routeur() {
           <Route path="/clan" element={<Clan />} />
           <Route path="/cejour" element={<CeJour />} />
           <Route path="/tournoi" element={<Tournoi />} />
+          <Route path="/calendrier" element={<Calendrier />} />
           <Route path="/frise" element={<Frise />} />
           <Route path="*" element={<BientotDisponible />} />
         </Route>
