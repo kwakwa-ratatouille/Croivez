@@ -27,7 +27,15 @@ function createWindow() {
   const local = () => win.loadFile(path.join(__dirname, '..', 'dist', 'index.html'))
   if (DEV_URL) win.loadURL(DEV_URL)
   else if (app.isPackaged) {
-    win.webContents.once('did-fail-load', local)
+    // Seulement si la page elle-même ne charge pas (pas d'internet) : un élément qui échoue dans la page (iframe,
+    // image…) ou une navigation interrompue (-3) ne doit pas faire basculer sur la vieille copie embarquée
+    const repli = (_e, code, _desc, _url, principal) => {
+      if (!principal || code === -3) return
+      win.webContents.off('did-fail-load', repli)
+      local()
+    }
+    win.webContents.on('did-fail-load', repli)
+    win.webContents.once('did-finish-load', () => win.webContents.off('did-fail-load', repli))
     // Sans cache pour la page : chaque lancement prend la dernière version (les fichiers JS/CSS gardent le leur)
     win.loadURL(EN_LIGNE, { extraHeaders: 'pragma: no-cache\ncache-control: no-cache\n' })
   } else local()
