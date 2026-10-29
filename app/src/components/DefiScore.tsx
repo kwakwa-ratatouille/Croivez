@@ -19,6 +19,14 @@ export default function DefiScore({ ids, bonnes, score, quiz }: { ids: string[];
   const [amis, setAmis] = useState<ProfilPublic[] | null>(null)
   const [envoyes, setEnvoyes] = useState<string[]>([])
   const repondu = useRef(false)
+  const envoyerA = p.get('envoyerA')
+  const pseudoA = p.get('pseudoA') ?? ''
+  const envoye = useRef(false)
+  useEffect(() => {
+    if (!envoyerA || !user || envoye.current || !ids.length) return
+    envoye.current = true
+    envoyerDefi(user.uid, profile?.pseudo ?? '?', envoyerA, { s: p.get('s') ?? 'drapeaux', m: 'qcm', d: Number(p.get('d') ?? 2), ids, score, bonnes, total: ids.length, quiz }).catch(() => {})
+  }, [user]) // eslint-disable-line react-hooks/exhaustive-deps
   const gagne = contre && !Number.isNaN(cbonnes) ? (bonnes > cbonnes ? true : bonnes < cbonnes ? false : null) : undefined
 
   useEffect(() => {
@@ -37,6 +45,7 @@ export default function DefiScore({ ids, bonnes, score, quiz }: { ids: string[];
 
   return (
     <>
+      {envoyerA && <p className="defi-verdict egal">📨 {fr ? `Défi envoyé à ${pseudoA} : à son tour de battre ton ${bonnes}/${ids.length} ! Tu seras prévenu du résultat.` : `Challenge sent to ${pseudoA}!`}</p>}
       {gagne !== undefined && (
         <p className={`defi-verdict ${gagne ? 'gagne' : gagne === false ? 'perdu' : 'egal'}`}>
           {gagne ? '🏆 ' : gagne === false ? '😤 ' : '🤝 '}

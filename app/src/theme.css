@@ -2517,3 +2517,22 @@ img, svg { -webkit-user-drag: none; }
 .tournoi-joueur span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tournoi-classement li small { color: var(--muted); font-weight: 700; }
 .tournoi-classement li strong { min-width: 64px; text-align: right; }
+
+/* Révision : points faibles */
+.faibles { padding: 16px; display: flex; flex-direction: column; gap: 12px; background: linear-gradient(120deg, color-mix(in srgb, #E3574B 10%, var(--surface)), var(--surface)); }
+.faibles-tete { display: flex; align-items: center; gap: 12px; }
+.faibles-tete > span { font-size: 32px; }
+.faibles-tete > div { display: flex; flex-direction: column; }
+.faibles-tete strong { font-size: 18px; }
+.faibles-tete small { color: var(--muted); }
+.faibles-liste { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.faibles-liste li { display: grid; grid-template-columns: minmax(0, 1fr) 90px auto; gap: 10px; align-items: center; }
+.faibles-nom { font-weight: 800; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.faibles-liste small { color: var(--muted); font-weight: 700; font-size: 12px; white-space: nowrap; }
+.faibles .btn { justify-content: center; text-decoration: none; }
+
+/* Défier un ami : en direct ou en différé */
+.multi-duel-mode { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 4px; }
+.multi-duel-mode button { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 10px 8px; border-radius: 16px; border: 2px solid var(--line); background: var(--surface); font: 900 15px Nunito, sans-serif; color: var(--text); cursor: pointer; }
+.multi-duel-mode button small { font: 700 12px Nunito, sans-serif; color: var(--muted); }
+.multi-duel-mode button[aria-pressed="true"] { border-color: var(--primary); background: var(--surface2); box-shadow: 0 4px 12px rgba(0,0,0,.08); }

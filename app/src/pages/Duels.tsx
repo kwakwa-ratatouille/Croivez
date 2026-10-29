@@ -1,3 +1,4 @@
+import { MIX_SALON } from '../salon'
 import ReprendrePartie from '../components/ReprendrePartie'
 import BandeauClan from '../components/BandeauClan'
 import { MINI_JEUX } from '../quiz/formats'
@@ -70,6 +71,11 @@ export default function Duels() {
     )
   }
 
+  const [differe, setDiffere] = useState(false) // en différé : je joue maintenant, mon ami joue quand il veut
+  const defierDiffere = (ami: string, pseudo: string) => {
+    const s = themeDuel === 'mix' ? MIX_SALON[Math.floor(Math.random() * MIX_SALON.length)] : themeDuel
+    nav(`/partie?s=${s}&d=${legendeDuel ? 4 : diffDuel}&n=${nbDuel}&m=qcm&envoyerA=${ami}&pseudoA=${encodeURIComponent(pseudo)}`)
+  }
   const defier = async (ami: string) => setAttenteAmi(await inviter(uid, moi, ami, themeDuel === 'mix' ? undefined : themeDuel as SousThemeId, legendeDuel ? 5 : diffDuel, nbDuel, secDuel, mjDuel))
 
   return (
@@ -145,10 +151,14 @@ export default function Duels() {
           <span>{fr ? 'Temps' : 'Time'}</span>
           <div className="multi-duel-choix court">{[8, 15, 20, 30].map((n) => <button key={n} type="button" className="pill" aria-pressed={secDuel === n} onClick={() => setSecDuel(n)}>{n} s</button>)}</div>
         </div>
+        <div className="multi-duel-mode" role="tablist">
+          <button type="button" role="tab" aria-pressed={!differe} onClick={() => setDiffere(false)}>⚡ {fr ? 'En direct' : 'Live'}<small>{fr ? 'vous jouez en même temps' : 'play together'}</small></button>
+          <button type="button" role="tab" aria-pressed={differe} onClick={() => setDiffere(true)}>📨 {fr ? 'En différé' : 'Async'}<small>{fr ? 'chacun joue quand il veut' : 'play anytime'}</small></button>
+        </div>
         {amis.length > 0 && <h3 className="multi-duel-sous">{fr ? 'Qui veux-tu défier ?' : 'Who do you challenge?'}</h3>}
         <div className="multi-duel-amis">
           {amis.length === 0 && <p className="multi-astuce">{fr ? 'Ajoute d’abord des amis dans « Mes amis » juste au-dessus.' : 'Add friends above first.'}</p>}
-          {amis.map((a) => <button key={a.uid} type="button" className="multi-duel-ami" onClick={() => defier(a.uid)}><Avatar pseudo={a.pseudo} avatar={a.avatar} cadre={a.cadre} taille={34} /><span>{a.pseudo}</span><em>⚔️</em></button>)}
+          {amis.map((a) => <button key={a.uid} type="button" className="multi-duel-ami" onClick={() => (differe ? defierDiffere(a.uid, a.pseudo) : defier(a.uid))}><Avatar pseudo={a.pseudo} avatar={a.avatar} cadre={a.cadre} taille={34} /><span>{a.pseudo}</span><em>⚔️</em></button>)}
         </div>
 
       </details>

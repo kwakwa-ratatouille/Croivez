@@ -120,7 +120,8 @@ export default function Partie() {
     if (jeu) {
       // Tous les quiz débloqués ; Survie monte en difficulté par blocs de 6 questions
       // f= : partie aléatoire limitée à une famille
-      const tous = FAMILLES.filter((f) => !params.get('f') || f.k === params.get('f')).flatMap((f) => f.subs.filter((x) => x.jouable && accesQuiz(x.id, profile)).map((x) => x.jouable as SousThemeId))
+      const liste = params.get('q')?.split(',').filter(Boolean) as SousThemeId[] | undefined
+      const tous = liste?.length ? liste : FAMILLES.filter((f) => !params.get('f') || f.k === params.get('f')).flatMap((f) => f.subs.filter((x) => x.jouable && accesQuiz(x.id, profile)).map((x) => x.jouable as SousThemeId))
       // Mini-jeu réservé à un type de quiz (photo floue, avant / après) : seulement les quiz compatibles
       const nature = infoMj?.nature
       const compatibles = nature ? tous.filter((s) => natureQuiz(s) === nature) : tous

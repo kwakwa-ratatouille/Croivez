@@ -43,10 +43,34 @@ export default function Revision() {
   const parTheme = Object.entries(dues.reduce<Record<string, CarteRevision[]>>((acc, c) => ((acc[c.s] ??= []).push(c), acc), {})).sort((a, b) => b[1].length - a[1].length)
   const prochaine = toutes.filter((c) => c.due > Date.now()).sort((a, b) => a.due - b.due)[0]
   const acquises = toutes.filter((c) => c.reps >= 3).length
+  // Points faibles : les quiz déjà joués où tu rates le plus (erreurs à revoir) et que tu maîtrises le moins
+  const erreurs = toutes.reduce<Record<string, number>>((a, c) => ((a[c.s] = (a[c.s] ?? 0) + (c.reps < 3 ? 1 : 0)), a), {})
+  const faibles = Object.entries(profile?.maitrise ?? {})
+    .filter(([s]) => !!trouverSousTheme(s))
+    .map(([s, m]) => ({ s, m, e: erreurs[s] ?? 0, poids: (100 - Math.min(100, m)) + (erreurs[s] ?? 0) * 6 }))
+    .filter((x) => x.m < 90 || x.e > 0)
+    .sort((a, b) => b.poids - a.poids).slice(0, 4)
 
   return (
     <>
       <h1 className="t" style={{ fontSize: 30, fontWeight: 900 }}>{fr ? 'Révision' : 'Review'}</h1>
+
+      {/* Points faibles : un quiz mélangé sur les 4 thèmes où tu galères le plus */}
+      {faibles.length >= 2 && (
+        <section className="card faibles">
+          <div className="faibles-tete"><span>🎯</span><div><strong className="t">{fr ? 'Tes points faibles' : 'Your weak spots'}</strong><small>{fr ? 'Les thèmes où tu rates le plus. Un quiz de 10 questions pour les travailler.' : 'Where you miss the most.'}</small></div></div>
+          <ul className="faibles-liste">
+            {faibles.map((x) => { const t = trouverSousTheme(x.s)!; return (
+              <li key={x.s} style={{ ['--k' as string]: `var(--${t.famille.k})` }}>
+                <span className="faibles-nom">{t.sous.nom[lang]}</span>
+                <span className="bar" style={{ height: 6 }}><span style={{ width: `${Math.min(100, x.m)}%`, background: 'var(--k)' }} /></span>
+                <small>{Math.round(Math.min(100, x.m))} %{x.e ? ` · ${x.e} ${fr ? 'erreur' : 'miss'}${x.e > 1 ? 's' : ''}` : ''}</small>
+              </li>
+            ) })}
+          </ul>
+          <Link to={`/partie?jeu=mix&d=0&m=qcm&n=10&q=${faibles.map((x) => x.s).join(',')}`} className="btn btn-p btn-lg">🎯 {fr ? 'Travailler mes points faibles' : 'Train my weak spots'}<Icon d={ICONS.arrowR} /></Link>
+        </section>
+      )}
 
       {/* Bloc principal : combien à revoir, et un seul gros bouton */}
       <section className={`rev-hero${dues.length ? '' : ' calme'}`}>
