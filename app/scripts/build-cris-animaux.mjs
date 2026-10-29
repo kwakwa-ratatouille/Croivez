@@ -46,17 +46,21 @@ for (const b of especes) {
 // Vérifie que le MP3 existe vraiment (on garde ceux qui répondent)
 const liste = [...vus.values()].sort((a, b) => b.sl - a.sl)
 const ok = []
+// Par lots de 50 : Commons dit pour chaque fichier s'il a une version MP3 (original ou transcodée) — une requête par lot
 const pause = (ms) => new Promise((r) => setTimeout(r, ms))
-for (const x of liste) {
-  if (ok.length >= 260) break
-  let code = 0
-  for (let essai = 0; essai < 4; essai++) {
-    code = await fetch(mp3(x.audio), { method: 'HEAD', headers: { 'User-Agent': UA['User-Agent'] } }).then((r) => r.status).catch(() => 0)
-    if (code !== 429) break
-    await pause(2000 * (essai + 1))
+const titre = (x) => 'File:' + decodeURIComponent(x.audio.split('/').pop()).replace(/_/g, ' ')
+for (let i = 0; i < liste.length && ok.length < 260; i += 50) {
+  const lot = liste.slice(i, i + 50)
+  const url = 'https://commons.wikimedia.org/w/api.php?action=query&format=json&prop=videoinfo&viprop=mime|derivatives&titles=' + encodeURIComponent(lot.map(titre).join('|'))
+  const j = await (await fetch(url, { headers: { 'User-Agent': UA['User-Agent'] } })).json().catch(() => ({}))
+  const avecMp3 = new Set()
+  const norm = new Map((j.query?.normalized ?? []).map((n) => [n.to, n.from]))
+  for (const p of Object.values(j.query?.pages ?? {})) {
+    const v = p.videoinfo?.[0]
+    if (v && (v.mime === 'audio/mpeg' || (v.derivatives ?? []).some((d) => d.type?.startsWith('audio/mpeg')))) avecMp3.add(norm.get(p.title) ?? p.title)
   }
-  if (code === 200) ok.push(x)
-  await pause(250)
+  for (const x of lot) if (avecMp3.has(titre(x)) && ok.length < 260) ok.push(x)
+  await pause(500)
 }
 const items = ok.slice(0, 260).map((x, i) => ({ id: `cri-${x.q}`, n: { fr: x.nom, en: x.nom }, r: { fr: x.nom, en: x.nom }, g: x.g, x: { son: mp3(x.audio) }, ...(i < 0 ? {} : {}) }))
 await writeFile('public/packs/culture/cris-animaux.json', JSON.stringify(items))
