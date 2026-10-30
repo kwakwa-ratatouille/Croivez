@@ -41,15 +41,17 @@ export const rareteDe = (id: string): Rarete => RARETE[id] ?? 'rare'
 export const POIDS: Record<Rarete, number> = { commun: 60, rare: 25, epique: 11, legendaire: 4 }
 // Prix des caisses, propre à chaque famille : 100 pièces, puis +20 à chaque caisse ouverte dans CETTE famille,
 // sans plafond (ça s'arrête tout seul quand la famille est complète). Une autre famille repart de 100.
-// La caisse surprise coûte le prix de la famille la moins chère parmi celles qui ont encore des quiz à gagner.
+// La caisse surprise coûte la moyenne des prix des familles qui ont encore des quiz à gagner, chaque famille comptant
+// autant que ses quiz restants (le quiz gagné est tiré parmi tous) : elle monte avec l'avancée dans chaque famille.
 export const PRIX_CAISSE = 100
 export const HAUSSE_CAISSE = 20
 type AvecCaisses = Pick<Profile, 'caissesF' | 'quiz' | 'familles' | 'toutDebloque' | 'choixFait'>
 const prixFamille = (k: Famille, p?: Pick<Profile, 'caissesF'> | null) => PRIX_CAISSE + HAUSSE_CAISSE * (p?.caissesF?.[k] ?? 0)
 export function prixCaisse(p: AvecCaisses | null | undefined, k: Famille | 'tout') {
   if (k !== 'tout') return prixFamille(k, p)
-  const prix = FAMILLES.filter((f) => quizVerrouilles(f.k, p as Profile).length).map((f) => prixFamille(f.k, p))
-  return prix.length ? Math.min(...prix) : PRIX_CAISSE
+  let total = 0, n = 0
+  for (const f of FAMILLES) { const reste = quizVerrouilles(f.k, p as Profile).length; total += reste * prixFamille(f.k, p); n += reste }
+  return n ? Math.round(total / n / 5) * 5 : PRIX_CAISSE
 }
 
 // ——— XP anti-farm : refaire sans cesse le même niveau ne fait plus grimper ———
