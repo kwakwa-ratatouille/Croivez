@@ -1,3 +1,4 @@
+import CarteChouky from '../components/CarteChouky'
 import { createPortal } from 'react-dom'
 import { BadgeClan } from '../components/BlasonClan'
 import { cartesARecuperer } from '../albumRecompenses'
@@ -231,6 +232,7 @@ export default function Profil() {
         <Link to="/parametres" className="raccourci" style={{ ['--c' as string]: '#64748B' }}><span>⚙️</span><strong>{fr ? 'Réglages' : 'Settings'}</strong><small>{fr ? 'Taille, sons…' : 'Size, sounds…'}</small></Link>
       </nav>
       <CarteJoueur p={pub} moi />
+      <CarteChouky vue="profil" />
       <Vitrine p={pub} moi onModifier={() => setEdition((e) => !e)} />
       {edition && createPortal(<div className="fiche-voile" onClick={() => setEdition(false)}>
         <section className="card rise edition-vitrine" onClick={(e) => e.stopPropagation()} role="dialog" aria-label={fr ? 'Personnaliser la vitrine' : 'Customize showcase'}>

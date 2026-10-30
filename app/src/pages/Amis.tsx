@@ -1,4 +1,5 @@
 import AjoutAmi from '../components/AjoutAmi'
+import ChercheAmi, { filtrerAmis } from '../components/ChercheAmi'
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { auth } from '../firebase'
@@ -22,6 +23,7 @@ export default function Amis() {
   const [ouvert, setOuvert] = useState<ProfilPublic | null>(null)
   const [copie, setCopie] = useState(false)
   const [aRetirer, setARetirer] = useState<ProfilPublic | null>(null)
+  const [cherche, setCherche] = useState('')
   useEffect(() => { profilsDe(profile?.amis ?? []).then(setAmis).catch(() => setAmis([])) }, [profile?.amis])
   // Messages non lus (pastille sur l'ami) et ouverture directe d'une conversation depuis une notification (#/amis?chat=UID)
   const [nonLus, setNonLus] = useState<string[]>([])
@@ -65,7 +67,8 @@ export default function Amis() {
       <section style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         <h2 className="t" style={{ fontSize: 17, fontWeight: 900 }}>{fr ? 'Mes amis' : 'My friends'} · {amis.length}</h2>
         {amis.length === 0 && <p style={{ color: 'var(--muted)', fontSize: 14 }}>{fr ? 'Pas encore d’amis : ajoute-les avec leur pseudo, ou partage le tien.' : 'No friends yet.'}</p>}
-        {amis.map((a) => (
+        {amis.length > 3 && <ChercheAmi valeur={cherche} onChange={setCherche} liste={amis} />}
+        {filtrerAmis(amis, cherche).map((a) => (
           <div key={a.uid} className="ami-ligne">
             <Link to={`/joueur/${a.uid}`} className="ami-identite"><Avatar pseudo={a.pseudo} avatar={a.avatar} cadre={a.cadre} taille={46} /><span><strong>{a.pseudo}{nonLus.includes(a.uid) && <i className="ami-non-lu" aria-label="message non lu" style={{ display: 'inline-block', marginLeft: 6 }} />}</strong><small>{fr ? 'Niveau' : 'Level'} {a.niveau}</small></span></Link>
             <div className="ami-actions">

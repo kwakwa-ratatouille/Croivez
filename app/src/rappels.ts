@@ -62,10 +62,17 @@ export async function planifierRappels(p: Profile | null) {
   await LocalNotifications.schedule({ notifications: n }).catch(console.error)
 }
 
+// Appui sur une notification qui porte un lien (duel) : l'appli s'ouvre sur cette page
+export async function ecouterAppuiNotif(ouvrir: (lien: string) => void) {
+  if (!Capacitor.isNativePlatform() || !Capacitor.isPluginAvailable('LocalNotifications')) return
+  const { LocalNotifications } = await import('@capacitor/local-notifications')
+  await LocalNotifications.addListener('localNotificationActionPerformed', (a) => { const l = (a.notification.extra as { lien?: string } | undefined)?.lien; if (l) ouvrir(l) })
+}
+
 // Invitation reçue pendant que l'appli est en arrière-plan : notification immédiate sur le téléphone
-export async function notifierInvitation(titre: string, texte: string) {
+export async function notifierInvitation(titre: string, texte: string, lien?: string) {
   if (!Capacitor.isNativePlatform() || !Capacitor.isPluginAvailable('LocalNotifications') || !document.hidden) return
   const { LocalNotifications } = await import('@capacitor/local-notifications')
   if ((await LocalNotifications.checkPermissions()).display !== 'granted') return
-  await LocalNotifications.schedule({ notifications: [{ id: 100 + Math.floor(Math.random() * 1000), title: titre, body: texte, schedule: { at: new Date(Date.now() + 500) } }] }).catch(() => {})
+  await LocalNotifications.schedule({ notifications: [{ id: 100 + Math.floor(Math.random() * 1000), title: titre, body: texte, schedule: { at: new Date(Date.now() + 500) }, ...(lien ? { extra: { lien } } : {}) }] }).catch(() => {})
 }

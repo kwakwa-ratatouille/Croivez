@@ -2,6 +2,7 @@ import { calendrierActif, prochainCalendrier } from '../calendriers'
 import { trouverSousTheme } from '../themes'
 import { themeTournoi } from '../tournoi'
 import SerieHebdo from '../components/SerieHebdo'
+import CarteChouky from '../components/CarteChouky'
 import { ETAPES, REGIONS } from '../aventure'
 import { etatSaison } from '../saison'
 import { useEffect, useState } from 'react'
@@ -147,6 +148,7 @@ export default function Accueil() {
         <Link to="/saison" className="objectif" style={{ ['--k' as string]: 'var(--ani)', ['--kt' as string]: 'var(--ani-t)', ['--ki' as string]: 'var(--ani-i)' }}><span className="objectif-emoji">🎟️</span><span className="objectif-texte"><strong className="t">{fr ? 'Pass de saison' : 'Season pass'}</strong><small>{fr ? `Palier ${etatSaison(profile).palier} sur 20` : `Tier ${etatSaison(profile).palier} of 20`}</small></span><span className="objectif-barre"><span style={{ width: `${(etatSaison(profile).palier / 20) * 100}%` }} /></span></Link>
       </section>
 
+      <CarteChouky />
       <SerieHebdo />
 
       {/* Modes rapides (Soirée et multijoueur sont dans Multi) */}

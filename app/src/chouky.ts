@@ -1,0 +1,214 @@
+// Chouky, la chouette de Croivez (conçue dans design/mascotte.html) : dessin SVG en texte.
+// Elle grandit avec le niveau (stade), son humeur suit la série, et elle porte un skin de la boutique.
+import { jour, niveau, type Profile } from './auth'
+
+export type Humeur = 'content' | 'fier' | 'triste' | 'endormi'
+let num = 0
+
+// Stade selon le niveau : Œuf (1-4), Bébé (5-14), Petite (15-29), Grande (30-49), Sage (50-99), puis Maître, Ancienne, Céleste, Divine
+const PALIERS = [1, 5, 15, 30, 50, 100, 250, 500, 1000]
+export const STADES = [
+  { fr: 'Œuf', en: 'Egg' }, { fr: 'Bébé chouette', en: 'Baby owl' }, { fr: 'Petite', en: 'Little' }, { fr: 'Grande', en: 'Grown-up' }, { fr: 'Sage', en: 'Wise' },
+  { fr: 'Maître', en: 'Master' }, { fr: 'Ancienne', en: 'Ancient' }, { fr: 'Céleste', en: 'Celestial' }, { fr: 'Divine', en: 'Divine' },
+]
+export const stadeDe = (niv: number) => PALIERS.reduce((s, p, i) => (niv >= p ? i : s), 0)
+// Prochain stade : [niveau à atteindre, stade] (null au dernier)
+export const prochainStade = (niv: number) => { const s = stadeDe(niv); return s + 1 < PALIERS.length ? { niveau: PALIERS[s + 1], stade: s + 1 } : null }
+
+// Humeur : contente si on a joué aujourd'hui (fière dès 7 jours de série), triste si la série va s'éteindre ce soir, endormie après 3 jours sans jouer
+export function humeurDe(p: Profile | null | undefined): Humeur {
+  if (!p?.dernierJour) return 'content'
+  const ecart = Math.round((new Date(jour()).getTime() - new Date(p.dernierJour).getTime()) / 864e5)
+  if (ecart <= 0) return (p.serie ?? 0) >= 7 ? 'fier' : 'content'
+  if (ecart === 1 && (p.serie ?? 0) >= 1) return 'triste'
+  return ecart >= 3 ? 'endormi' : 'content'
+}
+
+// Ce que porte Chouky pour ce joueur (stade, humeur, skin équipé)
+export const choukyDe = (p: Profile | null | undefined) => ({ stade: stadeDe(niveau(p?.xp ?? 0)), humeur: humeurDe(p), skin: (p?.chouky ?? 'chouky-classique').replace('chouky-', '') })
+
+const etoile = (x: number, y: number, r: number, coul = '#FDE68A', d = 0) => `<path class="chouky-scint" style="animation-delay:${d}s" d="M${x} ${y - r}Q${x + r * .18} ${y - r * .18} ${x + r} ${y}Q${x + r * .18} ${y + r * .18} ${x} ${y + r}Q${x - r * .18} ${y + r * .18} ${x - r} ${y}Q${x - r * .18} ${y - r * .18} ${x} ${y - r}Z" fill="${coul}"/>`
+// Une chouette kawaii : corps dodu, aigrettes, disque facial clair, grands yeux brillants, petit bec, joues roses
+export function choukySvg({ t = 120, stade = 3, humeur = 'content', skin = 'classique' }: { t?: number; stade?: number; humeur?: Humeur; skin?: string } = {}): string {
+  const u = ++num // identifiants uniques (plusieurs Chouky sur la même page)
+  const S = ({
+    classique: { c: '#B08968', v: '#E6CCB2', o: '#7F5539' },
+    panda: { c: '#F8FAFC', v: '#FFFFFF', o: '#1F2933', patchs: true },
+    renard: { c: '#F97316', v: '#FFF7ED', o: '#C2410C', renard: true },
+    licorne: { c: '#FCE7F3', v: '#FFFFFF', o: '#F9A8D4', corne: true },
+    dragon: { c: '#4ADE80', v: '#FEF9C3', o: '#16A34A', cornes: true },
+    nuit: { c: '#3730A3', v: '#C7D2FE', o: '#1E1B4B', etoiles: true },
+    astronaute: { c: '#F1F5F9', v: '#FFFFFF', o: '#CBD5E1', casque: true },
+    sorciere: { c: '#7C3AED', v: '#EDE9FE', o: '#5B21B6', chapeau: true },
+    pirate: { c: '#B08968', v: '#E6CCB2', o: '#7F5539', pirate: true },
+    fraise: { c: '#F43F5E', v: '#FFE4E6', o: '#BE123C', fraise: true },
+    chat: { c: '#F5F5F4', v: '#FFFFFF', o: '#A8A29E', chat: true },
+    abeille: { c: '#FACC15', v: '#FEF9C3', o: '#1F2933', abeille: true },
+    pingouin: { c: '#1F2933', v: '#FFFFFF', o: '#111827', pingouin: true },
+    ange: { c: '#FFFFFF', v: '#FEF9C3', o: '#E0E7FF', ange: true },
+    vampire: { c: '#4B5563', v: '#E5E7EB', o: '#1F2937', vampire: true },
+    grenouille: { c: '#84CC16', v: '#ECFCCB', o: '#4D7C0F', grenouille: true },
+    // Récompenses (à gagner, pas à acheter)
+    aventurier: { c: '#B08968', v: '#E6CCB2', o: '#7F5539', aventurier: true },
+    champion: { c: '#FDE68A', v: '#FFFBEB', o: '#D97706', champion: true },
+    tournoi: { c: '#94A3B8', v: '#F1F5F9', o: '#475569', tournoi: true },
+    clan: { c: '#7C3AED', v: '#EDE9FE', o: '#4C1D95', clan: true },
+    diamant: { c: '#A5F3FC', v: '#ECFEFF', o: '#22D3EE', diamant: true },
+    savant: { c: '#B08968', v: '#E6CCB2', o: '#7F5539', savant: true },
+  } as Record<string, Record<string, string | boolean>>)[skin] ?? { c: '#B08968', v: '#E6CCB2', o: '#7F5539' }
+  if (stade === 0) return `<svg viewBox="0 0 100 100" width="${t}" class="chouky-flotte">
+    <ellipse cx="50" cy="94" rx="24" ry="4" fill="#000" opacity=".08"/>
+    <defs><radialGradient id="oe${u}" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#FFFFFF"/><stop offset=".6" stop-color="#FFF4E0"/><stop offset="1" stop-color="#F8DDB4"/></radialGradient></defs>
+    <path d="M50 12c20 0 32 28 32 48s-14 34-32 34-32-14-32-34 12-48 32-48Z" fill="url(#oe${u})"/>
+    <g fill="#FBCFE8" opacity=".9"><circle cx="34" cy="34" r="5"/><circle cx="66" cy="30" r="3.5"/><circle cx="72" cy="66" r="5"/><circle cx="28" cy="74" r="4"/></g>
+    <g fill="#BAE6FD" opacity=".9"><circle cx="58" cy="20" r="3"/><circle cx="40" cy="84" r="3.5"/><circle cx="78" cy="48" r="2.5"/></g>
+    <path d="M58 26l4 6-3 4 4 5" fill="none" stroke="#D4A373" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    <g class="chouky-cligne"><ellipse cx="40" cy="56" rx="6.5" ry="7.5" fill="#2A1E17"/><ellipse cx="60" cy="56" rx="6.5" ry="7.5" fill="#2A1E17"/>
+      <circle cx="42.5" cy="53" r="2.6" fill="#fff"/><circle cx="62.5" cy="53" r="2.6" fill="#fff"/><circle cx="38.5" cy="59" r="1.1" fill="#fff"/><circle cx="58.5" cy="59" r="1.1" fill="#fff"/></g>
+    <path d="M46 66q4 4 8 0" fill="none" stroke="#2A1E17" stroke-width="2" stroke-linecap="round"/>
+    <ellipse cx="32" cy="65" rx="5" ry="3" fill="#FB7185" opacity=".45"/><ellipse cx="68" cy="65" rx="5" ry="3" fill="#FB7185" opacity=".45"/>
+    ${etoile(18, 28, 5, '#FBCFE8', 0)}${etoile(82, 22, 4, '#BAE6FD', .7)}${etoile(84, 74, 3.5, '#FDE68A', 1.2)}</svg>`
+  const k = [0, .72, .84, .94, 1, 1, 1.02, 1.02, 1.04][stade]
+  // Plumage des grandes évolutions (seulement sans skin)
+  const EVO = skin !== 'classique' ? null : ({
+    5: { c: '#9A6B3F', v: '#F5E6D3', o: '#5C3A1A', iris: '#F59E0B' },   // Maître (niv. 100) : plumage cuivré, regard d'or
+    6: { c: '#93C5FD', v: '#E0F2FE', o: '#3B82F6', iris: '#0EA5E9' },   // Ancienne (niv. 250) : chouette des neiges, yeux de glace
+    7: { c: '#312E81', v: '#C7D2FE', o: '#1E1B4B', iris: '#C084FC' },   // Céleste (niv. 500) : plumage de nuit étoilée
+    8: { c: '#F59E0B', v: '#FEF3C7', o: '#B45309', iris: '#F43F5E' },   // Divine (niv. 1000) : phénix doré
+  } as Record<number, { c: string; v: string; o: string; iris: string }>)[stade]
+  const c = EVO?.c ?? S.c, v = EVO?.v ?? S.v, o = EVO?.o ?? S.o
+  const iris = EVO?.iris
+  const yeux = humeur === 'endormi'
+    ? `<path d="M31 52q8 6 16 0M53 52q8 6 16 0" fill="none" stroke="#2A1E17" stroke-width="3" stroke-linecap="round"/>`
+    : humeur === 'fier'
+      ? `<path d="M31 54q8 -9 16 0M53 54q8 -9 16 0" fill="none" stroke="#2A1E17" stroke-width="3.4" stroke-linecap="round"/>`
+      : `<g class="chouky-cligne"><circle cx="39" cy="51" r="9.5" fill="#2A1E17"/><circle cx="61" cy="51" r="9.5" fill="#2A1E17"/>${iris ? `<circle cx="39" cy="51" r="6.5" fill="none" stroke="${iris}" stroke-width="2.4"/><circle cx="61" cy="51" r="6.5" fill="none" stroke="${iris}" stroke-width="2.4"/>` : ''}
+         <circle cx="42.5" cy="47" r="3.6" fill="#fff"/><circle cx="64.5" cy="47" r="3.6" fill="#fff"/>
+         <circle cx="36" cy="55" r="1.6" fill="#fff" opacity=".9"/><circle cx="58" cy="55" r="1.6" fill="#fff" opacity=".9"/>
+         ${humeur === 'triste' ? '<path d="M29 36l13 -4M71 36l-13 -4" stroke="#2A1E17" stroke-width="3" stroke-linecap="round"/>' : ''}</g>`
+  const bouche = humeur === 'triste' ? `<path d="M43 70q7 -7 14 0" fill="none" stroke="#2A1E17" stroke-width="2.6" stroke-linecap="round"/>` : humeur === 'fier' || humeur === 'content' ? `<path d="M46 66q4 4 8 0" fill="none" stroke="#2A1E17" stroke-width="2" stroke-linecap="round"/>` : ''
+  const larme = humeur === 'triste' ? `<path d="M69 57q-3 5 0 7q3 -2 0 -7Z" fill="#7DD3FC"/>` : ''
+  const zzz = humeur === 'endormi' ? `<text x="72" y="26" font-family="Nunito" font-weight="900" font-size="12" fill="#94A3B8">z<tspan font-size="9" dy="-6">z</tspan></text>` : ''
+  // Accessoires selon le stade : écharpe (petit), lunettes + livre (grand), toque d'érudit + aura (sage)
+  const echarpe = stade === 2 ? `<path d="M30 74q20 9 40 0v6q-20 9-40 0Z" fill="#E11D48"/><path d="M62 78l4 12 6-2-4-11Z" fill="#E11D48"/>` : ''
+  const lunettes = stade === 3 && skin === 'classique' ? `<path d="M40 70l10 4 -10 4Z M60 70l-10 4 10 4Z" fill="#2563EB"/><circle cx="50" cy="74" r="2.6" fill="#1D4ED8"/>` : ''
+  const livre = (stade === 3 || stade === 4) && skin === 'classique' ? `<g transform="translate(64 72) rotate(-12)"><rect x="0" y="0" width="18" height="13" rx="2" fill="#2563EB"/><rect x="2" y="2" width="14" height="9" rx="1" fill="#EFF6FF"/><path d="M9 2v9" stroke="#2563EB" stroke-width="1"/></g>` : ''
+  const toque = stade === 4 && skin === 'classique' ? `<path d="M28 22l22-10 22 10-22 10Z" fill="#1F2933"/><path d="M38 26v7q12 6 24 0v-7" fill="#1F2933"/><path d="M70 23v12" stroke="#FACC15" stroke-width="2"/><circle cx="70" cy="36" r="2.5" fill="#FACC15"/>` : ''
+  const aura = stade === 4 || stade === 5 ? `<circle cx="50" cy="58" r="44" fill="none" stroke="#FACC15" stroke-width="2.4" stroke-dasharray="2 7" stroke-linecap="round" opacity=".9"/>${etoile(12, 22, 5, '#FACC15', 0)}${etoile(86, 86, 4.5, '#FACC15', .9)}${etoile(88, 30, 3.5, '#FDE68A', 1.4)}` : ''
+  // Skins : costume complet (éléments derrière le corps, puis devant)
+  let derriere = '', devant = '', patchs = ''
+  if (EVO && stade === 5) { // Maître : grandes aigrettes, longues plumes de queue, motif de plumes dorées, aura cuivre
+    derriere = `<g fill="#5C3A1A"><path d="M14 86q-8 -10 -2 -22q6 8 14 12Z"/><path d="M86 86q8 -10 2 -22q-6 8 -14 12Z"/></g><g fill="#F59E0B"><path d="M16 82q-4 -6 -1 -12q3 5 8 7Z"/><path d="M84 82q4 -6 1 -12q-3 5 -8 7Z"/></g>`
+    devant = `<g fill="#F59E0B" opacity=".75"><path d="M24 50q4 -3 7 1q-4 3 -7 -1Z"/><path d="M69 50q4 -3 7 1q-4 3 -7 -1Z"/><path d="M22 64q4 -3 7 1q-4 3 -7 -1Z"/><path d="M71 64q4 -3 7 1q-4 3 -7 -1Z"/></g><path d="M30 38q8 -5 15 -1M70 38q-8 -5 -15 -1" stroke="#F5E6D3" stroke-width="3" stroke-linecap="round" fill="none"/><circle cx="50" cy="80" r="5.5" fill="#FACC15" stroke="#B45309" stroke-width="1.4"/><path d="M50 76.5l1 2.2 2.4.3-1.8 1.6.5 2.4-2.1-1.2-2.1 1.2.5-2.4-1.8-1.6 2.4-.3Z" fill="#B45309"/>`
+  }
+  if (EVO && stade === 6) { // Ancienne : chouette des neiges, taches grises, grandes ailes blanches, souffle glacé
+    derriere = `<path d="M18 58q-26 -10 -16 -40q8 10 14 12q-2 -12 6 -16q4 16 8 30Z M82 58q26 -10 16 -40q-8 10 -14 12q2 -12 -6 -16q-4 16 -8 30Z" fill="#BFDBFE" stroke="#3B82F6" stroke-width="1.5"/>`
+    devant = `<g fill="#1D4ED8" opacity=".45">${[[30, 40], [70, 40], [26, 66], [74, 66], [40, 84], [60, 84], [34, 54], [66, 54]].map(([x, y]: number[]) => `<path d="M${x - 3} ${y}q3 -3 6 0" stroke="#1D4ED8" stroke-width="1.6" fill="none"/>`).join('')}</g>${[[12, 24, 0], [86, 88, 1], [88, 30, .5]].map(([x, y, d]: number[]) => `<g class="chouky-scint" style="animation-delay:${d}s" stroke="#38BDF8" stroke-width="1.6" stroke-linecap="round"><path d="M${x} ${y - 5}v10M${x - 4.3} ${y - 2.5}l8.6 5M${x - 4.3} ${y + 2.5}l8.6 -5"/></g>`).join('')}`
+  }
+  if (EVO && stade === 7) { // Céleste : corps de nuit étoilée, ailes de lumière, anneau d'étoiles
+    derriere = `<path d="M18 56q-30 -14 -14 -46q8 14 16 16q0 -14 10 -18q2 20 2 36Z M82 56q30 -14 14 -46q-8 14 -16 16q0 -14 -10 -18q-2 20 -2 36Z" fill="rgba(196,181,253,.55)" stroke="#E9D5FF" stroke-width="1.5"/><ellipse cx="50" cy="14" rx="20" ry="5" fill="none" stroke="#FDE68A" stroke-width="2" stroke-dasharray="1 4" stroke-linecap="round"/>`
+    devant = `${[[28, 40], [72, 44], [32, 80], [68, 82], [24, 62], [76, 64], [50, 90]].map(([x, y]: number[], i: number) => etoile(x, y, i % 2 ? 2.4 : 3, '#FDE68A', i * .3)).join('')}${etoile(10, 20, 4, '#E9D5FF', .4)}${etoile(90, 30, 3.5, '#E9D5FF', 1.1)}<path d="M28 40l-4 22 8 18M72 44l4 20 -8 18" fill="none" stroke="#FDE68A" stroke-width=".7" opacity=".6"/>`
+  }
+  if (EVO && stade === 8) { // Divine : phénix doré, crête de flammes, immenses ailes de feu, aura arc-en-ciel
+    derriere = `<circle cx="50" cy="56" r="48" fill="none" stroke="url(#arcd${u})" stroke-width="3" opacity=".9"/><defs><linearGradient id="arcd${u}" x1="0" x2="1"><stop offset="0" stop-color="#F43F5E"/><stop offset=".3" stop-color="#FACC15"/><stop offset=".6" stop-color="#22D3EE"/><stop offset="1" stop-color="#A855F7"/></linearGradient></defs>
+      <path d="M18 58q-34 -6 -16 -48q8 16 16 18q-4 -18 8 -24q6 22 6 42Z M82 58q34 -6 16 -48q-8 16 -16 18q4 -18 -8 -24q-6 22 -6 42Z" fill="#F97316" class="chouky-flamme"/><path d="M20 54q-24 -6 -12 -34q6 10 12 12q-2 -12 6 -16q4 16 4 30Z M80 54q24 -6 12 -34q-6 10 -12 12q2 -12 -6 -16q-4 16 -4 30Z" fill="#FACC15" class="chouky-flamme" style="animation-delay:.2s"/>
+      <path d="M50 18q-6 -10 -2 -20q4 6 4 10q4 -8 10 -10q-4 10 -6 20Z M40 20q-8 -6 -8 -16q6 4 8 8Z M60 20q8 -6 8 -16q-6 4 -8 8Z" fill="#F43F5E" class="chouky-flamme" style="animation-delay:.1s"/><path d="M50 16q-3 -6 -1 -12q3 4 3 6q2 -4 5 -6q-2 6 -3 12Z" fill="#FDE68A" class="chouky-flamme" style="animation-delay:.35s"/>`
+    devant = `${etoile(8, 26, 4.5, '#FDE68A', 0)}${etoile(92, 18, 4, '#FACC15', .6)}${etoile(90, 90, 4.5, '#FDE68A', 1.1)}${etoile(10, 86, 3.5, '#FB7185', 1.5)}<g fill="#FEF3C7" opacity=".8"><path d="M30 76q4 -4 8 0q-4 4 -8 0Z"/><path d="M62 76q4 -4 8 0q-4 4 -8 0Z"/></g>`
+  }
+  if (S.patchs) { // panda : taches autour des yeux, oreilles rondes, bambou
+    patchs = `<ellipse cx="38" cy="52" rx="11" ry="12.5" fill="#1F2933" transform="rotate(-18 38 52)"/><ellipse cx="62" cy="52" rx="11" ry="12.5" fill="#1F2933" transform="rotate(18 62 52)"/>`
+    derriere = `<circle cx="26" cy="24" r="9" fill="#1F2933"/><circle cx="74" cy="24" r="9" fill="#1F2933"/>`
+    devant = `<g transform="translate(70 62) rotate(18)"><rect x="0" y="0" width="6" height="34" rx="3" fill="#65A30D"/><path d="M0 10h6M0 21h6" stroke="#3F6212" stroke-width="1.5"/><path d="M6 6q10 -6 14 2q-8 2 -14 -2Z" fill="#84CC16"/></g>`
+  }
+  if (S.renard) { // renard : grande queue touffue, oreilles pointues claires
+    derriere = `<path d="M76 84q26 -4 22 -34q-10 8 -12 18q-6 -14 -16 -6q8 6 6 22Z" fill="#F97316"/><path d="M96 54q-6 2 -9 9q6 -1 9 -9Z" fill="#FFF7ED"/>`
+    devant = `<path d="M29 25l2 -10 7 7Z M71 25l-2 -10 -7 7Z" fill="#FFF7ED"/><path d="M34 63l-10 -2M34 66l-10 2M66 63l10 -2M66 66l10 2" stroke="#7C2D12" stroke-width="1" stroke-linecap="round" opacity=".5"/>`
+  }
+  if (S.corne) { // licorne : corne dorée torsadée, crinière arc-en-ciel, étincelles
+    derriere = `<path d="M28 20q-14 10 -12 30q4 14 8 20q-2 -18 6 -32Z" fill="#C4B5FD"/><path d="M30 22q-10 10 -8 26q2 10 6 16q0 -16 4 -28Z" fill="#F9A8D4"/><path d="M33 24q-6 10 -4 22q2 6 4 10q0 -14 2 -24Z" fill="#FDE68A"/>`
+    devant = `<path d="M45 18l5 -20 5 20Z" fill="#FCD34D" stroke="#F59E0B" stroke-width="1"/><path d="M46.5 12l7 -2M47.5 6l5 -1.5" stroke="#F59E0B" stroke-width="1"/><path d="M26 62l2 -3 2 3 -2 3Z M70 62l2 -3 2 3 -2 3Z" fill="#F472B6"/>`
+  }
+  if (S.cornes) { // dragon : petites ailes, cornes, crête, écailles sur le ventre
+    derriere = `<path d="M18 52q-18 -10 -14 -28q6 6 10 6q-2 -8 4 -12q4 10 12 18Z M82 52q18 -10 14 -28q-6 6 -10 6q2 -8 -4 -12q-4 10 -12 18Z" fill="#16A34A"/>`
+    devant = `<path d="M34 22q-4 -12 4 -16q-1 8 3 13Z M66 22q4 -12 -4 -16q1 8 -3 13Z" fill="#FDE68A"/><path d="M44 24l3 -6 3 6 3 -6 3 6" fill="#16A34A"/><path d="M38 72q12 4 24 0M40 80q10 3 20 0M43 88q7 2 14 0" fill="none" stroke="#EAB308" stroke-width="1.6" stroke-linecap="round"/>`
+  }
+  if (S.etoiles) { // nuit étoilée : constellation, lune, bonnet de nuit
+    devant = `<path d="M28 26q22 -22 44 0q-4 -16 16 -20q-6 14 -10 22Z" fill="#1E1B4B"/><circle cx="88" cy="6" r="4" fill="#FDE68A"/><g fill="#FDE68A"><circle cx="30" cy="80" r="1.4"/><circle cx="66" cy="84" r="1.2"/><circle cx="60" cy="74" r="1"/><circle cx="24" cy="66" r="1"/><circle cx="76" cy="70" r="1.3"/></g><path d="M30 80l6 -8 6 4 8 -6" fill="none" stroke="#FDE68A" stroke-width=".7" opacity=".7"/>`
+  }
+  if (S.casque) { // astronaute : combinaison blanche, écusson, casque à reflet, antenne
+    devant = `<rect x="38" y="70" width="10" height="8" rx="2" fill="#F97316"/><rect x="52" y="72" width="10" height="4" rx="2" fill="#3B82F6"/><circle cx="50" cy="56" r="40" fill="rgba(186,230,253,.22)" stroke="#E2E8F0" stroke-width="4"/><path d="M24 38a30 30 0 0 1 20 -18" stroke="#fff" stroke-width="4" fill="none" stroke-linecap="round" opacity=".85"/><path d="M76 20l6 -10" stroke="#94A3B8" stroke-width="2"/><circle cx="83" cy="9" r="3" fill="#EF4444"/>`
+  }
+  if (S.chapeau) { // sorcière : chapeau étoilé, balai, baguette
+    derriere = `<g transform="rotate(-25 50 80)"><rect x="-6" y="78" width="70" height="4" rx="2" fill="#92400E"/><path d="M-6 74l-14 -4v20l14 -4Z" fill="#FBBF24"/></g>`
+    devant = `<path d="M50 -14q4 20 20 36H30q14 -12 20 -36Z" fill="#4C1D95"/><ellipse cx="50" cy="24" rx="30" ry="6" fill="#5B21B6"/><rect x="34" y="16" width="32" height="4" fill="#FACC15"/><path d="M50 4l1.5 3 3 .4-2.2 2 .6 3-2.9-1.5-2.9 1.5.6-3-2.2-2 3-.4Z" fill="#FDE68A"/>`
+  }
+  if (S.pirate) { // pirate : tricorne à tête de mort, cache-œil, boucle d'oreille, marinière
+    devant = `<path d="M16 26q34 -30 68 0q-34 -8 -68 0Z" fill="#111827"/><circle cx="50" cy="16" r="4" fill="#fff"/><path d="M47 21l6 0" stroke="#fff" stroke-width="1.6"/><path d="M28 42l44 -8" stroke="#111" stroke-width="2"/><circle cx="61" cy="51" r="11" fill="#111827"/><circle cx="17" cy="64" r="3" fill="none" stroke="#FACC15" stroke-width="1.8"/><path d="M34 72h32M33 79h34M35 86h30" stroke="#1D4ED8" stroke-width="2.4" opacity=".7"/>`
+  }
+  if (S.chat) { // chat : oreilles roses, moustaches, queue rayée
+    derriere = `<path d="M78 86q20 0 16 -26q-4 -6 -8 0q4 14 -10 18Z" fill="#A8A29E"/><path d="M88 66l6 2M86 74l6 1" stroke="#78716C" stroke-width="2"/>`
+    devant = `<path d="M29 25l2 -10 7 7Z M71 25l-2 -10 -7 7Z" fill="#FBCFE8"/><path d="M34 63l-12 -3M34 66l-12 1M66 63l12 -3M66 66l12 1" stroke="#78716C" stroke-width="1.2" stroke-linecap="round"/><circle cx="50" cy="20" r="3" fill="#FB7185"/>`
+  }
+  if (S.abeille) { // abeille : rayures, ailes transparentes, antennes
+    derriere = `<ellipse cx="22" cy="44" rx="14" ry="9" fill="rgba(224,242,254,.85)" stroke="#BAE6FD" transform="rotate(-30 22 44)"/><ellipse cx="78" cy="44" rx="14" ry="9" fill="rgba(224,242,254,.85)" stroke="#BAE6FD" transform="rotate(30 78 44)"/>`
+    devant = `<path d="M28 76q22 8 44 0M30 86q20 7 40 0" stroke="#1F2933" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M42 20q-4 -12 -10 -14M58 20q4 -12 10 -14" stroke="#1F2933" stroke-width="2" fill="none"/><circle cx="32" cy="6" r="3" fill="#1F2933"/><circle cx="68" cy="6" r="3" fill="#1F2933"/>`
+  }
+  if (S.pingouin) { // pingouin : écharpe, ventre blanc, joues bien roses
+    devant = `<path d="M30 74q20 9 40 0v6q-20 9-40 0Z" fill="#38BDF8"/><path d="M60 78l4 12 6-2-4-11Z" fill="#38BDF8"/><path d="M26 28q24 -20 48 0q-24 -6 -48 0Z" fill="#111827"/>`
+  }
+  if (S.ange) { // ange : auréole dorée, petites ailes blanches
+    derriere = `<path d="M18 56q-18 -6 -14 -24q10 2 14 10q0 -10 6 -12q4 12 2 26Z M82 56q18 -6 14 -24q-10 2 -14 10q0 -10 -6 -12q-4 12 -2 26Z" fill="#FFFFFF" stroke="#E0E7FF" stroke-width="1.5"/>`
+    devant = `<ellipse cx="50" cy="8" rx="15" ry="4" fill="none" stroke="#FACC15" stroke-width="3.5"/>`
+  }
+  if (S.vampire) { // vampire : cape rouge et noire, petits crocs
+    derriere = `<path d="M10 96q2 -50 22 -64h36q20 14 22 64Z" fill="#111827"/><path d="M16 96q2 -40 18 -56h32q16 16 18 56Z" fill="#991B1B"/>`
+    devant = `<path d="M46 66l1.5 4 1.5 -4M51 66l1.5 4 1.5 -4" fill="#fff"/><path d="M30 34l40 0" stroke="#111827" stroke-width="0"/>`
+  }
+  if (S.grenouille) { // grenouille : couronne de nénuphar, petites taches
+    devant = `<g fill="#4D7C0F" opacity=".5"><circle cx="30" cy="80" r="3"/><circle cx="70" cy="76" r="2.5"/><circle cx="62" cy="88" r="2"/></g><g transform="translate(64 20)"><circle r="7" fill="#F9A8D4"/><circle r="3" fill="#FDE68A"/></g>`
+  }
+  if (S.aventurier) { // récompense mode histoire : chapeau d'explorateur, carte
+    devant = `<ellipse cx="50" cy="26" rx="32" ry="6" fill="#A16207"/><path d="M32 26q2 -16 18 -16t18 16Z" fill="#CA8A04"/><rect x="32" y="21" width="36" height="4" fill="#7C2D12"/><g transform="translate(62 70) rotate(-10)"><rect width="22" height="15" rx="1.5" fill="#FEF3C7" stroke="#D97706"/><path d="M4 11l5 -6 4 4 5 -5" fill="none" stroke="#DC2626" stroke-width="1.4" stroke-dasharray="2 1.5"/><text x="15" y="6" font-size="5">✕</text></g>`
+  }
+  if (S.champion) {
+    const brille = `<defs><clipPath id="cc${u}"><path d="M33 24l3 -16 8 9 6 -12 6 12 8 -9 3 16Z"/></clipPath></defs><g clip-path="url(#cc${u})"><rect class="chouky-eclat" x="40" y="-6" width="8" height="34" fill="#fff" transform="rotate(20 44 10)"/></g>` // récompense rang Légende : couronne, cape royale, médaille
+    derriere = `<path d="M12 96q4 -46 20 -60h36q16 14 20 60Z" fill="#B91C1C"/><path d="M14 96q2 -10 8 -12M86 96q-2 -10 -8 -12" stroke="#FDE68A" stroke-width="3"/>`
+    devant = `<path d="M33 24l3 -16 8 9 6 -12 6 12 8 -9 3 16Z" fill="#FACC15" stroke="#B45309" stroke-width="1.5"/><circle cx="50" cy="12" r="2.5" fill="#EF4444"/><circle cx="50" cy="84" r="6" fill="#FACC15" stroke="#B45309" stroke-width="1.5"/><text x="46.5" y="87" font-size="7">★</text>${brille}${etoile(16, 30, 5, '#FDE68A', 0)}${etoile(84, 26, 4.5, '#FACC15', .6)}${etoile(86, 80, 4, '#FDE68A', 1.2)}${etoile(14, 78, 3.5, '#FACC15', 1.6)}`
+  }
+  if (S.tournoi) { // récompense tournoi : armure argentée, trophée
+    devant = `<path d="M28 30q22 -18 44 0v6q-22 -10 -44 0Z" fill="#CBD5E1" stroke="#64748B"/><path d="M50 12v14" stroke="#EF4444" stroke-width="4" stroke-linecap="round"/><g transform="translate(66 68)"><path d="M2 0h14v6q0 7 -7 8q-7 -1 -7 -8Z" fill="#FACC15" stroke="#B45309"/><rect x="6" y="14" width="6" height="3" fill="#B45309"/><rect x="3" y="17" width="12" height="3" rx="1" fill="#92400E"/></g>`
+  }
+  if (S.clan) { // récompense clan : bannière et bouclier
+    derriere = `<rect x="80" y="10" width="3" height="80" fill="#78350F"/><path d="M83 12h16l-5 8 5 8h-16Z" fill="#FACC15"/>`
+    devant = `<g transform="translate(22 66)"><path d="M0 0h18v10q0 10 -9 14q-9 -4 -9 -14Z" fill="#7C3AED" stroke="#FACC15" stroke-width="1.6"/><path d="M9 4l2 4 4 .5-3 3 .8 4-3.8-2-3.8 2 .8-4-3-3 4-.5Z" fill="#FACC15"/></g>`
+  }
+  if (S.diamant) { // récompense rang Diamant : corps cristallin, facettes et éclats
+    devant = `<defs><clipPath id="cd${u}"><path d="M50 18c22 0 34 18 34 40c0 22 -14 38 -34 38s-34 -16 -34 -38c0 -22 12 -40 34 -40Z"/></clipPath></defs><g clip-path="url(#cd${u})"><rect class="chouky-eclat" x="40" y="10" width="10" height="90" fill="#fff" opacity=".8" transform="rotate(20 45 55)"/></g><path d="M24 40q4 -10 12 -14" stroke="#fff" stroke-width="3" stroke-linecap="round" fill="none" opacity=".8"/>${etoile(14, 28, 5, '#FFFFFF', 0)}${etoile(86, 34, 4.5, '#A5F3FC', .5)}${etoile(84, 84, 5, '#FFFFFF', 1)}${etoile(16, 80, 3.5, '#A5F3FC', 1.4)}${etoile(50, 4, 3.5, '#FFFFFF', .8)}`
+  }
+  if (S.savant) { // récompense album complet : lunettes rondes dorées fines, pile de livres
+    devant = `<g transform="translate(60 74)"><rect width="24" height="6" rx="1.5" fill="#DC2626"/><rect x="2" y="-6" width="22" height="6" rx="1.5" fill="#2563EB"/><rect x="-1" y="-12" width="22" height="6" rx="1.5" fill="#16A34A"/></g><path d="M30 22q20 -10 40 0" stroke="#FACC15" stroke-width="3" fill="none"/><text x="44" y="16" font-size="10">📜</text>`
+  }
+  if (S.fraise) { // fraise : collerette de feuilles, graines, petite fleur
+    devant = `<path d="M30 24q10 -10 20 -2q10 -8 20 2q-6 6 -10 4q-4 6 -10 2q-6 4 -10 -2q-4 2 -10 -4Z" fill="#22C55E"/><path d="M50 20v-10" stroke="#15803D" stroke-width="3" stroke-linecap="round"/><g fill="#FDE68A">${[[30, 72], [40, 82], [60, 82], [70, 72], [50, 76], [36, 64], [64, 64], [45, 90], [55, 90]].map(([x, y]: number[]) => `<ellipse cx="${x}" cy="${y}" rx="1.3" ry="2"/>`).join('')}</g><g transform="translate(70 22)">${[0, 72, 144, 216, 288].map((r: number) => `<ellipse rx="2.6" ry="4" fill="#fff" transform="rotate(${r}) translate(0 -3.5)"/>`).join('')}<circle r="2.2" fill="#FACC15"/></g>`
+  }
+  return `<svg viewBox="0 0 100 100" width="${t}" class="chouky-flotte">
+    <ellipse cx="50" cy="96" rx="${26 * k}" ry="4" fill="#000" opacity=".09"/>
+    ${aura}
+    <g transform="translate(50 96) scale(${k}) translate(-50 -96)">
+      ${derriere}
+      <path d="M27 28l3 -16 12 10Z M73 28l-3 -16 -12 10Z" fill="${o}"/>
+      <path d="M50 18c22 0 34 18 34 40c0 22 -14 38 -34 38s-34 -16 -34 -38c0 -22 12 -40 34 -40Z" fill="${c}"/>
+      <path d="M17 60q-8 8 -4 20q6 -2 9 -10Z M83 60q8 8 4 20q-6 -2 -9 -10Z" fill="${o}"/>
+      <ellipse cx="50" cy="76" rx="20" ry="16" fill="${v}"/>
+      <path d="M42 72q2 2 4 0M54 72q2 2 4 0M48 80q2 2 4 0M42 86q2 2 4 0M54 86q2 2 4 0" fill="none" stroke="${o}" stroke-width="1.4" stroke-linecap="round" opacity=".55"/>
+      <path d="M50 30c10 0 26 6 26 22c0 12 -12 18 -26 18s-26 -6 -26 -18c0 -16 16 -22 26 -22Z" fill="${v}"/>
+      ${patchs}${yeux}
+      <path d="M46 60l4 6 4 -6Z" fill="#F59E0B" stroke="#D97706" stroke-width="1" stroke-linejoin="round"/>
+      ${bouche}
+      <ellipse cx="31" cy="62" rx="5" ry="3" fill="#FB7185" opacity=".45"/><ellipse cx="69" cy="62" rx="5" ry="3" fill="#FB7185" opacity=".45"/>
+      ${larme}${lunettes}
+      <path d="M40 95l-3 5M44 95v5M56 95v5M60 95l3 5" stroke="#F59E0B" stroke-width="3" stroke-linecap="round"/>
+      ${echarpe}${livre}${toque}${devant}
+    </g>${zzz}
+  </svg>`
+}

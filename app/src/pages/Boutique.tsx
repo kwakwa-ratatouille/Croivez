@@ -8,16 +8,18 @@ import { useAuth } from '../auth'
 import { usePrefs, type Lang } from '../i18n'
 import { BOUTIQUE, acheterObjet, equiper, possede, type Objet } from '../meta'
 import Avatar from '../components/Avatar'
+import Chouky from '../components/Chouky'
+import { choukyDe } from '../chouky'
 import { Particules, Pseudo, fondAnime } from '../components/Cosmetiques'
 import { ICONS, Icon, Piece, Pieces } from '../components/ui'
 
-type Onglet = 'avatar' | 'cadre' | 'fond' | 'pseudo' | 'titre' | 'couleur' | 'victoire' | 'son'
-const ONGLETS: Onglet[] = ['avatar', 'cadre', 'fond', 'pseudo', 'titre', 'couleur', 'victoire', 'son']
+type Onglet = 'chouky' | 'avatar' | 'cadre' | 'fond' | 'pseudo' | 'titre' | 'couleur' | 'victoire' | 'son'
+const ONGLETS: Onglet[] = ['chouky', 'avatar', 'cadre', 'fond', 'pseudo', 'titre', 'couleur', 'victoire', 'son']
 // Un objet appartient à un onglet : son type, ou pour les effets leur sorte (thème, fête de victoire, son)
 const dansOnglet = (o: Objet, g: Onglet) => (o.type === 'effet' ? o.sorte === g : o.type === g)
-const EMOJI_ONGLET: Record<Onglet, string> = { avatar: '🧑‍🎨', cadre: '🖼️', fond: '🌈', pseudo: '✍️', titre: '🏷️', couleur: '🎨', victoire: '🎉', son: '🔊' }
+const EMOJI_ONGLET: Record<Onglet, string> = { chouky: '🦉', avatar: '🧑‍🎨', cadre: '🖼️', fond: '🌈', pseudo: '✍️', titre: '🏷️', couleur: '🎨', victoire: '🎉', son: '🔊' }
 const NOMS_ONGLETS: Record<Onglet, Record<Lang, string>> = {
-  avatar: { fr: 'Avatars', en: 'Avatars' }, cadre: { fr: 'Cadres', en: 'Frames' }, fond: { fr: 'Vitrines', en: 'Showcases' },
+  chouky: { fr: 'Chouky', en: 'Chouky' }, avatar: { fr: 'Avatars', en: 'Avatars' }, cadre: { fr: 'Cadres', en: 'Frames' }, fond: { fr: 'Vitrines', en: 'Showcases' },
   pseudo: { fr: 'Pseudos', en: 'Names' }, titre: { fr: 'Titres', en: 'Titles' }, couleur: { fr: 'Thèmes', en: 'Themes' }, victoire: { fr: 'Fêtes de victoire', en: 'Victory effects' }, son: { fr: 'Sons', en: 'Sounds' },
 }
 type Vue = 'tout' | 'moi' | 'acheter' | 'gagner'
@@ -76,7 +78,7 @@ export default function Boutique() {
   const valeur = (o: Objet) => (o.jetons ? o.jetons * 200 : o.prix)
   const Prix = ({ o }: { o: Objet }) => o.jetons ? <span className="prix-jetons">🎖️ {o.jetons}</span> : <><Piece size={15} />{o.prix.toLocaleString(fr ? 'fr-FR' : 'en-GB')}</>
 
-  const equipe = (o: Objet) => ({ avatar: profile?.avatar, cadre: profile?.cadre, titre: profile?.titre, fond: profile?.vitrineFond, pseudo: profile?.pseudoStyle, effet: o.sorte === 'couleur' ? (profile?.couleurApp || 'couleur-defaut') : o.sorte === 'son' ? (profile?.sonReponse || 'son-classique') : (profile?.victoire || 'victoire-confettis') })[o.type] === o.id
+  const equipe = (o: Objet) => ({ avatar: profile?.avatar, cadre: profile?.cadre, titre: profile?.titre, fond: profile?.vitrineFond, chouky: profile?.chouky || 'chouky-classique', pseudo: profile?.pseudoStyle, effet: o.sorte === 'couleur' ? (profile?.couleurApp || 'couleur-defaut') : o.sorte === 'son' ? (profile?.sonReponse || 'son-classique') : (profile?.victoire || 'victoire-confettis') })[o.type] === o.id
   const retirerTitre = async () => {
     if (!user) return
     await Promise.all([setDoc(doc(db, 'users', user.uid), { titre: deleteField() }, { merge: true }), setDoc(doc(db, 'profils', user.uid), { titre: '' }, { merge: true })])
@@ -119,7 +121,9 @@ export default function Boutique() {
 
   const nb = (l: Objet[]) => `${l.filter((o) => possede(profile, o)).length} / ${l.length}`
 
-  const Apercu = ({ o, taille = 76 }: { o: Objet; taille?: number }) => o.type === 'effet'
+  const Apercu = ({ o, taille = 76 }: { o: Objet; taille?: number }) => o.type === 'chouky'
+    ? <Chouky taille={taille} stade={Math.max(3, choukyDe(profile).stade)} skin={o.id.replace('chouky-', '')} humeur="content" />
+    : o.type === 'effet'
     ? <span className={`apercu-effet effet-${o.sorte}`} data-couleur-apercu={o.sorte === 'couleur' ? o.id.replace('couleur-', '') : undefined}>{o.emoji}</span>
     : o.type === 'fond'
     ? (() => { const f = fondAnime(o.id); return f ? <span className="apercu-fond" style={{ background: f.fond }}><Particules f={f} nb={8} /></span> : null })()
@@ -182,6 +186,7 @@ export default function Boutique() {
         <button type="button" role="tab" aria-selected={mode === 'rangs'} onClick={() => { setMode('rangs'); setCat('') }}>🎖️ {fr ? 'Rangs' : 'Ranks'}</button>
         <button type="button" role="tab" aria-selected={mode === 'album'} onClick={() => { setMode('album'); setCat('') }}>📖 Album</button>
       </div>
+      {onglet === 'chouky' && mode === 'pieces' && <p className="aide-rangs">🦉 {fr ? 'Habille Chouky, ta chouette : elle porte son costume dès qu’elle est sortie de l’œuf (niveau 5).' : 'Dress up Chouky, your owl (from level 5).'}</p>}
       {rangs && <p className="aide-rangs">{fr ? 'Objets exclusifs, payés en jetons de rang : tu en gagnes chaque lundi selon ton rang en classé.' : 'Exclusive items paid with rank tokens.'}</p>}
 
       {/* Types d'objets en grosses tuiles */}

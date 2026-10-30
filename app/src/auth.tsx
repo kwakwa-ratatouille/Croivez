@@ -47,6 +47,7 @@ export type Profile = {
   possede?: string[] // objets achetés (avatars, cadres)
   avatar?: string
   cadre?: string
+  chouky?: string // skin de Chouky équipé (« chouky-<skin> »)
   partiesJour?: number // parties jouées aujourd'hui (succès Marathonien)
   paliers?: Record<string, number[]> // difficultés réussies (sans-faute, cumulatif) par quiz : ouvre la Légende
   toutDebloque?: boolean // menu de test : tous les quiz, toutes les difficultés et la Légende ouverts

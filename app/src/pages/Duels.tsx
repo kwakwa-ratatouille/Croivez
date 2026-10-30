@@ -15,6 +15,7 @@ import { annulerRecherche, chercherAdversaire, inviter, refuser, rejoindre, type
 import { ICONS, Icon, Logo } from '../components/ui'
 import Avatar from '../components/Avatar'
 import AjoutAmi from '../components/AjoutAmi'
+import ChercheAmi, { filtrerAmis } from '../components/ChercheAmi'
 import { MAX_JOUEURS, creerSalon, normaliserCode, rejoindreSalon } from '../salon'
 import { FAMILLES } from '../themes'
 import { CAST_APP_ID, estIos } from '../cast'
@@ -41,6 +42,7 @@ export default function Duels() {
   const [diffDuel, setDiffDuel] = useState(2)
   const [mjDuel, setMjDuel] = useState('qcm')
   const moi = profile?.pseudo ?? '?'
+  const [chercheDuel, setChercheDuel] = useState('') // filtre des amis à défier
 
   useEffect(() => { profilsDe(profile?.amis ?? []).then(setAmis).catch(console.error) }, [profile?.amis])
 
@@ -156,9 +158,10 @@ export default function Duels() {
           <button type="button" role="tab" aria-pressed={differe} onClick={() => setDiffere(true)}>📨 {fr ? 'En différé' : 'Async'}<small>{fr ? 'chacun joue quand il veut' : 'play anytime'}</small></button>
         </div>
         {amis.length > 0 && <h3 className="multi-duel-sous">{fr ? 'Qui veux-tu défier ?' : 'Who do you challenge?'}</h3>}
+        {amis.length > 3 && <ChercheAmi valeur={chercheDuel} onChange={setChercheDuel} liste={amis} />}
         <div className="multi-duel-amis">
           {amis.length === 0 && <p className="multi-astuce">{fr ? 'Ajoute d’abord des amis dans « Mes amis » juste au-dessus.' : 'Add friends above first.'}</p>}
-          {amis.map((a) => <button key={a.uid} type="button" className="multi-duel-ami" onClick={() => (differe ? defierDiffere(a.uid, a.pseudo) : defier(a.uid))}><Avatar pseudo={a.pseudo} avatar={a.avatar} cadre={a.cadre} taille={34} /><span>{a.pseudo}</span><em>⚔️</em></button>)}
+          {filtrerAmis(amis, chercheDuel).map((a) => <button key={a.uid} type="button" className="multi-duel-ami" onClick={() => (differe ? defierDiffere(a.uid, a.pseudo) : defier(a.uid))}><Avatar pseudo={a.pseudo} avatar={a.avatar} cadre={a.cadre} taille={34} /><span>{a.pseudo}</span><em>⚔️</em></button>)}
         </div>
 
       </details>

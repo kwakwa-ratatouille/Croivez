@@ -98,7 +98,7 @@ export const secretsObtenus = (p: Profile | null | undefined, c: ContexteFin) =>
 // Certains s'achètent avec des pièces, d'autres se gagnent par un exploit précis (condition) : ils montrent ce qu'on a accompli.
 // Cadres animés : animations CSS (transform / opacity / filter), seulement sur les grands avatars.
 export type Objet = {
-  id: string; type: 'avatar' | 'cadre' | 'titre' | 'fond' | 'pseudo' | 'effet'; sorte?: Sorte; nom: Record<Lang, string>; prix: number
+  id: string; type: 'avatar' | 'cadre' | 'titre' | 'fond' | 'pseudo' | 'effet' | 'chouky'; sorte?: Sorte; nom: Record<Lang, string>; prix: number
   categorie?: 'portrait' | 'metier' | 'animal' | 'fun' | 'famille'
   portrait?: string // personnage illustré (components/Portrait)
   k?: Famille; couleur?: string; perso?: string; animal?: string; emoji?: string; anim?: string
@@ -323,6 +323,10 @@ export const BOUTIQUE: Objet[] = [
   }),
   // ——— Fonds de vitrine animés et styles de pseudo (achetables ; un fond par saison au palier 15) ———
   ...EFFETS_BOUTIQUE.map((e): Objet => ({ id: e.id, type: 'effet', sorte: e.sorte, nom: e.nom, prix: e.prix, emoji: e.emoji, luxe: e.luxe })),
+  // ——— Skins de Chouky, la mascotte (portés dès qu'elle est sortie de l'œuf) ———
+  ...([['classique', 'Chouky', 'Chouky', 0], ['panda', 'Panda', 'Panda', 400], ['renard', 'Renard', 'Fox', 400], ['chat', 'Chat', 'Cat', 400], ['pingouin', 'Pingouin', 'Penguin', 400], ['abeille', 'Abeille', 'Bee', 500], ['grenouille', 'Grenouille', 'Frog', 500],
+    ['fraise', 'Fraise', 'Strawberry', 600], ['licorne', 'Licorne', 'Unicorn', 900], ['dragon', 'Dragon', 'Dragon', 900], ['nuit', 'Nuit étoilée', 'Starry night', 900], ['ange', 'Ange', 'Angel', 1200], ['vampire', 'Vampire', 'Vampire', 1200],
+    ['sorciere', 'Sorcière', 'Witch', 1500], ['pirate', 'Pirate', 'Pirate', 1500], ['astronaute', 'Astronaute', 'Astronaut', 2000]] as const).map(([s, f, e, prix]): Objet => ({ id: `chouky-${s}`, type: 'chouky', nom: { fr: f, en: e }, prix, ...(prix >= 1500 ? { luxe: 1 as const } : {}) })),
   // ——— Calendriers : récompense finale (toutes les cases, ou presque) ———
   { id: 'cadre-cal-avent', type: 'cadre', nom: { fr: 'Étoile du sapin', en: 'Tree star' }, prix: 0, luxe: 1, couleur: 'conic-gradient(#14532D, #FACC15, #B91C1C, #FACC15, #14532D)', anim: 'tourne etincelles', orbite: ['⭐', '🎁', '❄️'], condition: { desc: { fr: 'Ouvrir le calendrier de l’Avent (22 cases sur 24)', en: 'Open the Advent calendar' }, test: (p) => finalObtenue(p, 'avent') } },
   { id: 'titre-cal-avent', type: 'titre', nom: { fr: 'Lutin de l’Avent', en: 'Advent elf' }, prix: 0, anim: 'givre', condition: { desc: { fr: 'Ouvrir le calendrier de l’Avent (22 cases sur 24)', en: 'Open the Advent calendar' }, test: (p) => finalObtenue(p, 'avent') } },
@@ -467,6 +471,8 @@ export async function acheterObjet(uid: string, o: Objet) {
 }
 export async function equiper(uid: string, o: Objet) {
   const champ = { [o.type === 'effet' && o.sorte ? CHAMP_EFFET[o.sorte] : o.type === 'fond' ? 'vitrineFond' : o.type === 'pseudo' ? 'pseudoStyle' : o.type]: o.id }
+  // Chouky : seulement le profil privé (personne d'autre ne la voit)
+  if (o.type === 'chouky') return setDoc(doc(db, 'users', uid), champ, { merge: true })
   await Promise.all([
     setDoc(doc(db, 'users', uid), champ, { merge: true }),
     setDoc(doc(db, 'profils', uid), champ, { merge: true }),
